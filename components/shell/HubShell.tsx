@@ -11,14 +11,13 @@ import { CHARACTERS } from "@/lib/constants";
 const SIDEBAR_COLLAPSED_KEY = "focusparty-sidebar-collapsed";
 
 const PAGE_TITLES: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/progress": "Progress",
   "/party": "Parties",
+  "/progress": "Progress",
   "/settings": "Settings",
 };
 
 function getTitleForPath(pathname: string): string {
-  return PAGE_TITLES[pathname] ?? "Dashboard";
+  return PAGE_TITLES[pathname] ?? "Parties";
 }
 
 export function HubShell({ children }: { children: ReactNode }) {

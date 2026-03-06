@@ -60,7 +60,7 @@ export function ReviewCard({
           Take a break
         </button>
         <Link
-          href="/dashboard"
+          href="/party"
           className="rounded-lg py-3 text-center text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-white"
         >
           Call it a day

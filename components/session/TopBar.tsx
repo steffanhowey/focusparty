@@ -85,7 +85,7 @@ export function TopBar({
           <GearIcon />
         </button>
         <Link
-          href="/dashboard"
+          href="/party"
           className="rounded p-1 text-[var(--color-text-tertiary)] hover:text-white"
           aria-label="Close session"
         >

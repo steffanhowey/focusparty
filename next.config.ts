@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Ensure Vercel and local build use this directory as root (avoids lockfile warning)
+  turbopack: { root: __dirname },
 };
 
 export default nextConfig;

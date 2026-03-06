@@ -39,7 +39,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
   const displayName = user?.name ?? STUB_DISPLAY_NAME;
   const planLabel = PLAN_LABELS[STUB_PLAN];
 
-  const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "dashboard";
+  const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "party";
 
   useEffect(() => {
     if (!profileMenuOpen) return;
@@ -61,7 +61,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
       {collapsed ? (
         <div className={`flex min-h-0 flex-1 flex-col ${RAILS_INSET_X}`}>
           <div className="flex h-16 shrink-0 items-center justify-center">
-            <Logo href="/dashboard" variant="small" />
+            <Logo href="/party" variant="small" />
           </div>
           <nav className={`flex shrink-0 flex-col items-center ${NAV_ITEM_GAP} ${SECTION_GAP}`}>
             {NAV_ITEMS.map((item) => {
@@ -144,7 +144,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
         <>
           <div className="flex h-16 shrink-0 items-center justify-between gap-2 pl-4 pr-0">
             <div className="flex min-w-0 flex-1 items-center">
-              <Logo href="/dashboard" variant={colorMode === "light" ? "light" : "dark"} />
+              <Logo href="/party" variant={colorMode === "light" ? "light" : "dark"} />
             </div>
             {onToggleCollapsed && (
               <button
