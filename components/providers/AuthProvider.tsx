@@ -9,6 +9,7 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import type { AuthState } from "@/lib/types";
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>("loading");
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -62,7 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setUser(null);
     setAuthState("anonymous");
-  }, [supabase]);
+    router.push("/login");
+  }, [supabase, router]);
 
   const value = useMemo<AuthContextValue>(
     () => ({ authState, user, signIn, signOut }),
