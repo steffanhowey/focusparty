@@ -2,7 +2,7 @@
 
 interface TimerDisplayProps {
   formatted: string;
-  phase: "sprint" | "goal" | "review" | "break";
+  phase: "sprint" | "setup" | "review" | "break";
   /** When true, apply warning color (e.g. < 5 min) */
   warning?: boolean;
   /** When true, apply critical color (e.g. < 1 min) */

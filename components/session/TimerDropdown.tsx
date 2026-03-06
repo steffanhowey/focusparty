@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronDown, RotateCcw } from "lucide-react";
-import { SPRINT_DURATION_OPTIONS } from "@/lib/constants";
+import { DurationPills } from "./DurationPills";
 
 interface TimerDropdownProps {
   currentDurationMin: number;
@@ -18,30 +18,37 @@ export function TimerDropdown({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Click outside to close
+  // Click outside or Escape to close
   useEffect(() => {
     if (!open) return;
     const handleClick = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  // Escape to close
-  useEffect(() => {
-    if (!open) return;
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
+    document.addEventListener("mousedown", handleClick);
     document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, [open]);
+
+  const handleChangeDuration = useCallback(
+    (d: number) => {
+      onChangeDuration(d);
+      setOpen(false);
+    },
+    [onChangeDuration]
+  );
+
+  const handleReset = useCallback(() => {
+    onReset();
+    setOpen(false);
+  }, [onReset]);
 
   return (
     <div ref={containerRef} className="relative flex items-center">
@@ -80,29 +87,7 @@ export function TimerDropdown({
           </p>
 
           {/* Duration pills */}
-          <div className="flex gap-1.5">
-            {SPRINT_DURATION_OPTIONS.map((d) => {
-              const isActive = d === currentDurationMin;
-              return (
-                <button
-                  key={d}
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    onChangeDuration(d);
-                    setOpen(false);
-                  }}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-150 ${
-                    isActive
-                      ? "bg-[var(--color-accent-primary)] text-white"
-                      : "border border-[var(--color-border-default)] text-[var(--color-text-tertiary)] hover:bg-white/[0.06] hover:text-[var(--color-text-secondary)]"
-                  }`}
-                >
-                  {d}m
-                </button>
-              );
-            })}
-          </div>
+          <DurationPills value={currentDurationMin} onChange={handleChangeDuration} />
 
           {/* Divider */}
           <div className="my-2.5 border-t border-[var(--color-border-subtle)]" />
@@ -111,10 +96,7 @@ export function TimerDropdown({
           <button
             type="button"
             role="menuitem"
-            onClick={() => {
-              onReset();
-              setOpen(false);
-            }}
+            onClick={handleReset}
             className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.06] hover:text-white"
           >
             <RotateCcw size={14} strokeWidth={2} />

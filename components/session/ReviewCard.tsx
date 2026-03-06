@@ -1,13 +1,10 @@
 "use client";
 
-import type { CharacterId } from "@/lib/types";
-import { CHARACTERS } from "@/lib/constants";
 import Link from "next/link";
 
 const OUTCOMES = ["Done", "Mostly", "Partial", "Stuck"] as const;
 
 interface ReviewCardProps {
-  character: CharacterId;
   goal: string;
   onAnotherRound: () => void;
   onTakeBreak: () => void;
@@ -15,14 +12,11 @@ interface ReviewCardProps {
 }
 
 export function ReviewCard({
-  character,
   goal,
   onAnotherRound,
   onTakeBreak,
   onOutcome,
 }: ReviewCardProps) {
-  const c = CHARACTERS[character];
-
   return (
     <div
       className="absolute bottom-6 left-1/2 w-[calc(100%-2rem)] max-w-[420px] -translate-x-1/2 rounded-2xl border border-[var(--color-border-default)] p-4 backdrop-blur-xl md:p-6"
@@ -32,7 +26,7 @@ export function ReviewCard({
       }}
     >
       <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
-        <span style={{ color: c.primary }}>{c.name}:</span> How&apos;d the{" "}
+        How&apos;d the{" "}
         {goal || "session"} go?
       </p>
       <div className="mb-5 flex flex-wrap gap-2">

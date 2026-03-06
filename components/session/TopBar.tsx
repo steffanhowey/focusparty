@@ -1,6 +1,6 @@
 "use client";
 
-import { PanelRight } from "lucide-react";
+import { PanelRight, ChevronDown } from "lucide-react";
 import type { SessionPhase } from "@/lib/types";
 import { TimerDropdown } from "./TimerDropdown";
 
@@ -17,6 +17,8 @@ interface TopBarProps {
   currentDurationMin?: number;
   onChangeDuration?: (durationMinutes: number) => void;
   onResetTimer?: () => void;
+  goalCardOpen?: boolean;
+  onToggleGoalCard?: () => void;
 }
 
 export function TopBar({
@@ -32,10 +34,12 @@ export function TopBar({
   currentDurationMin,
   onChangeDuration,
   onResetTimer,
+  goalCardOpen,
+  onToggleGoalCard,
 }: TopBarProps) {
   const title =
-    phase === "goal"
-      ? "Set your goal"
+    phase === "setup"
+      ? ""
       : phase === "review"
         ? "Session review"
         : phase === "break"
@@ -83,12 +87,19 @@ export function TopBar({
           >
             {timerFormatted}
           </span>
-          {onChangeDuration && onResetTimer && currentDurationMin != null && (
-            <TimerDropdown
-              currentDurationMin={currentDurationMin}
-              onChangeDuration={onChangeDuration}
-              onReset={onResetTimer}
-            />
+          {onToggleGoalCard && (
+            <button
+              type="button"
+              onClick={onToggleGoalCard}
+              className="ml-1.5 rounded p-0.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Toggle task options"
+            >
+              <ChevronDown
+                size={14}
+                strokeWidth={2}
+                className={`transition-transform duration-200 ${goalCardOpen ? "rotate-180" : ""}`}
+              />
+            </button>
           )}
         </div>
       )}

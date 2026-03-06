@@ -237,6 +237,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+*:focus,
+*:focus-visible,
+*:focus-within {
+  outline: none !important;
+}
+
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }

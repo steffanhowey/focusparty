@@ -2,7 +2,7 @@
 
 export type CharacterId = "ember" | "moss" | "byte";
 
-export type SessionPhase = "goal" | "sprint" | "review" | "break";
+export type SessionPhase = "setup" | "sprint" | "review" | "break";
 
 export type AuthState = "loading" | "anonymous" | "authenticated";
 

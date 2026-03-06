@@ -14,10 +14,11 @@ interface SideDrawerProps {
   activeTask: Task | null;
   activeTasks: Task[];
   completedTasks: Task[];
-  onSelectTask: (taskId: string) => void;
-  onAddTask: (text: string) => Task;
+  onStartTask: (taskId: string) => void;
   onCompleteTask: (taskId: string) => void;
+  onAddTask: (text: string) => void;
   onDeleteTask: (taskId: string) => void;
+  onEditTask: (taskId: string, newText: string) => void;
   // Chat
   messages: ChatMessage[];
   onSendMessage: (text: string) => void;
@@ -33,10 +34,11 @@ export function SideDrawer({
   activeTask,
   activeTasks,
   completedTasks,
-  onSelectTask,
-  onAddTask,
+  onStartTask,
   onCompleteTask,
+  onAddTask,
   onDeleteTask,
+  onEditTask,
   messages,
   onSendMessage,
 }: SideDrawerProps) {
@@ -55,13 +57,13 @@ export function SideDrawer({
     <>
       {/* Header: toggle */}
       <div className="px-4 py-3">
-        <div className="flex rounded-lg border border-[var(--color-border-subtle)] bg-white/5 p-0.5">
+        <div className="flex rounded-full border border-[var(--color-border-subtle)] bg-white/5 p-0.5">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-all ${
+              className={`flex-1 rounded-full py-1.5 text-xs font-medium transition-all ${
                 activeTab === tab.key
                   ? "bg-[var(--color-accent-primary)] text-white"
                   : "text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
@@ -79,10 +81,11 @@ export function SideDrawer({
           activeTask={activeTask}
           activeTasks={activeTasks}
           completedTasks={completedTasks}
-          onSelectTask={onSelectTask}
-          onAddTask={onAddTask}
+          onStartTask={onStartTask}
           onCompleteTask={onCompleteTask}
+          onAddTask={onAddTask}
           onDeleteTask={onDeleteTask}
+          onEditTask={onEditTask}
         />
       ) : (
         <ChatContent messages={messages} onSendMessage={onSendMessage} />

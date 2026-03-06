@@ -1,10 +1,13 @@
 "use client";
 
+import type { Task } from "@/lib/types";
+
 interface BottomBarProps {
+  activeTask: Task | null;
   onEndSession?: () => void;
 }
 
-export function BottomBar({ onEndSession }: BottomBarProps) {
+export function BottomBar({ activeTask, onEndSession }: BottomBarProps) {
   return (
     <footer
       className="relative flex flex-shrink-0 items-center justify-between px-4 py-3"
@@ -14,18 +17,21 @@ export function BottomBar({ onEndSession }: BottomBarProps) {
         zIndex: 20,
       }}
     >
-      {/* Left */}
-      <div className="flex min-w-0 items-center gap-3">
-        <button
-          type="button"
-          className="rounded-full border border-[var(--color-border-default)] px-3.5 py-1.5 text-xs text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-border-default)] hover:bg-white/5"
-        >
-          Still on track?
-        </button>
+      {/* Left: active task display */}
+      <div className="flex min-w-0 items-center gap-2.5">
+        {activeTask ? (
+          <span className="truncate text-sm text-[var(--color-text-secondary)]">
+            {activeTask.text}
+          </span>
+        ) : (
+          <span className="text-xs text-[var(--color-text-tertiary)]">
+            No task in progress
+          </span>
+        )}
       </div>
 
       {/* Right: end session */}
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-3">
         <button
           type="button"
           onClick={onEndSession}

@@ -41,7 +41,7 @@ export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>(loadTasks);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(loadActiveTaskId);
 
-  const addTask = useCallback((text: string): Task => {
+  const addTask = useCallback((text: string) => {
     const task: Task = {
       id: crypto.randomUUID(),
       text: text.trim(),
@@ -54,7 +54,6 @@ export function useTasks() {
       persistTasks(next);
       return next;
     });
-    return task;
   }, []);
 
   const completeTask = useCallback((taskId: string) => {
@@ -64,6 +63,14 @@ export function useTasks() {
       );
       persistTasks(next);
       return next;
+    });
+    // Auto-clear active task if completing the active one
+    setActiveTaskId((prev) => {
+      if (prev === taskId) {
+        persistActiveTaskId(null);
+        return null;
+      }
+      return prev;
     });
   }, []);
 
@@ -79,6 +86,18 @@ export function useTasks() {
         return null;
       }
       return prev;
+    });
+  }, []);
+
+  const editTask = useCallback((taskId: string, newText: string) => {
+    const trimmed = newText.trim();
+    if (!trimmed) return;
+    setTasks((prev) => {
+      const next = prev.map((t) =>
+        t.id === taskId ? { ...t, text: trimmed } : t
+      );
+      persistTasks(next);
+      return next;
     });
   }, []);
 
@@ -106,14 +125,13 @@ export function useTasks() {
   );
 
   return {
-    tasks,
     activeTasks,
     completedTasks,
     activeTask,
-    activeTaskId,
     addTask,
     completeTask,
     deleteTask,
+    editTask,
     selectTask,
   };
 }

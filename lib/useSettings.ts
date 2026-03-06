@@ -8,6 +8,9 @@ export interface SessionSettings {
   cameraDefault: "on" | "off";
   soundEnabled: boolean;
   colorMode: "dark" | "light";
+  selectedCameraId: string;
+  selectedMicrophoneId: string;
+  selectedSpeakerId: string;
 }
 
 const STORAGE_KEY = "focusparty-settings";
@@ -17,6 +20,9 @@ const DEFAULTS: SessionSettings = {
   cameraDefault: "off",
   soundEnabled: true,
   colorMode: "dark",
+  selectedCameraId: "",
+  selectedMicrophoneId: "",
+  selectedSpeakerId: "",
 };
 
 function loadSettings(): SessionSettings {

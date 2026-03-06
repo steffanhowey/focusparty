@@ -12,10 +12,12 @@ import { SessionNavDrawer } from "@/components/session/SessionNavDrawer";
 import { SplitScreen } from "@/components/session/SplitScreen";
 import { BottomBar } from "@/components/session/BottomBar";
 import { GoalCard } from "@/components/session/GoalCard";
+import { StartSessionModal } from "@/components/session/StartSessionModal";
 import { ReviewCard } from "@/components/session/ReviewCard";
 import { CameraPanel } from "@/components/session/CameraPanel";
 import { SideDrawer } from "@/components/session/SideDrawer";
 import { SettingsPanel } from "@/components/session/SettingsPanel";
+import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
 import type { SessionPhase } from "@/lib/types";
 
 type SidePanel = "none" | "drawer" | "settings";
@@ -24,11 +26,13 @@ const DEFAULT_DURATION_SEC = 25 * 60;
 
 export default function SessionPage() {
   const { characterAccent } = useTheme();
-  const [phase, setPhase] = useState<SessionPhase>("goal");
+  const [phase, setPhase] = useState<SessionPhase>("setup");
   const [goal, setGoal] = useState("");
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<SidePanel>("none");
+  const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
+  const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
 
   const timer = useTimer(durationSec);
   const camera = useCamera(false);
@@ -41,15 +45,19 @@ export default function SessionPage() {
     addTask,
     completeTask,
     deleteTask,
+    editTask,
     selectTask,
   } = useTasks();
 
-  const togglePanel = useCallback(
-    (panel: "drawer" | "settings") =>
-      setActivePanel((prev) => (prev === panel ? "none" : panel)),
+  const closePanel = useCallback(() => setActivePanel("none"), []);
+  const handleToggleDrawer = useCallback(
+    () => setActivePanel((prev) => (prev === "drawer" ? "none" : "drawer")),
     []
   );
-  const closePanel = useCallback(() => setActivePanel("none"), []);
+  const handleToggleSettings = useCallback(
+    () => setActivePanel((prev) => (prev === "settings" ? "none" : "settings")),
+    []
+  );
 
   useEffect(() => {
     if (phase === "sprint" && timer.seconds <= 0 && timer.running) {
@@ -67,6 +75,7 @@ export default function SessionPage() {
       timer.reset(sec);
       timer.start();
       setPhase("sprint");
+      setSprintGoalCardOpen(false);
     },
     [activeTask, timer.reset, timer.start]
   );
@@ -95,9 +104,10 @@ export default function SessionPage() {
   }, [timer.pause, camera.stop]);
 
   const handleAnotherRound = useCallback(() => {
-    setPhase("goal");
-    setGoal("");
-  }, []);
+    timer.reset(durationSec);
+    timer.start();
+    setPhase("sprint");
+  }, [durationSec, timer.reset, timer.start]);
 
   const handleTakeBreak = useCallback(() => {
     setPhase("break");
@@ -107,11 +117,45 @@ export default function SessionPage() {
     (outcome: string) => {
       if (outcome === "Done" && activeTask) {
         completeTask(activeTask.id);
-        selectTask(null);
       }
     },
-    [activeTask, completeTask, selectTask]
+    [activeTask, completeTask]
   );
+
+  const handleStartTask = useCallback(
+    (taskId: string) => {
+      if (!activeTask || activeTask.id === taskId) {
+        selectTask(taskId);
+      } else {
+        setPendingSwitchTaskId(taskId);
+      }
+    },
+    [activeTask, selectTask]
+  );
+
+  const handleSwitchConfirm = useCallback(
+    (action: "complete" | "switch") => {
+      if (action === "complete" && activeTask) {
+        completeTask(activeTask.id);
+      }
+      if (pendingSwitchTaskId) {
+        selectTask(pendingSwitchTaskId);
+      }
+      setPendingSwitchTaskId(null);
+    },
+    [activeTask, completeTask, selectTask, pendingSwitchTaskId]
+  );
+
+  const handleSwitchCancel = useCallback(() => {
+    setPendingSwitchTaskId(null);
+  }, []);
+  const handleSwitchComplete = useCallback(() => handleSwitchConfirm("complete"), [handleSwitchConfirm]);
+  const handleSwitchSwitch = useCallback(() => handleSwitchConfirm("switch"), [handleSwitchConfirm]);
+
+  const handleOpenMenu = useCallback(() => setMenuOpen(true), []);
+  const handleCloseMenu = useCallback(() => setMenuOpen(false), []);
+  const handleToggleGoalCard = useCallback(() => setSprintGoalCardOpen((o) => !o), []);
+  const handleCloseGoalCard = useCallback(() => setSprintGoalCardOpen(false), []);
 
   const timerWarning = phase === "sprint" && timer.seconds > 0 && timer.seconds <= 5 * 60;
   const timerCritical = phase === "sprint" && timer.seconds > 0 && timer.seconds <= 60;
@@ -125,20 +169,22 @@ export default function SessionPage() {
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar
           phase={phase}
-          onOpenMenu={() => setMenuOpen(true)}
+          onOpenMenu={handleOpenMenu}
           drawerOpen={activePanel === "drawer"}
-          onToggleDrawer={() => togglePanel("drawer")}
+          onToggleDrawer={handleToggleDrawer}
           settingsOpen={activePanel === "settings"}
-          onToggleSettings={() => togglePanel("settings")}
+          onToggleSettings={handleToggleSettings}
           timerFormatted={timer.formatted}
           timerWarning={timerWarning}
           timerCritical={timerCritical}
           currentDurationMin={durationMin}
           onChangeDuration={handleChangeDuration}
           onResetTimer={handleResetTimer}
+          goalCardOpen={sprintGoalCardOpen}
+          onToggleGoalCard={handleToggleGoalCard}
         />
 
-        <SessionNavDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+        <SessionNavDrawer isOpen={menuOpen} onClose={handleCloseMenu} />
 
         <div className="relative flex flex-1 flex-col overflow-hidden">
           <SplitScreen
@@ -153,22 +199,30 @@ export default function SessionPage() {
             }
           />
 
-          {phase === "goal" && (
+          {phase === "sprint" && sprintGoalCardOpen && (
+            <div
+              className="absolute inset-0 z-10"
+              onClick={handleCloseGoalCard}
+            />
+          )}
+
+          {phase === "sprint" && sprintGoalCardOpen && (
             <GoalCard
-              character={characterAccent}
               activeTask={activeTask}
               activeTasks={activeTasks}
               completedTasks={completedTasks}
-              onSelectTask={selectTask}
+              onStartTask={handleStartTask}
+              onCompleteTask={completeTask}
               onAddTask={addTask}
               onDeleteTask={deleteTask}
-              onStartSprint={handleStartSprint}
+              currentDurationMin={durationMin}
+              onChangeDuration={handleChangeDuration}
+              onResetTimer={handleResetTimer}
             />
           )}
 
           {phase === "review" && (
             <ReviewCard
-              character={characterAccent}
               goal={goal}
               onAnotherRound={handleAnotherRound}
               onTakeBreak={handleTakeBreak}
@@ -177,7 +231,10 @@ export default function SessionPage() {
           )}
 
           {phase === "sprint" && (
-            <BottomBar onEndSession={handleEndSession} />
+            <BottomBar
+              activeTask={activeTask}
+              onEndSession={handleEndSession}
+            />
           )}
         </div>
       </div>
@@ -199,10 +256,11 @@ export default function SessionPage() {
               activeTask={activeTask}
               activeTasks={activeTasks}
               completedTasks={completedTasks}
-              onSelectTask={selectTask}
-              onAddTask={addTask}
+              onStartTask={handleStartTask}
               onCompleteTask={completeTask}
+              onAddTask={addTask}
               onDeleteTask={deleteTask}
+              onEditTask={editTask}
               messages={chat.messages}
               onSendMessage={chat.sendMessage}
             />
@@ -216,6 +274,26 @@ export default function SessionPage() {
           )}
         </aside>
       </div>
+
+      <StartSessionModal
+        isOpen={phase === "setup"}
+        activeTask={activeTask}
+        activeTasks={activeTasks}
+        completedTasks={completedTasks}
+        onStartTask={handleStartTask}
+        onCompleteTask={completeTask}
+        onAddTask={addTask}
+        onDeleteTask={deleteTask}
+        onStartSprint={handleStartSprint}
+      />
+
+      <SwitchTaskModal
+        isOpen={pendingSwitchTaskId !== null}
+        currentTaskText={activeTask?.text ?? ""}
+        onComplete={handleSwitchComplete}
+        onSwitch={handleSwitchSwitch}
+        onCancel={handleSwitchCancel}
+      />
     </div>
   );
 }

@@ -59,11 +59,11 @@ export function SplitScreen({
                 boxShadow: `0 0 40px ${c.glow}`,
               }}
             >
-              {c.name[0]}
+              FP
             </div>
-            <span className="text-sm font-semibold text-white">{c.name}</span>
+            <span className="text-sm font-semibold text-white">Focus Partner</span>
             <span className="text-xs text-[var(--color-text-secondary)]">
-              Your partner
+              Your co-working buddy
             </span>
             <div
               className="absolute bottom-0 left-1/5 right-1/5 h-20 blur-3xl opacity-[0.08]"
