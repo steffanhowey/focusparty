@@ -1,0 +1,242 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   FocusParty Design System — CSS Custom Properties
+   Ref: FOCUSPARTY_UI_DESIGN_SPEC.md Section 3
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* Primary palette */
+  --color-blue-900: #231b6a;
+  --color-blue-800: #34289e;
+  --color-blue-700: #4636d3;
+  --color-blue-500: #a29be9;
+  --color-blue-400: #d1cdf4;
+  --color-blue-300: #ecebfb;
+  --color-blue-200: #f6f5fd;
+
+  --color-purple-900: #292d77;
+  --color-purple-800: #3e43b2;
+  --color-purple-700: #535aee;
+  --color-purple-500: #a9adf7;
+  --color-purple-400: #d4d6fb;
+  --color-purple-300: #eeeefd;
+  --color-purple-200: #f6f7fe;
+
+  --color-cyan-900: #2e6176;
+  --color-cyan-800: #4591b1;
+  --color-cyan-700: #5cc2ec;
+  --color-cyan-500: #aee0f6;
+  --color-cyan-400: #d6f0fa;
+  --color-cyan-300: #eff9fd;
+  --color-cyan-200: #f7fcfe;
+
+  /* Secondary palette */
+  --color-violet-900: #462a77;
+  --color-violet-800: #6940b3;
+  --color-violet-700: #8c55ef;
+  --color-violet-500: #c5aaf7;
+  --color-violet-400: #e2d5fb;
+  --color-violet-300: #f4eefd;
+  --color-violet-200: #f9f7fe;
+
+  --color-coral-900: #743430;
+  --color-coral-800: #af4e49;
+  --color-coral-700: #e96861;
+  --color-coral-500: #f4b4b0;
+  --color-coral-400: #fad9d8;
+  --color-coral-300: #fdf0ef;
+  --color-coral-200: #fef8f7;
+
+  --color-orange-900: #774c26;
+  --color-orange-800: #b27238;
+  --color-orange-700: #ee984b;
+  --color-orange-500: #f7cba5;
+  --color-orange-400: #fbe5d2;
+  --color-orange-300: #fdf5ed;
+  --color-orange-200: #fefaf6;
+
+  --color-gold-900: #7b6227;
+  --color-gold-800: #b8943b;
+  --color-gold-700: #f5c54e;
+  --color-gold-500: #fae2a6;
+  --color-gold-400: #fef9ed;
+  --color-gold-300: #fef9ed;
+  --color-gold-200: #fffcf6;
+
+  --color-green-900: #2e6341;
+  --color-green-800: #449461;
+  --color-green-700: #5bc682;
+  --color-green-500: #ade2c0;
+  --color-green-400: #d6f1e0;
+  --color-green-300: #eff9f3;
+  --color-green-200: #f7fcf9;
+
+  --color-navy-900: #080a15;
+  --color-navy-800: #0d0e20;
+  /* Step between 800 and 700 for low-contrast elevated surfaces (e.g. main container) */
+  --color-navy-750: #0e1024;
+  --color-navy-700: #11132b;
+  --color-navy-500: #888995;
+  --color-navy-400: #c3c4ca;
+  --color-navy-300: #e7e7ea;
+  --color-navy-200: #f3f3f4;
+
+  /* Semantic (dark) — background navy-900; container slightly lighter so it’s visible but not high contrast */
+  --color-bg-primary: var(--color-navy-800);
+  --color-bg-secondary: var(--color-navy-800);
+  --color-bg-elevated: var(--color-navy-700);
+  --color-bg-hover: rgba(255, 255, 255, 0.08);
+  --color-bg-active: rgba(255, 255, 255, 0.12);
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: var(--color-navy-400);
+  --color-text-tertiary: var(--color-navy-500);
+  --color-text-on-accent: #ffffff;
+
+  --color-border-default: rgba(255, 255, 255, 0.08);
+  --color-border-focus: var(--color-purple-700);
+  --color-border-subtle: rgba(255, 255, 255, 0.04);
+
+  --color-accent-primary: #535aee;
+  --color-accent-secondary: #4636d3;
+  --color-accent-success: #5bc682;
+  --color-accent-warning: #ee984b;
+  --color-accent-error: #e96861;
+
+  /* Character territories (default to Byte for --color-accent-* when no character set) */
+  --color-ember-primary: #e96861;
+  --color-ember-secondary: #ee984b;
+  --color-ember-accent: #f5c54e;
+  --color-ember-bg: #fef8f7;
+  --color-moss-primary: #5bc682;
+  --color-moss-secondary: #5cc2ec;
+  --color-moss-accent: #ade2c0;
+  --color-moss-bg: #f7fcf9;
+  --color-byte-primary: #535aee;
+  --color-byte-secondary: #8c55ef;
+  --color-byte-accent: #4636d3;
+  --color-byte-bg: #f6f7fe;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(17, 19, 43, 0.06);
+  --shadow-md: 0 4px 12px rgba(17, 19, 43, 0.08);
+  --shadow-lg: 0 8px 24px rgba(17, 19, 43, 0.12);
+  --shadow-xl: 0 16px 48px rgba(17, 19, 43, 0.16);
+  --shadow-glow-purple: 0 0 20px rgba(83, 90, 238, 0.3);
+  --shadow-glow-ember: 0 0 20px rgba(233, 104, 97, 0.3);
+  --shadow-glow-moss: 0 0 20px rgba(91, 198, 130, 0.3);
+  --shadow-glow-byte: 0 0 20px rgba(140, 85, 239, 0.3);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+  --transition-ambient: 2000ms ease-in-out;
+
+  /* Z-index */
+  --z-base: 0;
+  --z-card: 10;
+  --z-dropdown: 20;
+  --z-chat: 20;
+  --z-topbar: 30;
+  --z-modal: 40;
+  --z-tooltip: 50;
+  --z-notification: 60;
+}
+
+/* Light theme — navy palette only (navy-200/300 surfaces, navy-700/500 for text) */
+[data-theme="light"] {
+  --color-bg-primary: var(--color-navy-300);
+  --color-bg-secondary: #ffffff;
+  --color-bg-elevated: var(--color-navy-200);
+  --color-bg-hover: rgba(0, 0, 0, 0.06);
+  --color-bg-active: rgba(0, 0, 0, 0.08);
+  --color-text-primary: var(--color-navy-700);
+  --color-text-secondary: var(--color-navy-500);
+  --color-text-tertiary: var(--color-navy-500);
+  --color-text-on-accent: #ffffff;
+  --color-border-default: rgba(0, 0, 0, 0.08);
+  --color-border-focus: var(--color-purple-700);
+  --color-border-subtle: rgba(0, 0, 0, 0.04);
+}
+
+/* Tailwind v4 @theme — expose design tokens to utilities */
+@theme inline {
+  --color-bg-primary: var(--color-bg-primary);
+  --color-bg-secondary: var(--color-bg-secondary);
+  --color-bg-elevated: var(--color-bg-elevated);
+  --color-bg-hover: var(--color-bg-hover);
+  --color-bg-active: var(--color-bg-active);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-tertiary: var(--color-text-tertiary);
+  --color-text-on-accent: var(--color-text-on-accent);
+  --color-border-default: var(--color-border-default);
+  --color-border-focus: var(--color-border-focus);
+  --color-border-subtle: var(--color-border-subtle);
+  --color-accent-primary: var(--color-accent-primary);
+  --color-accent-secondary: var(--color-accent-secondary);
+  --color-accent-success: var(--color-accent-success);
+  --color-accent-warning: var(--color-accent-warning);
+  --color-accent-error: var(--color-accent-error);
+  --color-purple-700: var(--color-purple-700);
+  --color-coral-700: var(--color-coral-700);
+  --color-gold-500: var(--color-gold-500);
+  --color-navy-700: var(--color-navy-700);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+  --spacing-6: var(--space-6);
+  --spacing-8: var(--space-8);
+  --spacing-10: var(--space-10);
+  --spacing-12: var(--space-12);
+  --spacing-16: var(--space-16);
+  --spacing-20: var(--space-20);
+  --spacing-24: var(--space-24);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-full: var(--radius-full);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-glow-purple: var(--shadow-glow-purple);
+}
+
+body {
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
