@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { getSupabase } from "./supabase";
 import type { CharacterId } from "./types";
 
 // ---------- Types ----------
@@ -33,7 +33,7 @@ export interface PartyWithCount extends Party {
 
 /** Fetch all 'waiting' parties, ordered by newest first. */
 export async function listWaitingParties(): Promise<PartyWithCount[]> {
-  const { data: parties, error } = await supabase
+  const { data: parties, error } = await getSupabase()
     .from("fp_parties")
     .select("*")
     .eq("status", "waiting")
@@ -44,7 +44,7 @@ export async function listWaitingParties(): Promise<PartyWithCount[]> {
 
   // Fetch active participant counts
   const partyIds = parties.map((p: Party) => p.id);
-  const { data: participants, error: countErr } = await supabase
+  const { data: participants, error: countErr } = await getSupabase()
     .from("fp_party_participants")
     .select("party_id")
     .in("party_id", partyIds)
@@ -65,7 +65,7 @@ export async function listWaitingParties(): Promise<PartyWithCount[]> {
 
 /** Fetch a single party by ID. */
 export async function getParty(partyId: string): Promise<Party | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("fp_parties")
     .select("*")
     .eq("id", partyId)
@@ -82,7 +82,7 @@ export async function getParty(partyId: string): Promise<Party | null> {
 export async function getPartyParticipants(
   partyId: string
 ): Promise<PartyParticipant[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("fp_party_participants")
     .select("*")
     .eq("party_id", partyId)
@@ -108,7 +108,7 @@ export async function createParty(
   input: CreatePartyInput,
   creatorDisplayName: string
 ): Promise<Party> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("fp_parties")
     .insert(input)
     .select()
@@ -128,7 +128,7 @@ export async function joinParty(
   userId: string,
   displayName: string
 ): Promise<PartyParticipant> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("fp_party_participants")
     .upsert(
       {
@@ -151,7 +151,7 @@ export async function leaveParty(
   partyId: string,
   userId: string
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("fp_party_participants")
     .update({ left_at: new Date().toISOString() })
     .eq("party_id", partyId)
@@ -165,7 +165,7 @@ export async function updatePartyStatus(
   partyId: string,
   status: PartyStatus
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("fp_parties")
     .update({ status })
     .eq("id", partyId);
