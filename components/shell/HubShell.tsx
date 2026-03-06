@@ -101,18 +101,22 @@ export function HubShell({ children }: { children: ReactNode }) {
                 {title}
               </span>
             </div>
-            <Link
-              href="/party"
-              className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 sm:px-5"
-              style={{
-                background: "var(--color-accent-primary)",
-                color: "white",
-              }}
-              aria-label="Join party"
-            >
-              <PartyPopper size={18} strokeWidth={1.8} className="shrink-0" />
-              <span className="hidden text-sm font-semibold sm:inline">Join Party</span>
-            </Link>
+            {pathname !== "/party" ? (
+              <Link
+                href="/party"
+                className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 sm:px-5"
+                style={{
+                  background: "var(--color-accent-primary)",
+                  color: "white",
+                }}
+                aria-label="Join party"
+              >
+                <PartyPopper size={18} strokeWidth={1.8} className="shrink-0" />
+                <span className="hidden text-sm font-semibold sm:inline">Join Party</span>
+              </Link>
+            ) : (
+              <div id="hub-header-action" />
+            )}
           </div>
           <div className="min-h-0 flex-1 overflow-auto px-4 pb-5 md:px-6 md:pb-6">
             {children}

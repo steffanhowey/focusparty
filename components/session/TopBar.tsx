@@ -61,7 +61,7 @@ export function TopBar({
           <button
             type="button"
             onClick={onOpenMenu}
-            className="rounded p-1.5 text-[var(--color-text-tertiary)] hover:bg-white/10 hover:text-white"
+            className="rounded p-1.5 text-[var(--color-text-tertiary)] hover:text-white"
             aria-label="Open menu"
           >
             <HamburgerIcon />

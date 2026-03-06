@@ -10,7 +10,7 @@ interface BottomBarProps {
 export function BottomBar({ activeTask, onEndSession }: BottomBarProps) {
   return (
     <footer
-      className="relative flex flex-shrink-0 items-center justify-between px-4 py-3"
+      className="relative flex h-14 flex-shrink-0 items-center justify-between px-4 md:px-6"
       style={{
         background: "rgba(13,14,32,0.7)",
         backdropFilter: "blur(12px)",

@@ -19,7 +19,7 @@ import {
   type Party,
   type PartyParticipant,
 } from "@/lib/parties";
-import { getIdentity } from "@/lib/identity";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 import { usePartyRealtime } from "@/lib/usePartyRealtime";
 import { useNotification } from "@/components/providers/NotificationProvider";
 
@@ -30,18 +30,16 @@ interface PartyLobbyProps {
 export function PartyLobby({ partyId }: PartyLobbyProps) {
   const router = useRouter();
   const { showToast } = useNotification();
+  const { userId, displayName, isAuthenticated } = useCurrentUser();
 
   const [party, setParty] = useState<Party | null>(null);
   const [participants, setParticipants] = useState<PartyParticipant[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [starting, setStarting] = useState(false);
-  const [identity] = useState(() =>
-    typeof window !== "undefined" ? getIdentity() : { id: "server", displayName: "Guest" }
-  );
 
-  const isCreator = party?.creator_id === identity.id;
-  const isParticipant = participants.some((p) => p.user_id === identity.id);
+  const isCreator = party?.creator_id === userId;
+  const isParticipant = participants.some((p) => p.user_id === userId);
 
   const refreshParty = useCallback(async () => {
     try {
@@ -51,7 +49,6 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
         return;
       }
       setParty(data);
-      // If party started, redirect to session
       if (data.status === "active") {
         router.push("/session");
       }
@@ -69,7 +66,6 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     }
   }, [partyId]);
 
-  // Initial load + auto-join if not already a participant
   useEffect(() => {
     async function init() {
       await refreshParty();
@@ -79,21 +75,21 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     init();
   }, [refreshParty, refreshParticipants]);
 
-  // Auto-join once loaded (if not already in)
+  // Auto-join once loaded (if authenticated and not already in)
   useEffect(() => {
-    if (loading || notFound || !party) return;
+    if (loading || notFound || !party || !userId || !isAuthenticated) return;
     if (party.status !== "waiting") return;
     if (isParticipant) return;
 
     const isFull = participants.length >= party.max_participants;
     if (isFull) return;
 
-    joinParty(partyId, identity.id, identity.displayName)
+    joinParty(partyId, userId, displayName)
       .then(() => refreshParticipants())
       .catch(() => {
         // silent — might already be joined
       });
-  }, [loading, notFound, party, isParticipant, participants.length, partyId, identity, refreshParticipants]);
+  }, [loading, notFound, party, isParticipant, participants.length, partyId, userId, displayName, isAuthenticated, refreshParticipants]);
 
   usePartyRealtime({
     partyId,
@@ -118,8 +114,9 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   };
 
   const handleLeave = async () => {
+    if (!userId) return;
     try {
-      await leaveParty(partyId, identity.id);
+      await leaveParty(partyId, userId);
       router.push("/party");
     } catch {
       router.push("/party");

@@ -7,7 +7,7 @@ import { FlameIcon } from "@/components/ui/FlameIcon";
 import { CHARACTERS, SPRINT_DURATION_OPTIONS } from "@/lib/constants";
 import { useNotification } from "@/components/providers/NotificationProvider";
 import { createParty } from "@/lib/parties";
-import { getIdentity, updateDisplayName } from "@/lib/identity";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 import type { CharacterId } from "@/lib/types";
 
 const CHARACTER_IDS: CharacterId[] = ["ember", "moss", "byte"];
@@ -21,36 +21,32 @@ interface CreatePartyModalProps {
 export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
   const router = useRouter();
   const { showToast } = useNotification();
+  const { userId, displayName, requireAuth } = useCurrentUser();
 
   const [name, setName] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [character, setCharacter] = useState<CharacterId>("ember");
   const [duration, setDuration] = useState(25);
   const [maxParticipants, setMaxParticipants] = useState(3);
   const [creating, setCreating] = useState(false);
 
-  const identity = typeof window !== "undefined" ? getIdentity() : null;
-  const needsName = identity?.displayName === "Guest";
-
-  const canSubmit = name.trim().length > 0 && (!needsName || displayName.trim().length > 0);
+  const canSubmit = name.trim().length > 0;
 
   const handleCreate = async () => {
     if (!canSubmit || creating) return;
+    if (!requireAuth()) return;
+
     setCreating(true);
 
     try {
-      const id = identity ?? getIdentity();
-      const finalName = needsName ? updateDisplayName(displayName.trim()).displayName : id.displayName;
-
       const party = await createParty(
         {
-          creator_id: id.id,
+          creator_id: userId!,
           name: name.trim(),
           character,
           planned_duration_min: duration,
           max_participants: maxParticipants,
         },
-        finalName
+        displayName
       );
 
       onClose();
@@ -69,24 +65,6 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Create a party">
       <div className="space-y-5">
-        {/* Display name (only if Guest) */}
-        {needsName && (
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
-              Your name
-            </label>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              maxLength={30}
-              className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-white/[0.06] px-4 text-sm text-white outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
-              style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
-            />
-          </div>
-        )}
-
         {/* Party name */}
         <div>
           <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">

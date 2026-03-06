@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { getSupabase } from "./supabase";
+import { createClient } from "./supabase/client";
 
 interface UsePartyRealtimeOptions {
   /** Specific party ID to watch participants for. */
@@ -19,7 +19,7 @@ export function usePartyRealtime({
 }: UsePartyRealtimeOptions) {
   useEffect(() => {
     const channelName = partyId ? `party-lobby-${partyId}` : "party-list";
-    const client = getSupabase();
+    const client = createClient();
     const channel = client.channel(channelName);
 
     if (onPartiesChange) {

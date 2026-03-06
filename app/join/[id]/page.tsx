@@ -15,7 +15,7 @@ import {
   type Party,
   type PartyParticipant,
 } from "@/lib/parties";
-import { getIdentity, updateDisplayName } from "@/lib/identity";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export default function JoinPartyPage({
   params,
@@ -24,16 +24,13 @@ export default function JoinPartyPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { userId, displayName, isAuthenticated, requireAuth } = useCurrentUser();
 
   const [party, setParty] = useState<Party | null>(null);
   const [participants, setParticipants] = useState<PartyParticipant[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [joining, setJoining] = useState(false);
-  const [name, setName] = useState("");
-
-  const identity = typeof window !== "undefined" ? getIdentity() : null;
-  const needsName = identity?.displayName === "Guest";
 
   const loadParty = useCallback(async () => {
     try {
@@ -59,17 +56,12 @@ export default function JoinPartyPage({
   }, [loadParty]);
 
   const handleJoin = async () => {
-    if (!identity || joining) return;
-
-    if (needsName && name.trim()) {
-      updateDisplayName(name.trim());
-    }
-
-    const finalName = needsName && name.trim() ? name.trim() : identity.displayName;
+    if (joining) return;
+    if (!requireAuth(`/join/${id}`)) return;
 
     setJoining(true);
     try {
-      await joinParty(id, identity.id, finalName);
+      await joinParty(id, userId!, displayName);
       router.push(`/party/${id}`);
     } catch {
       setJoining(false);
@@ -79,7 +71,7 @@ export default function JoinPartyPage({
   const isFull = party ? participants.length >= party.max_participants : false;
   const isCompleted = party?.status === "completed";
   const isActive = party?.status === "active";
-  const canJoin = !isFull && !isCompleted && !isActive && (!needsName || name.trim().length > 0);
+  const canJoin = !isFull && !isCompleted && !isActive && isAuthenticated;
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
@@ -179,24 +171,10 @@ export default function JoinPartyPage({
 
             {!isCompleted && !isActive && !isFull && (
               <>
-                {needsName && (
-                  <div className="mb-4">
-                    <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
-                      Your name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter your name to join"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && canJoin && handleJoin()
-                      }
-                      maxLength={30}
-                      className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-white/[0.06] px-4 text-sm text-white outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
-                      style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
-                    />
-                  </div>
+                {!isAuthenticated && (
+                  <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
+                    Sign in to join this party.
+                  </p>
                 )}
 
                 <Button
@@ -205,7 +183,7 @@ export default function JoinPartyPage({
                   onClick={handleJoin}
                   disabled={!canJoin || joining}
                 >
-                  {joining ? "Joining..." : "Join Party"}
+                  {joining ? "Joining..." : isAuthenticated ? "Join Party" : "Sign in to join"}
                 </Button>
               </>
             )}

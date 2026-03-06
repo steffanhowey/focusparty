@@ -4,50 +4,69 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
   useCallback,
   useMemo,
-  ReactNode,
+  type ReactNode,
 } from "react";
-import type { AuthState, User } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type { AuthState } from "@/lib/types";
 
 interface AuthContextValue {
   authState: AuthState;
-  user: User | null;
-  signIn: (email: string, password: string) => Promise<void>;
+  user: SupabaseUser | null;
+  signIn: (email: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
-  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [authState, setAuthState] = useState<AuthState>("anonymous");
-  const [user, setUser] = useState<User | null>(null);
+  const [authState, setAuthState] = useState<AuthState>("loading");
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const supabase = useMemo(() => createClient(), []);
 
-  const signIn = useCallback(async (_email: string, _password: string) => {
-    setAuthState("loading");
-    // Stub: no-op, keep anonymous
-    setAuthState("anonymous");
-  }, []);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      setAuthState(user ? "authenticated" : "anonymous");
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setAuthState(session?.user ? "authenticated" : "anonymous");
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
+  const signIn = useCallback(
+    async (email: string) => {
+      setAuthState("loading");
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/callback`,
+        },
+      });
+      setAuthState("anonymous");
+      return { error: error?.message ?? null };
+    },
+    [supabase]
+  );
 
   const signOut = useCallback(async () => {
-    setAuthState("anonymous");
+    await supabase.auth.signOut();
     setUser(null);
-  }, []);
-
-  const refreshSession = useCallback(async () => {
-    // Stub: no-op
-  }, []);
+    setAuthState("anonymous");
+  }, [supabase]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({
-      authState,
-      user,
-      signIn,
-      signOut,
-      refreshSession,
-    }),
-    [authState, user, signIn, signOut, refreshSession]
+    () => ({ authState, user, signIn, signOut }),
+    [authState, user, signIn, signOut]
   );
 
   return (

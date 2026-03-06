@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
-import { ChevronLeft, ChevronDown, ChevronUp, Sun, Moon, CreditCard, Settings } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Sun, Moon, CreditCard, Settings, LogOut, LogIn } from "lucide-react";
 import { Logo } from "./Logo";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -31,12 +31,15 @@ const PROFILE_MENU_STYLE = {
 
 export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, authState, signOut } = useAuth();
   const { colorMode, setColorMode } = useTheme();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  const displayName = user?.name ?? STUB_DISPLAY_NAME;
+  const displayName =
+    user?.user_metadata?.display_name ??
+    user?.email?.split("@")[0] ??
+    STUB_DISPLAY_NAME;
   const planLabel = PLAN_LABELS[STUB_PLAN];
 
   const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "party";
@@ -51,6 +54,61 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [profileMenuOpen]);
+
+  const isAuthenticated = authState === "authenticated";
+
+  const profileMenuItems = (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setColorMode(colorMode === "dark" ? "light" : "dark");
+        }}
+        className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
+      >
+        {colorMode === "dark" ? <Sun size={18} strokeWidth={1.8} /> : <Moon size={18} strokeWidth={1.8} />}
+        <span>{colorMode === "dark" ? "Light mode" : "Dark mode"}</span>
+      </button>
+      <Link
+        href="/settings"
+        onClick={() => setProfileMenuOpen(false)}
+        className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
+      >
+        <CreditCard size={18} strokeWidth={1.8} />
+        <span>Plans & Billing</span>
+      </Link>
+      <Link
+        href="/settings"
+        onClick={() => setProfileMenuOpen(false)}
+        className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
+      >
+        <Settings size={18} strokeWidth={1.8} />
+        <span>Settings</span>
+      </Link>
+      {isAuthenticated ? (
+        <button
+          type="button"
+          onClick={() => {
+            setProfileMenuOpen(false);
+            signOut();
+          }}
+          className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
+        >
+          <LogOut size={18} strokeWidth={1.8} />
+          <span>Sign out</span>
+        </button>
+      ) : (
+        <Link
+          href="/login"
+          onClick={() => setProfileMenuOpen(false)}
+          className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-accent-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
+        >
+          <LogIn size={18} strokeWidth={1.8} />
+          <span>Sign in</span>
+        </Link>
+      )}
+    </>
+  );
 
   const asideClass = collapsed
     ? `${SIDEBAR_WIDTH_RAILS} relative z-[var(--z-card)] flex h-screen flex-shrink-0 flex-col overflow-visible pt-2 md:pt-4 transition-[width] duration-200 ease-out`
@@ -89,32 +147,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
                 className="absolute bottom-full left-1/2 z-[var(--z-dropdown)] mb-1 w-48 -translate-x-1/2 overflow-hidden rounded-lg shadow-lg"
                 style={PROFILE_MENU_STYLE}
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setColorMode(colorMode === "dark" ? "light" : "dark");
-                  }}
-                  className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
-                >
-                  {colorMode === "dark" ? <Sun size={18} strokeWidth={1.8} /> : <Moon size={18} strokeWidth={1.8} />}
-                  <span>{colorMode === "dark" ? "Light mode" : "Dark mode"}</span>
-                </button>
-                <Link
-                  href="/settings"
-                  onClick={() => setProfileMenuOpen(false)}
-                  className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
-                >
-                  <CreditCard size={18} strokeWidth={1.8} />
-                  <span>Plans & Billing</span>
-                </Link>
-                <Link
-                  href="/settings"
-                  onClick={() => setProfileMenuOpen(false)}
-                  className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
-                >
-                  <Settings size={18} strokeWidth={1.8} />
-                  <span>Settings</span>
-                </Link>
+                {profileMenuItems}
               </div>
             )}
             <button
@@ -185,32 +218,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
                 className="absolute bottom-full left-4 right-0 z-[var(--z-dropdown)] mb-2 overflow-hidden rounded-lg shadow-lg"
                 style={PROFILE_MENU_STYLE}
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setColorMode(colorMode === "dark" ? "light" : "dark");
-                  }}
-                  className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
-                >
-                  {colorMode === "dark" ? <Sun size={18} strokeWidth={1.8} /> : <Moon size={18} strokeWidth={1.8} />}
-                  <span>{colorMode === "dark" ? "Light mode" : "Dark mode"}</span>
-                </button>
-                <Link
-                  href="/settings"
-                  onClick={() => setProfileMenuOpen(false)}
-                  className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
-                >
-                  <CreditCard size={18} strokeWidth={1.8} />
-                  <span>Plans & Billing</span>
-                </Link>
-                <Link
-                  href="/settings"
-                  onClick={() => setProfileMenuOpen(false)}
-                  className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
-                >
-                  <Settings size={18} strokeWidth={1.8} />
-                  <span>Settings</span>
-                </Link>
+                {profileMenuItems}
               </div>
             )}
             <button
