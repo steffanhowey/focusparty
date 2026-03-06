@@ -1,12 +1,86 @@
+"use client";
+
+import { useState, useEffect, useCallback, use } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/shell/Logo";
+import { Card } from "@/components/ui/Card";
+import { FlameIcon } from "@/components/ui/FlameIcon";
+import { Button } from "@/components/ui/Button";
+import { CHARACTERS } from "@/lib/constants";
+import {
+  getParty,
+  getPartyParticipants,
+  joinParty,
+  type Party,
+  type PartyParticipant,
+} from "@/lib/parties";
+import { getIdentity, updateDisplayName } from "@/lib/identity";
 
-export default async function JoinPartyPage({
+export default function JoinPartyPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const { id } = use(params);
+  const router = useRouter();
+
+  const [party, setParty] = useState<Party | null>(null);
+  const [participants, setParticipants] = useState<PartyParticipant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [name, setName] = useState("");
+
+  const identity = typeof window !== "undefined" ? getIdentity() : null;
+  const needsName = identity?.displayName === "Guest";
+
+  const loadParty = useCallback(async () => {
+    try {
+      const [p, pp] = await Promise.all([
+        getParty(id),
+        getPartyParticipants(id),
+      ]);
+      if (!p) {
+        setNotFound(true);
+      } else {
+        setParty(p);
+        setParticipants(pp);
+      }
+    } catch {
+      setNotFound(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    loadParty();
+  }, [loadParty]);
+
+  const handleJoin = async () => {
+    if (!identity || joining) return;
+
+    if (needsName && name.trim()) {
+      updateDisplayName(name.trim());
+    }
+
+    const finalName = needsName && name.trim() ? name.trim() : identity.displayName;
+
+    setJoining(true);
+    try {
+      await joinParty(id, identity.id, finalName);
+      router.push(`/party/${id}`);
+    } catch {
+      setJoining(false);
+    }
+  };
+
+  const isFull = party ? participants.length >= party.max_participants : false;
+  const isCompleted = party?.status === "completed";
+  const isActive = party?.status === "active";
+  const canJoin = !isFull && !isCompleted && !isActive && (!needsName || name.trim().length > 0);
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
       <header className="border-b border-[var(--color-border-subtle)]">
@@ -22,27 +96,130 @@ export default async function JoinPartyPage({
       </header>
 
       <main className="mx-auto max-w-md px-4 py-16 sm:py-24">
-        <h1 className="text-2xl font-semibold">Join party</h1>
-        <p className="mt-2 text-[var(--color-text-secondary)]">
-          You’re joining: <span className="font-medium text-[var(--color-text-primary)]">{id}</span>
-        </p>
-        <p className="mt-4 text-sm text-[var(--color-text-tertiary)]">
-          Party join flow coming soon. You can open the app in the meantime.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <Link
-            href="/party"
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-all hover:bg-[var(--color-purple-800)] hover:shadow-[var(--shadow-glow-purple)]"
-          >
-            Go to app
-          </Link>
-          <Link
-            href="/"
-            className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--color-border-default)] px-6 font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-hover)]"
-          >
-            Back to home
-          </Link>
-        </div>
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-text-tertiary)] border-t-transparent" />
+          </div>
+        )}
+
+        {!loading && notFound && (
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold text-white">
+              Party not found
+            </h1>
+            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+              This party may have ended or the link is invalid.
+            </p>
+            <Link
+              href="/party"
+              className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[var(--color-accent-primary)] px-8 font-medium text-white transition-all hover:bg-[var(--color-purple-800)]"
+            >
+              Go to app
+            </Link>
+          </div>
+        )}
+
+        {!loading && !notFound && party && (
+          <>
+            <h1
+              className="mb-6 text-2xl font-semibold text-white"
+              style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+            >
+              Join party
+            </h1>
+
+            <Card
+              variant="character"
+              character={party.character}
+              className="mb-6 p-5"
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+                  style={{ background: `${CHARACTERS[party.character].primary}20` }}
+                >
+                  <FlameIcon character={party.character} size={24} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    {party.name}
+                  </h2>
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    {party.planned_duration_min}m sprint &middot;{" "}
+                    <span style={{ color: CHARACTERS[party.character].primary }}>
+                      {CHARACTERS[party.character].name}
+                    </span>{" "}
+                    hosting
+                  </p>
+                  <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
+                    {participants.length}/{party.max_participants} participants
+                    joined
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {isCompleted && (
+              <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
+                This party has already ended.
+              </p>
+            )}
+
+            {isActive && (
+              <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
+                This party is already in progress.
+              </p>
+            )}
+
+            {isFull && !isCompleted && !isActive && (
+              <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
+                This party is full.
+              </p>
+            )}
+
+            {!isCompleted && !isActive && !isFull && (
+              <>
+                {needsName && (
+                  <div className="mb-4">
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+                      Your name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your name to join"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && canJoin && handleJoin()
+                      }
+                      maxLength={30}
+                      className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-white/[0.06] px-4 text-sm text-white outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
+                      style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+                    />
+                  </div>
+                )}
+
+                <Button
+                  variant="primary"
+                  className="w-full"
+                  onClick={handleJoin}
+                  disabled={!canJoin || joining}
+                >
+                  {joining ? "Joining..." : "Join Party"}
+                </Button>
+              </>
+            )}
+
+            <div className="mt-4 text-center">
+              <Link
+                href="/party"
+                className="text-sm text-[var(--color-text-secondary)] hover:text-white"
+              >
+                Back to app
+              </Link>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

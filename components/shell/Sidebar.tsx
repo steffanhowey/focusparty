@@ -86,7 +86,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
           <div ref={profileRef} className={`relative mt-auto flex shrink-0 flex-col items-center gap-3 ${BOTTOM_PAD}`}>
             {profileMenuOpen && (
               <div
-                className="absolute bottom-full left-1/2 z-[var(--z-dropdown)] mb-1 w-48 -translate-x-0 overflow-hidden rounded-lg shadow-lg"
+                className="absolute bottom-full left-1/2 z-[var(--z-dropdown)] mb-1 w-48 -translate-x-1/2 overflow-hidden rounded-lg shadow-lg"
                 style={PROFILE_MENU_STYLE}
               >
                 <button

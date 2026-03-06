@@ -103,6 +103,14 @@ export interface CharacterDef {
   roomBg: string;
 }
 
+export interface Task {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: number;
+  completedAt: number | null;
+}
+
 export type ToastType = "info" | "success" | "warning" | "error" | "celebration";
 
 export interface ToastItem {

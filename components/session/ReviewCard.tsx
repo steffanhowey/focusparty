@@ -11,6 +11,7 @@ interface ReviewCardProps {
   goal: string;
   onAnotherRound: () => void;
   onTakeBreak: () => void;
+  onOutcome?: (outcome: string) => void;
 }
 
 export function ReviewCard({
@@ -18,6 +19,7 @@ export function ReviewCard({
   goal,
   onAnotherRound,
   onTakeBreak,
+  onOutcome,
 }: ReviewCardProps) {
   const c = CHARACTERS[character];
 
@@ -38,7 +40,8 @@ export function ReviewCard({
           <button
             key={label}
             type="button"
-            className="rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-default)]"
+            onClick={() => onOutcome?.(label)}
+            className="rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent-primary)] hover:text-white"
           >
             {label}
           </button>

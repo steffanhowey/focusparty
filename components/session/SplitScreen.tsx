@@ -20,7 +20,7 @@ export function SplitScreen({
   const c = CHARACTERS[character];
 
   return (
-    <div className="flex flex-1 gap-3 overflow-hidden p-4">
+    <div className="flex flex-1 gap-3 overflow-hidden px-4 pt-4">
       <div
         className="relative flex min-w-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-default)]"
         style={{ background: "rgba(255,255,255,0.03)" }}
