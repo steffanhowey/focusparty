@@ -53,23 +53,38 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Redirect authenticated users who haven't completed onboarding.
+  // Uses a cookie cache to skip the DB query on subsequent requests.
   if (
     user &&
     !pathname.startsWith("/onboard") &&
     !pathname.startsWith("/callback") &&
     PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))
   ) {
-    const { data: profile } = await supabase
-      .from("fp_profiles")
-      .select("onboarding_completed")
-      .eq("id", user.id)
-      .single();
+    const onboardingCookie = request.cookies.get("fp_onboarded")?.value;
 
-    if (profile && !profile.onboarding_completed) {
-      const onboardUrl = request.nextUrl.clone();
-      onboardUrl.pathname = "/onboard";
-      onboardUrl.search = "";
-      return NextResponse.redirect(onboardUrl);
+    if (onboardingCookie !== "1") {
+      const { data: profile } = await supabase
+        .from("fp_profiles")
+        .select("onboarding_completed")
+        .eq("id", user.id)
+        .single();
+
+      if (profile && !profile.onboarding_completed) {
+        const onboardUrl = request.nextUrl.clone();
+        onboardUrl.pathname = "/onboard";
+        onboardUrl.search = "";
+        return NextResponse.redirect(onboardUrl);
+      }
+
+      if (profile?.onboarding_completed) {
+        supabaseResponse.cookies.set("fp_onboarded", "1", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: 60 * 60 * 24 * 30, // 30 days
+        });
+      }
     }
   }
 

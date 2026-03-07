@@ -84,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
+    document.cookie = "fp_onboarded=; path=/; max-age=0";
     setUser(null);
     setAuthState("anonymous");
     router.push("/login");

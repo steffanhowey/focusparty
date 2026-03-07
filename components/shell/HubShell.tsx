@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode, useState, useEffect, useCallback } from "react";
+import { ReactNode, useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { PartyPopper, Menu } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { CHARACTERS } from "@/lib/constants";
+import { CLIENT_NAV_HREFS } from "./navItems";
 
 const SIDEBAR_COLLAPSED_KEY = "focusparty-sidebar-collapsed";
 
@@ -20,13 +20,40 @@ function getTitleForPath(pathname: string): string {
   return PAGE_TITLES[pathname] ?? "Parties";
 }
 
+const LazyPartyList = lazy(() =>
+  import("@/components/party/PartyList").then((m) => ({ default: m.PartyList }))
+);
+
+function renderTabContent(tab: string): ReactNode {
+  switch (tab) {
+    case "/party":
+      return (
+        <main className="flex-1">
+          <Suspense fallback={null}>
+            <LazyPartyList />
+          </Suspense>
+        </main>
+      );
+    case "/progress":
+      return <main className="flex-1">{/* Content — title is in shell header */}</main>;
+    case "/settings":
+      return <main className="flex-1">{/* Content — title is in shell header */}</main>;
+    default:
+      return null;
+  }
+}
+
 export function HubShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { characterAccent } = useTheme();
   const c = CHARACTERS[characterAccent];
 
   const [collapsed, setCollapsed] = useState(false);
-  const title = getTitleForPath(pathname);
+  const [clientTab, setClientTab] = useState<string | null>(null);
+
+  // Single source of truth: clientTab (after first nav click) or pathname (initial server render)
+  const effectivePath = clientTab ?? pathname;
+  const title = getTitleForPath(effectivePath);
 
   useEffect(() => {
     try {
@@ -54,6 +81,31 @@ export function HubShell({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const handleNavClick = useCallback((href: string) => {
+    if (!CLIENT_NAV_HREFS.has(href)) return;
+    window.history.pushState(null, "", href);
+    setClientTab(href);
+  }, []);
+
+  const handleMobileNavClick = useCallback((href: string) => {
+    handleNavClick(href);
+    setCollapsed(true);
+  }, [handleNavClick]);
+
+  // Sync with browser back/forward
+  useEffect(() => {
+    const onPopState = () => {
+      const p = window.location.pathname;
+      if (CLIENT_NAV_HREFS.has(p)) {
+        setClientTab(p);
+      } else {
+        setClientTab(null);
+      }
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
   const showHamburger = collapsed; // desktop: only when collapsed. Mobile: always (handled by CSS).
   const showMobileOverlay = !collapsed;
 
@@ -61,7 +113,7 @@ export function HubShell({ children }: { children: ReactNode }) {
     <div className="flex h-screen overflow-hidden safe-bottom">
       {/* Desktop sidebar: hidden below md */}
       <div className="hidden md:flex md:flex-shrink-0">
-        <Sidebar collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
+        <Sidebar collapsed={collapsed} onToggleCollapsed={toggleCollapsed} onNavClick={handleNavClick} />
       </div>
       {/* Mobile overlay: drawer when hamburger opens (collapsed=false) */}
       {showMobileOverlay && (
@@ -73,7 +125,7 @@ export function HubShell({ children }: { children: ReactNode }) {
             aria-label="Close menu"
           />
           <div className="relative h-full w-60 flex-shrink-0 shadow-xl">
-            <Sidebar collapsed={false} onToggleCollapsed={toggleCollapsed} />
+            <Sidebar collapsed={false} onToggleCollapsed={toggleCollapsed} onNavClick={handleMobileNavClick} />
           </div>
         </div>
       )}
@@ -101,9 +153,13 @@ export function HubShell({ children }: { children: ReactNode }) {
                 {title}
               </span>
             </div>
-            {pathname !== "/party" ? (
-              <Link
+            {effectivePath !== "/party" ? (
+              <a
                 href="/party"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick("/party");
+                }}
                 className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 sm:px-5"
                 style={{
                   background: "var(--color-accent-primary)",
@@ -113,13 +169,13 @@ export function HubShell({ children }: { children: ReactNode }) {
               >
                 <PartyPopper size={18} strokeWidth={1.8} className="shrink-0" />
                 <span className="hidden text-sm font-semibold sm:inline">Join Party</span>
-              </Link>
+              </a>
             ) : (
               <div id="hub-header-action" />
             )}
           </div>
           <div className="min-h-0 flex-1 overflow-auto px-4 pb-5 md:px-6 md:pb-6">
-            {children}
+            {clientTab !== null ? renderTabContent(effectivePath) : children}
           </div>
         </div>
       </div>

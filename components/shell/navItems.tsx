@@ -20,6 +20,9 @@ export const NAV_ITEMS: Array<{
   { id: "settings", href: "/settings", label: "Settings", icon: Settings },
 ];
 
+/** Set of hrefs that support client-side tab switching (no server round-trip). */
+export const CLIENT_NAV_HREFS = new Set(NAV_ITEMS.map((item) => item.href));
+
 /** Render a nav icon with consistent size (for sidebar/drawer). */
 export function NavIcon({ icon: Icon }: { icon: LucideIcon }) {
   return <Icon size={NAV_ICON_SIZE} strokeWidth={1.8} className="shrink-0" />;

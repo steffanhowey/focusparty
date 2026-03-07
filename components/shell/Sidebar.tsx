@@ -22,6 +22,7 @@ const BOTTOM_PAD = "pb-5";
 interface SidebarProps {
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
+  onNavClick?: (href: string) => void;
 }
 
 const PROFILE_MENU_STYLE = {
@@ -29,7 +30,7 @@ const PROFILE_MENU_STYLE = {
   border: "1px solid var(--color-border-default)",
 };
 
-export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) {
+export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: SidebarProps) {
   const pathname = usePathname();
   const { user, authState, signOut } = useAuth();
   const { colorMode, setColorMode } = useTheme();
@@ -76,22 +77,34 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
         {colorMode === "dark" ? <Sun size={18} strokeWidth={1.8} /> : <Moon size={18} strokeWidth={1.8} />}
         <span>{colorMode === "dark" ? "Light mode" : "Dark mode"}</span>
       </button>
-      <Link
+      <a
         href="/settings"
-        onClick={() => setProfileMenuOpen(false)}
+        onClick={(e) => {
+          setProfileMenuOpen(false);
+          if (onNavClick) {
+            e.preventDefault();
+            onNavClick("/settings");
+          }
+        }}
         className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
       >
         <CreditCard size={18} strokeWidth={1.8} />
         <span>Plans & Billing</span>
-      </Link>
-      <Link
+      </a>
+      <a
         href="/settings"
-        onClick={() => setProfileMenuOpen(false)}
+        onClick={(e) => {
+          setProfileMenuOpen(false);
+          if (onNavClick) {
+            e.preventDefault();
+            onNavClick("/settings");
+          }
+        }}
         className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
       >
         <Settings size={18} strokeWidth={1.8} />
         <span>Settings</span>
-      </Link>
+      </a>
       {isAuthenticated ? (
         <button
           type="button"
@@ -132,9 +145,15 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
             {NAV_ITEMS.map((item) => {
               const isActive = activeId === item.id;
               return (
-                <Link
+                <a
                   key={item.id}
                   href={item.href}
+                  onClick={(e) => {
+                    if (onNavClick) {
+                      e.preventDefault();
+                      onNavClick(item.href);
+                    }
+                  }}
                   className="flex h-10 min-h-10 w-10 min-w-10 shrink-0 items-center justify-center rounded-lg transition-[color,background] duration-150"
                   style={{
                     background: isActive ? "var(--color-bg-active)" : "transparent",
@@ -144,7 +163,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
                   title={item.label}
                 >
                   <NavIcon icon={item.icon} />
-                </Link>
+                </a>
               );
             })}
           </nav>
@@ -210,9 +229,15 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
             {NAV_ITEMS.map((item) => {
               const isActive = activeId === item.id;
               return (
-                <Link
+                <a
                   key={item.id}
                   href={item.href}
+                  onClick={(e) => {
+                    if (onNavClick) {
+                      e.preventDefault();
+                      onNavClick(item.href);
+                    }
+                  }}
                   className="flex h-10 items-center gap-3 rounded-lg -ml-3 pl-3 pr-2.5 transition-[color,background] duration-150"
                   style={{
                     background: isActive ? "var(--color-bg-active)" : "transparent",
@@ -224,7 +249,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
                   <span className="text-sm font-medium">
                     {item.label}
                   </span>
-                </Link>
+                </a>
               );
             })}
           </nav>
