@@ -2,6 +2,34 @@ import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+async function resolveRedirect(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  fallback: URL
+) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return fallback;
+
+  const { data: profile } = await supabase
+    .from("fp_profiles")
+    .select("onboarding_completed")
+    .eq("id", user.id)
+    .single();
+
+  if (profile && !profile.onboarding_completed) {
+    const onboardUrl = new URL(fallback.href);
+    onboardUrl.pathname = "/onboard";
+    onboardUrl.search = "";
+    return onboardUrl;
+  }
+
+  // Returning user — add welcome_back hint
+  fallback.searchParams.set("welcome_back", "1");
+  return fallback;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
@@ -22,7 +50,8 @@ export async function GET(request: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(redirectTo);
+      const dest = await resolveRedirect(supabase, redirectTo);
+      return NextResponse.redirect(dest);
     }
     console.error("Auth callback PKCE error:", error.message);
   }
@@ -31,7 +60,8 @@ export async function GET(request: NextRequest) {
   if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
     if (!error) {
-      return NextResponse.redirect(redirectTo);
+      const dest = await resolveRedirect(supabase, redirectTo);
+      return NextResponse.redirect(dest);
     }
     console.error("Auth callback OTP error:", error.message);
   }

@@ -14,10 +14,16 @@ import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import type { AuthState } from "@/lib/types";
 
+interface SignUpMetadata {
+  first_name: string;
+  last_name: string;
+}
+
 interface AuthContextValue {
   authState: AuthState;
   user: SupabaseUser | null;
   signIn: (email: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, metadata: SignUpMetadata) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -60,6 +66,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [supabase]
   );
 
+  const signUp = useCallback(
+    async (email: string, metadata: SignUpMetadata) => {
+      setAuthState("loading");
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/callback`,
+          data: metadata,
+        },
+      });
+      setAuthState("anonymous");
+      return { error: error?.message ?? null };
+    },
+    [supabase]
+  );
+
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -68,8 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase, router]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ authState, user, signIn, signOut }),
-    [authState, user, signIn, signOut]
+    () => ({ authState, user, signIn, signUp, signOut }),
+    [authState, user, signIn, signUp, signOut]
   );
 
   return (

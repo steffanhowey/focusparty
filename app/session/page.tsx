@@ -30,7 +30,7 @@ export default function SessionPage() {
   const [goal, setGoal] = useState("");
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activePanel, setActivePanel] = useState<SidePanel>("none");
+  const [activePanel, setActivePanel] = useState<SidePanel>("drawer");
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
 

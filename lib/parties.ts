@@ -101,6 +101,7 @@ export interface CreatePartyInput {
   character: CharacterId;
   planned_duration_min: number;
   max_participants: number;
+  status?: PartyStatus;
 }
 
 /** Create a new party and auto-join the creator. */

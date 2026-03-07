@@ -10,12 +10,10 @@ function friendlyError(raw: string): string {
   const lower = raw.toLowerCase();
   if (lower.includes("rate limit") || lower.includes("too many"))
     return "Already sent — check your inbox.";
-  if (lower.includes("signups not allowed") || lower.includes("signup"))
-    return "No account found. Try signing up.";
   if (lower.includes("invalid") && lower.includes("email"))
     return "That email doesn't look right.";
   if (lower.includes("not allowed") || lower.includes("not authorized"))
-    return "Login unavailable. Try again shortly.";
+    return "Sign-up unavailable. Try again shortly.";
   if (
     lower.includes("network") ||
     lower.includes("fetch") ||
@@ -27,18 +25,16 @@ function friendlyError(raw: string): string {
   return "Something went wrong. Try again.";
 }
 
-function LoginForm() {
-  const { signIn, authState } = useAuth();
+function SignUpForm() {
+  const { signUp, authState } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [error, setError] = useState<string | null>(
-    searchParams.get("error") === "auth_failed"
-      ? "Authentication failed. Try again."
-      : null
-  );
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   if (authState === "authenticated") {
@@ -49,13 +45,17 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || loading) return;
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || loading)
+      return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const result = await signIn(email.trim());
+      const result = await signUp(email.trim(), {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+      });
       if (result.error) {
         setError(friendlyError(result.error));
       } else {
@@ -70,7 +70,7 @@ function LoginForm() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold text-white">Log in</h1>
+      <h1 className="text-2xl font-semibold text-white">Create your account</h1>
       <p className="mt-2 text-white/50">
         We&apos;ll send you a magic link.
       </p>
@@ -100,7 +100,35 @@ function LoginForm() {
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <label className="mb-1.5 block text-xs font-medium text-white/50">
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="mb-1.5 block text-xs font-medium text-white/50">
+                  First name
+                </label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Jane"
+                  required
+                  className="h-11 w-full rounded-full border border-white/10 bg-white/5 px-5 text-sm text-white outline-none placeholder:text-white/30 focus:border-white/25"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="mb-1.5 block text-xs font-medium text-white/50">
+                  Last name
+                </label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Doe"
+                  required
+                  className="h-11 w-full rounded-full border border-white/10 bg-white/5 px-5 text-sm text-white outline-none placeholder:text-white/30 focus:border-white/25"
+                />
+              </div>
+            </div>
+            <label className="mt-4 mb-1.5 block text-xs font-medium text-white/50">
               Email address
             </label>
             <input
@@ -114,29 +142,31 @@ function LoginForm() {
             {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
             <button
               type="submit"
-              disabled={!email.trim() || loading}
+              disabled={
+                !firstName.trim() || !lastName.trim() || !email.trim() || loading
+              }
               className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
             >
-              {loading ? "Sending..." : "Send magic link"}
+              {loading ? "Sending..." : "Get Focused"}
             </button>
           </form>
         )}
       </div>
 
       <p className="mt-6 text-center text-sm text-white/30">
-        Don&apos;t have an account?{" "}
+        Already have an account?{" "}
         <Link
-          href="/signup"
+          href="/login"
           className="text-white/50 transition-colors hover:text-white"
         >
-          Sign up
+          Log in
         </Link>
       </p>
     </>
   );
 }
 
-export default function LoginPage() {
+export default function SignUpPage() {
   return (
     <div className="flex min-h-screen flex-col bg-black text-white">
       <header className="bg-black/80 backdrop-blur-md">
@@ -147,7 +177,7 @@ export default function LoginPage() {
 
       <main className="mx-auto w-full max-w-md px-4 py-16 sm:py-24">
         <Suspense>
-          <LoginForm />
+          <SignUpForm />
         </Suspense>
       </main>
     </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { PartyPopper } from "lucide-react";
-import { createParty, updatePartyStatus } from "@/lib/parties";
+import { createParty } from "@/lib/parties";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useNotification } from "@/components/providers/NotificationProvider";
 
@@ -19,33 +19,26 @@ export function PartyList() {
     setHeaderSlot(document.getElementById("hub-header-action"));
   }, []);
 
-  const handleCreateParty = async () => {
+  const handleCreateParty = () => {
     if (creating) return;
     if (!requireAuth()) return;
 
     setCreating(true);
-    try {
-      const party = await createParty(
-        {
-          creator_id: userId!,
-          name: `${displayName}'s Party`,
-          character: "ember",
-          planned_duration_min: 25,
-          max_participants: 3,
-        },
-        displayName
-      );
-      await updatePartyStatus(party.id, "active");
-      router.push("/session");
-    } catch {
-      showToast({
-        type: "error",
-        title: "Failed to create party",
-        message: "Please try again.",
-      });
-    } finally {
-      setCreating(false);
-    }
+
+    // Navigate immediately — party creation fires in background
+    router.push("/session");
+
+    createParty(
+      {
+        creator_id: userId!,
+        name: `${displayName}'s Party`,
+        character: "ember",
+        planned_duration_min: 25,
+        max_participants: 3,
+        status: "active",
+      },
+      displayName
+    );
   };
 
   const joinButton = (

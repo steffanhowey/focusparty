@@ -141,7 +141,7 @@ export function StartSessionModal({
                     activeTask ? "text-white" : "text-[var(--color-text-tertiary)]"
                   }`}
                 >
-                  {activeTask ? activeTask.text : "Select or create a task..."}
+                  {activeTask ? activeTask.text : "Select to create a task"}
                 </span>
                 <ChevronDown
                   size={16}

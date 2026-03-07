@@ -2,9 +2,15 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Routes that require an authenticated session. */
-const PROTECTED_PREFIXES = ["/party", "/session", "/settings", "/progress"];
+const PROTECTED_PREFIXES = ["/party", "/session", "/settings", "/progress", "/onboard"];
 
 export async function updateSession(request: NextRequest) {
+  // Don't interfere with the auth callback — the route handler
+  // needs the PKCE code-verifier cookie intact.
+  if (request.nextUrl.pathname.startsWith("/callback")) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -44,6 +50,27 @@ export async function updateSession(request: NextRequest) {
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Redirect authenticated users who haven't completed onboarding.
+  if (
+    user &&
+    !pathname.startsWith("/onboard") &&
+    !pathname.startsWith("/callback") &&
+    PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  ) {
+    const { data: profile } = await supabase
+      .from("fp_profiles")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .single();
+
+    if (profile && !profile.onboarding_completed) {
+      const onboardUrl = request.nextUrl.clone();
+      onboardUrl.pathname = "/onboard";
+      onboardUrl.search = "";
+      return NextResponse.redirect(onboardUrl);
+    }
   }
 
   return supabaseResponse;
