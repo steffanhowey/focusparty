@@ -47,7 +47,7 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
   return (
     <>
       {/* Messages */}
-      <div className="flex flex-1 flex-col overflow-y-auto px-4 py-3">
+      <div className="flex flex-1 flex-col overflow-y-auto px-4 py-3" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
         {messages.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
             <p className="text-center text-sm text-[var(--color-text-tertiary)]">

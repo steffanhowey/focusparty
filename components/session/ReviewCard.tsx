@@ -19,10 +19,13 @@ export function ReviewCard({
 }: ReviewCardProps) {
   return (
     <div
-      className="absolute bottom-6 left-1/2 w-[calc(100%-2rem)] max-w-[420px] -translate-x-1/2 rounded-2xl border border-[var(--color-border-default)] p-4 backdrop-blur-xl md:p-6"
+      className="absolute bottom-6 left-1/2 w-[calc(100%-2rem)] max-w-[420px] -translate-x-1/2 rounded-2xl border border-[var(--color-border-default)] p-4 md:p-6"
       style={{
-        background: "rgba(13,14,32,0.92)",
         zIndex: 20,
+        background: "rgba(13,14,32,0.35)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        textShadow: "0 1px 4px rgba(0,0,0,0.6)",
       }}
     >
       <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
@@ -35,7 +38,7 @@ export function ReviewCard({
             key={label}
             type="button"
             onClick={() => onOutcome?.(label)}
-            className="rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent-primary)] hover:text-white"
+            className="rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent-primary)] hover:text-white"
           >
             {label}
           </button>

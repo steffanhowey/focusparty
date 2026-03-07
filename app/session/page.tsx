@@ -18,8 +18,10 @@ import { CameraPanel } from "@/components/session/CameraPanel";
 import { SideDrawer } from "@/components/session/SideDrawer";
 import { SettingsPanel } from "@/components/session/SettingsPanel";
 import { ActionBar } from "@/components/session/ActionBar";
+import { VibeBackground } from "@/components/session/VibeBackground";
 import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
 import type { SessionPhase } from "@/lib/types";
+import type { VibeId } from "@/lib/musicConstants";
 
 type SidePanel = "none" | "tasks" | "chat" | "settings";
 const PANEL_WIDTH = 380;
@@ -35,6 +37,7 @@ export default function SessionPage() {
   const prevPanelRef = useRef<SidePanel>(activePanel);
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [micActive, setMicActive] = useState(false);
+  const [selectedVibe, setSelectedVibe] = useState<VibeId | null>(null);
 
   // Only animate width when opening/closing, not when swapping panels
   const panelOpen = activePanel !== "none";
@@ -54,6 +57,17 @@ export default function SessionPage() {
   const chat = useChat();
   const { settings, updateSetting } = useSettings();
   const music = useMusic();
+
+  // Sync background vibe with music vibe changes (skip initial mount)
+  const musicVibeInitRef = useRef(true);
+  useEffect(() => {
+    if (musicVibeInitRef.current) {
+      musicVibeInitRef.current = false;
+      return;
+    }
+    if (music.activeVibe) setSelectedVibe(music.activeVibe);
+  }, [music.activeVibe]);
+
   const {
     activeTasks,
     completedTasks,
@@ -185,9 +199,25 @@ export default function SessionPage() {
 
   return (
     <div
-      className="flex h-screen w-screen"
-      style={{ background: "var(--color-bg-primary)" }}
+      className="relative flex h-screen w-screen overflow-hidden"
+      style={{
+        background: selectedVibe ? undefined : "#0d0e20",
+        "--color-bg-primary": "#0d0e20",
+        "--color-bg-secondary": "#0d0e20",
+        "--color-bg-elevated": "#11132b",
+        "--color-bg-hover": "rgba(255, 255, 255, 0.08)",
+        "--color-bg-active": "rgba(255, 255, 255, 0.12)",
+        "--color-text-primary": "#ffffff",
+        "--color-text-secondary": "#c3c4ca",
+        "--color-text-tertiary": "#888995",
+        "--color-text-on-accent": "#ffffff",
+        "--color-border-default": "rgba(255, 255, 255, 0.08)",
+        "--color-border-focus": "#7c5cfc",
+        "--color-border-subtle": "rgba(255, 255, 255, 0.04)",
+      } as React.CSSProperties}
     >
+      {selectedVibe && <VibeBackground activeVibe={selectedVibe} />}
+
       {/* Left column: app sidebar (pushes) */}
       <div
         className="flex-shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
@@ -229,13 +259,6 @@ export default function SessionPage() {
 
           {phase === "sprint" && sprintGoalCardOpen && (
             <GoalCard
-              activeTask={activeTask}
-              activeTasks={activeTasks}
-              completedTasks={completedTasks}
-              onStartTask={handleStartTask}
-              onCompleteTask={completeTask}
-              onAddTask={addTask}
-              onDeleteTask={deleteTask}
               currentDurationMin={durationMin}
               onChangeDuration={handleChangeDuration}
               onResetTimer={handleResetTimer}
@@ -307,8 +330,13 @@ export default function SessionPage() {
         style={{ width: panelOpen ? PANEL_WIDTH : 0 }}
       >
         <aside
-          className="flex h-full flex-col border-l border-[var(--color-border-default)] bg-[var(--color-bg-primary)]"
-          style={{ width: PANEL_WIDTH }}
+          className="flex h-full flex-col border-l border-[var(--color-border-default)]"
+          style={{
+            width: PANEL_WIDTH,
+            background: "rgba(13,14,32,0.35)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+          }}
           role="complementary"
           aria-label={activePanel === "tasks" ? "Tasks" : activePanel === "chat" ? "Chat" : "Settings"}
         >
@@ -348,6 +376,8 @@ export default function SessionPage() {
         onAddTask={addTask}
         onDeleteTask={deleteTask}
         onStartSprint={handleStartSprint}
+        selectedVibe={selectedVibe}
+        onSelectVibe={setSelectedVibe}
       />
 
       <SwitchTaskModal

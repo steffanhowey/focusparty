@@ -42,7 +42,7 @@ export const SettingsPanel = memo(function SettingsPanel({ onClose, settings, on
       <PanelHeader title="Settings" onClose={onClose} />
 
       {/* Accordion sections */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
         <Accordion label="Audio & video" isOpen={openSection === "audio-video"} onToggle={() => toggle("audio-video")}>
           <AudioVideoContent settings={settings} onUpdateSetting={onUpdateSetting} />
         </Accordion>
@@ -262,7 +262,7 @@ function DeviceSelector({
         <select
           value={selectedId}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-4 py-2 pr-8 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+          className="w-full appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
         >
           {devices.length === 0 && <option value="">No devices found</option>}
           {devices.map((d) => (

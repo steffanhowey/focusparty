@@ -23,7 +23,12 @@ export const SplitScreen = memo(function SplitScreen({
     <div className="flex flex-1 gap-4 overflow-hidden px-4 pb-4 md:gap-6 md:px-6 md:pb-6">
       <div
         className="relative flex min-w-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-default)]"
-        style={{ background: "rgba(255,255,255,0.03)" }}
+        style={{
+          background: "rgba(13,14,32,0.35)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+        }}
       >
         {leftPanel ?? (
           <div className="flex flex-col items-center justify-center text-[var(--color-text-tertiary)]">

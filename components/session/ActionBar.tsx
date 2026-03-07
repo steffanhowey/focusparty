@@ -69,8 +69,9 @@ export const ActionBar = memo(function ActionBar({
     <div
       className="absolute bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border border-white/[0.08] px-2 py-1.5"
       style={{
-        background: "rgba(13,14,32,0.85)",
-        backdropFilter: "blur(20px)",
+        background: "rgba(13,14,32,0.45)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
       }}
     >
       <button
@@ -109,15 +110,6 @@ export const ActionBar = memo(function ActionBar({
         <ListTodo {...ICON} />
       </button>
 
-      <button
-        type="button"
-        onClick={onOpenSettings}
-        className={settingsActive ? activeBtn : defaultBtn}
-        aria-label="Settings"
-      >
-        <Settings {...ICON} />
-      </button>
-
       {/* Music button + popover */}
       <div ref={musicWrapperRef} className="relative">
         <button
@@ -146,13 +138,22 @@ export const ActionBar = memo(function ActionBar({
         />
       </div>
 
+      <button
+        type="button"
+        onClick={onOpenSettings}
+        className={settingsActive ? activeBtn : defaultBtn}
+        aria-label="Settings"
+      >
+        <Settings {...ICON} />
+      </button>
+
       {/* Divider */}
       <div className="mx-0.5 h-6 w-px bg-white/10" />
 
       <button
         type="button"
         onClick={onEndSession}
-        className={`${btn} bg-[var(--color-coral-700)] text-white hover:opacity-90`}
+        className={`${btn} text-[var(--color-coral-700)] hover:bg-white/10`}
         aria-label="End session"
       >
         <LogOut {...ICON} />

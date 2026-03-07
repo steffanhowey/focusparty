@@ -64,6 +64,45 @@ export const VIBES_MAP: Record<VibeId, VibeConfig> = Object.fromEntries(
   VIBES.map((v) => [v.id, v]),
 ) as Record<VibeId, VibeConfig>;
 
+/* ─── Vibe backgrounds ────────────────────────────────────── */
+
+export interface VibeBackground {
+  imageUrl: string;
+  fallbackGradient: string;
+}
+
+export const VIBE_BACKGROUNDS: Record<VibeId, VibeBackground> = {
+  "calm-focus": {
+    imageUrl: "https://images.unsplash.com/photo-1683832806902-ec42f4b010fd?w=1920&q=80",
+    fallbackGradient: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+  },
+  "energizing-flow": {
+    imageUrl: "https://images.unsplash.com/photo-1710664416999-500735e8925a?w=1920&q=80",
+    fallbackGradient: "linear-gradient(135deg, #2d1b2e 0%, #3d1c3e 50%, #5c2d60 100%)",
+  },
+  "deep-concentration": {
+    imageUrl: "https://images.unsplash.com/photo-1760627529541-b7f2a79fa283?w=1920&q=80",
+    fallbackGradient: "linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a1628 100%)",
+  },
+  "ambient-chill": {
+    imageUrl: "https://images.unsplash.com/photo-1574619150178-cc70537441d6?w=1920&q=80",
+    fallbackGradient: "linear-gradient(135deg, #1a2a1e 0%, #1e3a2e 50%, #0f2818 100%)",
+  },
+};
+
+/* ─── Vibe icons (shared by MusicPopover + StartSessionModal) */
+
+import { TreePine, Zap, Brain, Moon, type LucideIcon } from "lucide-react";
+
+export const VIBE_ICONS: Record<VibeId, LucideIcon> = {
+  "calm-focus": TreePine,
+  "energizing-flow": Zap,
+  "deep-concentration": Brain,
+  "ambient-chill": Moon,
+};
+
+/* ─── Misc ────────────────────────────────────────────────── */
+
 export const DEFAULT_VOLUME = 50;
 export const MUSIC_STORAGE_KEY = "focusparty-music";
 export const YT_PLAYER_ID = "fp-yt-player";

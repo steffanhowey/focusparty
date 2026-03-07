@@ -21,7 +21,7 @@ export function DurationPills({ value, onChange }: DurationPillsProps) {
           className="rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150"
           style={{
             background: d === value ? "var(--color-accent-primary)" : "transparent",
-            color: d === value ? "white" : "var(--color-text-tertiary)",
+            color: d === value ? "var(--color-text-on-accent)" : "var(--color-text-tertiary)",
             border: d === value ? "none" : "1px solid var(--color-border-default)",
           }}
         >

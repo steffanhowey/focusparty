@@ -3,15 +3,15 @@ import { Logo } from "@/components/shell/Logo";
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
+    <div className="flex min-h-screen flex-col" style={{ background: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
       {/* Nav */}
-      <header className="fixed top-0 left-0 right-0 z-[var(--z-topbar)] bg-black/80 backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 z-[var(--z-topbar)] backdrop-blur-md" style={{ background: "var(--color-bg-primary)" }}>
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo href="/" height={32} maxWidth={140} />
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="rounded-full px-5 py-2.5 text-sm font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white"
+              className="rounded-full px-5 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
             >
               Log in
             </Link>
@@ -28,10 +28,10 @@ export default function LandingPage() {
       {/* Hero */}
       <main className="flex flex-1 items-center justify-center px-4 sm:px-6">
         <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-5xl md:text-6xl">
             Your AI co-working partner.
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-white/50 sm:text-xl">
+          <p className="mx-auto mt-5 max-w-2xl text-lg text-[var(--color-text-secondary)] sm:text-xl">
             Focus sessions with a partner that&apos;s always there. Set goals,
             run sprints, and keep your streak — no more no-shows.
           </p>

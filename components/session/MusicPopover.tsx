@@ -1,26 +1,8 @@
 "use client";
 
 import { type RefObject, useEffect } from "react";
-import {
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Loader2,
-  TreePine,
-  Zap,
-  Brain,
-  Moon,
-  type LucideIcon,
-} from "lucide-react";
-import { VIBES, type VibeId, type MusicStatus } from "@/lib/musicConstants";
-
-const VIBE_ICONS: Record<VibeId, LucideIcon> = {
-  "calm-focus": TreePine,
-  "energizing-flow": Zap,
-  "deep-concentration": Brain,
-  "ambient-chill": Moon,
-};
+import { Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { VIBES, VIBE_ICONS, type VibeId, type MusicStatus } from "@/lib/musicConstants";
 
 interface MusicPopoverProps {
   isOpen: boolean;
@@ -79,8 +61,9 @@ export function MusicPopover({
     <div
       className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl"
       style={{
-        background: "rgba(13,14,32,0.95)",
-        backdropFilter: "blur(20px)",
+        background: "rgba(13,14,32,0.45)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
         zIndex: 40,
         minWidth: 260,
       }}

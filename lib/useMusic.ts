@@ -95,6 +95,9 @@ export function useMusic() {
   const activeVibeRef = useRef(activeVibe);
   const volumeRef = useRef(volume);
   const isLoadingRef = useRef(false);
+  // Incremented on each createPlayer call so stale events from a
+  // previously-destroyed player are silently ignored.
+  const generationRef = useRef(0);
   // Ref so event handlers inside createPlayer can call it for video transitions
   const createPlayerRef = useRef<(videoId: string, autoplay: boolean) => void>(
     () => {},
@@ -112,6 +115,9 @@ export function useMusic() {
 
   const createPlayer = useCallback(
     (videoId: string, autoplay: boolean) => {
+      // Bump generation so any events from the previous player are ignored
+      const gen = ++generationRef.current;
+
       // Destroy existing player first
       try {
         playerRef.current?.destroy();
@@ -146,6 +152,7 @@ export function useMusic() {
         },
         events: {
           onReady: (event) => {
+            if (generationRef.current !== gen) return; // stale player
             // The constructor return value is a proxy; event.target is the
             // fully-initialised player with working API methods.
             playerRef.current = event.target;
@@ -158,6 +165,7 @@ export function useMusic() {
             isLoadingRef.current = false;
           },
           onStateChange: (event) => {
+            if (generationRef.current !== gen) return; // stale player
             switch (event.data) {
               case 1: // PLAYING
                 setStatus("playing");
@@ -184,6 +192,7 @@ export function useMusic() {
             }
           },
           onError: (event) => {
+            if (generationRef.current !== gen) return; // stale player
             // Try next video; if all fail, set error status
             const vibe = activeVibeRef.current;
             if (!vibe) {
@@ -278,6 +287,7 @@ export function useMusic() {
         // API preloaded — destroy + recreate player synchronously.
         // loadVideoById is unreliable for livestreams (gets stuck buffering).
         // Recreating preserves user gesture for Chrome autoplay policy.
+        setStatus("loading");
         createPlayer(config.videoIds[0], true);
       } else {
         // API still loading — async fallback
@@ -304,6 +314,7 @@ export function useMusic() {
 
     if (window.YT?.Player) {
       // API preloaded — create player synchronously (preserves user gesture)
+      setStatus("loading");
       createPlayer(config.videoIds[0], true);
     } else {
       // API still loading — async fallback

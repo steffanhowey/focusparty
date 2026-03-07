@@ -9,7 +9,7 @@ interface PanelHeaderProps {
 
 export function PanelHeader({ title, onClose }: PanelHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-3">
+    <div className="flex items-center justify-between px-4 py-3" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
       <span className="text-sm font-semibold text-white">{title}</span>
       <button
         type="button"

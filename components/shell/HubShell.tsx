@@ -144,7 +144,7 @@ export function HubShell({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={toggleCollapsed}
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-active)] hover:text-white ${showHamburger ? "flex md:flex" : "flex md:hidden"}`}
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-active)] hover:text-[var(--color-text-primary)] ${showHamburger ? "flex md:flex" : "flex md:hidden"}`}
                 aria-label="Open menu"
               >
                 <Menu size={20} strokeWidth={1.8} />

@@ -75,22 +75,22 @@ function LoginForm() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold text-white">Log in</h1>
-      <p className="mt-2 text-white/50">
+      <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">Log in</h1>
+      <p className="mt-2 text-[var(--color-text-secondary)]">
         We&apos;ll send you a magic link.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6">
+      <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
         {sent ? (
           <div className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-bg-active)]">
               <span className="text-xl" aria-hidden>✉️</span>
             </div>
-            <p className="text-sm font-medium text-white">
+            <p className="text-sm font-medium text-[var(--color-text-primary)]">
               Check your inbox
             </p>
-            <p className="mt-2 text-xs text-white/40">
-              Magic link sent to <strong className="text-white/60">{email}</strong>
+            <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
+              Magic link sent to <strong className="text-[var(--color-text-secondary)]">{email}</strong>
             </p>
             <button
               type="button"
@@ -105,7 +105,7 @@ function LoginForm() {
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <label className="mb-1.5 block text-xs font-medium text-white/50">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
               Email address
             </label>
             <input
@@ -114,7 +114,7 @@ function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="h-11 w-full rounded-full border border-white/10 bg-white/5 px-5 text-sm text-white outline-none placeholder:text-white/30 focus:border-white/25"
+              className="h-11 w-full rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-5 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
             />
             {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
             <button
@@ -128,11 +128,11 @@ function LoginForm() {
         )}
       </div>
 
-      <p className="mt-6 text-center text-sm text-white/30">
+      <p className="mt-6 text-center text-sm text-[var(--color-text-tertiary)]">
         Don&apos;t have an account?{" "}
         <Link
           href="/signup"
-          className="text-white/50 transition-colors hover:text-white"
+          className="text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
         >
           Sign up
         </Link>
@@ -143,8 +143,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
-      <header className="bg-black/80 backdrop-blur-md">
+    <div className="flex min-h-screen flex-col" style={{ background: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
+      <header className="backdrop-blur-md" style={{ background: "var(--color-bg-primary)" }}>
         <nav className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6">
           <Logo href="/" height={32} maxWidth={140} />
         </nav>

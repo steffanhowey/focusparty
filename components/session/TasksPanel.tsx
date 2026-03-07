@@ -130,7 +130,7 @@ export const TasksPanel = memo(function TasksPanel({
   };
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden px-4 py-3">
+    <div className="flex flex-1 flex-col overflow-hidden px-4 py-3" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
       {/* Task lists */}
       <div className="-ml-2 flex-1 overflow-y-auto pl-2">
         {/* In Progress task */}

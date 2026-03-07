@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import type { Task } from "@/lib/types";
+import { VIBES, VIBE_ICONS, type VibeId } from "@/lib/musicConstants";
 import { TaskListContent } from "./TaskListContent";
 import { DurationPills } from "./DurationPills";
 
@@ -17,6 +18,8 @@ interface StartSessionModalProps {
   onAddTask: (text: string) => void;
   onDeleteTask: (taskId: string) => void;
   onStartSprint: (durationMinutes: number) => void;
+  selectedVibe: VibeId | null;
+  onSelectVibe: (vibeId: VibeId | null) => void;
 }
 
 export function StartSessionModal({
@@ -29,6 +32,8 @@ export function StartSessionModal({
   onAddTask,
   onDeleteTask,
   onStartSprint,
+  selectedVibe,
+  onSelectVibe,
 }: StartSessionModalProps) {
   const [mounted, setMounted] = useState(false);
   const [duration, setDuration] = useState(25);
@@ -111,14 +116,27 @@ export function StartSessionModal({
         aria-hidden
       />
 
-      {/* Modal content */}
+      {/* Modal content — always dark to match the session overlay */}
       <div
-        className="relative w-full max-w-[480px] overflow-visible rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-8 shadow-xl"
+        className="relative w-full max-w-[480px] overflow-visible rounded-[var(--radius-lg)] border border-white/[0.08] p-8 shadow-xl"
         onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "rgba(13,14,32,0.95)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          "--color-bg-elevated": "#11132b",
+          "--color-text-primary": "#ffffff",
+          "--color-text-secondary": "#c3c4ca",
+          "--color-text-tertiary": "#888995",
+          "--color-text-on-accent": "#ffffff",
+          "--color-border-default": "rgba(255, 255, 255, 0.08)",
+          "--color-border-focus": "#7c5cfc",
+          "--color-bg-hover": "rgba(255, 255, 255, 0.08)",
+        } as React.CSSProperties}
       >
         <h2
           id="setup-modal-title"
-          className="mb-6 text-2xl font-bold text-white"
+          className="mb-6 text-2xl font-bold text-[var(--color-text-primary)]"
           style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
         >
           Ready to focus?
@@ -134,11 +152,11 @@ export function StartSessionModal({
               <button
                 type="button"
                 onClick={() => setDropdownOpen((o) => !o)}
-                className="flex w-full items-center justify-between rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-5 py-3 text-left transition-[border-color] hover:border-[var(--color-border-focus)]"
+                className="flex w-full items-center justify-between rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-5 py-3 text-left transition-[border-color] hover:border-[var(--color-border-focus)]"
               >
                 <span
                   className={`truncate text-sm ${
-                    activeTask ? "text-white" : "text-[var(--color-text-tertiary)]"
+                    activeTask ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-tertiary)]"
                   }`}
                 >
                   {activeTask ? activeTask.text : "Select to create a task"}
@@ -184,12 +202,51 @@ export function StartSessionModal({
             <DurationPills value={duration} onChange={setDuration} />
           </div>
 
+          {/* Session vibe */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+              Session vibe
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => onSelectVibe(null)}
+                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 ${
+                  selectedVibe === null
+                    ? "bg-[var(--color-accent-primary)] text-[var(--color-text-on-accent)]"
+                    : "border border-[var(--color-border-default)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
+                }`}
+              >
+                None
+              </button>
+              {VIBES.map((vibe) => {
+                const Icon = VIBE_ICONS[vibe.id];
+                const isActive = selectedVibe === vibe.id;
+                return (
+                  <button
+                    key={vibe.id}
+                    type="button"
+                    onClick={() => onSelectVibe(vibe.id)}
+                    className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 ${
+                      isActive
+                        ? "bg-[var(--color-accent-primary)] text-[var(--color-text-on-accent)]"
+                        : "border border-[var(--color-border-default)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
+                    }`}
+                  >
+                    <Icon size={12} strokeWidth={1.8} />
+                    {vibe.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Start button */}
           <button
             type="button"
             onClick={handleSubmit}
             disabled={!activeTask}
-            className="mt-2 h-12 w-full rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-all duration-150 hover:bg-[var(--color-purple-800)] hover:shadow-[var(--shadow-glow-purple)] disabled:opacity-50"
+            className="mt-2 h-12 w-full rounded-full bg-[var(--color-accent-primary)] font-semibold text-[var(--color-text-on-accent)] transition-all duration-150 hover:bg-[var(--color-accent-secondary)] hover:shadow-[var(--shadow-glow-purple)] disabled:cursor-not-allowed disabled:opacity-40"
             style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             Start sprint

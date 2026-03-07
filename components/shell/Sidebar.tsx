@@ -218,7 +218,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
               <button
                 type="button"
                 onClick={onToggleCollapsed}
-                className="flex shrink-0 items-center justify-center rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-active)] hover:text-white"
+                className="flex shrink-0 items-center justify-center rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-active)] hover:text-[var(--color-text-primary)]"
                 aria-label="Collapse sidebar"
               >
                 <ChevronLeft size={18} strokeWidth={2} />

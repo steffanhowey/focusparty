@@ -45,8 +45,8 @@ export default function OnboardPage() {
 
   if (authState === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black text-white">
-        <p className="text-white/50">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
+        <p className="text-[var(--color-text-secondary)]">Loading...</p>
       </div>
     );
   }
@@ -128,8 +128,8 @@ export default function OnboardPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
-      <header className="bg-black/80 backdrop-blur-md">
+    <div className="flex min-h-screen flex-col" style={{ background: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
+      <header className="backdrop-blur-md" style={{ background: "var(--color-bg-primary)" }}>
         <nav className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6">
           <Logo href="/" height={32} maxWidth={140} />
         </nav>
@@ -145,8 +145,8 @@ export default function OnboardPage() {
                 i === step
                   ? "w-8 bg-[var(--color-accent-primary)]"
                   : i < step
-                    ? "w-2 bg-white/40"
-                    : "w-2 bg-white/10"
+                    ? "w-2 bg-[var(--color-text-tertiary)]"
+                    : "w-2 bg-[var(--color-border-default)]"
               }`}
             />
           ))}
@@ -155,15 +155,15 @@ export default function OnboardPage() {
         {/* Step 1: Display name */}
         {step === 0 && (
           <>
-            <h1 className="text-2xl font-semibold text-white">
+            <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
               What should we call you?
             </h1>
-            <p className="mt-2 text-white/50">
+            <p className="mt-2 text-[var(--color-text-secondary)]">
               This is how you&apos;ll appear in focus sessions.
             </p>
 
-            <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6">
-              <label className="mb-1.5 block text-xs font-medium text-white/50">
+            <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
+              <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
                 Display name
               </label>
               <input
@@ -171,7 +171,7 @@ export default function OnboardPage() {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Your name"
-                className="h-11 w-full rounded-lg border border-white/10 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-white/30 focus:border-white/25"
+                className="h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-4 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
               />
               <button
                 onClick={saveDisplayName}
@@ -187,17 +187,17 @@ export default function OnboardPage() {
         {/* Step 2: Avatar */}
         {step === 1 && (
           <>
-            <h1 className="text-2xl font-semibold text-white">
+            <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
               Add a profile picture
             </h1>
-            <p className="mt-2 text-white/50">
+            <p className="mt-2 text-[var(--color-text-secondary)]">
               Upload a photo or use your initials.
             </p>
 
-            <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6">
+            <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
               <div className="flex flex-col items-center gap-4">
                 {/* Avatar preview */}
-                <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-white/10">
+                <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-[var(--color-border-default)]">
                   {avatarPreview || avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -206,7 +206,7 @@ export default function OnboardPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-white/10 text-2xl font-bold text-white/60">
+                    <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg-active)] text-2xl font-bold text-[var(--color-text-secondary)]">
                       {getInitials(displayName || "FP")}
                     </div>
                   )}
@@ -226,7 +226,7 @@ export default function OnboardPage() {
                 <button
                   onClick={() => fileRef.current?.click()}
                   disabled={uploading}
-                  className="rounded-full border border-white/20 px-5 py-2.5 text-sm font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white"
+                  className="rounded-full border border-[var(--color-border-default)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
                 >
                   {uploading ? "Uploading..." : "Upload photo"}
                 </button>
@@ -250,17 +250,17 @@ export default function OnboardPage() {
         {/* Step 3: Start focusing */}
         {step === 2 && (
           <>
-            <h1 className="text-2xl font-semibold text-white">
+            <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
               You&apos;re all set!
             </h1>
-            <p className="mt-2 text-white/50">
+            <p className="mt-2 text-[var(--color-text-secondary)]">
               Start your first focus session and see what FocusParty is all
               about.
             </p>
 
-            <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
-              <p className="text-sm text-white/50">
-                Welcome, <strong className="text-white">{displayName}</strong>.
+            <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6 text-center">
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                Welcome, <strong className="text-[var(--color-text-primary)]">{displayName}</strong>.
                 Let&apos;s get focused.
               </p>
               <button

@@ -55,12 +55,8 @@ export const TopBar = memo(function TopBar({
 
   return (
     <header
-      className="relative flex h-14 flex-shrink-0 items-center justify-between px-4 md:px-6"
-      style={{
-        background: "rgba(13,14,32,0.85)",
-        backdropFilter: "blur(12px)",
-        zIndex: 30,
-      }}
+      className="relative flex h-20 flex-shrink-0 items-center justify-between px-4 md:px-6"
+      style={{ zIndex: 30, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}
     >
       {/* Left: menu + timer/title */}
       <div className="flex items-center gap-3 md:gap-6">
@@ -81,9 +77,14 @@ export const TopBar = memo(function TopBar({
 
       {/* Center: timer + dropdown */}
       {phase === "sprint" && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center">
+        <button
+          type="button"
+          onClick={onToggleGoalCard}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex cursor-pointer items-center"
+          aria-label="Toggle timer options"
+        >
           <span
-            className={`font-extrabold tracking-tight text-xl ${
+            className={`font-extrabold tracking-tight text-4xl ${
               timerCritical
                 ? "text-[var(--color-coral-700)]"
                 : timerWarning
@@ -94,21 +95,12 @@ export const TopBar = memo(function TopBar({
           >
             {formatted}
           </span>
-          {onToggleGoalCard && (
-            <button
-              type="button"
-              onClick={onToggleGoalCard}
-              className="ml-1.5 rounded p-0.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
-              aria-label="Toggle task options"
-            >
-              <ChevronDown
-                size={14}
-                strokeWidth={2}
-                className={`transition-transform duration-200 ${goalCardOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-          )}
-        </div>
+          <ChevronDown
+            size={20}
+            strokeWidth={2.5}
+            className={`ml-3 text-[var(--color-text-tertiary)] transition-transform duration-200 ${goalCardOpen ? "rotate-180" : ""}`}
+          />
+        </button>
       )}
 
       {/* Right: actions */}
