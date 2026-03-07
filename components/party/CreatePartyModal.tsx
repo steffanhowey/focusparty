@@ -95,7 +95,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                   key={cid}
                   type="button"
                   onClick={() => setCharacter(cid)}
-                  className="flex flex-col items-center gap-1.5 rounded-[var(--radius-lg)] border-2 p-3 transition-all duration-150"
+                  className="flex cursor-pointer flex-col items-center gap-1.5 rounded-[var(--radius-lg)] border-2 p-3 transition-all duration-150"
                   style={{
                     borderColor: selected ? c.primary : "var(--color-border-default)",
                     background: selected ? `${c.primary}15` : "transparent",
@@ -128,7 +128,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                 key={d}
                 type="button"
                 onClick={() => setDuration(d)}
-                className="rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150"
+                className="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150"
                 style={{
                   background: d === duration ? "var(--color-accent-primary)" : "transparent",
                   color: d === duration ? "white" : "var(--color-text-tertiary)",
@@ -152,7 +152,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                 key={n}
                 type="button"
                 onClick={() => setMaxParticipants(n)}
-                className="rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150"
+                className="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150"
                 style={{
                   background: n === maxParticipants ? "var(--color-accent-primary)" : "transparent",
                   color: n === maxParticipants ? "white" : "var(--color-text-tertiary)",
@@ -170,7 +170,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
           type="button"
           onClick={handleCreate}
           disabled={!canSubmit || creating}
-          className="mt-2 h-12 w-full rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-all duration-150 hover:bg-[var(--color-purple-800)] hover:shadow-[var(--shadow-glow-purple)] disabled:opacity-50"
+          className="mt-2 h-12 w-full cursor-pointer rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-all duration-150 hover:bg-[var(--color-purple-800)] hover:shadow-[var(--shadow-glow-purple)] disabled:cursor-not-allowed disabled:opacity-50"
           style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
         >
           {creating ? "Creating..." : "Create party"}

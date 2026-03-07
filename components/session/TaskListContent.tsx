@@ -82,7 +82,7 @@ export function TaskListContent({
           type="button"
           onClick={handleAddTask}
           disabled={!newTaskText.trim()}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[var(--color-accent-primary)] text-white transition-opacity disabled:opacity-30"
+          className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md bg-[var(--color-accent-primary)] text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-30"
           aria-label="Create task"
         >
           <Plus size={14} strokeWidth={2.5} />
@@ -105,7 +105,7 @@ export function TaskListContent({
               <button
                 type="button"
                 onClick={() => onDeleteTask(activeTask.id)}
-                className="absolute left-[2px] top-1/2 -translate-y-1/2 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute left-[2px] top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center opacity-0 transition-opacity group-hover:opacity-100"
                 aria-label={`Delete ${activeTask.text}`}
               >
                 <X size={12} strokeWidth={2} className="text-[var(--color-text-tertiary)]" />
@@ -116,7 +116,7 @@ export function TaskListContent({
               <button
                 type="button"
                 onClick={() => onCompleteTask(activeTask.id)}
-                className="flex shrink-0 items-center gap-1 rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white transition-opacity hover:opacity-90"
+                className="flex shrink-0 cursor-pointer items-center gap-1 rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white transition-opacity hover:opacity-90"
               >
                 <Check size={12} strokeWidth={2.5} />
                 Done
@@ -142,7 +142,7 @@ export function TaskListContent({
             <button
               type="button"
               onClick={(e) => handleDeleteTask(e, task.id)}
-              className="absolute left-[2px] top-1/2 -translate-y-1/2 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100"
+              className="absolute left-[2px] top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center opacity-0 transition-opacity group-hover:opacity-100"
               aria-label={`Delete ${task.text}`}
             >
               <X size={12} strokeWidth={2} className="text-[var(--color-text-tertiary)]" />
@@ -153,7 +153,7 @@ export function TaskListContent({
             <button
               type="button"
               onClick={() => onStartTask(task.id)}
-              className="shrink-0 rounded-md bg-[var(--color-accent-primary)] px-2.5 py-1 text-xs font-medium text-white transition-opacity hover:opacity-90"
+              className="shrink-0 cursor-pointer rounded-md bg-[var(--color-accent-primary)] px-2.5 py-1 text-xs font-medium text-white transition-opacity hover:opacity-90"
             >
               Start
             </button>
@@ -167,7 +167,7 @@ export function TaskListContent({
           <button
             type="button"
             onClick={() => setShowCompleted((s) => !s)}
-            className="flex items-center gap-1 rounded-lg px-4 py-1.5 text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+            className="flex cursor-pointer items-center gap-1 rounded-lg px-4 py-1.5 text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
           >
             Completed ({completedTasks.length})
             <ChevronDown

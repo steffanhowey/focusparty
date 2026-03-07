@@ -35,7 +35,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`font-medium ${variantStyles[variant]} ${className}`}
+      className={`cursor-pointer font-medium disabled:cursor-not-allowed ${variantStyles[variant]} ${className}`}
       style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
       {...props}
     >

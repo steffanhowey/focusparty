@@ -86,7 +86,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded p-1 text-[var(--color-text-tertiary)] hover:text-white"
+          className="absolute right-4 top-4 cursor-pointer rounded p-1 text-[var(--color-text-tertiary)] hover:text-white"
           aria-label="Close"
         >
           <span className="text-xl leading-none">&times;</span>

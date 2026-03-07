@@ -98,7 +98,7 @@ function LoginForm() {
                 setSent(false);
                 setEmail("");
               }}
-              className="mt-5 text-sm text-[var(--color-accent-primary)] hover:underline"
+              className="mt-5 cursor-pointer text-sm text-[var(--color-accent-primary)] hover:underline"
             >
               Use a different email
             </button>
@@ -120,7 +120,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={!email.trim() || loading}
-              className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
+              className="mt-4 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Sending..." : "Send magic link"}
             </button>

@@ -152,7 +152,7 @@ export function StartSessionModal({
               <button
                 type="button"
                 onClick={() => setDropdownOpen((o) => !o)}
-                className="flex w-full items-center justify-between rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-5 py-3 text-left transition-[border-color] hover:border-[var(--color-border-focus)]"
+                className="flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-5 py-3 text-left transition-[border-color] hover:border-[var(--color-border-focus)]"
               >
                 <span
                   className={`truncate text-sm ${
@@ -211,7 +211,7 @@ export function StartSessionModal({
               <button
                 type="button"
                 onClick={() => onSelectVibe(null)}
-                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 ${
+                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 ${
                   selectedVibe === null
                     ? "bg-[var(--color-accent-primary)] text-[var(--color-text-on-accent)]"
                     : "border border-[var(--color-border-default)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
@@ -227,7 +227,7 @@ export function StartSessionModal({
                     key={vibe.id}
                     type="button"
                     onClick={() => onSelectVibe(vibe.id)}
-                    className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 ${
+                    className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 ${
                       isActive
                         ? "bg-[var(--color-accent-primary)] text-[var(--color-text-on-accent)]"
                         : "border border-[var(--color-border-default)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
@@ -246,7 +246,7 @@ export function StartSessionModal({
             type="button"
             onClick={handleSubmit}
             disabled={!activeTask}
-            className="mt-2 h-12 w-full rounded-full bg-[var(--color-accent-primary)] font-semibold text-[var(--color-text-on-accent)] transition-all duration-150 hover:bg-[var(--color-accent-secondary)] hover:shadow-[var(--shadow-glow-purple)] disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-2 h-12 w-full cursor-pointer rounded-full bg-[var(--color-accent-primary)] font-semibold text-[var(--color-text-on-accent)] transition-all duration-150 hover:bg-[var(--color-accent-secondary)] hover:shadow-[var(--shadow-glow-purple)] disabled:cursor-not-allowed disabled:opacity-40"
             style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             Start sprint

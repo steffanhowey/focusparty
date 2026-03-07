@@ -64,7 +64,7 @@ export const TopBar = memo(function TopBar({
           <button
             type="button"
             onClick={onOpenMenu}
-            className="-ml-1.5 rounded p-1.5 text-[var(--color-text-tertiary)] hover:text-white"
+            className="-ml-1.5 cursor-pointer rounded p-1.5 text-[var(--color-text-tertiary)] hover:text-white"
             aria-label="Open menu"
           >
             <HamburgerIcon />
@@ -109,7 +109,7 @@ export const TopBar = memo(function TopBar({
           <button
             type="button"
             onClick={onEndSession}
-            className="rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-coral-700)]"
+            className="cursor-pointer rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-coral-700)]"
             aria-label="End session"
           >
             <LogOut size={17} strokeWidth={1.8} />
@@ -119,7 +119,7 @@ export const TopBar = memo(function TopBar({
           <button
             type="button"
             onClick={onToggleSettings}
-            className={`rounded p-1 transition-colors ${settingsOpen ? "bg-white/10 text-white" : "text-[var(--color-text-tertiary)] hover:text-white"}`}
+            className={`cursor-pointer rounded p-1 transition-colors ${settingsOpen ? "bg-white/10 text-white" : "text-[var(--color-text-tertiary)] hover:text-white"}`}
             aria-label={settingsOpen ? "Close settings" : "Open settings"}
           >
             <GearIcon />
@@ -129,7 +129,7 @@ export const TopBar = memo(function TopBar({
           <button
             type="button"
             onClick={onToggleDrawer}
-            className={`rounded p-1 transition-colors ${drawerOpen ? "bg-white/10 text-white" : "text-[var(--color-text-tertiary)] hover:text-white"}`}
+            className={`cursor-pointer rounded p-1 transition-colors ${drawerOpen ? "bg-white/10 text-white" : "text-[var(--color-text-tertiary)] hover:text-white"}`}
             aria-label={drawerOpen ? "Close panel" : "Open tasks & chat"}
           >
             <PanelRight size={17} strokeWidth={1.8} />

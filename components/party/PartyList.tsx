@@ -46,7 +46,7 @@ export function PartyList() {
       type="button"
       onClick={handleCreateParty}
       disabled={creating}
-      className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 sm:px-5 disabled:opacity-50"
+      className="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full px-4 sm:px-5 disabled:cursor-not-allowed disabled:opacity-50"
       style={{
         background: "var(--color-accent-primary)",
         color: "white",

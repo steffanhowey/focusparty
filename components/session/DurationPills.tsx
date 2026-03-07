@@ -18,7 +18,7 @@ export function DurationPills({ value, onChange }: DurationPillsProps) {
           key={d}
           type="button"
           onClick={() => onChange(d)}
-          className="rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150"
+          className="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150"
           style={{
             background: d === value ? "var(--color-accent-primary)" : "transparent",
             color: d === value ? "var(--color-text-on-accent)" : "var(--color-text-tertiary)",

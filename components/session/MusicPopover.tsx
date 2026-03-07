@@ -84,7 +84,7 @@ export function MusicPopover({
               key={vibe.id}
               type="button"
               onClick={() => onSelectVibe(vibe.id)}
-              className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors ${
+              className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors ${
                 isActive
                   ? "bg-[var(--color-accent-primary)]/20 text-white ring-1 ring-[var(--color-accent-primary)]/40"
                   : "text-[var(--color-text-secondary)] hover:bg-white/[0.06] hover:text-white"
@@ -106,7 +106,7 @@ export function MusicPopover({
           type="button"
           onClick={onTogglePlayPause}
           disabled={isLoading}
-          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+          className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isLoading ? (
@@ -121,7 +121,7 @@ export function MusicPopover({
         <button
           type="button"
           onClick={() => onSetVolume(volume === 0 ? 50 : 0)}
-          className="flex h-6 w-6 flex-shrink-0 items-center justify-center text-[var(--color-text-tertiary)] transition-colors hover:text-white"
+          className="flex h-6 w-6 flex-shrink-0 cursor-pointer items-center justify-center text-[var(--color-text-tertiary)] transition-colors hover:text-white"
           aria-label={volume === 0 ? "Unmute" : "Mute"}
         >
           {volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}

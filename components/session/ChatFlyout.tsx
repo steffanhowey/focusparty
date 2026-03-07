@@ -125,12 +125,12 @@ export function ChatFlyout({ onClose, messages, onSendMessage }: ChatFlyoutProps
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <span className="text-sm font-semibold text-white">Chat</span>
+      <div className="flex h-20 items-center justify-between px-4 md:px-6" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
+        <span className="text-base font-semibold text-white">Chat</span>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
+          className="cursor-pointer rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
           aria-label="Close chat"
         >
           <X size={18} strokeWidth={2} />

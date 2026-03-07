@@ -43,7 +43,7 @@ export function ShareLink({ partyId }: ShareLinkProps) {
         <button
           type="button"
           onClick={handleCopy}
-          className="flex h-9 shrink-0 items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--color-accent-primary)] px-3 text-xs font-medium text-white transition-all hover:bg-[var(--color-purple-800)]"
+          className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--color-accent-primary)] px-3 text-xs font-medium text-white transition-all hover:bg-[var(--color-purple-800)]"
         >
           {copied ? (
             <>
