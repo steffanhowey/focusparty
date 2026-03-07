@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useRef } from "react";
 import {
   Mic,
   MicOff,
@@ -9,8 +9,24 @@ import {
   MessageCircle,
   ListTodo,
   Settings,
+  Music,
   LogOut,
 } from "lucide-react";
+import { MusicPopover } from "@/components/session/MusicPopover";
+import type { VibeId, MusicStatus } from "@/lib/musicConstants";
+
+export interface MusicProps {
+  popoverOpen: boolean;
+  togglePopover: () => void;
+  closePopover: () => void;
+  activeVibe: VibeId | null;
+  selectVibe: (vibeId: VibeId) => void;
+  isPlaying: boolean;
+  togglePlayPause: () => void;
+  volume: number;
+  setVolume: (volume: number) => void;
+  status: MusicStatus;
+}
 
 interface ActionBarProps {
   micActive: boolean;
@@ -24,6 +40,7 @@ interface ActionBarProps {
   tasksActive: boolean;
   settingsActive: boolean;
   onEndSession: () => void;
+  music: MusicProps;
 }
 
 const ICON = { size: 18, strokeWidth: 1.8 } as const;
@@ -40,7 +57,9 @@ export const ActionBar = memo(function ActionBar({
   tasksActive,
   settingsActive,
   onEndSession,
+  music,
 }: ActionBarProps) {
+  const musicWrapperRef = useRef<HTMLDivElement>(null);
   const btn =
     "flex h-10 w-10 items-center justify-center rounded-full transition-colors";
   const defaultBtn = `${btn} text-[var(--color-text-secondary)] hover:bg-white/10 hover:text-white`;
@@ -48,7 +67,7 @@ export const ActionBar = memo(function ActionBar({
 
   return (
     <div
-      className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border border-white/[0.08] px-2 py-1.5"
+      className="absolute bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border border-white/[0.08] px-2 py-1.5"
       style={{
         background: "rgba(13,14,32,0.85)",
         backdropFilter: "blur(20px)",
@@ -98,6 +117,34 @@ export const ActionBar = memo(function ActionBar({
       >
         <Settings {...ICON} />
       </button>
+
+      {/* Music button + popover */}
+      <div ref={musicWrapperRef} className="relative">
+        <button
+          type="button"
+          onClick={music.togglePopover}
+          className={
+            music.popoverOpen || music.isPlaying ? activeBtn : defaultBtn
+          }
+          aria-label="Music"
+          aria-expanded={music.popoverOpen}
+        >
+          <Music {...ICON} />
+        </button>
+
+        <MusicPopover
+          isOpen={music.popoverOpen}
+          onClose={music.closePopover}
+          wrapperRef={musicWrapperRef}
+          activeVibe={music.activeVibe}
+          onSelectVibe={music.selectVibe}
+          isPlaying={music.isPlaying}
+          onTogglePlayPause={music.togglePlayPause}
+          volume={music.volume}
+          onSetVolume={music.setVolume}
+          status={music.status}
+        />
+      </div>
 
       {/* Divider */}
       <div className="mx-0.5 h-6 w-px bg-white/10" />

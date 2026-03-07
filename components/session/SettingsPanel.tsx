@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, memo } from "react";
-import { X, Camera, Mic, Volume2, ChevronDown } from "lucide-react";
+import { Camera, Mic, Volume2, ChevronDown } from "lucide-react";
+import { PanelHeader } from "./PanelHeader";
 import { CHARACTERS } from "@/lib/constants";
 import { FlameIcon } from "@/components/ui/FlameIcon";
 import { useMediaDevices } from "@/lib/useMediaDevices";
@@ -38,18 +39,7 @@ export const SettingsPanel = memo(function SettingsPanel({ onClose, settings, on
 
   return (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <span className="text-sm font-semibold text-white">Settings</span>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
-          aria-label="Close settings"
-        >
-          <X size={18} strokeWidth={2} />
-        </button>
-      </div>
+      <PanelHeader title="Settings" onClose={onClose} />
 
       {/* Accordion sections */}
       <div className="flex-1 overflow-y-auto">
@@ -113,18 +103,28 @@ function AudioVideoContent({
   const { cameras, microphones, speakers, refresh } = useMediaDevices();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const mountedRef = useRef(true);
+
+  const stopPreview = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+  }, []);
 
   const startPreview = useCallback(
     async (deviceId?: string) => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((t) => t.stop());
-        streamRef.current = null;
-      }
+      stopPreview();
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: deviceId ? { deviceId: { exact: deviceId } } : true,
           audio: false,
         });
+        // If unmounted while awaiting, stop immediately
+        if (!mountedRef.current) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
         streamRef.current = stream;
         if (videoRef.current) videoRef.current.srcObject = stream;
         refresh();
@@ -132,16 +132,15 @@ function AudioVideoContent({
         // Permission denied or device unavailable
       }
     },
-    [refresh]
+    [stopPreview, refresh]
   );
 
   useEffect(() => {
+    mountedRef.current = true;
     startPreview(settings.selectedCameraId || undefined);
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((t) => t.stop());
-        streamRef.current = null;
-      }
+      mountedRef.current = false;
+      stopPreview();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

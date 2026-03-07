@@ -27,6 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
+      <head>
+        <link rel="preconnect" href="https://www.youtube.com" />
+        <link rel="preconnect" href="https://www.google.com" />
+      </head>
       <body className="antialiased">
         <Providers>{children}</Providers>
       </body>

@@ -3,15 +3,13 @@
 import { useEffect, memo } from "react";
 import type { Task } from "@/lib/types";
 import type { ChatMessage } from "@/lib/useChat";
+import { PanelHeader } from "./PanelHeader";
 import { TasksPanel } from "./TasksPanel";
 import { ChatContent } from "./ChatFlyout";
 
-export type DrawerTab = "tasks" | "chat";
-
 interface SideDrawerProps {
   onClose: () => void;
-  activeTab: DrawerTab;
-  onChangeTab: (tab: DrawerTab) => void;
+  panel: "tasks" | "chat";
   // Tasks
   activeTask: Task | null;
   activeTasks: Task[];
@@ -26,15 +24,9 @@ interface SideDrawerProps {
   onSendMessage: (text: string) => void;
 }
 
-const TABS: { key: DrawerTab; label: string }[] = [
-  { key: "tasks", label: "Tasks" },
-  { key: "chat", label: "Chat" },
-];
-
 export const SideDrawer = memo(function SideDrawer({
   onClose,
-  activeTab,
-  onChangeTab,
+  panel,
   activeTask,
   activeTasks,
   completedTasks,
@@ -58,42 +50,27 @@ export const SideDrawer = memo(function SideDrawer({
 
   return (
     <>
-      {/* Header: toggle */}
-      <div className="px-4 py-3">
-        <div className="flex rounded-full border border-[var(--color-border-subtle)] bg-white/5 p-0.5">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => onChangeTab(tab.key)}
-              className={`flex-1 rounded-full py-1.5 text-xs font-medium transition-colors ${
-                activeTab === tab.key
-                  ? "bg-[var(--color-accent-primary)] text-white"
-                  : "text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <PanelHeader title={panel === "tasks" ? "Tasks" : "Chat"} onClose={onClose} />
 
-      {/* Tab content — both mounted, toggle visibility to avoid remount */}
-      <div className={`flex min-h-0 flex-1 flex-col ${activeTab !== "tasks" ? "hidden" : ""}`}>
-        <TasksPanel
-          activeTask={activeTask}
-          activeTasks={activeTasks}
-          completedTasks={completedTasks}
-          onStartTask={onStartTask}
-          onCompleteTask={onCompleteTask}
-          onAddTask={onAddTask}
-          onDeleteTask={onDeleteTask}
-          onEditTask={onEditTask}
-        />
-      </div>
-      <div className={`flex min-h-0 flex-1 flex-col ${activeTab !== "chat" ? "hidden" : ""}`}>
-        <ChatContent messages={messages} onSendMessage={onSendMessage} />
-      </div>
+      {panel === "tasks" && (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <TasksPanel
+            activeTask={activeTask}
+            activeTasks={activeTasks}
+            completedTasks={completedTasks}
+            onStartTask={onStartTask}
+            onCompleteTask={onCompleteTask}
+            onAddTask={onAddTask}
+            onDeleteTask={onDeleteTask}
+            onEditTask={onEditTask}
+          />
+        </div>
+      )}
+      {panel === "chat" && (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <ChatContent messages={messages} onSendMessage={onSendMessage} />
+        </div>
+      )}
     </>
   );
 });

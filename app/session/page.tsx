@@ -7,6 +7,7 @@ import { useCamera } from "@/lib/useCamera";
 import { useChat } from "@/lib/useChat";
 import { useSettings } from "@/lib/useSettings";
 import { useTasks } from "@/lib/useTasks";
+import { useMusic } from "@/lib/useMusic";
 import { TopBar } from "@/components/session/TopBar";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { SplitScreen } from "@/components/session/SplitScreen";
@@ -14,13 +15,13 @@ import { GoalCard } from "@/components/session/GoalCard";
 import { StartSessionModal } from "@/components/session/StartSessionModal";
 import { ReviewCard } from "@/components/session/ReviewCard";
 import { CameraPanel } from "@/components/session/CameraPanel";
-import { SideDrawer, type DrawerTab } from "@/components/session/SideDrawer";
+import { SideDrawer } from "@/components/session/SideDrawer";
 import { SettingsPanel } from "@/components/session/SettingsPanel";
 import { ActionBar } from "@/components/session/ActionBar";
 import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
 import type { SessionPhase } from "@/lib/types";
 
-type SidePanel = "none" | "drawer" | "settings";
+type SidePanel = "none" | "tasks" | "chat" | "settings";
 const PANEL_WIDTH = 380;
 const DEFAULT_DURATION_SEC = 25 * 60;
 
@@ -30,10 +31,9 @@ export default function SessionPage() {
   const [goal, setGoal] = useState("");
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activePanel, setActivePanel] = useState<SidePanel>("drawer");
+  const [activePanel, setActivePanel] = useState<SidePanel>("tasks");
   const prevPanelRef = useRef<SidePanel>(activePanel);
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
-  const [drawerTab, setDrawerTab] = useState<DrawerTab>("tasks");
   const [micActive, setMicActive] = useState(false);
 
   // Only animate width when opening/closing, not when swapping panels
@@ -53,6 +53,7 @@ export default function SessionPage() {
   const camera = useCamera(false);
   const chat = useChat();
   const { settings, updateSetting } = useSettings();
+  const music = useMusic();
   const {
     activeTasks,
     completedTasks,
@@ -65,12 +66,8 @@ export default function SessionPage() {
   } = useTasks();
 
   const closePanel = useCallback(() => setActivePanel("none"), []);
-  const handleToggleDrawer = useCallback(
-    () => setActivePanel((prev) => (prev === "drawer" ? "none" : "drawer")),
-    []
-  );
-  const handleToggleSettings = useCallback(
-    () => setActivePanel((prev) => (prev === "settings" ? "none" : "settings")),
+  const handleToggleTasks = useCallback(
+    () => setActivePanel((prev) => (prev === "tasks" ? "none" : "tasks")),
     []
   );
 
@@ -108,8 +105,9 @@ export default function SessionPage() {
   const handleEndSession = useCallback(() => {
     timer.pause();
     camera.stop();
+    music.pause();
     setPhase("review");
-  }, [timer.pause, camera.stop]);
+  }, [timer.pause, camera.stop, music.pause]);
 
   const handleAnotherRound = useCallback(() => {
     timer.reset(durationSec);
@@ -161,17 +159,14 @@ export default function SessionPage() {
   const handleSwitchSwitch = useCallback(() => handleSwitchConfirm("switch"), [handleSwitchConfirm]);
 
   const handleToggleMic = useCallback(() => setMicActive((m) => !m), []);
-  const handleOpenChat = useCallback(() => {
-    setDrawerTab("chat");
-    setActivePanel((prev) => (prev === "drawer" ? prev : "drawer"));
-  }, []);
-  const handleOpenTasks = useCallback(() => {
-    setDrawerTab("tasks");
-    setActivePanel((prev) => (prev === "drawer" ? prev : "drawer"));
-  }, []);
-  const handleOpenSettings = useCallback(() => {
-    setActivePanel((prev) => (prev === "settings" ? prev : "settings"));
-  }, []);
+  const handleToggleChat = useCallback(
+    () => setActivePanel((prev) => (prev === "chat" ? "none" : "chat")),
+    []
+  );
+  const handleToggleSettings = useCallback(
+    () => setActivePanel((prev) => (prev === "settings" ? "none" : "settings")),
+    []
+  );
 
   const handleToggleMenu = useCallback(() => setMenuOpen((m) => !m), []);
   const handleToggleGoalCard = useCallback(() => setSprintGoalCardOpen((o) => !o), []);
@@ -206,8 +201,8 @@ export default function SessionPage() {
         <TopBar
           phase={phase}
           onOpenMenu={handleToggleMenu}
-          drawerOpen={activePanel === "drawer"}
-          onToggleDrawer={phase !== "sprint" ? handleToggleDrawer : undefined}
+          drawerOpen={activePanel === "tasks"}
+          onToggleDrawer={phase !== "sprint" ? handleToggleTasks : undefined}
           settingsOpen={activePanel === "settings"}
           onToggleSettings={phase !== "sprint" ? handleToggleSettings : undefined}
           timer={timer}
@@ -247,19 +242,50 @@ export default function SessionPage() {
             />
           )}
 
+          {/* Hidden YouTube player — wrapper keeps clip-path styling
+              while inner div gets replaced by YouTube iframe on each
+              createPlayer call (destroy removes the iframe) */}
+          <div
+            data-music-container
+            style={{
+              position: "fixed",
+              bottom: 0,
+              right: 0,
+              width: 200,
+              height: 200,
+              clipPath: "inset(100%)",
+              overflow: "hidden",
+              pointerEvents: "none",
+            }}
+          >
+            <div id={music.playerContainerId} />
+          </div>
+
           {phase === "sprint" && (
             <ActionBar
               micActive={micActive}
               onToggleMic={handleToggleMic}
               cameraActive={camera.isActive}
               onToggleCamera={camera.toggle}
-              onOpenChat={handleOpenChat}
-              onOpenTasks={handleOpenTasks}
-              onOpenSettings={handleOpenSettings}
-              chatActive={activePanel === "drawer" && drawerTab === "chat"}
-              tasksActive={activePanel === "drawer" && drawerTab === "tasks"}
+              onOpenChat={handleToggleChat}
+              onOpenTasks={handleToggleTasks}
+              onOpenSettings={handleToggleSettings}
+              chatActive={activePanel === "chat"}
+              tasksActive={activePanel === "tasks"}
               settingsActive={activePanel === "settings"}
               onEndSession={handleEndSession}
+              music={{
+                popoverOpen: music.popoverOpen,
+                togglePopover: music.togglePopover,
+                closePopover: music.closePopover,
+                activeVibe: music.activeVibe,
+                selectVibe: music.selectVibe,
+                isPlaying: music.isPlaying,
+                togglePlayPause: music.togglePlayPause,
+                volume: music.volume,
+                setVolume: music.setVolume,
+                status: music.status,
+              }}
             />
           )}
 
@@ -284,13 +310,12 @@ export default function SessionPage() {
           className="flex h-full flex-col border-l border-[var(--color-border-default)] bg-[var(--color-bg-primary)]"
           style={{ width: PANEL_WIDTH }}
           role="complementary"
-          aria-label={activePanel === "drawer" ? "Tasks & Chat" : "Settings"}
+          aria-label={activePanel === "tasks" ? "Tasks" : activePanel === "chat" ? "Chat" : "Settings"}
         >
-          {activePanel === "drawer" && (
+          {(activePanel === "tasks" || activePanel === "chat") && (
             <SideDrawer
               onClose={closePanel}
-              activeTab={drawerTab}
-              onChangeTab={setDrawerTab}
+              panel={activePanel as "tasks" | "chat"}
               activeTask={activeTask}
               activeTasks={activeTasks}
               completedTasks={completedTasks}

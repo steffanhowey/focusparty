@@ -6,6 +6,7 @@ export type CameraStatus = "idle" | "requesting" | "active" | "denied" | "error"
 
 export function useCamera(initiallyActive = false) {
   const [status, setStatus] = useState<CameraStatus>("idle");
+  const [stream, setStream] = useState<MediaStream | null>(null);
   const statusRef = useRef<CameraStatus>("idle");
   const streamRef = useRef<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -20,6 +21,7 @@ export function useCamera(initiallyActive = false) {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
+      setStream(null);
     }
     if (videoRef.current) {
       videoRef.current.srcObject = null;
@@ -27,7 +29,7 @@ export function useCamera(initiallyActive = false) {
     updateStatus("idle");
   }, [updateStatus]);
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (deviceId?: string) => {
     if (typeof navigator === "undefined") return;
     if (isRequestingRef.current) return;
 
@@ -35,15 +37,16 @@ export function useCamera(initiallyActive = false) {
     updateStatus("requesting");
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: deviceId ? { deviceId: { exact: deviceId } } : true,
         audio: false,
       });
 
-      streamRef.current = stream;
+      streamRef.current = mediaStream;
+      setStream(mediaStream);
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        videoRef.current.srcObject = mediaStream;
       }
 
       updateStatus("active");
@@ -85,5 +88,5 @@ export function useCamera(initiallyActive = false) {
     };
   }, []);
 
-  return { videoRef, status, isActive, start, stop, toggle };
+  return { videoRef, stream, status, isActive, start, stop, toggle };
 }

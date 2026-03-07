@@ -1,0 +1,24 @@
+"use client";
+
+import { X } from "lucide-react";
+
+interface PanelHeaderProps {
+  title: string;
+  onClose: () => void;
+}
+
+export function PanelHeader({ title, onClose }: PanelHeaderProps) {
+  return (
+    <div className="flex items-center justify-between px-4 py-3">
+      <span className="text-sm font-semibold text-white">{title}</span>
+      <button
+        type="button"
+        onClick={onClose}
+        className="rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
+        aria-label={`Close ${title.toLowerCase()}`}
+      >
+        <X size={18} strokeWidth={2} />
+      </button>
+    </div>
+  );
+}
