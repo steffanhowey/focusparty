@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, memo } from "react";
 import type { CharacterId } from "@/lib/types";
 import { CHARACTERS } from "@/lib/constants";
 
@@ -12,7 +12,7 @@ interface SplitScreenProps {
   rightPanel?: ReactNode;
 }
 
-export function SplitScreen({
+export const SplitScreen = memo(function SplitScreen({
   character,
   leftPanel,
   rightPanel,
@@ -20,7 +20,7 @@ export function SplitScreen({
   const c = CHARACTERS[character];
 
   return (
-    <div className="flex flex-1 gap-3 overflow-hidden px-4 md:px-6">
+    <div className="flex flex-1 gap-4 overflow-hidden px-4 pb-4 md:gap-6 md:px-6 md:pb-6">
       <div
         className="relative flex min-w-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-default)]"
         style={{ background: "rgba(255,255,255,0.03)" }}
@@ -74,4 +74,4 @@ export function SplitScreen({
       </div>
     </div>
   );
-}
+});

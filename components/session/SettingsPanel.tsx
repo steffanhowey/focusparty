@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { X, Camera, Mic, Volume2, ChevronDown } from "lucide-react";
 import { CHARACTERS } from "@/lib/constants";
 import { FlameIcon } from "@/components/ui/FlameIcon";
@@ -22,7 +22,7 @@ interface SettingsPanelProps {
 
 /* ─── Root ───────────────────────────────────────────────── */
 
-export function SettingsPanel({ onClose, settings, onUpdateSetting }: SettingsPanelProps) {
+export const SettingsPanel = memo(function SettingsPanel({ onClose, settings, onUpdateSetting }: SettingsPanelProps) {
   const [openSection, setOpenSection] = useState<SettingsSection | null>("audio-video");
 
   const toggle = (id: SettingsSection) =>
@@ -67,7 +67,7 @@ export function SettingsPanel({ onClose, settings, onUpdateSetting }: SettingsPa
       </div>
     </>
   );
-}
+});
 
 /* ─── Accordion ──────────────────────────────────────────── */
 

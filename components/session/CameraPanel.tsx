@@ -1,17 +1,15 @@
 "use client";
 
 import { RefObject } from "react";
-import { Video, VideoOff } from "lucide-react";
 import type { CameraStatus } from "@/lib/useCamera";
 
 interface CameraPanelProps {
   videoRef: RefObject<HTMLVideoElement | null>;
   status: CameraStatus;
   isActive: boolean;
-  onToggleCamera?: () => void;
 }
 
-export function CameraPanel({ videoRef, status, isActive, onToggleCamera }: CameraPanelProps) {
+export function CameraPanel({ videoRef, status, isActive }: CameraPanelProps) {
   const label =
     status === "requesting"
       ? "Requesting camera…"
@@ -48,17 +46,6 @@ export function CameraPanel({ videoRef, status, isActive, onToggleCamera }: Came
         </div>
       )}
 
-      {/* Camera toggle */}
-      {onToggleCamera && (
-        <button
-          type="button"
-          onClick={onToggleCamera}
-          aria-label={isActive ? "Turn off camera" : "Turn on camera"}
-          className="absolute bottom-3 left-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-[var(--color-text-tertiary)] backdrop-blur-sm transition-colors hover:bg-black/70 hover:text-white"
-        >
-          {isActive ? <Video size={16} strokeWidth={1.8} /> : <VideoOff size={16} strokeWidth={1.8} />}
-        </button>
-      )}
     </div>
   );
 }

@@ -36,10 +36,17 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  const displayName =
+  const rawName =
     user?.user_metadata?.display_name ??
+    user?.user_metadata?.full_name ??
     user?.email?.split("@")[0] ??
     STUB_DISPLAY_NAME;
+  const displayName = rawName
+    .split(/[\s._-]+/)
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+  const avatarUrl: string | undefined =
+    user?.user_metadata?.avatar_url ?? user?.user_metadata?.picture;
   const planLabel = PLAN_LABELS[STUB_PLAN];
 
   const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "party";
@@ -153,23 +160,32 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
             <button
               type="button"
               onClick={() => setProfileMenuOpen((o) => !o)}
-              className="flex shrink-0 transition-colors hover:opacity-90"
+              className="flex shrink-0"
               aria-expanded={profileMenuOpen}
               aria-haspopup="true"
               aria-label="Profile menu"
               title={`${displayName} · ${planLabel}`}
             >
-              <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-semibold"
-                style={{
-                  background: "var(--color-bg-elevated)",
-                  border: "1px solid var(--color-border-default)",
-                  color: "var(--color-text-primary)",
-                  fontSize: 14,
-                }}
-              >
-                {displayName.charAt(0).toUpperCase()}
-              </div>
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  className="h-9 w-9 shrink-0 rounded-full object-cover"
+                  style={{ border: "1px solid var(--color-border-default)" }}
+                />
+              ) : (
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-semibold"
+                  style={{
+                    background: "var(--color-bg-elevated)",
+                    border: "1px solid var(--color-border-default)",
+                    color: "var(--color-text-primary)",
+                    fontSize: 14,
+                  }}
+                >
+                  {displayName.charAt(0).toUpperCase()}
+                </div>
+              )}
             </button>
           </div>
         </div>
@@ -224,22 +240,31 @@ export function Sidebar({ collapsed = false, onToggleCollapsed }: SidebarProps) 
             <button
               type="button"
               onClick={() => setProfileMenuOpen((o) => !o)}
-              className="flex w-full items-center gap-3 rounded-lg py-1.5 pr-2 transition-colors hover:bg-[var(--color-bg-hover)]"
+              className="flex w-full items-center gap-3 rounded-lg py-1.5 pr-2"
               aria-expanded={profileMenuOpen}
               aria-haspopup="true"
               aria-label="Profile menu"
             >
-              <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-semibold"
-                style={{
-                  background: "var(--color-bg-elevated)",
-                  border: "1px solid var(--color-border-default)",
-                  color: "var(--color-text-primary)",
-                  fontSize: 14,
-                }}
-              >
-                {displayName.charAt(0).toUpperCase()}
-              </div>
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  className="h-9 w-9 shrink-0 rounded-full object-cover"
+                  style={{ border: "1px solid var(--color-border-default)" }}
+                />
+              ) : (
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-semibold"
+                  style={{
+                    background: "var(--color-bg-elevated)",
+                    border: "1px solid var(--color-border-default)",
+                    color: "var(--color-text-primary)",
+                    fontSize: 14,
+                  }}
+                >
+                  {displayName.charAt(0).toUpperCase()}
+                </div>
+              )}
               <div className="min-w-0 flex-1 text-left">
                 <p className="truncate text-sm font-medium text-[var(--color-text-primary)]">
                   {displayName}

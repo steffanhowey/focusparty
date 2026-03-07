@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, memo } from "react";
 import type { Task } from "@/lib/types";
 import type { ChatMessage } from "@/lib/useChat";
 import { TasksPanel } from "./TasksPanel";
 import { ChatContent } from "./ChatFlyout";
 
-type DrawerTab = "tasks" | "chat";
+export type DrawerTab = "tasks" | "chat";
 
 interface SideDrawerProps {
   onClose: () => void;
+  activeTab: DrawerTab;
+  onChangeTab: (tab: DrawerTab) => void;
   // Tasks
   activeTask: Task | null;
   activeTasks: Task[];
@@ -29,8 +31,10 @@ const TABS: { key: DrawerTab; label: string }[] = [
   { key: "chat", label: "Chat" },
 ];
 
-export function SideDrawer({
+export const SideDrawer = memo(function SideDrawer({
   onClose,
+  activeTab,
+  onChangeTab,
   activeTask,
   activeTasks,
   completedTasks,
@@ -42,7 +46,6 @@ export function SideDrawer({
   messages,
   onSendMessage,
 }: SideDrawerProps) {
-  const [activeTab, setActiveTab] = useState<DrawerTab>("tasks");
 
   // Escape key closes drawer
   useEffect(() => {
@@ -62,8 +65,8 @@ export function SideDrawer({
             <button
               key={tab.key}
               type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 rounded-full py-1.5 text-xs font-medium transition-all ${
+              onClick={() => onChangeTab(tab.key)}
+              className={`flex-1 rounded-full py-1.5 text-xs font-medium transition-colors ${
                 activeTab === tab.key
                   ? "bg-[var(--color-accent-primary)] text-white"
                   : "text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
@@ -75,8 +78,8 @@ export function SideDrawer({
         </div>
       </div>
 
-      {/* Tab content */}
-      {activeTab === "tasks" ? (
+      {/* Tab content — both mounted, toggle visibility to avoid remount */}
+      <div className={`flex min-h-0 flex-1 flex-col ${activeTab !== "tasks" ? "hidden" : ""}`}>
         <TasksPanel
           activeTask={activeTask}
           activeTasks={activeTasks}
@@ -87,9 +90,10 @@ export function SideDrawer({
           onDeleteTask={onDeleteTask}
           onEditTask={onEditTask}
         />
-      ) : (
+      </div>
+      <div className={`flex min-h-0 flex-1 flex-col ${activeTab !== "chat" ? "hidden" : ""}`}>
         <ChatContent messages={messages} onSendMessage={onSendMessage} />
-      )}
+      </div>
     </>
   );
-}
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { X, ArrowUp } from "lucide-react";
 import type { ChatMessage } from "@/lib/useChat";
 
@@ -11,7 +11,7 @@ interface ChatContentProps {
   onSendMessage: (text: string) => void;
 }
 
-export function ChatContent({ messages, onSendMessage }: ChatContentProps) {
+export const ChatContent = memo(function ChatContent({ messages, onSendMessage }: ChatContentProps) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -25,8 +25,7 @@ export function ChatContent({ messages, onSendMessage }: ChatContentProps) {
 
   // Focus input on mount
   useEffect(() => {
-    const id = setTimeout(() => inputRef.current?.focus(), 200);
-    return () => clearTimeout(id);
+    inputRef.current?.focus();
   }, []);
 
   const handleSubmit = useCallback(() => {
@@ -103,7 +102,7 @@ export function ChatContent({ messages, onSendMessage }: ChatContentProps) {
       </div>
     </>
   );
-}
+});
 
 /* ─── Standalone flyout with header (kept for compatibility) ─ */
 

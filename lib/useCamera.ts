@@ -6,9 +6,15 @@ export type CameraStatus = "idle" | "requesting" | "active" | "denied" | "error"
 
 export function useCamera(initiallyActive = false) {
   const [status, setStatus] = useState<CameraStatus>("idle");
+  const statusRef = useRef<CameraStatus>("idle");
   const streamRef = useRef<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const isRequestingRef = useRef(false);
+
+  const updateStatus = useCallback((s: CameraStatus) => {
+    statusRef.current = s;
+    setStatus(s);
+  }, []);
 
   const stop = useCallback(() => {
     if (streamRef.current) {
@@ -18,15 +24,15 @@ export function useCamera(initiallyActive = false) {
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
-    setStatus("idle");
-  }, []);
+    updateStatus("idle");
+  }, [updateStatus]);
 
   const start = useCallback(async () => {
     if (typeof navigator === "undefined") return;
     if (isRequestingRef.current) return;
 
     isRequestingRef.current = true;
-    setStatus("requesting");
+    updateStatus("requesting");
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -40,25 +46,25 @@ export function useCamera(initiallyActive = false) {
         videoRef.current.srcObject = stream;
       }
 
-      setStatus("active");
+      updateStatus("active");
     } catch (err) {
       if (err instanceof DOMException && err.name === "NotAllowedError") {
-        setStatus("denied");
+        updateStatus("denied");
       } else {
-        setStatus("error");
+        updateStatus("error");
       }
     } finally {
       isRequestingRef.current = false;
     }
-  }, []);
+  }, [updateStatus]);
 
   const toggle = useCallback(() => {
-    if (status === "active") {
+    if (statusRef.current === "active") {
       stop();
     } else {
       start();
     }
-  }, [status, start, stop]);
+  }, [start, stop]);
 
   const isActive = status === "active";
 

@@ -1,7 +1,9 @@
 "use client";
 
-import { PanelRight, ChevronDown } from "lucide-react";
+import { memo } from "react";
+import { PanelRight, ChevronDown, LogOut } from "lucide-react";
 import type { SessionPhase } from "@/lib/types";
+import { useTimerDisplay, type Timer } from "@/lib/useTimer";
 import { TimerDropdown } from "./TimerDropdown";
 
 interface TopBarProps {
@@ -11,32 +13,37 @@ interface TopBarProps {
   onToggleDrawer?: () => void;
   settingsOpen?: boolean;
   onToggleSettings?: () => void;
-  timerFormatted?: string;
-  timerWarning?: boolean;
-  timerCritical?: boolean;
+  timer: Timer;
+  durationSec: number;
   currentDurationMin?: number;
   onChangeDuration?: (durationMinutes: number) => void;
   onResetTimer?: () => void;
   goalCardOpen?: boolean;
   onToggleGoalCard?: () => void;
+  onEndSession?: () => void;
 }
 
-export function TopBar({
+export const TopBar = memo(function TopBar({
   phase,
   onOpenMenu,
   drawerOpen,
   onToggleDrawer,
   settingsOpen,
   onToggleSettings,
-  timerFormatted,
-  timerWarning,
-  timerCritical,
+  timer,
+  durationSec,
   currentDurationMin,
   onChangeDuration,
   onResetTimer,
   goalCardOpen,
   onToggleGoalCard,
+  onEndSession,
 }: TopBarProps) {
+  const { formatted, seconds } = useTimerDisplay(timer);
+
+  const timerWarning = phase === "sprint" && seconds > 0 && seconds <= 5 * 60;
+  const timerCritical = phase === "sprint" && seconds > 0 && seconds <= 60;
+
   const title =
     phase === "setup"
       ? ""
@@ -61,7 +68,7 @@ export function TopBar({
           <button
             type="button"
             onClick={onOpenMenu}
-            className="rounded p-1.5 text-[var(--color-text-tertiary)] hover:text-white"
+            className="-ml-1.5 rounded p-1.5 text-[var(--color-text-tertiary)] hover:text-white"
             aria-label="Open menu"
           >
             <HamburgerIcon />
@@ -73,7 +80,7 @@ export function TopBar({
       </div>
 
       {/* Center: timer + dropdown */}
-      {phase === "sprint" && timerFormatted != null && (
+      {phase === "sprint" && (
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center">
           <span
             className={`font-extrabold tracking-tight text-xl ${
@@ -85,7 +92,7 @@ export function TopBar({
             }`}
             style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
-            {timerFormatted}
+            {formatted}
           </span>
           {onToggleGoalCard && (
             <button
@@ -106,13 +113,16 @@ export function TopBar({
 
       {/* Right: actions */}
       <div className="flex items-center gap-4">
-        <button
-          type="button"
-          className="rounded p-1 text-[var(--color-text-tertiary)] hover:text-white"
-          aria-label="Volume"
-        >
-          <VolumeIcon />
-        </button>
+        {onEndSession && (
+          <button
+            type="button"
+            onClick={onEndSession}
+            className="rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-coral-700)]"
+            aria-label="End session"
+          >
+            <LogOut size={17} strokeWidth={1.8} />
+          </button>
+        )}
         {onToggleSettings && (
           <button
             type="button"
@@ -136,7 +146,7 @@ export function TopBar({
       </div>
     </header>
   );
-}
+});
 
 function HamburgerIcon() {
   return (
@@ -144,15 +154,6 @@ function HamburgerIcon() {
       <line x1="3" y1="6" x2="21" y2="6" />
       <line x1="3" y1="12" x2="21" y2="12" />
       <line x1="3" y1="18" x2="21" y2="18" />
-    </svg>
-  );
-}
-
-function VolumeIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-      <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" />
     </svg>
   );
 }
@@ -165,4 +166,3 @@ function GearIcon() {
     </svg>
   );
 }
-

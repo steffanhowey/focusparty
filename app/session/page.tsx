@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useTimer } from "@/lib/useTimer";
 import { useCamera } from "@/lib/useCamera";
@@ -8,15 +8,15 @@ import { useChat } from "@/lib/useChat";
 import { useSettings } from "@/lib/useSettings";
 import { useTasks } from "@/lib/useTasks";
 import { TopBar } from "@/components/session/TopBar";
-import { SessionNavDrawer } from "@/components/session/SessionNavDrawer";
+import { Sidebar } from "@/components/shell/Sidebar";
 import { SplitScreen } from "@/components/session/SplitScreen";
-import { BottomBar } from "@/components/session/BottomBar";
 import { GoalCard } from "@/components/session/GoalCard";
 import { StartSessionModal } from "@/components/session/StartSessionModal";
 import { ReviewCard } from "@/components/session/ReviewCard";
 import { CameraPanel } from "@/components/session/CameraPanel";
-import { SideDrawer } from "@/components/session/SideDrawer";
+import { SideDrawer, type DrawerTab } from "@/components/session/SideDrawer";
 import { SettingsPanel } from "@/components/session/SettingsPanel";
+import { ActionBar } from "@/components/session/ActionBar";
 import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
 import type { SessionPhase } from "@/lib/types";
 
@@ -31,10 +31,25 @@ export default function SessionPage() {
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<SidePanel>("drawer");
+  const prevPanelRef = useRef<SidePanel>(activePanel);
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>("tasks");
+  const [micActive, setMicActive] = useState(false);
+
+  // Only animate width when opening/closing, not when swapping panels
+  const panelOpen = activePanel !== "none";
+  const wasOpen = prevPanelRef.current !== "none";
+  const shouldAnimatePanel = panelOpen !== wasOpen;
+  useEffect(() => {
+    prevPanelRef.current = activePanel;
+  }, [activePanel]);
   const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
 
-  const timer = useTimer(durationSec);
+  const handleTimerComplete = useCallback(() => {
+    setPhase("review");
+  }, []);
+
+  const timer = useTimer(durationSec, handleTimerComplete);
   const camera = useCamera(false);
   const chat = useChat();
   const { settings, updateSetting } = useSettings();
@@ -58,13 +73,6 @@ export default function SessionPage() {
     () => setActivePanel((prev) => (prev === "settings" ? "none" : "settings")),
     []
   );
-
-  useEffect(() => {
-    if (phase === "sprint" && timer.seconds <= 0 && timer.running) {
-      timer.pause();
-      setPhase("review");
-    }
-  }, [phase, timer.seconds, timer.running, timer.pause]);
 
   const handleStartSprint = useCallback(
     (durationMinutes: number) => {
@@ -152,31 +160,58 @@ export default function SessionPage() {
   const handleSwitchComplete = useCallback(() => handleSwitchConfirm("complete"), [handleSwitchConfirm]);
   const handleSwitchSwitch = useCallback(() => handleSwitchConfirm("switch"), [handleSwitchConfirm]);
 
-  const handleOpenMenu = useCallback(() => setMenuOpen(true), []);
-  const handleCloseMenu = useCallback(() => setMenuOpen(false), []);
+  const handleToggleMic = useCallback(() => setMicActive((m) => !m), []);
+  const handleOpenChat = useCallback(() => {
+    setDrawerTab("chat");
+    setActivePanel((prev) => (prev === "drawer" ? prev : "drawer"));
+  }, []);
+  const handleOpenTasks = useCallback(() => {
+    setDrawerTab("tasks");
+    setActivePanel((prev) => (prev === "drawer" ? prev : "drawer"));
+  }, []);
+  const handleOpenSettings = useCallback(() => {
+    setActivePanel((prev) => (prev === "settings" ? prev : "settings"));
+  }, []);
+
+  const handleToggleMenu = useCallback(() => setMenuOpen((m) => !m), []);
   const handleToggleGoalCard = useCallback(() => setSprintGoalCardOpen((o) => !o), []);
   const handleCloseGoalCard = useCallback(() => setSprintGoalCardOpen(false), []);
 
-  const timerWarning = phase === "sprint" && timer.seconds > 0 && timer.seconds <= 5 * 60;
-  const timerCritical = phase === "sprint" && timer.seconds > 0 && timer.seconds <= 60;
+  const cameraPanelNode = useMemo(
+    () => (
+      <CameraPanel
+        videoRef={camera.videoRef}
+        status={camera.status}
+        isActive={camera.isActive}
+      />
+    ),
+    [camera.videoRef, camera.status, camera.isActive]
+  );
 
   return (
     <div
       className="flex h-screen w-screen"
       style={{ background: "var(--color-bg-primary)" }}
     >
-      {/* Left column: full session experience */}
+      {/* Left column: app sidebar (pushes) */}
+      <div
+        className="flex-shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={{ width: menuOpen ? 240 : 0 }}
+      >
+        {menuOpen && <Sidebar />}
+      </div>
+
+      {/* Center column: full session experience */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar
           phase={phase}
-          onOpenMenu={handleOpenMenu}
+          onOpenMenu={handleToggleMenu}
           drawerOpen={activePanel === "drawer"}
-          onToggleDrawer={handleToggleDrawer}
+          onToggleDrawer={phase !== "sprint" ? handleToggleDrawer : undefined}
           settingsOpen={activePanel === "settings"}
-          onToggleSettings={handleToggleSettings}
-          timerFormatted={timer.formatted}
-          timerWarning={timerWarning}
-          timerCritical={timerCritical}
+          onToggleSettings={phase !== "sprint" ? handleToggleSettings : undefined}
+          timer={timer}
+          durationSec={durationSec}
           currentDurationMin={durationMin}
           onChangeDuration={handleChangeDuration}
           onResetTimer={handleResetTimer}
@@ -184,19 +219,10 @@ export default function SessionPage() {
           onToggleGoalCard={handleToggleGoalCard}
         />
 
-        <SessionNavDrawer isOpen={menuOpen} onClose={handleCloseMenu} />
-
         <div className="relative flex flex-1 flex-col overflow-hidden">
           <SplitScreen
             character={characterAccent}
-            leftPanel={
-              <CameraPanel
-                videoRef={camera.videoRef}
-                status={camera.status}
-                isActive={camera.isActive}
-                onToggleCamera={camera.toggle}
-              />
-            }
+            leftPanel={cameraPanelNode}
           />
 
           {phase === "sprint" && sprintGoalCardOpen && (
@@ -221,6 +247,22 @@ export default function SessionPage() {
             />
           )}
 
+          {phase === "sprint" && (
+            <ActionBar
+              micActive={micActive}
+              onToggleMic={handleToggleMic}
+              cameraActive={camera.isActive}
+              onToggleCamera={camera.toggle}
+              onOpenChat={handleOpenChat}
+              onOpenTasks={handleOpenTasks}
+              onOpenSettings={handleOpenSettings}
+              chatActive={activePanel === "drawer" && drawerTab === "chat"}
+              tasksActive={activePanel === "drawer" && drawerTab === "tasks"}
+              settingsActive={activePanel === "settings"}
+              onEndSession={handleEndSession}
+            />
+          )}
+
           {phase === "review" && (
             <ReviewCard
               goal={goal}
@@ -230,19 +272,13 @@ export default function SessionPage() {
             />
           )}
 
-          {phase === "sprint" && (
-            <BottomBar
-              activeTask={activeTask}
-              onEndSession={handleEndSession}
-            />
-          )}
         </div>
       </div>
 
       {/* Right column: shared side panel (pushes entire left column) */}
       <div
-        className="flex-shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-        style={{ width: activePanel !== "none" ? PANEL_WIDTH : 0 }}
+        className={`flex-shrink-0 overflow-hidden ${shouldAnimatePanel ? "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""}`}
+        style={{ width: panelOpen ? PANEL_WIDTH : 0 }}
       >
         <aside
           className="flex h-full flex-col border-l border-[var(--color-border-default)] bg-[var(--color-bg-primary)]"
@@ -253,6 +289,8 @@ export default function SessionPage() {
           {activePanel === "drawer" && (
             <SideDrawer
               onClose={closePanel}
+              activeTab={drawerTab}
+              onChangeTab={setDrawerTab}
               activeTask={activeTask}
               activeTasks={activeTasks}
               completedTasks={completedTasks}

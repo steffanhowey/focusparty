@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/shell/Logo";
@@ -41,9 +41,14 @@ function LoginForm() {
   );
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (authState === "authenticated") {
+      const next = searchParams.get("next") ?? "/party";
+      router.replace(next);
+    }
+  }, [authState, router, searchParams]);
+
   if (authState === "authenticated") {
-    const next = searchParams.get("next") ?? "/party";
-    router.replace(next);
     return null;
   }
 

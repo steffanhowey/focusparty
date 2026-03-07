@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from "react";
 import { Plus, X, ChevronRight, Check } from "lucide-react";
 import type { Task } from "@/lib/types";
 
@@ -15,7 +15,7 @@ interface TasksPanelProps {
   onEditTask: (taskId: string, newText: string) => void;
 }
 
-export function TasksPanel({
+export const TasksPanel = memo(function TasksPanel({
   activeTask,
   activeTasks,
   completedTasks,
@@ -277,4 +277,4 @@ export function TasksPanel({
       </div>
     </div>
   );
-}
+});
