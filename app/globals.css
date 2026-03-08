@@ -246,3 +246,14 @@ body {
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* Task completion celebration */
+@keyframes fp-celebrate {
+  0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.animate-fp-celebrate {
+  animation: fp-celebrate 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

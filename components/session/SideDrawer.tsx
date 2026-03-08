@@ -11,14 +11,14 @@ interface SideDrawerProps {
   onClose: () => void;
   panel: "tasks" | "chat";
   // Tasks
-  activeTask: Task | null;
   activeTasks: Task[];
   completedTasks: Task[];
-  onStartTask: (taskId: string) => void;
   onCompleteTask: (taskId: string) => void;
+  onUncompleteTask: (taskId: string) => void;
   onAddTask: (text: string) => void;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (taskId: string, newText: string) => void;
+  onReorderTasks: (activeId: string, overId: string) => void;
   // Chat
   messages: ChatMessage[];
   onSendMessage: (text: string) => void;
@@ -27,14 +27,14 @@ interface SideDrawerProps {
 export const SideDrawer = memo(function SideDrawer({
   onClose,
   panel,
-  activeTask,
   activeTasks,
   completedTasks,
-  onStartTask,
   onCompleteTask,
+  onUncompleteTask,
   onAddTask,
   onDeleteTask,
   onEditTask,
+  onReorderTasks,
   messages,
   onSendMessage,
 }: SideDrawerProps) {
@@ -55,14 +55,14 @@ export const SideDrawer = memo(function SideDrawer({
       {panel === "tasks" && (
         <div className="flex min-h-0 flex-1 flex-col">
           <TasksPanel
-            activeTask={activeTask}
             activeTasks={activeTasks}
             completedTasks={completedTasks}
-            onStartTask={onStartTask}
             onCompleteTask={onCompleteTask}
+            onUncompleteTask={onUncompleteTask}
             onAddTask={onAddTask}
             onDeleteTask={onDeleteTask}
             onEditTask={onEditTask}
+            onReorderTasks={onReorderTasks}
           />
         </div>
       )}

@@ -75,9 +75,11 @@ export default function SessionPage() {
     activeTask,
     addTask,
     completeTask,
+    uncompleteTask,
     deleteTask,
     editTask,
     selectTask,
+    reorderTasks,
   } = useTasks();
 
   const closePanel = useCallback(() => setActivePanel("none"), []);
@@ -339,14 +341,14 @@ export default function SessionPage() {
             <SideDrawer
               onClose={closePanel}
               panel={activePanel as "tasks" | "chat"}
-              activeTask={activeTask}
               activeTasks={activeTasks}
               completedTasks={completedTasks}
-              onStartTask={handleStartTask}
               onCompleteTask={completeTask}
+              onUncompleteTask={uncompleteTask}
               onAddTask={addTask}
               onDeleteTask={deleteTask}
               onEditTask={editTask}
+              onReorderTasks={reorderTasks}
               messages={chat.messages}
               onSendMessage={chat.sendMessage}
             />

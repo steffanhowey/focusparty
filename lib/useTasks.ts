@@ -74,6 +74,16 @@ export function useTasks() {
     });
   }, []);
 
+  const uncompleteTask = useCallback((taskId: string) => {
+    setTasks((prev) => {
+      const next = prev.map((t) =>
+        t.id === taskId ? { ...t, completed: false, completedAt: null } : t
+      );
+      persistTasks(next);
+      return next;
+    });
+  }, []);
+
   const deleteTask = useCallback((taskId: string) => {
     setTasks((prev) => {
       const next = prev.filter((t) => t.id !== taskId);
@@ -143,6 +153,7 @@ export function useTasks() {
     activeTask,
     addTask,
     completeTask,
+    uncompleteTask,
     deleteTask,
     editTask,
     selectTask,

@@ -3,17 +3,19 @@
 import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Check } from "lucide-react";
+import { Grip, Check } from "lucide-react";
 import type { Task } from "@/lib/types";
 
 interface SortableTaskRowProps {
   task: Task;
+  completed?: boolean;
   onComplete: (taskId: string) => void;
   onEdit: (taskId: string, newText: string) => void;
 }
 
 export const SortableTaskRow = memo(function SortableTaskRow({
   task,
+  completed = false,
   onComplete,
   onEdit,
 }: SortableTaskRowProps) {
@@ -28,17 +30,27 @@ export const SortableTaskRow = memo(function SortableTaskRow({
 
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState("");
-  const editInputRef = useRef<HTMLInputElement>(null);
+  const editInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const autoResize = useCallback(() => {
+    const el = editInputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
 
   useEffect(() => {
     if (isEditing) {
       const id = setTimeout(() => {
-        editInputRef.current?.focus();
-        editInputRef.current?.select();
+        const el = editInputRef.current;
+        if (!el) return;
+        el.focus();
+        el.setSelectionRange(el.value.length, el.value.length);
+        autoResize();
       }, 50);
       return () => clearTimeout(id);
     }
-  }, [isEditing]);
+  }, [isEditing, autoResize]);
 
   const startEditing = useCallback(() => {
     setIsEditing(true);
@@ -69,39 +81,46 @@ export const SortableTaskRow = memo(function SortableTaskRow({
     <div
       ref={setNodeRef}
       style={style}
-      className="group flex items-center gap-2 rounded-lg px-2 py-2"
+      className="group flex items-start gap-3 border-b border-[var(--color-border-subtle)] px-2 py-3 last:border-b-0"
     >
       {/* Drag handle */}
       <button
         type="button"
         {...attributes}
         {...listeners}
-        className="flex shrink-0 cursor-grab touch-none items-center justify-center text-[var(--color-text-tertiary)] opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
+        className="flex h-5 shrink-0 cursor-grab touch-none items-center justify-center text-[var(--color-text-tertiary)] active:cursor-grabbing"
         aria-label="Drag to reorder"
       >
-        <GripVertical size={14} strokeWidth={1.5} />
+        <Grip size={14} strokeWidth={1.5} />
       </button>
 
       {/* Task text */}
       {isEditing ? (
-        <input
+        <textarea
           ref={editInputRef}
-          type="text"
+          rows={1}
           value={editText}
-          onChange={(e) => setEditText(e.target.value)}
+          onChange={(e) => {
+            setEditText(e.target.value);
+            autoResize();
+          }}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               commitEdit();
             }
             if (e.key === "Escape") cancelEdit();
           }}
           onBlur={commitEdit}
-          className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none"
+          className="min-w-0 flex-1 resize-none bg-transparent text-sm leading-snug text-white outline-none"
         />
       ) : (
         <span
-          className="min-w-0 flex-1 cursor-text truncate text-sm text-[var(--color-text-secondary)]"
+          className={`min-w-0 flex-1 cursor-text break-words text-sm leading-snug ${
+            completed
+              ? "text-[var(--color-text-tertiary)] line-through"
+              : "text-[var(--color-text-secondary)]"
+          }`}
           onClick={startEditing}
         >
           {task.text}
@@ -109,18 +128,31 @@ export const SortableTaskRow = memo(function SortableTaskRow({
       )}
 
       {/* Completion checkbox */}
-      <button
-        type="button"
-        onClick={() => onComplete(task.id)}
-        className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-md border border-[var(--color-border-default)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
-        aria-label={`Complete ${task.text}`}
-      >
-        <Check
-          size={11}
-          strokeWidth={2.5}
-          className="text-transparent transition-colors group-hover:text-transparent [*:hover>&]:text-emerald-400"
-        />
-      </button>
+      <div className="flex h-5 shrink-0 items-center">
+        {completed ? (
+          <button
+            type="button"
+            onClick={() => onComplete(task.id)}
+            className="flex h-[18px] w-[18px] items-center justify-center rounded-[4px] bg-emerald-500 transition-colors hover:bg-emerald-400"
+            aria-label={`Restore ${task.text}`}
+          >
+            <Check size={11} strokeWidth={2.5} className="text-white" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onComplete(task.id)}
+            className="flex h-[18px] w-[18px] items-center justify-center rounded-[4px] border border-[var(--color-border-default)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
+            aria-label={`Complete ${task.text}`}
+          >
+            <Check
+              size={11}
+              strokeWidth={2.5}
+              className="text-transparent transition-colors group-hover:text-transparent [*:hover>&]:text-emerald-400"
+            />
+          </button>
+        )}
+      </div>
     </div>
   );
 });
