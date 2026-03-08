@@ -20,6 +20,7 @@ import { SettingsPanel } from "@/components/session/SettingsPanel";
 import { ActionBar } from "@/components/session/ActionBar";
 import { VibeBackground } from "@/components/session/VibeBackground";
 import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
+import { BreathingOverlay } from "@/components/session/BreathingOverlay";
 import { useRouter } from "next/navigation";
 import type { SessionPhase, SessionReflection } from "@/lib/types";
 import type { VibeId } from "@/lib/musicConstants";
@@ -39,6 +40,7 @@ export default function SessionPage() {
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [micActive, setMicActive] = useState(false);
   const [selectedVibe, setSelectedVibe] = useState<VibeId | null>(null);
+  const [sprintEntering, setSprintEntering] = useState(false);
   const reviewElapsedRef = useRef(0);
 
   // Only animate width when opening/closing, not when swapping panels
@@ -100,12 +102,22 @@ export default function SessionPage() {
       const sec = durationMinutes * 60;
       setDurationSec(sec);
       timer.reset(sec);
+      // TODO: Re-enable breathing overlay once onboarding context is added
+      // setPhase("breathing");
       timer.start();
       setPhase("sprint");
       setSprintGoalCardOpen(false);
     },
     [activeTask, timer.reset, timer.start]
   );
+
+  const handleBreathingComplete = useCallback(() => {
+    timer.start();
+    setSprintEntering(true);
+    setPhase("sprint");
+    // Clear entrance animation flag after it completes
+    setTimeout(() => setSprintEntering(false), 600);
+  }, [timer.start]);
 
   const durationMin = Math.round(durationSec / 60);
 
@@ -252,13 +264,11 @@ export default function SessionPage() {
           onAddTask={addTask}
           onDeleteTask={deleteTask}
           onStartSprint={handleStartSprint}
-          selectedVibe={selectedVibe}
-          onSelectVibe={setSelectedVibe}
         />
-      ) : (
+      ) : phase === "breathing" ? null : (
         <>
           {/* Main column: full session experience */}
-          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <div className={`flex min-w-0 flex-1 flex-col overflow-hidden ${sprintEntering ? "animate-fp-sprint-enter" : ""}`}>
             {phase !== "sprint" && phase !== "review" && (
               <TopBar
                 phase={phase}
@@ -372,6 +382,12 @@ export default function SessionPage() {
           </div>
         </>
       )}
+
+      <BreathingOverlay
+        isOpen={phase === "breathing"}
+        goalText={goal}
+        onComplete={handleBreathingComplete}
+      />
 
       <SessionReviewModal
         isOpen={phase === "review"}

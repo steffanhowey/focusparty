@@ -289,3 +289,61 @@ body {
     animation: none;
   }
 }
+
+/* Breathing overlay */
+@keyframes fp-breathe-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes fp-breathe-appear {
+  0%   { opacity: 0; transform: scale(0.4); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fp-breathe-text-enter {
+  0%   { opacity: 0; transform: translateY(6px); }
+  30%  { opacity: 1; transform: translateY(0); }
+  80%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
+@keyframes fp-breathe-fade-in {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Breathing → Sprint launch burst */
+@keyframes fp-breathe-launch {
+  0%   { transform: scale(1); opacity: 1; }
+  40%  { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes fp-breathe-glow-burst {
+  0%   { opacity: 0.08; }
+  30%  { opacity: 0.25; }
+  100% { opacity: 0; }
+}
+
+/* Sprint session entrance */
+@keyframes fp-sprint-enter {
+  0%   { opacity: 0; transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-fp-sprint-enter {
+  animation: fp-sprint-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-breathe-mandala {
+    animation: none !important;
+  }
+  .fp-breathe-petal {
+    transition: none !important;
+  }
+  .animate-fp-sprint-enter {
+    animation: none;
+  }
+}

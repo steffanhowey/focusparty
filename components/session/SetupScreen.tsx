@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronDown, ChevronRight, Plus, Check } from "lucide-react";
 import type { Task } from "@/lib/types";
-import { VIBES, VIBE_ICONS, type VibeId } from "@/lib/musicConstants";
 import { DurationPills } from "./DurationPills";
 
 interface SetupScreenProps {
@@ -15,8 +14,6 @@ interface SetupScreenProps {
   onAddTask: (text: string) => void;
   onDeleteTask: (taskId: string) => void;
   onStartSprint: (durationMinutes: number) => void;
-  selectedVibe: VibeId | null;
-  onSelectVibe: (vibeId: VibeId | null) => void;
 }
 
 const CARD_STYLE: React.CSSProperties = {
@@ -44,8 +41,6 @@ export function SetupScreen({
   onAddTask,
   onDeleteTask,
   onStartSprint,
-  selectedVibe,
-  onSelectVibe,
 }: SetupScreenProps) {
   const [taskPickerOpen, setTaskPickerOpen] = useState(!activeTask);
   const [duration, setDuration] = useState(25);
@@ -297,45 +292,6 @@ export function SetupScreen({
             <DurationPills value={duration} onChange={setDuration} />
           </div>
 
-          {/* Vibe selector */}
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
-              Session vibe
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => onSelectVibe(null)}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 ${
-                  selectedVibe === null
-                    ? "bg-[var(--color-accent-primary)] text-[var(--color-text-on-accent)]"
-                    : "border border-[var(--color-border-default)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
-                }`}
-              >
-                None
-              </button>
-              {VIBES.map((vibe) => {
-                const Icon = VIBE_ICONS[vibe.id];
-                const isActive = selectedVibe === vibe.id;
-                return (
-                  <button
-                    key={vibe.id}
-                    type="button"
-                    onClick={() => onSelectVibe(vibe.id)}
-                    className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 ${
-                      isActive
-                        ? "bg-[var(--color-accent-primary)] text-[var(--color-text-on-accent)]"
-                        : "border border-[var(--color-border-default)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
-                    }`}
-                  >
-                    <Icon size={12} strokeWidth={1.8} />
-                    {vibe.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Start button */}
           <button
             type="button"
@@ -344,7 +300,7 @@ export function SetupScreen({
             className="mt-2 h-12 w-full cursor-pointer rounded-full bg-[var(--color-accent-primary)] font-semibold text-[var(--color-text-on-accent)] transition-all duration-150 hover:bg-[var(--color-accent-secondary)] hover:shadow-[var(--shadow-glow-purple)] disabled:cursor-not-allowed disabled:opacity-40"
             style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
-            Start sprint
+            Let's focus
           </button>
         </div>
       </div>
