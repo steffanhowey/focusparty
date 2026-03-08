@@ -1,12 +1,15 @@
 "use client";
 
-import { memo, useRef, ReactNode } from "react";
+import { memo, useRef, useState, ReactNode } from "react";
 import {
   Mic,
   MicOff,
   Video,
   VideoOff,
+  MonitorUp,
+  ScreenShareOff,
   MessageCircle,
+  UserPlus,
   ListTodo,
   Settings,
   Music,
@@ -15,6 +18,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { MusicPopover } from "@/components/session/MusicPopover";
+import { InvitePopover } from "@/components/session/InvitePopover";
 import { DurationPills } from "./DurationPills";
 import { useTimerDisplay, type Timer } from "@/lib/useTimer";
 import type { VibeId, MusicStatus } from "@/lib/musicConstants";
@@ -44,6 +48,10 @@ interface ActionBarProps {
   chatActive: boolean;
   tasksActive: boolean;
   settingsActive: boolean;
+  screenShareActive: boolean;
+  onToggleScreenShare: () => void;
+  partyId: string | null;
+  inviteCode: string | null;
   onEndSession: () => void;
   music: MusicProps;
   timer: Timer;
@@ -78,6 +86,10 @@ export const ActionBar = memo(function ActionBar({
   chatActive,
   tasksActive,
   settingsActive,
+  screenShareActive,
+  onToggleScreenShare,
+  partyId,
+  inviteCode,
   onEndSession,
   music,
   timer,
@@ -88,6 +100,8 @@ export const ActionBar = memo(function ActionBar({
   onToggleGoalCard,
 }: ActionBarProps) {
   const musicWrapperRef = useRef<HTMLDivElement>(null);
+  const inviteWrapperRef = useRef<HTMLDivElement>(null);
+  const [invitePopoverOpen, setInvitePopoverOpen] = useState(false);
   const { formatted, seconds } = useTimerDisplay(timer);
   const iconShadow = { filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))" } as const;
   const btn =
@@ -210,17 +224,85 @@ export const ActionBar = memo(function ActionBar({
           </button>
         </Tip>
 
-        <Tip label="Chat">
+        <div ref={musicWrapperRef} className="relative">
+          <Tip label="Music">
+            <button
+              type="button"
+              onClick={music.togglePopover}
+              className={
+                music.popoverOpen || music.isPlaying ? activeBtn : defaultBtn
+              }
+              aria-label="Music"
+              aria-expanded={music.popoverOpen}
+              style={iconShadow}
+            >
+              <Music {...ICON} />
+            </button>
+          </Tip>
+
+          <MusicPopover
+            isOpen={music.popoverOpen}
+            onClose={music.closePopover}
+            wrapperRef={musicWrapperRef}
+            activeVibe={music.activeVibe}
+            onSelectVibe={music.selectVibe}
+            isPlaying={music.isPlaying}
+            onTogglePlayPause={music.togglePlayPause}
+            volume={music.volume}
+            onSetVolume={music.setVolume}
+            status={music.status}
+          />
+        </div>
+
+        <div ref={inviteWrapperRef} className="relative">
+          <Tip label="Invite">
+            <button
+              type="button"
+              onClick={() => setInvitePopoverOpen((prev) => !prev)}
+              className={invitePopoverOpen ? activeBtn : defaultBtn}
+              aria-label="Invite to party"
+              aria-expanded={invitePopoverOpen}
+              style={iconShadow}
+            >
+              <UserPlus {...ICON} />
+            </button>
+          </Tip>
+
+          <InvitePopover
+            isOpen={invitePopoverOpen}
+            onClose={() => setInvitePopoverOpen(false)}
+            wrapperRef={inviteWrapperRef}
+            inviteCode={inviteCode}
+          />
+        </div>
+
+        <div className="mx-0.5 h-6 w-px bg-white/10" />
+
+        <Tip label={screenShareActive ? "Stop sharing" : "Share screen"}>
           <button
             type="button"
-            onClick={onOpenChat}
-            className={chatActive ? activeBtn : defaultBtn}
-            aria-label="Chat"
+            onClick={onToggleScreenShare}
+            className={`relative flex h-10 cursor-pointer items-center gap-1.5 rounded-full px-4 text-xs font-medium transition-colors ${
+              screenShareActive
+                ? "bg-[var(--color-coral-700)] text-white hover:brightness-110"
+                : "bg-[var(--color-green-800)] text-white hover:bg-[var(--color-green-700)]"
+            }`}
+            aria-label={screenShareActive ? "Stop sharing" : "Share screen"}
             style={iconShadow}
           >
-            <MessageCircle {...ICON} />
+            {screenShareActive ? (
+              <ScreenShareOff size={16} strokeWidth={1.8} />
+            ) : (
+              <MonitorUp size={16} strokeWidth={1.8} />
+            )}
+            <span>{screenShareActive ? "Stop" : "Share"}</span>
+            {screenShareActive && (
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-[var(--color-coral-700)]" />
+            )}
           </button>
         </Tip>
+
+        <div className="mx-0.5 h-6 w-px bg-white/10" />
 
         <Tip label="Tasks">
           <button
@@ -233,61 +315,44 @@ export const ActionBar = memo(function ActionBar({
             <ListTodo {...ICON} />
           </button>
         </Tip>
-      <div ref={musicWrapperRef} className="relative">
-        <Tip label="Music">
+
+        <Tip label="Chat">
           <button
             type="button"
-            onClick={music.togglePopover}
-            className={
-              music.popoverOpen || music.isPlaying ? activeBtn : defaultBtn
-            }
-            aria-label="Music"
-            aria-expanded={music.popoverOpen}
+            onClick={onOpenChat}
+            className={chatActive ? activeBtn : defaultBtn}
+            aria-label="Chat"
             style={iconShadow}
           >
-            <Music {...ICON} />
+            <MessageCircle {...ICON} />
           </button>
         </Tip>
 
-        <MusicPopover
-          isOpen={music.popoverOpen}
-          onClose={music.closePopover}
-          wrapperRef={musicWrapperRef}
-          activeVibe={music.activeVibe}
-          onSelectVibe={music.selectVibe}
-          isPlaying={music.isPlaying}
-          onTogglePlayPause={music.togglePlayPause}
-          volume={music.volume}
-          onSetVolume={music.setVolume}
-          status={music.status}
-        />
-      </div>
+        <Tip label="Settings">
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className={settingsActive ? activeBtn : defaultBtn}
+            aria-label="Settings"
+            style={iconShadow}
+          >
+            <Settings {...ICON} />
+          </button>
+        </Tip>
 
-      <Tip label="Settings">
-        <button
-          type="button"
-          onClick={onOpenSettings}
-          className={settingsActive ? activeBtn : defaultBtn}
-          aria-label="Settings"
-          style={iconShadow}
-        >
-          <Settings {...ICON} />
-        </button>
-      </Tip>
+        <div className="mx-0.5 h-6 w-px bg-white/10" />
 
-      <div className="mx-0.5 h-6 w-px bg-white/10" />
-
-      <Tip label="Leave">
-        <button
-          type="button"
-          onClick={onEndSession}
-          className={`${btn} text-[var(--color-coral-700)] hover:bg-white/10`}
-          aria-label="End session"
-          style={iconShadow}
-        >
-          <LogOut {...ICON} />
-        </button>
-      </Tip>
+        <Tip label="Leave">
+          <button
+            type="button"
+            onClick={onEndSession}
+            className={`${btn} text-[var(--color-coral-700)] hover:bg-white/10`}
+            aria-label="End session"
+            style={iconShadow}
+          >
+            <LogOut {...ICON} />
+          </button>
+        </Tip>
     </div>
     </>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/shell/Logo";
@@ -8,70 +8,46 @@ import { Card } from "@/components/ui/Card";
 import { FlameIcon } from "@/components/ui/FlameIcon";
 import { Button } from "@/components/ui/Button";
 import { CHARACTERS } from "@/lib/constants";
-import {
-  getParty,
-  getPartyParticipants,
-  joinParty,
-  type Party,
-  type PartyParticipant,
-} from "@/lib/parties";
+import { joinParty, type Party } from "@/lib/parties";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-export default function JoinPartyPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
-  const router = useRouter();
-  const { userId, displayName, isAuthenticated, requireAuth } = useCurrentUser();
+interface JoinCardProps {
+  party: Party | null;
+  inviterName: string | null;
+  participantCount: number;
+  inviteCode: string;
+}
 
-  const [party, setParty] = useState<Party | null>(null);
-  const [participants, setParticipants] = useState<PartyParticipant[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+export function JoinCard({
+  party,
+  inviterName,
+  participantCount,
+  inviteCode,
+}: JoinCardProps) {
+  const router = useRouter();
+  const { userId, displayName, isAuthenticated } = useCurrentUser();
   const [joining, setJoining] = useState(false);
 
-  const loadParty = useCallback(async () => {
-    try {
-      const [p, pp] = await Promise.all([
-        getParty(id),
-        getPartyParticipants(id),
-      ]);
-      if (!p) {
-        setNotFound(true);
-      } else {
-        setParty(p);
-        setParticipants(pp);
-      }
-    } catch {
-      setNotFound(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    loadParty();
-  }, [loadParty]);
+  const isFull = party ? participantCount >= party.max_participants : false;
+  const isCompleted = party?.status === "completed";
+  const isActive = party?.status === "active";
+  const canJoin = !isFull && !isCompleted && isAuthenticated;
 
   const handleJoin = async () => {
-    if (joining) return;
-    if (!requireAuth(`/join/${id}`)) return;
+    if (joining || !party) return;
+    if (!isAuthenticated) {
+      router.push(`/login?next=${encodeURIComponent(`/i/${inviteCode}`)}`);
+      return;
+    }
 
     setJoining(true);
     try {
-      await joinParty(id, userId!, displayName);
-      router.push(party?.status === "active" ? "/session" : `/party/${id}`);
+      await joinParty(party.id, userId!, displayName);
+      router.push(party.status === "active" ? "/session" : `/party/${party.id}`);
     } catch {
       setJoining(false);
     }
   };
-
-  const isFull = party ? participants.length >= party.max_participants : false;
-  const isCompleted = party?.status === "completed";
-  const isActive = party?.status === "active";
-  const canJoin = !isFull && !isCompleted && isAuthenticated;
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
@@ -88,13 +64,7 @@ export default function JoinPartyPage({
       </header>
 
       <main className="mx-auto max-w-md px-4 py-16 sm:py-24">
-        {loading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-text-tertiary)] border-t-transparent" />
-          </div>
-        )}
-
-        {!loading && notFound && (
+        {!party && (
           <div className="text-center">
             <h1 className="text-2xl font-semibold text-white">
               Party not found
@@ -111,14 +81,21 @@ export default function JoinPartyPage({
           </div>
         )}
 
-        {!loading && !notFound && party && (
+        {party && (
           <>
-            <h1
-              className="mb-6 text-2xl font-semibold text-white"
-              style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
-            >
-              Join party
-            </h1>
+            {inviterName ? (
+              <p className="mb-6 text-sm text-[var(--color-text-secondary)]">
+                <span className="font-medium text-white">{inviterName}</span>{" "}
+                invited you to focus together
+              </p>
+            ) : (
+              <h1
+                className="mb-6 text-2xl font-semibold text-white"
+                style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+              >
+                Join party
+              </h1>
+            )}
 
             <Card
               variant="character"
@@ -144,7 +121,7 @@ export default function JoinPartyPage({
                     hosting
                   </p>
                   <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
-                    {participants.length}/{party.max_participants} participants
+                    {participantCount}/{party.max_participants} participants
                     joined
                   </p>
                 </div>
@@ -183,7 +160,11 @@ export default function JoinPartyPage({
                   onClick={handleJoin}
                   disabled={!canJoin || joining}
                 >
-                  {joining ? "Joining..." : isAuthenticated ? "Join Party" : "Sign in to join"}
+                  {joining
+                    ? "Joining..."
+                    : isAuthenticated
+                      ? "Join Party"
+                      : "Sign in to join"}
                 </Button>
               </>
             )}

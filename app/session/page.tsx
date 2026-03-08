@@ -4,10 +4,12 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useTimer } from "@/lib/useTimer";
 import { useCamera } from "@/lib/useCamera";
+import { useScreenShare } from "@/lib/useScreenShare";
 import { useChat } from "@/lib/useChat";
 import { useSettings } from "@/lib/useSettings";
 import { useTasks } from "@/lib/useTasks";
 import { useMusic } from "@/lib/useMusic";
+import { useActiveParty } from "@/lib/useActiveParty";
 import { TopBar } from "@/components/session/TopBar";
 import { SplitScreen } from "@/components/session/SplitScreen";
 import { StartSessionModal } from "@/components/session/StartSessionModal";
@@ -51,6 +53,8 @@ export default function SessionPage() {
 
   const timer = useTimer(durationSec, handleTimerComplete);
   const camera = useCamera(false);
+  const screenShare = useScreenShare();
+  const { party, partyId } = useActiveParty();
   const chat = useChat();
   const { settings, updateSetting } = useSettings();
   const music = useMusic();
@@ -116,9 +120,10 @@ export default function SessionPage() {
   const handleEndSession = useCallback(() => {
     timer.pause();
     camera.stop();
+    screenShare.stop();
     music.pause();
     setPhase("review");
-  }, [timer.pause, camera.stop, music.pause]);
+  }, [timer.pause, camera.stop, screenShare.stop, music.pause]);
 
   const handleAnotherRound = useCallback(() => {
     timer.reset(durationSec);
@@ -231,6 +236,7 @@ export default function SessionPage() {
           <SplitScreen
             character={characterAccent}
             leftPanel={cameraPanelNode}
+            screenShareStream={screenShare.stream}
           />
 
           {/* Click-away to close timer dropdown */}
@@ -272,6 +278,10 @@ export default function SessionPage() {
               chatActive={activePanel === "chat"}
               tasksActive={activePanel === "tasks"}
               settingsActive={activePanel === "settings"}
+              screenShareActive={screenShare.isActive}
+              onToggleScreenShare={screenShare.toggle}
+              partyId={partyId}
+              inviteCode={party?.invite_code ?? null}
               onEndSession={handleEndSession}
               music={{
                 popoverOpen: music.popoverOpen,

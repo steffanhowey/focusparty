@@ -106,13 +106,26 @@ export function useTasks() {
     persistActiveTaskId(taskId);
   }, []);
 
+  const reorderTasks = useCallback((activeId: string, overId: string) => {
+    setTasks((prev) => {
+      const oldIndex = prev.findIndex((t) => t.id === activeId);
+      const newIndex = prev.findIndex((t) => t.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      const next = [...prev];
+      const [removed] = next.splice(oldIndex, 1);
+      next.splice(newIndex, 0, removed);
+      persistTasks(next);
+      return next;
+    });
+  }, []);
+
   const activeTask = useMemo(
     () => tasks.find((t) => t.id === activeTaskId) ?? null,
     [tasks, activeTaskId]
   );
 
   const activeTasks = useMemo(
-    () => tasks.filter((t) => !t.completed).sort((a, b) => b.createdAt - a.createdAt),
+    () => tasks.filter((t) => !t.completed),
     [tasks]
   );
 
@@ -133,5 +146,6 @@ export function useTasks() {
     deleteTask,
     editTask,
     selectTask,
+    reorderTasks,
   };
 }

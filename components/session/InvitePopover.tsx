@@ -1,0 +1,143 @@
+"use client";
+
+import { type RefObject, useEffect, useState } from "react";
+import { Link2, Check, Copy } from "lucide-react";
+import { useNotification } from "@/components/providers/NotificationProvider";
+import { useCurrentUser } from "@/lib/useCurrentUser";
+
+interface InvitePopoverProps {
+  isOpen: boolean;
+  onClose: () => void;
+  wrapperRef: RefObject<HTMLDivElement | null>;
+  inviteCode: string | null;
+}
+
+export function InvitePopover({
+  isOpen,
+  onClose,
+  wrapperRef,
+  inviteCode,
+}: InvitePopoverProps) {
+  const { showToast } = useNotification();
+  const { userId } = useCurrentUser();
+  const [copied, setCopied] = useState(false);
+
+  // Click-outside and Escape to close (same pattern as MusicPopover)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
+        onClose();
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [isOpen, onClose, wrapperRef]);
+
+  // Reset copied state when popover closes
+  useEffect(() => {
+    if (!isOpen) setCopied(false);
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const joinUrl =
+    typeof window !== "undefined" && inviteCode
+      ? `${window.location.origin}/i/${inviteCode}${userId ? `?from=${userId}` : ""}`
+      : null;
+
+  const handleCopy = async () => {
+    if (!joinUrl) return;
+    try {
+      await navigator.clipboard.writeText(joinUrl);
+      setCopied(true);
+      showToast({
+        type: "success",
+        title: "Link copied!",
+        message: "Share it with friends to invite them.",
+        duration: 3000,
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Copy failed",
+        message: "Your browser blocked clipboard access.",
+        duration: 4000,
+      });
+    }
+  };
+
+  return (
+    <div
+      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl"
+      style={{
+        background: "rgba(13,14,32,0.65)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        zIndex: 40,
+        minWidth: 280,
+        textShadow: "0 1px 4px rgba(0,0,0,0.5)",
+        boxShadow:
+          "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+      }}
+      role="dialog"
+      aria-label="Invite to party"
+    >
+      {inviteCode && joinUrl ? (
+        <>
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            Invite Link
+          </p>
+          <div className="flex gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-white/[0.06] px-3 py-2">
+              <Link2
+                size={14}
+                className="shrink-0 text-[var(--color-text-tertiary)]"
+              />
+              <span className="truncate text-xs text-[var(--color-text-secondary)]">
+                {typeof window !== "undefined" ? `${window.location.host}/i/${inviteCode}` : ""}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-[var(--color-accent-primary)] px-3 text-xs font-medium text-white transition-all hover:brightness-110"
+            >
+              {copied ? (
+                <>
+                  <Check size={14} />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy size={14} />
+                  Copy
+                </>
+              )}
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="py-2 text-center">
+          <p className="text-sm font-medium text-[var(--color-text-secondary)]">
+            No active party
+          </p>
+          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+            Create a party from the hub to invite friends.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,4 +1,5 @@
 import { createClient } from "./supabase/client";
+import { generateInviteCode } from "./inviteCode";
 import type { CharacterId } from "./types";
 
 // ---------- Types ----------
@@ -14,6 +15,7 @@ export interface Party {
   max_participants: number;
   status: PartyStatus;
   created_at: string;
+  invite_code: string;
 }
 
 export interface PartyParticipant {
@@ -93,6 +95,43 @@ export async function getPartyParticipants(
   return data ?? [];
 }
 
+/** Find the user's currently active party (if any). */
+export async function getActivePartyForUser(
+  userId: string
+): Promise<Party | null> {
+  const { data, error } = await createClient()
+    .from("fp_party_participants")
+    .select("party_id, fp_parties!inner(*)")
+    .eq("user_id", userId)
+    .is("left_at", null)
+    .eq("fp_parties.status", "active")
+    .order("joined_at", { ascending: false })
+    .limit(1);
+
+  if (error) throw error;
+  if (!data || data.length === 0) return null;
+
+  const row = data[0] as unknown as { party_id: string; fp_parties: Party };
+  return row.fp_parties ?? null;
+}
+
+/** Fetch a single party by invite code. */
+export async function getPartyByInviteCode(
+  code: string
+): Promise<Party | null> {
+  const { data, error } = await createClient()
+    .from("fp_parties")
+    .select("*")
+    .eq("invite_code", code)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null; // not found
+    throw error;
+  }
+  return data;
+}
+
 // ---------- Mutations ----------
 
 export interface CreatePartyInput {
@@ -109,13 +148,29 @@ export async function createParty(
   input: CreatePartyInput,
   creatorDisplayName: string
 ): Promise<Party> {
+  const invite_code = generateInviteCode();
+
   const { data, error } = await createClient()
     .from("fp_parties")
-    .insert(input)
+    .insert({ ...input, invite_code })
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    // Retry once on invite_code collision (unique constraint violation)
+    if (error.code === "23505" && error.message?.includes("invite_code")) {
+      const retryCode = generateInviteCode();
+      const { data: retryData, error: retryError } = await createClient()
+        .from("fp_parties")
+        .insert({ ...input, invite_code: retryCode })
+        .select()
+        .single();
+      if (retryError) throw retryError;
+      await joinParty(retryData.id, input.creator_id, creatorDisplayName);
+      return retryData;
+    }
+    throw error;
+  }
 
   // Auto-join creator as first participant
   await joinParty(data.id, input.creator_id, creatorDisplayName);
