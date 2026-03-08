@@ -54,10 +54,40 @@ export function usePointerDrag(
     const el = dragRef.current;
     if (!el) return;
 
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!draggingRef.current) return;
+      e.preventDefault();
+
+      const dx = e.clientX - startRef.current.px;
+      const dy = e.clientY - startRef.current.py;
+      distRef.current = Math.max(distRef.current, Math.abs(dx) + Math.abs(dy));
+
+      const b = boundsRef.current;
+      const nx = Math.max(b.minX, Math.min(b.maxX, startRef.current.sx + dx));
+      const ny = Math.max(b.minY, Math.min(b.maxY, startRef.current.sy + dy));
+
+      posRef.current = { x: nx, y: ny };
+      applyTransform(nx, ny);
+    };
+
+    const handlePointerUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+
+      if (distRef.current >= threshold) {
+        wasDraggedRef.current = true;
+      }
+
+      el.style.cursor = "grab";
+      setPos({ ...posRef.current });
+
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+    };
+
     const handlePointerDown = (e: PointerEvent) => {
       if (!e.isPrimary) return;
-
-      el.setPointerCapture(e.pointerId);
 
       // Compute bounds once per drag gesture
       const parent = el.offsetParent as HTMLElement | null;
@@ -84,52 +114,19 @@ export function usePointerDrag(
       distRef.current = 0;
       wasDraggedRef.current = false;
       el.style.cursor = "grabbing";
-    };
 
-    const handlePointerMove = (e: PointerEvent) => {
-      if (!draggingRef.current) return;
-      e.preventDefault();
-
-      const dx = e.clientX - startRef.current.px;
-      const dy = e.clientY - startRef.current.py;
-      distRef.current = Math.max(distRef.current, Math.abs(dx) + Math.abs(dy));
-
-      const b = boundsRef.current;
-      const nx = Math.max(b.minX, Math.min(b.maxX, startRef.current.sx + dx));
-      const ny = Math.max(b.minY, Math.min(b.maxY, startRef.current.sy + dy));
-
-      posRef.current = { x: nx, y: ny };
-      applyTransform(nx, ny);
-    };
-
-    const handlePointerUp = (e: PointerEvent) => {
-      if (!draggingRef.current) return;
-      draggingRef.current = false;
-
-      try {
-        el.releasePointerCapture(e.pointerId);
-      } catch {
-        // Already released
-      }
-
-      if (distRef.current >= threshold) {
-        wasDraggedRef.current = true;
-      }
-
-      el.style.cursor = "grab";
-      setPos({ ...posRef.current });
+      window.addEventListener("pointermove", handlePointerMove, { passive: false });
+      window.addEventListener("pointerup", handlePointerUp);
+      window.addEventListener("pointercancel", handlePointerUp);
     };
 
     el.addEventListener("pointerdown", handlePointerDown);
-    el.addEventListener("pointermove", handlePointerMove, { passive: false });
-    el.addEventListener("pointerup", handlePointerUp);
-    el.addEventListener("pointercancel", handlePointerUp);
 
     return () => {
       el.removeEventListener("pointerdown", handlePointerDown);
-      el.removeEventListener("pointermove", handlePointerMove);
-      el.removeEventListener("pointerup", handlePointerUp);
-      el.removeEventListener("pointercancel", handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
       cancelAnimationFrame(rafRef.current);
     };
   }, [threshold, applyTransform]);

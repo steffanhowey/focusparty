@@ -34,6 +34,13 @@ export function useCamera(initiallyActive = false) {
     if (isRequestingRef.current) return;
 
     isRequestingRef.current = true;
+
+    // Stop existing stream before starting new one (e.g. device switch)
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
     updateStatus("requesting");
 
     try {

@@ -60,7 +60,7 @@ export const SplitScreen = memo(function SplitScreen({
 
       {/* ── PiP overlay (lower-left) — screen share replaces camera when active ── */}
       <div
-        className="absolute bottom-6 left-6 z-10 h-36 w-48 overflow-hidden rounded-xl border border-white/[0.12]"
+        className="absolute bottom-10 left-10 z-10 h-36 w-48 overflow-hidden rounded-xl border border-white/[0.12]"
         style={{
           background: "rgba(13,14,32,0.65)",
           backdropFilter: "blur(24px)",

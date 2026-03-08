@@ -13,14 +13,15 @@ import { useActiveParty } from "@/lib/useActiveParty";
 import { TopBar } from "@/components/session/TopBar";
 import { SplitScreen } from "@/components/session/SplitScreen";
 import { StartSessionModal } from "@/components/session/StartSessionModal";
-import { ReviewCard } from "@/components/session/ReviewCard";
+import { SessionReviewModal } from "@/components/session/SessionReviewModal";
 import { CameraPanel } from "@/components/session/CameraPanel";
 import { SideDrawer } from "@/components/session/SideDrawer";
 import { SettingsPanel } from "@/components/session/SettingsPanel";
 import { ActionBar } from "@/components/session/ActionBar";
 import { VibeBackground } from "@/components/session/VibeBackground";
 import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
-import type { SessionPhase } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import type { SessionPhase, SessionReflection } from "@/lib/types";
 import type { VibeId } from "@/lib/musicConstants";
 
 type SidePanel = "none" | "tasks" | "chat" | "settings";
@@ -28,6 +29,7 @@ const PANEL_WIDTH = 380;
 const DEFAULT_DURATION_SEC = 25 * 60;
 
 export default function SessionPage() {
+  const router = useRouter();
   const { characterAccent } = useTheme();
   const [phase, setPhase] = useState<SessionPhase>("setup");
   const [goal, setGoal] = useState("");
@@ -37,6 +39,7 @@ export default function SessionPage() {
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [micActive, setMicActive] = useState(false);
   const [selectedVibe, setSelectedVibe] = useState<VibeId | null>(null);
+  const reviewElapsedRef = useRef(0);
 
   // Only animate width when opening/closing, not when swapping panels
   const panelOpen = activePanel !== "none";
@@ -47,9 +50,11 @@ export default function SessionPage() {
   }, [activePanel]);
   const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
 
+
   const handleTimerComplete = useCallback(() => {
+    reviewElapsedRef.current = durationSec;
     setPhase("review");
-  }, []);
+  }, [durationSec]);
 
   const timer = useTimer(durationSec, handleTimerComplete);
   const camera = useCamera(false);
@@ -120,12 +125,13 @@ export default function SessionPage() {
   }, [durationSec, timer.reset, timer.start]);
 
   const handleEndSession = useCallback(() => {
+    reviewElapsedRef.current = durationSec - timer.getSnapshot().seconds;
     timer.pause();
     camera.stop();
     screenShare.stop();
     music.pause();
     setPhase("review");
-  }, [timer.pause, camera.stop, screenShare.stop, music.pause]);
+  }, [durationSec, timer.getSnapshot, timer.pause, camera.stop, screenShare.stop, music.pause]);
 
   const handleAnotherRound = useCallback(() => {
     timer.reset(durationSec);
@@ -133,17 +139,15 @@ export default function SessionPage() {
     setPhase("sprint");
   }, [durationSec, timer.reset, timer.start]);
 
-  const handleTakeBreak = useCallback(() => {
-    setPhase("break");
-  }, []);
+  const handleDone = useCallback(() => {
+    router.push("/party");
+  }, [router]);
 
-  const handleOutcome = useCallback(
-    (outcome: string) => {
-      if (outcome === "Done" && activeTask) {
-        completeTask(activeTask.id);
-      }
+  const handleReflectionComplete = useCallback(
+    (_reflection: SessionReflection) => {
+      // Future: persist to Supabase
     },
-    [activeTask, completeTask]
+    []
   );
 
   const handleStartTask = useCallback(
@@ -223,7 +227,7 @@ export default function SessionPage() {
 
       {/* Main column: full session experience */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {phase !== "sprint" && (
+        {phase !== "sprint" && phase !== "review" && (
           <TopBar
             phase={phase}
             drawerOpen={activePanel === "tasks"}
@@ -306,15 +310,6 @@ export default function SessionPage() {
             />
           )}
 
-          {phase === "review" && (
-            <ReviewCard
-              goal={goal}
-              onAnotherRound={handleAnotherRound}
-              onTakeBreak={handleTakeBreak}
-              onOutcome={handleOutcome}
-            />
-          )}
-
         </div>
       </div>
 
@@ -375,6 +370,15 @@ export default function SessionPage() {
         onStartSprint={handleStartSprint}
         selectedVibe={selectedVibe}
         onSelectVibe={setSelectedVibe}
+      />
+
+      <SessionReviewModal
+        isOpen={phase === "review"}
+        sessionDurationSec={durationSec}
+        elapsedSec={reviewElapsedRef.current}
+        onAnotherRound={handleAnotherRound}
+        onDone={handleDone}
+        onReflectionComplete={handleReflectionComplete}
       />
 
       <SwitchTaskModal

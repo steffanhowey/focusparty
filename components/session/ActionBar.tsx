@@ -119,7 +119,7 @@ export const ActionBar = memo(function ActionBar({
       {/* ── Floating timer pill ── */}
       <div
         ref={dragRef}
-        className="absolute top-6 left-1/2 z-20"
+        className="absolute top-10 left-1/2 z-20"
         style={dragStyle}
       >
         <div className="relative">

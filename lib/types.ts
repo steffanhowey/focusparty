@@ -111,6 +111,17 @@ export interface Task {
   completedAt: number | null;
 }
 
+export type SessionMood = "energized" | "focused" | "neutral" | "tired" | "frustrated";
+
+export type ProductivityRating = 1 | 2 | 3 | 4 | 5;
+
+export interface SessionReflection {
+  mood: SessionMood | null;
+  productivity: ProductivityRating | null;
+  completedAt: string;
+  sessionDurationSec: number;
+}
+
 export type ToastType = "info" | "success" | "warning" | "error" | "celebration";
 
 export interface ToastItem {

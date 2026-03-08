@@ -104,24 +104,29 @@ function AudioVideoContent({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mountedRef = useRef(true);
+  const requestIdRef = useRef(0);
 
   const stopPreview = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
   }, []);
 
   const startPreview = useCallback(
     async (deviceId?: string) => {
       stopPreview();
+      const id = ++requestIdRef.current;
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: deviceId ? { deviceId: { exact: deviceId } } : true,
           audio: false,
         });
-        // If unmounted while awaiting, stop immediately
-        if (!mountedRef.current) {
+        // Stale request (strict-mode remount) or unmounted — kill immediately
+        if (!mountedRef.current || id !== requestIdRef.current) {
           stream.getTracks().forEach((t) => t.stop());
           return;
         }
@@ -140,6 +145,7 @@ function AudioVideoContent({
     startPreview(settings.selectedCameraId || undefined);
     return () => {
       mountedRef.current = false;
+      requestIdRef.current++;   // invalidate any in-flight getUserMedia
       stopPreview();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
