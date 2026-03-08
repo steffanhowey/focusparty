@@ -8,7 +8,7 @@ interface DurationPillsProps {
 }
 
 /**
- * Shared sprint duration pill selector. Used in GoalCard, StartSessionModal, and TimerDropdown.
+ * Shared sprint duration pill selector. Used in SetupScreen, GoalCard, and TimerDropdown.
  */
 export function DurationPills({ value, onChange }: DurationPillsProps) {
   return (

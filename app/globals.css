@@ -273,3 +273,19 @@ body {
     animation: none;
   }
 }
+
+/* Setup screen entrance */
+@keyframes fp-setup-enter {
+  0% { transform: scale(0.95) translateY(8px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.animate-fp-setup-enter {
+  animation: fp-setup-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fp-setup-enter {
+    animation: none;
+  }
+}

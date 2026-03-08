@@ -90,7 +90,7 @@ export const VIBE_BACKGROUNDS: Record<VibeId, VibeBackground> = {
   },
 };
 
-/* ─── Vibe icons (shared by MusicPopover + StartSessionModal) */
+/* ─── Vibe icons (shared by MusicPopover + SetupScreen) */
 
 import { TreePine, Zap, Brain, Moon, type LucideIcon } from "lucide-react";
 

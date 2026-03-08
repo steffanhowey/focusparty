@@ -12,7 +12,7 @@ import { useMusic } from "@/lib/useMusic";
 import { useActiveParty } from "@/lib/useActiveParty";
 import { TopBar } from "@/components/session/TopBar";
 import { SplitScreen } from "@/components/session/SplitScreen";
-import { StartSessionModal } from "@/components/session/StartSessionModal";
+import { SetupScreen } from "@/components/session/SetupScreen";
 import { SessionReviewModal } from "@/components/session/SessionReviewModal";
 import { CameraPanel } from "@/components/session/CameraPanel";
 import { SideDrawer } from "@/components/session/SideDrawer";
@@ -64,15 +64,15 @@ export default function SessionPage() {
   const { settings, updateSetting } = useSettings();
   const music = useMusic();
 
-  // Sync background vibe with music vibe changes (skip initial mount)
+  // Sync background vibe with music vibe changes (only during sprint)
   const musicVibeInitRef = useRef(true);
   useEffect(() => {
     if (musicVibeInitRef.current) {
       musicVibeInitRef.current = false;
       return;
     }
-    if (music.activeVibe) setSelectedVibe(music.activeVibe);
-  }, [music.activeVibe]);
+    if (phase === "sprint" && music.activeVibe) setSelectedVibe(music.activeVibe);
+  }, [music.activeVibe, phase]);
 
   const {
     activeTasks,
@@ -225,152 +225,153 @@ export default function SessionPage() {
     >
       {selectedVibe && <VibeBackground activeVibe={selectedVibe} />}
 
-      {/* Main column: full session experience */}
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {phase !== "sprint" && phase !== "review" && (
-          <TopBar
-            phase={phase}
-            drawerOpen={activePanel === "tasks"}
-            onToggleDrawer={handleToggleTasks}
-            settingsOpen={activePanel === "settings"}
-            onToggleSettings={handleToggleSettings}
-            onEndSession={handleEndSession}
-          />
-        )}
+      {/* Hidden YouTube player — must stay mounted across phases */}
+      <div
+        data-music-container
+        style={{
+          position: "fixed",
+          bottom: 0,
+          right: 0,
+          width: 200,
+          height: 200,
+          clipPath: "inset(100%)",
+          overflow: "hidden",
+          pointerEvents: "none",
+        }}
+      >
+        <div id={music.playerContainerId} />
+      </div>
 
-        <div className="relative flex flex-1 flex-col overflow-hidden">
-          <SplitScreen
-            character={characterAccent}
-            leftPanel={cameraPanelNode}
-            screenShareStream={screenShare.stream}
-          />
+      {phase === "setup" ? (
+        <SetupScreen
+          activeTask={activeTask}
+          activeTasks={activeTasks}
+          completedTasks={completedTasks}
+          onStartTask={selectTask}
+          onCompleteTask={completeTask}
+          onAddTask={addTask}
+          onDeleteTask={deleteTask}
+          onStartSprint={handleStartSprint}
+          selectedVibe={selectedVibe}
+          onSelectVibe={setSelectedVibe}
+        />
+      ) : (
+        <>
+          {/* Main column: full session experience */}
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+            {phase !== "sprint" && phase !== "review" && (
+              <TopBar
+                phase={phase}
+                drawerOpen={activePanel === "tasks"}
+                onToggleDrawer={handleToggleTasks}
+                settingsOpen={activePanel === "settings"}
+                onToggleSettings={handleToggleSettings}
+                onEndSession={handleEndSession}
+              />
+            )}
 
-          {/* Click-away to close timer dropdown */}
-          {phase === "sprint" && sprintGoalCardOpen && (
-            <div
-              className="absolute inset-0 z-10"
-              onClick={handleCloseGoalCard}
-            />
-          )}
+            <div className="relative flex flex-1 flex-col overflow-hidden">
+              <SplitScreen
+                character={characterAccent}
+                leftPanel={cameraPanelNode}
+                screenShareStream={screenShare.stream}
+              />
 
-          {/* Hidden YouTube player — wrapper keeps clip-path styling
-              while inner div gets replaced by YouTube iframe on each
-              createPlayer call (destroy removes the iframe) */}
-          <div
-            data-music-container
-            style={{
-              position: "fixed",
-              bottom: 0,
-              right: 0,
-              width: 200,
-              height: 200,
-              clipPath: "inset(100%)",
-              overflow: "hidden",
-              pointerEvents: "none",
-            }}
-          >
-            <div id={music.playerContainerId} />
+              {/* Click-away to close timer dropdown */}
+              {phase === "sprint" && sprintGoalCardOpen && (
+                <div
+                  className="absolute inset-0 z-10"
+                  onClick={handleCloseGoalCard}
+                />
+              )}
+
+              {phase === "sprint" && (
+                <ActionBar
+                  micActive={micActive}
+                  onToggleMic={handleToggleMic}
+                  cameraActive={camera.isActive}
+                  onToggleCamera={camera.toggle}
+                  onOpenChat={handleToggleChat}
+                  onOpenTasks={handleToggleTasks}
+                  onOpenSettings={handleToggleSettings}
+                  chatActive={activePanel === "chat"}
+                  tasksActive={activePanel === "tasks"}
+                  settingsActive={activePanel === "settings"}
+                  screenShareActive={screenShare.isActive}
+                  onToggleScreenShare={screenShare.toggle}
+                  partyId={partyId}
+                  inviteCode={party?.invite_code ?? null}
+                  onEndSession={handleEndSession}
+                  music={{
+                    popoverOpen: music.popoverOpen,
+                    togglePopover: music.togglePopover,
+                    closePopover: music.closePopover,
+                    activeVibe: music.activeVibe,
+                    selectVibe: music.selectVibe,
+                    isPlaying: music.isPlaying,
+                    togglePlayPause: music.togglePlayPause,
+                    volume: music.volume,
+                    setVolume: music.setVolume,
+                    status: music.status,
+                  }}
+                  timer={timer}
+                  currentDurationMin={durationMin}
+                  onChangeDuration={handleChangeDuration}
+                  onResetTimer={handleResetTimer}
+                  goalCardOpen={sprintGoalCardOpen}
+                  onToggleGoalCard={handleToggleGoalCard}
+                />
+              )}
+
+            </div>
           </div>
 
-          {phase === "sprint" && (
-            <ActionBar
-              micActive={micActive}
-              onToggleMic={handleToggleMic}
-              cameraActive={camera.isActive}
-              onToggleCamera={camera.toggle}
-              onOpenChat={handleToggleChat}
-              onOpenTasks={handleToggleTasks}
-              onOpenSettings={handleToggleSettings}
-              chatActive={activePanel === "chat"}
-              tasksActive={activePanel === "tasks"}
-              settingsActive={activePanel === "settings"}
-              screenShareActive={screenShare.isActive}
-              onToggleScreenShare={screenShare.toggle}
-              partyId={partyId}
-              inviteCode={party?.invite_code ?? null}
-              onEndSession={handleEndSession}
-              music={{
-                popoverOpen: music.popoverOpen,
-                togglePopover: music.togglePopover,
-                closePopover: music.closePopover,
-                activeVibe: music.activeVibe,
-                selectVibe: music.selectVibe,
-                isPlaying: music.isPlaying,
-                togglePlayPause: music.togglePlayPause,
-                volume: music.volume,
-                setVolume: music.setVolume,
-                status: music.status,
+          {/* Right column: shared side panel (pushes entire left column) */}
+          <div
+            className={`flex-shrink-0 overflow-hidden ${shouldAnimatePanel ? "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""}`}
+            style={{ width: panelOpen ? PANEL_WIDTH : 0 }}
+          >
+            <aside
+              className="flex flex-col rounded-xl border border-[var(--color-border-default)]"
+              style={{
+                width: PANEL_WIDTH - 16,
+                height: "calc(100% - 32px)",
+                margin: "16px 16px 16px 0",
+                background: "rgba(13,14,32,0.65)",
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
-              timer={timer}
-              currentDurationMin={durationMin}
-              onChangeDuration={handleChangeDuration}
-              onResetTimer={handleResetTimer}
-              goalCardOpen={sprintGoalCardOpen}
-              onToggleGoalCard={handleToggleGoalCard}
-            />
-          )}
-
-        </div>
-      </div>
-
-      {/* Right column: shared side panel (pushes entire left column) */}
-      <div
-        className={`flex-shrink-0 overflow-hidden ${shouldAnimatePanel ? "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""}`}
-        style={{ width: panelOpen ? PANEL_WIDTH : 0 }}
-      >
-        <aside
-          className="flex flex-col rounded-xl border border-[var(--color-border-default)]"
-          style={{
-            width: PANEL_WIDTH - 16,
-            height: "calc(100% - 32px)",
-            margin: "16px 16px 16px 0",
-            background: "rgba(13,14,32,0.65)",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
-          }}
-          role="complementary"
-          aria-label={activePanel === "tasks" ? "Tasks" : activePanel === "chat" ? "Chat" : "Settings"}
-        >
-          {(activePanel === "tasks" || activePanel === "chat") && (
-            <SideDrawer
-              onClose={closePanel}
-              panel={activePanel as "tasks" | "chat"}
-              activeTasks={activeTasks}
-              completedTasks={completedTasks}
-              onCompleteTask={completeTask}
-              onUncompleteTask={uncompleteTask}
-              onAddTask={addTask}
-              onDeleteTask={deleteTask}
-              onEditTask={editTask}
-              onReorderTasks={reorderTasks}
-              messages={chat.messages}
-              onSendMessage={chat.sendMessage}
-            />
-          )}
-          {activePanel === "settings" && (
-            <SettingsPanel
-              onClose={closePanel}
-              settings={settings}
-              onUpdateSetting={updateSetting}
-            />
-          )}
-        </aside>
-      </div>
-
-      <StartSessionModal
-        isOpen={phase === "setup"}
-        activeTask={activeTask}
-        activeTasks={activeTasks}
-        completedTasks={completedTasks}
-        onStartTask={handleStartTask}
-        onCompleteTask={completeTask}
-        onAddTask={addTask}
-        onDeleteTask={deleteTask}
-        onStartSprint={handleStartSprint}
-        selectedVibe={selectedVibe}
-        onSelectVibe={setSelectedVibe}
-      />
+              role="complementary"
+              aria-label={activePanel === "tasks" ? "Tasks" : activePanel === "chat" ? "Chat" : "Settings"}
+            >
+              {(activePanel === "tasks" || activePanel === "chat") && (
+                <SideDrawer
+                  onClose={closePanel}
+                  panel={activePanel as "tasks" | "chat"}
+                  activeTasks={activeTasks}
+                  completedTasks={completedTasks}
+                  onCompleteTask={completeTask}
+                  onUncompleteTask={uncompleteTask}
+                  onAddTask={addTask}
+                  onDeleteTask={deleteTask}
+                  onEditTask={editTask}
+                  onReorderTasks={reorderTasks}
+                  messages={chat.messages}
+                  onSendMessage={chat.sendMessage}
+                />
+              )}
+              {activePanel === "settings" && (
+                <SettingsPanel
+                  onClose={closePanel}
+                  settings={settings}
+                  onUpdateSetting={updateSetting}
+                />
+              )}
+            </aside>
+          </div>
+        </>
+      )}
 
       <SessionReviewModal
         isOpen={phase === "review"}

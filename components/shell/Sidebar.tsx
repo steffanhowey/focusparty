@@ -210,7 +210,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
         </div>
       ) : (
         <>
-          <div className="flex h-16 shrink-0 items-center justify-between gap-2 pl-4 pr-0">
+          <div className="flex h-16 shrink-0 items-center justify-between gap-2 px-4">
             <div className="flex min-w-0 flex-1 items-center">
               <Logo href="/party" variant={colorMode === "light" ? "light" : "dark"} />
             </div>
@@ -225,7 +225,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
               </button>
             )}
           </div>
-          <nav className={`flex flex-col ${NAV_ITEM_GAP} ${SECTION_GAP} pl-4 pr-0`}>
+          <nav className={`flex flex-col ${NAV_ITEM_GAP} ${SECTION_GAP} px-4`}>
             {NAV_ITEMS.map((item) => {
               const isActive = activeId === item.id;
               return (
@@ -238,7 +238,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                       onNavClick(item.href);
                     }
                   }}
-                  className="flex h-10 items-center gap-3 rounded-lg -ml-3 pl-3 pr-2.5 transition-[color,background] duration-150"
+                  className="flex h-10 items-center gap-3 rounded-lg -ml-2 pl-2 pr-3 transition-[color,background] duration-150"
                   style={{
                     background: isActive ? "var(--color-bg-active)" : "transparent",
                     color: isActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
@@ -253,10 +253,10 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
               );
             })}
           </nav>
-          <div ref={profileRef} className={`relative mt-auto flex flex-col gap-3 ${BOTTOM_PAD} pl-4 pr-0`}>
+          <div ref={profileRef} className={`relative mt-auto flex flex-col gap-3 ${BOTTOM_PAD} px-4`}>
             {profileMenuOpen && (
               <div
-                className="absolute bottom-full left-4 right-0 z-[var(--z-dropdown)] mb-2 overflow-hidden rounded-lg shadow-lg"
+                className="absolute bottom-full left-0 right-0 z-[var(--z-dropdown)] mb-2 overflow-hidden rounded-lg shadow-lg"
                 style={PROFILE_MENU_STYLE}
               >
                 {profileMenuItems}
