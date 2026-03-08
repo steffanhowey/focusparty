@@ -23,6 +23,7 @@ export function DurationPills({ value, onChange }: DurationPillsProps) {
             background: d === value ? "var(--color-accent-primary)" : "transparent",
             color: d === value ? "var(--color-text-on-accent)" : "var(--color-text-tertiary)",
             border: d === value ? "none" : "1px solid var(--color-border-default)",
+            textShadow: "0 1px 4px rgba(0,0,0,0.5)",
           }}
         >
           {d}m

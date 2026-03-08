@@ -32,7 +32,7 @@ export function CameraPanel({ videoRef, status, isActive }: CameraPanelProps) {
       />
 
       {!isActive && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-[var(--color-text-tertiary)]">
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-[var(--color-text-tertiary)]" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
           <div
             className="mb-2.5 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold"
             style={{

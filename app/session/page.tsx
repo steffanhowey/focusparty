@@ -9,9 +9,7 @@ import { useSettings } from "@/lib/useSettings";
 import { useTasks } from "@/lib/useTasks";
 import { useMusic } from "@/lib/useMusic";
 import { TopBar } from "@/components/session/TopBar";
-import { Sidebar } from "@/components/shell/Sidebar";
 import { SplitScreen } from "@/components/session/SplitScreen";
-import { GoalCard } from "@/components/session/GoalCard";
 import { StartSessionModal } from "@/components/session/StartSessionModal";
 import { ReviewCard } from "@/components/session/ReviewCard";
 import { CameraPanel } from "@/components/session/CameraPanel";
@@ -32,7 +30,6 @@ export default function SessionPage() {
   const [phase, setPhase] = useState<SessionPhase>("setup");
   const [goal, setGoal] = useState("");
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<SidePanel>("tasks");
   const prevPanelRef = useRef<SidePanel>(activePanel);
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
@@ -182,7 +179,6 @@ export default function SessionPage() {
     []
   );
 
-  const handleToggleMenu = useCallback(() => setMenuOpen((m) => !m), []);
   const handleToggleGoalCard = useCallback(() => setSprintGoalCardOpen((o) => !o), []);
   const handleCloseGoalCard = useCallback(() => setSprintGoalCardOpen(false), []);
 
@@ -218,31 +214,18 @@ export default function SessionPage() {
     >
       {selectedVibe && <VibeBackground activeVibe={selectedVibe} />}
 
-      {/* Left column: app sidebar (pushes) */}
-      <div
-        className="flex-shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-        style={{ width: menuOpen ? 240 : 0 }}
-      >
-        {menuOpen && <Sidebar />}
-      </div>
-
-      {/* Center column: full session experience */}
+      {/* Main column: full session experience */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <TopBar
-          phase={phase}
-          onOpenMenu={handleToggleMenu}
-          drawerOpen={activePanel === "tasks"}
-          onToggleDrawer={phase !== "sprint" ? handleToggleTasks : undefined}
-          settingsOpen={activePanel === "settings"}
-          onToggleSettings={phase !== "sprint" ? handleToggleSettings : undefined}
-          timer={timer}
-          durationSec={durationSec}
-          currentDurationMin={durationMin}
-          onChangeDuration={handleChangeDuration}
-          onResetTimer={handleResetTimer}
-          goalCardOpen={sprintGoalCardOpen}
-          onToggleGoalCard={handleToggleGoalCard}
-        />
+        {phase !== "sprint" && (
+          <TopBar
+            phase={phase}
+            drawerOpen={activePanel === "tasks"}
+            onToggleDrawer={handleToggleTasks}
+            settingsOpen={activePanel === "settings"}
+            onToggleSettings={handleToggleSettings}
+            onEndSession={handleEndSession}
+          />
+        )}
 
         <div className="relative flex flex-1 flex-col overflow-hidden">
           <SplitScreen
@@ -250,18 +233,11 @@ export default function SessionPage() {
             leftPanel={cameraPanelNode}
           />
 
+          {/* Click-away to close timer dropdown */}
           {phase === "sprint" && sprintGoalCardOpen && (
             <div
               className="absolute inset-0 z-10"
               onClick={handleCloseGoalCard}
-            />
-          )}
-
-          {phase === "sprint" && sprintGoalCardOpen && (
-            <GoalCard
-              currentDurationMin={durationMin}
-              onChangeDuration={handleChangeDuration}
-              onResetTimer={handleResetTimer}
             />
           )}
 
@@ -309,6 +285,12 @@ export default function SessionPage() {
                 setVolume: music.setVolume,
                 status: music.status,
               }}
+              timer={timer}
+              currentDurationMin={durationMin}
+              onChangeDuration={handleChangeDuration}
+              onResetTimer={handleResetTimer}
+              goalCardOpen={sprintGoalCardOpen}
+              onToggleGoalCard={handleToggleGoalCard}
             />
           )}
 
@@ -330,12 +312,15 @@ export default function SessionPage() {
         style={{ width: panelOpen ? PANEL_WIDTH : 0 }}
       >
         <aside
-          className="flex h-full flex-col border-l border-[var(--color-border-default)]"
+          className="flex flex-col rounded-xl border border-[var(--color-border-default)]"
           style={{
-            width: PANEL_WIDTH,
-            background: "rgba(13,14,32,0.35)",
+            width: PANEL_WIDTH - 16,
+            height: "calc(100% - 32px)",
+            margin: "16px 16px 16px 0",
+            background: "rgba(13,14,32,0.65)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
           role="complementary"
           aria-label={activePanel === "tasks" ? "Tasks" : activePanel === "chat" ? "Chat" : "Settings"}

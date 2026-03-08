@@ -22,10 +22,11 @@ export function ReviewCard({
       className="absolute bottom-6 left-1/2 w-[calc(100%-2rem)] max-w-[420px] -translate-x-1/2 rounded-2xl border border-[var(--color-border-default)] p-4 md:p-6"
       style={{
         zIndex: 20,
-        background: "rgba(13,14,32,0.35)",
+        background: "rgba(13,14,32,0.80)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+        textShadow: "0 1px 4px rgba(0,0,0,0.5)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >
       <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
@@ -38,7 +39,7 @@ export function ReviewCard({
             key={label}
             type="button"
             onClick={() => onOutcome?.(label)}
-            className="rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent-primary)] hover:text-white"
+            className="cursor-pointer rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent-primary)] hover:text-white"
           >
             {label}
           </button>

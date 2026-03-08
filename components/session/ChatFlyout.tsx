@@ -47,7 +47,7 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
   return (
     <>
       {/* Messages */}
-      <div className="flex flex-1 flex-col overflow-y-auto px-4 py-3" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
+      <div className="flex flex-1 flex-col overflow-y-auto px-4 py-3" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
         {messages.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
             <p className="text-center text-sm text-[var(--color-text-tertiary)]">
@@ -125,7 +125,7 @@ export function ChatFlyout({ onClose, messages, onSendMessage }: ChatFlyoutProps
   return (
     <>
       {/* Header */}
-      <div className="flex h-20 items-center justify-between px-4 md:px-6" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
+      <div className="flex h-20 items-center justify-between px-4 md:px-6" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
         <span className="text-base font-semibold text-white">Chat</span>
         <button
           type="button"

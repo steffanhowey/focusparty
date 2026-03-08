@@ -20,38 +20,14 @@ export const SplitScreen = memo(function SplitScreen({
   const c = CHARACTERS[character];
 
   return (
-    <div className="flex flex-1 gap-4 overflow-hidden px-4 pb-4 md:gap-6 md:px-6 md:pb-6">
+    <div className="relative flex-1 overflow-hidden p-4">
+      {/* ── AI partner (full-size) ── */}
       <div
-        className="relative flex min-w-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-default)]"
+        className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-subtle)]"
         style={{
-          background: "rgba(13,14,32,0.35)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+          background: c.roomBg,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
-      >
-        {leftPanel ?? (
-          <div className="flex flex-col items-center justify-center text-[var(--color-text-tertiary)]">
-            <div
-              className="mb-2.5 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold"
-              style={{
-                background: "var(--color-bg-elevated)",
-                border: "1px solid var(--color-border-default)",
-              }}
-            >
-              S
-            </div>
-            <span className="text-xs">Camera preview</span>
-            <div
-              className="absolute left-4 top-4 h-2 w-2 animate-pulse rounded-full bg-[var(--color-coral-700)]"
-              style={{ animationDuration: "2s" }}
-            />
-          </div>
-        )}
-      </div>
-      <div
-        className="relative flex min-w-0 flex-1 flex-col items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-subtle)]"
-        style={{ background: c.roomBg }}
       >
         {rightPanel ?? (
           <>
@@ -75,6 +51,32 @@ export const SplitScreen = memo(function SplitScreen({
               style={{ background: c.primary, transform: "translateY(50%)" }}
             />
           </>
+        )}
+      </div>
+
+      {/* ── User camera (PiP overlay, lower-left) ── */}
+      <div
+        className="absolute bottom-6 left-6 z-10 h-36 w-48 overflow-hidden rounded-xl border border-white/[0.12]"
+        style={{
+          background: "rgba(13,14,32,0.65)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+        }}
+      >
+        {leftPanel ?? (
+          <div className="flex h-full w-full flex-col items-center justify-center text-[var(--color-text-tertiary)]">
+            <div
+              className="mb-1.5 flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
+              style={{
+                background: "var(--color-bg-elevated)",
+                border: "1px solid var(--color-border-default)",
+              }}
+            >
+              S
+            </div>
+            <span className="text-[10px]">Camera preview</span>
+          </div>
         )}
       </div>
     </div>
