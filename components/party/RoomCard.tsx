@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { Clock, Users } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { getWorldConfig } from "@/lib/worlds";
@@ -186,13 +185,9 @@ export function RoomCard({ party, onClick, isJoining }: RoomCardProps) {
     return <div className="block">{cardContent}</div>;
   }
 
-  if (onClick) {
-    return <div className="block" onClick={onClick}>{cardContent}</div>;
-  }
-
   return (
-    <Link href={`/party/${party.id}`} className="block">
+    <div className="block" onClick={onClick} role={onClick ? "button" : undefined}>
       {cardContent}
-    </Link>
+    </div>
   );
 }

@@ -242,7 +242,8 @@ export type ActivityEventType =
   | "participant_joined"
   | "participant_left"
   | "host_prompt"
-  | "high_five";
+  | "high_five"
+  | "room_entered";
 
 // ─── Room State ──────────────────────────────────────────────
 

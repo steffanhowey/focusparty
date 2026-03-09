@@ -39,7 +39,9 @@ import { SettingsPanel } from "@/components/session/SettingsPanel";
 import { SessionReviewModal } from "@/components/session/SessionReviewModal";
 import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
 import { logEvent } from "@/lib/sessions";
+import { computeRemainingSeconds } from "@/lib/sprintTime";
 import { SYNTHETIC_POOL } from "@/lib/synthetics/pool";
+import type { JoinConfig } from "@/components/party/JoinRoomModal";
 import type { SessionPhase, SessionReflection } from "@/lib/types";
 
 type SidePanel = "none" | "momentum" | "tasks" | "chat" | "settings";
@@ -196,25 +198,129 @@ export default function EnvironmentPage() {
     reorderTasks,
   } = useTasks();
 
-  // Clear task selection on mount (fresh start)
+  // ─── Join config from modal (sessionStorage) ──────────────
+  const joinConfigRef = useRef<JoinConfig | null>(null);
   useEffect(() => {
-    selectTask(null);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    try {
+      const raw = sessionStorage.getItem("fp_join_config");
+      if (raw) {
+        sessionStorage.removeItem("fp_join_config");
+        joinConfigRef.current = JSON.parse(raw);
+      }
+    } catch {}
+  }, []);
 
-  // ─── Hydration: restore active session ─────────────────
+  // Clear task selection on mount (skip if restoring active sprint or join config present)
+  const taskClearRef = useRef(false);
+  useEffect(() => {
+    if (taskClearRef.current) return;
+    taskClearRef.current = true;
+    const hasJoinConfig = joinConfigRef.current !== null;
+    const hasActiveSession = persistence.wasRestored && persistence.sessionRow?.phase === "sprint";
+    if (!persistence.isHydrating && !hasActiveSession && !hasJoinConfig) {
+      selectTask(null);
+    }
+  }, [persistence.isHydrating, persistence.wasRestored, persistence.sessionRow]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Hydration: restore active session / resume sprint ──
   const hydrationApplied = useRef(false);
   useEffect(() => {
     if (hydrationApplied.current) return;
     if (persistence.isHydrating) return;
     hydrationApplied.current = true;
 
+    // Priority 1: Restore active session from DB
     if (persistence.wasRestored && persistence.sessionRow) {
       const s = persistence.sessionRow;
       setPhase(s.phase);
       setGoal(s.goal_text ?? "");
       setDurationSec(s.planned_duration_sec);
+
+      // Restore task selection if session has a task
+      if (s.task_id) selectTask(s.task_id);
+
+      // Resume timer if sprint is still active
+      if (s.phase === "sprint" && persistence.currentSprint && !persistence.currentSprint.completed) {
+        const remaining = computeRemainingSeconds(persistence.currentSprint);
+        if (remaining > 0) {
+          timer.reset(remaining);
+          timer.start();
+        } else {
+          // Sprint expired while away — go directly to review
+          handleTimerComplete();
+        }
+      }
+      return;
     }
-  }, [persistence.isHydrating, persistence.wasRestored, persistence.sessionRow]);
+
+    // Priority 2: Apply join config from modal
+    const jc = joinConfigRef.current;
+    if (jc) {
+      joinConfigRef.current = null;
+      if (jc.taskId) selectTask(jc.taskId);
+      setGoal(jc.goalText);
+      setDurationSec(jc.durationSec);
+
+      if (jc.autoStart && userId) {
+        // Auto-start sprint
+        const sec = jc.durationSec;
+        timer.reset(sec);
+        timer.start();
+        setPhase("sprint");
+        setSprintGoalCardOpen(false);
+
+        persistence
+          .startSession({
+            user_id: userId,
+            party_id: partyId,
+            task_id: jc.taskId ?? undefined,
+            character: characterAccent,
+            goal_text: jc.goalText,
+            planned_duration_sec: sec,
+          })
+          .then((session) =>
+            persistence.startSprint({
+              session_id: session.id,
+              sprint_number: 1,
+              duration_sec: sec,
+            })
+          )
+          .then(() => {
+            if (jc.goalText) {
+              persistence.declareGoal({
+                user_id: userId,
+                task_id: jc.taskId ?? undefined,
+                body: jc.goalText,
+              });
+            }
+            hostTriggers.triggerSessionStarted();
+            hostTriggers.triggerSprintStarted();
+          })
+          .catch((err) =>
+            console.error("[EnvironmentPage] join config auto-start failed:", err)
+          );
+      }
+    }
+  }, [persistence.isHydrating, persistence.wasRestored, persistence.sessionRow]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Room visit tracking ─────────────────────────────────
+  const roomEnteredRef = useRef(false);
+  useEffect(() => {
+    if (roomEnteredRef.current) return;
+    if (persistence.isHydrating) return;
+    if (!userId || !persistence.sessionRow) return;
+    roomEnteredRef.current = true;
+
+    logEvent({
+      party_id: partyId,
+      session_id: persistence.sessionRow.id,
+      user_id: userId,
+      event_type: "room_entered",
+      payload: { source_party_id: persistence.sessionRow.party_id },
+    }).catch((err) =>
+      console.error("[EnvironmentPage] room_entered log failed:", err)
+    );
+  }, [persistence.isHydrating, persistence.sessionRow, userId, partyId]);
 
   // ─── Set default duration from world config ────────────
   const defaultDurationApplied = useRef(false);
@@ -227,9 +333,10 @@ export default function EnvironmentPage() {
   // ─── Sprint lifecycle ──────────────────────────────────
 
   const handleStartSprint = useCallback(
-    (durationMinutes: number) => {
-      if (!activeTask) return;
-      setGoal(activeTask.title);
+    (durationMinutes: number, freeformGoal?: string) => {
+      const goalText = activeTask?.title || freeformGoal || goal;
+      if (!goalText) return;
+      setGoal(goalText);
       const sec = durationMinutes * 60;
       setDurationSec(sec);
       timer.reset(sec);
@@ -242,9 +349,9 @@ export default function EnvironmentPage() {
           .startSession({
             user_id: userId,
             party_id: partyId,
-            task_id: activeTask.id ?? undefined,
+            task_id: activeTask?.id ?? undefined,
             character: characterAccent,
-            goal_text: activeTask.title,
+            goal_text: goalText,
             planned_duration_sec: sec,
           })
           .then((session) =>
@@ -257,8 +364,8 @@ export default function EnvironmentPage() {
           .then(() => {
             persistence.declareGoal({
               user_id: userId,
-              task_id: activeTask.id ?? undefined,
-              body: activeTask.title,
+              task_id: activeTask?.id ?? undefined,
+              body: goalText,
             });
             hostTriggers.triggerSessionStarted();
             hostTriggers.triggerSprintStarted();
@@ -268,7 +375,7 @@ export default function EnvironmentPage() {
           );
       }
     },
-    [activeTask, timer, userId, partyId, characterAccent, persistence, hostTriggers]
+    [activeTask, goal, timer, userId, partyId, characterAccent, persistence, hostTriggers]
   );
 
   const handleEndSession = useCallback(() => {
@@ -554,6 +661,7 @@ export default function EnvironmentPage() {
             defaultDuration={world.defaultSprintLength}
             activeTask={activeTask}
             activeTasks={activeTasks}
+            initialGoal={!activeTask && goal ? goal : undefined}
             onSelectTask={handleStartTask}
             onAddTask={addTask}
             onStartSprint={handleStartSprint}

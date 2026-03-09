@@ -14,9 +14,11 @@ interface EnvironmentSetupProps {
   defaultDuration: number;
   activeTask: TaskRecord | null;
   activeTasks: TaskRecord[];
+  /** Pre-filled goal from join config (freeform, no task required) */
+  initialGoal?: string;
   onSelectTask: (taskId: string) => void;
   onAddTask: (text: string) => void;
-  onStartSprint: (durationMinutes: number) => void;
+  onStartSprint: (durationMinutes: number, freeformGoal?: string) => void;
 }
 
 export function EnvironmentSetup({
@@ -27,6 +29,7 @@ export function EnvironmentSetup({
   defaultDuration,
   activeTask,
   activeTasks,
+  initialGoal,
   onSelectTask,
   onAddTask,
   onStartSprint,
@@ -34,6 +37,8 @@ export function EnvironmentSetup({
   const [duration, setDuration] = useState(defaultDuration);
   const [showTasks, setShowTasks] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
+
+  const canStart = !!(activeTask || initialGoal);
 
   const handleAddTask = () => {
     const text = newTaskText.trim();
@@ -43,8 +48,8 @@ export function EnvironmentSetup({
   };
 
   const handleStart = () => {
-    if (!activeTask) return;
-    onStartSprint(duration);
+    if (!canStart) return;
+    onStartSprint(duration, activeTask ? undefined : initialGoal);
   };
 
   return (
@@ -89,11 +94,11 @@ export function EnvironmentSetup({
             style={{
               background: "rgba(255,255,255,0.06)",
               border: "1px solid rgba(255,255,255,0.08)",
-              color: activeTask ? "white" : "rgba(255,255,255,0.4)",
+              color: activeTask || initialGoal ? "white" : "rgba(255,255,255,0.4)",
             }}
           >
             <span className="truncate">
-              {activeTask?.title ?? "Select a task..."}
+              {activeTask?.title ?? initialGoal ?? "Select a task..."}
             </span>
             {showTasks ? (
               <ChevronUp size={16} className="shrink-0 text-white/40" />
@@ -169,7 +174,7 @@ export function EnvironmentSetup({
         <button
           type="button"
           onClick={handleStart}
-          disabled={!activeTask}
+          disabled={!canStart}
           className="w-full cursor-pointer rounded-full py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-default disabled:opacity-40"
           style={{ background: accentColor }}
         >

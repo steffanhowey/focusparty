@@ -99,6 +99,8 @@ export function eventDisplayText(
       return body ? `Host: ${body}` : "Host posted a prompt";
     case "high_five":
       return body ? `${name} high-fived ${body}` : `${name} sent a high five`;
+    case "room_entered":
+      return `${name} entered the room`;
     default:
       return `${name} did something`;
   }

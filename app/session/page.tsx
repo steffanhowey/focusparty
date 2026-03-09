@@ -31,6 +31,7 @@ import { usePartyPresence } from "@/lib/usePartyPresence";
 import { usePartyActivityFeed } from "@/lib/usePartyActivityFeed";
 import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
 import { useHostTriggers } from "@/lib/useHostTriggers";
+import { computeRemainingSeconds } from "@/lib/sprintTime";
 import type { SessionPhase, SessionReflection } from "@/lib/types";
 import type { VibeId } from "@/lib/musicConstants";
 
@@ -149,10 +150,18 @@ export default function SessionPage() {
     reorderTasks,
   } = useTasks();
 
-  // Start fresh — no pre-selected task on setup
-  useEffect(() => { selectTask(null); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Start fresh — no pre-selected task on setup (skip if restoring active sprint)
+  const taskClearRef = useRef(false);
+  useEffect(() => {
+    if (taskClearRef.current) return;
+    taskClearRef.current = true;
+    // Defer clear until we know if there's an active session to restore
+    if (!persistence.isHydrating && !(persistence.wasRestored && persistence.sessionRow?.phase === "sprint")) {
+      selectTask(null);
+    }
+  }, [persistence.isHydrating, persistence.wasRestored, persistence.sessionRow]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Hydrate: restore active session from DB after refresh
+  // Hydrate: restore active session from DB after refresh / room switch
   const hydrationApplied = useRef(false);
   useEffect(() => {
     if (hydrationApplied.current) return;
@@ -164,8 +173,23 @@ export default function SessionPage() {
       setPhase(s.phase);
       setGoal(s.goal_text ?? "");
       setDurationSec(s.planned_duration_sec);
+
+      // Restore task selection if session has a task
+      if (s.task_id) selectTask(s.task_id);
+
+      // Resume timer if sprint is still active
+      if (s.phase === "sprint" && persistence.currentSprint && !persistence.currentSprint.completed) {
+        const remaining = computeRemainingSeconds(persistence.currentSprint);
+        if (remaining > 0) {
+          timer.reset(remaining);
+          timer.start();
+        } else {
+          // Sprint expired while away — go directly to review
+          handleTimerComplete();
+        }
+      }
     }
-  }, [persistence.isHydrating, persistence.wasRestored, persistence.sessionRow]);
+  }, [persistence.isHydrating, persistence.wasRestored, persistence.sessionRow]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const closePanel = useCallback(() => setActivePanel("none"), []);
   const handleToggleTasks = useCallback(

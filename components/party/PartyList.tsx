@@ -1,22 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useDiscoverableParties } from "@/lib/useDiscoverableParties";
-import { joinParty } from "@/lib/parties";
 import { RoomCard } from "./RoomCard";
 import { EmptyState } from "./EmptyState";
 import { CreatePartyModal } from "./CreatePartyModal";
+import { JoinRoomModal } from "./JoinRoomModal";
 
 export function PartyList() {
-  const router = useRouter();
-  const { userId, displayName, requireAuth } = useCurrentUser();
+  const { requireAuth } = useCurrentUser();
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [joining, setJoining] = useState<string | null>(null);
+  const [joinPartyId, setJoinPartyId] = useState<string | null>(null);
 
   const { parties, loading, error } = useDiscoverableParties();
 
@@ -42,19 +40,10 @@ export function PartyList() {
     setShowCreate(true);
   };
 
-  const handleJoinPersistentRoom = useCallback(
-    async (partyId: string) => {
-      if (!requireAuth() || !userId || joining) return;
-      setJoining(partyId);
-      try {
-        await joinParty(partyId, userId, displayName);
-        router.push(`/environment/${partyId}`);
-      } catch {
-        setJoining(null);
-      }
-    },
-    [requireAuth, userId, displayName, joining, router]
-  );
+  const handleOpenJoinModal = (partyId: string) => {
+    if (!requireAuth()) return;
+    setJoinPartyId(partyId);
+  };
 
   const startButton = (
     <button
@@ -81,6 +70,14 @@ export function PartyList() {
         isOpen={showCreate}
         onClose={() => setShowCreate(false)}
       />
+
+      {joinPartyId && (
+        <JoinRoomModal
+          partyId={joinPartyId}
+          isOpen
+          onClose={() => setJoinPartyId(null)}
+        />
+      )}
 
       <div className="px-4 py-6 sm:px-6">
         {loading ? (
@@ -110,8 +107,7 @@ export function PartyList() {
                       <RoomCard
                         key={party.id}
                         party={party}
-                        onClick={() => handleJoinPersistentRoom(party.id)}
-                        isJoining={joining === party.id}
+                        onClick={() => handleOpenJoinModal(party.id)}
                       />
                     ))}
                 </div>
@@ -128,7 +124,11 @@ export function PartyList() {
                   {parties
                     .filter((p) => !p.persistent)
                     .map((party) => (
-                      <RoomCard key={party.id} party={party} />
+                      <RoomCard
+                        key={party.id}
+                        party={party}
+                        onClick={() => handleOpenJoinModal(party.id)}
+                      />
                     ))}
                 </div>
               </section>
