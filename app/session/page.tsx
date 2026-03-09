@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useSessionPersistence } from "@/lib/useSessionPersistence";
 import { usePartyPresence } from "@/lib/usePartyPresence";
+import { useHostTriggers } from "@/lib/useHostTriggers";
 import type { SessionPhase, SessionReflection } from "@/lib/types";
 import type { VibeId } from "@/lib/musicConstants";
 
@@ -57,6 +58,8 @@ export default function SessionPage() {
   }, [activePanel]);
   const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
 
+  // Ref for host trigger to break circular dep: handleTimerComplete → hostTriggers → timer → handleTimerComplete
+  const hostTriggersRef = useRef<{ triggerReviewEntered: () => void }>({ triggerReviewEntered: () => {} });
 
   const handleTimerComplete = useCallback(() => {
     reviewElapsedRef.current = durationSec;
@@ -65,6 +68,7 @@ export default function SessionPage() {
     // Persist: mark sprint completed + update phase
     persistence.completeSprint().catch(() => {});
     persistence.updatePhase("review").catch(() => {});
+    hostTriggersRef.current.triggerReviewEntered();
   }, [durationSec, persistence]);
 
   const timer = useTimer(durationSec, handleTimerComplete);
@@ -73,7 +77,7 @@ export default function SessionPage() {
   const { party, partyId } = useActiveParty();
 
   // Presence: track this user's status for other party participants
-  usePartyPresence({
+  const presence = usePartyPresence({
     partyId: partyId ?? null,
     userId,
     displayName,
@@ -82,6 +86,21 @@ export default function SessionPage() {
     phase,
     goalPreview: goal || null,
   });
+
+  // AI host: fire trigger prompts at key session moments
+  const hostTriggers = useHostTriggers({
+    partyId: partyId ?? null,
+    sessionId: persistence.sessionRow?.id ?? null,
+    sprintId: persistence.currentSprint?.id ?? null,
+    userId,
+    goalSummary: goal || null,
+    participantCount: presence.count,
+    sprintNumber: persistence.currentSprint?.sprint_number ?? null,
+    sprintDurationSec: durationSec,
+    timer,
+    phase,
+  });
+  hostTriggersRef.current = hostTriggers;
 
   const chat = useChat();
   const { settings, updateSetting } = useSettings();
@@ -165,19 +184,22 @@ export default function SessionPage() {
               duration_sec: sec,
             })
           )
-          .then(() =>
+          .then(() => {
             persistence.declareGoal({
               user_id: userId,
               task_id: activeTask.id ?? undefined,
               body: activeTask.title,
-            })
-          )
+            });
+            // AI host triggers after session + sprint are persisted
+            hostTriggers.triggerSessionStarted();
+            hostTriggers.triggerSprintStarted();
+          })
           .catch((err) =>
             console.error("[SessionPage] persist startSprint failed:", err)
           );
       }
     },
-    [activeTask, timer.reset, timer.start, userId, partyId, characterAccent, persistence]
+    [activeTask, timer.reset, timer.start, userId, partyId, characterAccent, persistence, hostTriggers]
   );
 
   const handleBreathingComplete = useCallback(() => {
@@ -216,7 +238,8 @@ export default function SessionPage() {
     // Persist: sprint ended early + update phase
     persistence.completeSprint().catch(() => {});
     persistence.updatePhase("review").catch(() => {});
-  }, [durationSec, timer.getSnapshot, timer.pause, camera.stop, screenShare.stop, music.pause, persistence]);
+    hostTriggers.triggerReviewEntered();
+  }, [durationSec, timer.getSnapshot, timer.pause, camera.stop, screenShare.stop, music.pause, persistence, hostTriggers]);
 
   const handleAnotherRound = useCallback(() => {
     timer.reset(durationSec);
@@ -232,16 +255,19 @@ export default function SessionPage() {
           sprint_number: nextNum,
           duration_sec: durationSec,
         })
+        .then(() => hostTriggers.triggerSprintStarted())
         .catch(() => {});
       persistence.updatePhase("sprint").catch(() => {});
     }
-  }, [durationSec, timer.reset, timer.start, persistence]);
+  }, [durationSec, timer.reset, timer.start, persistence, hostTriggers]);
 
   const handleDone = useCallback(() => {
+    // AI host: notify session completed before navigating away
+    hostTriggers.triggerSessionCompleted();
     // Persist: end session as completed
     persistence.endSession("completed").catch(() => {});
     router.push("/party");
-  }, [router, persistence]);
+  }, [router, persistence, hostTriggers]);
 
   const handleReflectionComplete = useCallback(
     (reflection: SessionReflection) => {
@@ -349,7 +375,11 @@ export default function SessionPage() {
         <div id={music.playerContainerId} />
       </div>
 
-      {phase === "setup" ? (
+      {persistence.isHydrating ? (
+        <div className="flex flex-1 items-center justify-center">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-transparent" />
+        </div>
+      ) : phase === "setup" ? (
         <SetupScreen
           activeTask={activeTask}
           activeTasks={activeTasks}

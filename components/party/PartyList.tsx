@@ -3,10 +3,13 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { PartyPopper } from "lucide-react";
+import { Plus } from "lucide-react";
 import { createParty } from "@/lib/parties";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useNotification } from "@/components/providers/NotificationProvider";
+import { useDiscoverableParties } from "@/lib/useDiscoverableParties";
+import { RoomCard } from "./RoomCard";
+import { EmptyState } from "./EmptyState";
 
 export function PartyList() {
   const router = useRouter();
@@ -14,6 +17,8 @@ export function PartyList() {
   const { userId, displayName, requireAuth } = useCurrentUser();
   const [creating, setCreating] = useState(false);
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+
+  const { parties, loading, error } = useDiscoverableParties();
 
   useEffect(() => {
     setHeaderSlot(document.getElementById("hub-header-action"));
@@ -41,7 +46,7 @@ export function PartyList() {
     );
   };
 
-  const joinButton = (
+  const startButton = (
     <button
       type="button"
       onClick={handleCreateParty}
@@ -52,12 +57,38 @@ export function PartyList() {
         color: "white",
       }}
     >
-      <PartyPopper size={18} strokeWidth={1.8} className="shrink-0" />
+      <Plus size={18} strokeWidth={2} className="shrink-0" />
       <span className="hidden text-sm font-semibold sm:inline">
-        {creating ? "Joining..." : "Join Party"}
+        {creating ? "Starting..." : "Start Party"}
       </span>
     </button>
   );
 
-  return <>{headerSlot && createPortal(joinButton, headerSlot)}</>;
+  return (
+    <>
+      {headerSlot && createPortal(startButton, headerSlot)}
+
+      <div className="px-4 py-6 sm:px-6">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-text-tertiary)] border-t-transparent" />
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              {error}
+            </p>
+          </div>
+        ) : parties.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {parties.map((party) => (
+              <RoomCard key={party.id} party={party} />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -45,10 +45,12 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [joiningRoom, setJoiningRoom] = useState(false);
 
   const isCreator = party?.creator_id === userId;
   const isParticipant = participants.some((p) => p.user_id === userId);
   const [activeSession, setActiveSession] = useState<SessionRow | null>(null);
+  const initialStatusRef = useRef<string | null>(null);
 
   // Presence tracking
   const presence = usePartyPresence({
@@ -90,13 +92,10 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
         return;
       }
       setParty(data);
-      if (data.status === "active") {
-        router.push("/session");
-      }
     } catch {
       setNotFound(true);
     }
-  }, [partyId, router]);
+  }, [partyId]);
 
   const refreshParticipants = useCallback(async () => {
     try {
@@ -109,17 +108,26 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
 
   useEffect(() => {
     async function init() {
-      await refreshParty();
+      const partyData = await getParty(partyId);
+      if (partyData && !initialStatusRef.current) {
+        initialStatusRef.current = partyData.status;
+      }
+      if (!partyData) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      setParty(partyData);
       await refreshParticipants();
       setLoading(false);
     }
     init();
-  }, [refreshParty, refreshParticipants]);
+  }, [partyId, refreshParticipants]);
 
   // Auto-join once loaded (if authenticated and not already in)
   useEffect(() => {
     if (loading || notFound || !party || !userId || !isAuthenticated) return;
-    if (party.status !== "waiting") return;
+    if (party.status !== "waiting" && party.status !== "active") return;
     if (isParticipant) return;
 
     const isFull = participants.length >= party.max_participants;
@@ -131,6 +139,19 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
         // silent — might already be joined
       });
   }, [loading, notFound, party, isParticipant, participants.length, partyId, userId, displayName, isAuthenticated, refreshParticipants]);
+
+  // Auto-redirect only when party transitions waiting→active (realtime).
+  // If the user navigated directly to an already-active party, let them see the lobby.
+  useEffect(() => {
+    if (!party || loading) return;
+    if (
+      party.status === "active" &&
+      isParticipant &&
+      initialStatusRef.current === "waiting"
+    ) {
+      router.push("/session");
+    }
+  }, [party, loading, isParticipant, router]);
 
   usePartyRealtime({
     partyId,
@@ -161,6 +182,23 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
         message: "Please try again.",
       });
       setStarting(false);
+    }
+  };
+
+  const handleJoin = async () => {
+    if (!userId || !isAuthenticated || joiningRoom) return;
+    setJoiningRoom(true);
+    try {
+      await joinParty(partyId, userId, displayName);
+      await refreshParticipants();
+      // If party is active, the redirect effect handles navigation
+    } catch {
+      showToast({
+        type: "error",
+        title: "Failed to join",
+        message: "Please try again.",
+      });
+      setJoiningRoom(false);
     }
   };
 
@@ -317,7 +355,26 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
 
       {/* Actions */}
       <div className="flex gap-3">
-        {isCreator && (
+        {!isParticipant && participants.length < party.max_participants && (
+          <Button
+            variant="primary"
+            className="flex-1"
+            onClick={handleJoin}
+            disabled={joiningRoom}
+          >
+            {joiningRoom ? "Joining..." : "Join Room"}
+          </Button>
+        )}
+        {isParticipant && party.status === "active" && (
+          <Button
+            variant="primary"
+            className="flex-1"
+            onClick={() => router.push("/session")}
+          >
+            Enter Session
+          </Button>
+        )}
+        {isCreator && isParticipant && party.status === "waiting" && (
           <Button
             variant="primary"
             className="flex-1"
@@ -327,9 +384,11 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
             {starting ? "Starting..." : "Start Session"}
           </Button>
         )}
-        <Button variant="ghost" onClick={handleLeave}>
-          Leave
-        </Button>
+        {isParticipant && (
+          <Button variant="ghost" onClick={handleLeave}>
+            Leave
+          </Button>
+        )}
       </div>
     </div>
   );

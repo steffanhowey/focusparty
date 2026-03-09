@@ -240,7 +240,41 @@ export type ActivityEventType =
   | "task_completed"
   | "reflection_submitted"
   | "participant_joined"
-  | "participant_left";
+  | "participant_left"
+  | "host_prompt";
+
+// ─── AI Host ─────────────────────────────────────────────────
+
+export type HostTriggerType =
+  | "session_started"
+  | "sprint_started"
+  | "sprint_midpoint"
+  | "sprint_near_end"
+  | "review_entered"
+  | "session_completed";
+
+export type HostMessageType = "opening" | "midpoint" | "reflection" | "transition";
+
+export interface HostGenerationInput {
+  partyId: string;
+  partyName: string;
+  hostPersonality: string;
+  triggerType: HostTriggerType;
+  goalSummary: string | null;
+  recentActivity: string[];
+  recentHostMessages: string[];
+  participantCount: number;
+  sprintNumber: number | null;
+  sprintDurationSec: number | null;
+  sprintElapsedSec: number | null;
+}
+
+export interface HostGenerationResult {
+  shouldPost: boolean;
+  messageType: HostMessageType;
+  body: string;
+  reason: string;
+}
 
 export interface ActivityEvent {
   id: string;

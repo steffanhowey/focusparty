@@ -133,6 +133,14 @@ export function HubShell({ children }: { children: ReactNode }) {
     setCollapsed(true);
   }, [handleNavClick]);
 
+  // Clear stale clientTab when Next.js navigates to a non-client-tab route
+  // (e.g., <Link> from /party grid to /party/[id])
+  useEffect(() => {
+    if (clientTab !== null && !CLIENT_NAV_HREFS.has(pathname)) {
+      setClientTab(null);
+    }
+  }, [pathname, clientTab]);
+
   // Sync with browser back/forward
   useEffect(() => {
     const onPopState = () => {

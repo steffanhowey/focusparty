@@ -7,6 +7,7 @@ import {
   UserPlus,
   UserMinus,
   Zap,
+  Sparkles,
   CircleDot,
   type LucideIcon,
 } from "lucide-react";
@@ -133,6 +134,17 @@ export function renderActivityEvent(
         tone: "neutral",
         color: TONE_COLORS.neutral,
       };
+
+    case "host_prompt": {
+      const hostName = (event.payload?.hostName as string) || "Host";
+      const hostBody = event.body || "";
+      return {
+        icon: Sparkles,
+        label: `${hostName}: ${hostBody}`,
+        tone: "info",
+        color: "#8C55EF",
+      };
+    }
 
     default:
       return {

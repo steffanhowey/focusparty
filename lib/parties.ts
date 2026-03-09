@@ -17,6 +17,8 @@ export interface Party {
   status: PartyStatus;
   created_at: string;
   invite_code: string;
+  world_key: string;
+  host_personality: string;
 }
 
 export interface PartyParticipant {
@@ -34,12 +36,12 @@ export interface PartyWithCount extends Party {
 
 // ---------- Queries ----------
 
-/** Fetch all 'waiting' parties, ordered by newest first. */
-export async function listWaitingParties(): Promise<PartyWithCount[]> {
+/** Fetch discoverable parties (waiting + active), ordered by newest first. */
+export async function listDiscoverableParties(): Promise<PartyWithCount[]> {
   const { data: parties, error } = await createClient()
     .from("fp_parties")
     .select("*")
-    .eq("status", "waiting")
+    .in("status", ["waiting", "active"])
     .order("created_at", { ascending: false });
 
   if (error) throw error;

@@ -95,6 +95,8 @@ export function eventDisplayText(
       return `${name} joined the party`;
     case "participant_left":
       return `${name} left the party`;
+    case "host_prompt":
+      return body ? `Host: ${body}` : "Host posted a prompt";
     default:
       return `${name} did something`;
   }
