@@ -1,153 +1,369 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
-import type { Task } from "@/lib/types";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { createClient } from "./supabase/client";
+import { useCurrentUser } from "./useCurrentUser";
+import type { TaskRecord, TaskStatus, TaskPriority } from "./types";
+import {
+  listTasks,
+  createTask,
+  updateTask as updateTaskApi,
+  deleteTask as deleteTaskApi,
+  reorderTasks as reorderTasksApi,
+} from "./tasks";
 
-const TASKS_KEY = "focusparty-tasks";
+const MIGRATION_KEY = "focusparty-tasks-migrated";
+const OLD_TASKS_KEY = "focusparty-tasks";
 const ACTIVE_TASK_KEY = "focusparty-active-task";
 
-/* ─── localStorage helpers ────────────────────────────────── */
+/* ─── localStorage → Supabase migration ─────────────────────── */
 
-function loadTasks(): Task[] {
-  if (typeof window === "undefined") return [];
+interface OldTask {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: number;
+  completedAt: number | null;
+}
+
+async function migrateLocalStorageTasks(userId: string) {
+  if (typeof window === "undefined") return;
+  if (localStorage.getItem(MIGRATION_KEY)) return;
+
   try {
-    const raw = localStorage.getItem(TASKS_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw);
+    const raw = localStorage.getItem(OLD_TASKS_KEY);
+    if (!raw) {
+      localStorage.setItem(MIGRATION_KEY, "true");
+      return;
+    }
+    const oldTasks: OldTask[] = JSON.parse(raw);
+    if (!oldTasks.length) {
+      localStorage.setItem(MIGRATION_KEY, "true");
+      return;
+    }
+
+    // Batch insert old tasks
+    for (let i = 0; i < oldTasks.length; i++) {
+      const t = oldTasks[i];
+      await createTask({
+        user_id: userId,
+        title: t.text,
+        status: t.completed ? "done" : "todo",
+        position: i,
+      });
+    }
+
+    localStorage.setItem(MIGRATION_KEY, "true");
+    localStorage.removeItem(OLD_TASKS_KEY);
+    localStorage.removeItem(ACTIVE_TASK_KEY);
   } catch {
-    return [];
+    // Fail gracefully — new tasks still work
+    console.warn("Task migration from localStorage failed");
   }
-}
-
-function persistTasks(tasks: Task[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
-}
-
-function loadActiveTaskId(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(ACTIVE_TASK_KEY);
-}
-
-function persistActiveTaskId(id: string | null) {
-  if (typeof window === "undefined") return;
-  if (id) localStorage.setItem(ACTIVE_TASK_KEY, id);
-  else localStorage.removeItem(ACTIVE_TASK_KEY);
 }
 
 /* ─── Hook ────────────────────────────────────────────────── */
 
 export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>(loadTasks);
-  const [activeTaskId, setActiveTaskId] = useState<string | null>(loadActiveTaskId);
+  const { userId } = useCurrentUser();
+  const [tasks, setTasks] = useState<TaskRecord[]>([]);
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const migrated = useRef(false);
 
-  const addTask = useCallback((text: string) => {
-    const task: Task = {
-      id: crypto.randomUUID(),
-      text: text.trim(),
-      completed: false,
-      createdAt: Date.now(),
-      completedAt: null,
+  // Fetch tasks on mount & after migration
+  const fetchTasks = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const data = await listTasks();
+      setTasks(data);
+    } catch (err) {
+      console.error("Failed to fetch tasks:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  // Initial load + one-time migration
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    const init = async () => {
+      if (!migrated.current) {
+        migrated.current = true;
+        await migrateLocalStorageTasks(userId);
+      }
+      await fetchTasks();
     };
-    setTasks((prev) => {
-      const next = [task, ...prev];
-      persistTasks(next);
-      return next;
-    });
-  }, []);
+    init();
+  }, [userId, fetchTasks]);
 
-  const completeTask = useCallback((taskId: string) => {
-    setTasks((prev) => {
-      const next = prev.map((t) =>
-        t.id === taskId ? { ...t, completed: true, completedAt: Date.now() } : t
-      );
-      persistTasks(next);
-      return next;
-    });
-    // Auto-clear active task if completing the active one
-    setActiveTaskId((prev) => {
-      if (prev === taskId) {
-        persistActiveTaskId(null);
-        return null;
-      }
-      return prev;
-    });
-  }, []);
+  // Realtime subscription
+  useEffect(() => {
+    if (!userId) return;
 
-  const uncompleteTask = useCallback((taskId: string) => {
-    setTasks((prev) => {
-      const next = prev.map((t) =>
-        t.id === taskId ? { ...t, completed: false, completedAt: null } : t
-      );
-      persistTasks(next);
-      return next;
-    });
-  }, []);
+    const client = createClient();
+    const channel = client
+      .channel("tasks-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "fp_tasks",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => fetchTasks()
+      )
+      .subscribe();
 
-  const deleteTask = useCallback((taskId: string) => {
-    setTasks((prev) => {
-      const next = prev.filter((t) => t.id !== taskId);
-      persistTasks(next);
-      return next;
-    });
-    setActiveTaskId((prev) => {
-      if (prev === taskId) {
-        persistActiveTaskId(null);
-        return null;
-      }
-      return prev;
-    });
-  }, []);
+    return () => {
+      client.removeChannel(channel);
+    };
+  }, [userId, fetchTasks]);
 
-  const editTask = useCallback((taskId: string, newText: string) => {
-    const trimmed = newText.trim();
-    if (!trimmed) return;
-    setTasks((prev) => {
-      const next = prev.map((t) =>
-        t.id === taskId ? { ...t, text: trimmed } : t
-      );
-      persistTasks(next);
-      return next;
-    });
-  }, []);
-
-  const selectTask = useCallback((taskId: string | null) => {
-    setActiveTaskId(taskId);
-    persistActiveTaskId(taskId);
-  }, []);
-
-  const reorderTasks = useCallback((activeId: string, overId: string) => {
-    setTasks((prev) => {
-      const oldIndex = prev.findIndex((t) => t.id === activeId);
-      const newIndex = prev.findIndex((t) => t.id === overId);
-      if (oldIndex === -1 || newIndex === -1) return prev;
-      const next = [...prev];
-      const [removed] = next.splice(oldIndex, 1);
-      next.splice(newIndex, 0, removed);
-      persistTasks(next);
-      return next;
-    });
-  }, []);
-
-  const activeTask = useMemo(
-    () => tasks.find((t) => t.id === activeTaskId) ?? null,
-    [tasks, activeTaskId]
-  );
+  // ─── Derived lists ──────────────────────────────────────────
 
   const activeTasks = useMemo(
-    () => tasks.filter((t) => !t.completed),
+    () => tasks.filter((t) => t.status !== "done"),
     [tasks]
   );
 
   const completedTasks = useMemo(
     () =>
       tasks
-        .filter((t) => t.completed)
-        .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0)),
+        .filter((t) => t.status === "done")
+        .sort(
+          (a, b) =>
+            new Date(b.completed_at ?? b.updated_at).getTime() -
+            new Date(a.completed_at ?? a.updated_at).getTime()
+        ),
     [tasks]
   );
 
+  const todoTasks = useMemo(
+    () => tasks.filter((t) => t.status === "todo"),
+    [tasks]
+  );
+
+  const inProgressTasks = useMemo(
+    () => tasks.filter((t) => t.status === "in_progress"),
+    [tasks]
+  );
+
+  const doneTasks = completedTasks;
+
+  const activeTask = useMemo(
+    () => tasks.find((t) => t.id === activeTaskId) ?? null,
+    [tasks, activeTaskId]
+  );
+
+  // ─── Mutations ──────────────────────────────────────────────
+
+  const addTask = useCallback(
+    async (
+      titleOrInput: string | {
+        title: string;
+        status?: TaskStatus;
+        priority?: TaskPriority;
+        project_id?: string | null;
+      }
+    ) => {
+      if (!userId) return;
+
+      const input = typeof titleOrInput === "string"
+        ? { title: titleOrInput }
+        : titleOrInput;
+      const trimmed = input.title.trim();
+      if (!trimmed) return;
+
+      const status = input.status ?? "todo";
+      const priority = input.priority ?? "none";
+      const project_id = input.project_id ?? null;
+
+      // Optimistic: add to front
+      const optimistic: TaskRecord = {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        project_id,
+        title: trimmed,
+        status,
+        priority,
+        position: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        completed_at: status === "done" ? new Date().toISOString() : null,
+      };
+      setTasks((prev) => [optimistic, ...prev]);
+
+      try {
+        const created = await createTask({
+          user_id: userId,
+          title: trimmed,
+          status,
+          priority,
+          project_id,
+        });
+        // Replace optimistic with real
+        setTasks((prev) =>
+          prev.map((t) => (t.id === optimistic.id ? created : t))
+        );
+      } catch (err) {
+        console.error("Failed to create task:", err);
+        // Revert optimistic
+        setTasks((prev) => prev.filter((t) => t.id !== optimistic.id));
+      }
+    },
+    [userId]
+  );
+
+  const completeTask = useCallback(
+    async (taskId: string) => {
+      const now = new Date().toISOString();
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? { ...t, status: "done" as TaskStatus, completed_at: now }
+            : t
+        )
+      );
+      if (activeTaskId === taskId) setActiveTaskId(null);
+
+      try {
+        await updateTaskApi(taskId, { status: "done", completed_at: now });
+      } catch {
+        fetchTasks(); // revert
+      }
+    },
+    [activeTaskId, fetchTasks]
+  );
+
+  const uncompleteTask = useCallback(
+    async (taskId: string) => {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? { ...t, status: "todo" as TaskStatus, completed_at: null }
+            : t
+        )
+      );
+
+      try {
+        await updateTaskApi(taskId, { status: "todo", completed_at: null });
+      } catch {
+        fetchTasks();
+      }
+    },
+    [fetchTasks]
+  );
+
+  const deleteTask = useCallback(
+    async (taskId: string) => {
+      setTasks((prev) => prev.filter((t) => t.id !== taskId));
+      if (activeTaskId === taskId) setActiveTaskId(null);
+
+      try {
+        await deleteTaskApi(taskId);
+      } catch {
+        fetchTasks();
+      }
+    },
+    [activeTaskId, fetchTasks]
+  );
+
+  const editTask = useCallback(
+    async (taskId: string, newTitle: string) => {
+      const trimmed = newTitle.trim();
+      if (!trimmed) return;
+
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, title: trimmed } : t))
+      );
+
+      try {
+        await updateTaskApi(taskId, { title: trimmed });
+      } catch {
+        fetchTasks();
+      }
+    },
+    [fetchTasks]
+  );
+
+  const updateTaskFull = useCallback(
+    async (
+      taskId: string,
+      updates: Partial<
+        Pick<TaskRecord, "title" | "status" | "priority" | "project_id" | "position" | "completed_at">
+      >
+    ) => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
+      );
+
+      try {
+        await updateTaskApi(taskId, updates);
+      } catch {
+        fetchTasks();
+      }
+    },
+    [fetchTasks]
+  );
+
+  const selectTask = useCallback(
+    async (taskId: string | null) => {
+      setActiveTaskId(taskId);
+      // Auto-move to in_progress when selected for a session
+      if (taskId) {
+        const task = tasks.find((t) => t.id === taskId);
+        if (task && task.status === "todo") {
+          setTasks((prev) =>
+            prev.map((t) =>
+              t.id === taskId ? { ...t, status: "in_progress" as TaskStatus } : t
+            )
+          );
+          try {
+            await updateTaskApi(taskId, { status: "in_progress" });
+          } catch {
+            fetchTasks();
+          }
+        }
+      }
+    },
+    [tasks, fetchTasks]
+  );
+
+  const reorderTasks = useCallback(
+    async (activeId: string, overId: string) => {
+      setTasks((prev) => {
+        const oldIndex = prev.findIndex((t) => t.id === activeId);
+        const newIndex = prev.findIndex((t) => t.id === overId);
+        if (oldIndex === -1 || newIndex === -1) return prev;
+        const next = [...prev];
+        const [removed] = next.splice(oldIndex, 1);
+        next.splice(newIndex, 0, removed);
+        return next;
+      });
+      // Fire-and-forget: let realtime handle sync
+    },
+    []
+  );
+
+  const reorderTasksByStatus = useCallback(
+    async (taskIds: string[], status: TaskStatus) => {
+      try {
+        await reorderTasksApi(taskIds, status);
+      } catch {
+        fetchTasks();
+      }
+    },
+    [fetchTasks]
+  );
+
   return {
+    // Backward-compatible
     activeTasks,
     completedTasks,
     activeTask,
@@ -158,5 +374,14 @@ export function useTasks() {
     editTask,
     selectTask,
     reorderTasks,
+    // New
+    todoTasks,
+    inProgressTasks,
+    doneTasks,
+    loading,
+    tasks,
+    updateTask: updateTaskFull,
+    reorderTasksByStatus,
+    fetchTasks,
   };
 }

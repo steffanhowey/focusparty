@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ChevronDown, ChevronRight, Plus, Check } from "lucide-react";
-import type { Task } from "@/lib/types";
+import { ChevronDown, Plus } from "lucide-react";
+import type { TaskRecord } from "@/lib/types";
 import { DurationPills } from "./DurationPills";
 
 interface SetupScreenProps {
-  activeTask: Task | null;
-  activeTasks: Task[];
-  completedTasks: Task[];
+  activeTask: TaskRecord | null;
+  activeTasks: TaskRecord[];
+  completedTasks: TaskRecord[];
   onStartTask: (taskId: string) => void;
   onCompleteTask: (taskId: string) => void;
   onAddTask: (text: string) => void;
@@ -46,7 +46,6 @@ export function SetupScreen({
   const [duration, setDuration] = useState(25);
   const [showAddInput, setShowAddInput] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
-  const [showCompleted, setShowCompleted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const addInputRef = useRef<HTMLInputElement>(null);
   const prevTaskIdRef = useRef<string | null>(activeTask?.id ?? null);
@@ -121,14 +120,14 @@ export function SetupScreen({
               <button
                 type="button"
                 onClick={() => setTaskPickerOpen((o) => !o)}
-                className="flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-5 py-3 text-left transition-[border-color] hover:border-[var(--color-border-focus)]"
+                className="flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-5 py-3 text-left outline-none"
               >
                 <span
                   className={`truncate text-sm ${
                     activeTask ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-tertiary)]"
                   }`}
                 >
-                  {activeTask ? activeTask.text : "Select or create a task"}
+                  {activeTask ? activeTask.title : "Select or create a task"}
                 </span>
                 <ChevronDown
                   size={16}
@@ -142,7 +141,7 @@ export function SetupScreen({
               {/* Dropdown panel — matches TasksPanel design */}
               {taskPickerOpen && (
                 <div
-                  className="absolute top-full left-0 mt-2 w-full rounded-xl border border-[var(--color-border-default)] shadow-2xl"
+                  className="absolute top-full left-0 mt-2 w-full rounded-xl border border-[var(--color-border-default)]"
                   style={{
                     background: "rgba(13,14,32,0.95)",
                     backdropFilter: "blur(20px)",
@@ -155,34 +154,27 @@ export function SetupScreen({
                     {activeTasks.map((task) => {
                       const isSelected = activeTask?.id === task.id;
                       return (
-                        <div
+                        <button
                           key={task.id}
-                          className={`group flex items-center gap-3 border-b border-[var(--color-border-subtle)] px-2 py-3 last:border-b-0 ${
-                            isSelected ? "rounded-lg bg-white/[0.06]" : ""
-                          }`}
+                          type="button"
+                          onClick={() => handleSelectTask(task.id)}
+                          className="flex w-full items-center gap-3 border-b border-[var(--color-border-subtle)] px-2 py-3 text-left last:border-b-0"
                         >
-                          <button
-                            type="button"
-                            onClick={() => handleSelectTask(task.id)}
-                            className="min-w-0 flex-1 cursor-pointer break-words text-left text-sm leading-snug text-[var(--color-text-secondary)] transition-colors hover:text-white"
+                          <span
+                            className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                              isSelected
+                                ? "border-[var(--color-border-focus)] bg-[var(--color-border-focus)]"
+                                : "border-[var(--color-border-default)]"
+                            }`}
                           >
-                            {task.text}
-                          </button>
-                          <div className="flex h-5 shrink-0 items-center">
-                            <button
-                              type="button"
-                              onClick={() => onCompleteTask(task.id)}
-                              className="flex h-[18px] w-[18px] items-center justify-center rounded-[4px] border border-[var(--color-border-default)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
-                              aria-label={`Complete ${task.text}`}
-                            >
-                              <Check
-                                size={11}
-                                strokeWidth={2.5}
-                                className="text-transparent transition-colors group-hover:text-transparent [*:hover>&]:text-emerald-400"
-                              />
-                            </button>
-                          </div>
-                        </div>
+                            {isSelected && (
+                              <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                            )}
+                          </span>
+                          <span className="min-w-0 flex-1 cursor-pointer break-words text-sm leading-snug text-[var(--color-text-secondary)] transition-colors hover:text-white">
+                            {task.title}
+                          </span>
+                        </button>
                       );
                     })}
 
@@ -237,47 +229,6 @@ export function SetupScreen({
                       </button>
                     )}
 
-                    {/* Completed section */}
-                    {completedTasks.length > 0 && (
-                      <div className="mt-1 border-t border-[var(--color-border-subtle)] pt-1">
-                        <button
-                          type="button"
-                          onClick={() => setShowCompleted((s) => !s)}
-                          className="flex items-center gap-2 px-2 py-3 text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
-                        >
-                          Completed ({completedTasks.length})
-                          <ChevronRight
-                            size={14}
-                            strokeWidth={1.5}
-                            className={`transition-transform duration-200 ${
-                              showCompleted ? "rotate-90" : ""
-                            }`}
-                          />
-                        </button>
-
-                        {showCompleted &&
-                          completedTasks.map((task) => (
-                            <div
-                              key={task.id}
-                              className="group flex items-center gap-3 border-b border-[var(--color-border-subtle)] px-2 py-3 last:border-b-0"
-                            >
-                              <span className="min-w-0 flex-1 break-words text-sm leading-snug text-[var(--color-text-tertiary)] line-through">
-                                {task.text}
-                              </span>
-                              <div className="flex h-5 shrink-0 items-center">
-                                <button
-                                  type="button"
-                                  onClick={() => onDeleteTask(task.id)}
-                                  className="flex h-[18px] w-[18px] items-center justify-center rounded-[4px] bg-emerald-500 transition-colors hover:bg-emerald-400"
-                                  aria-label={`Restore ${task.text}`}
-                                >
-                                  <Check size={11} strokeWidth={2.5} className="text-white" />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               )}

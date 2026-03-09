@@ -17,12 +17,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Plus, ChevronRight } from "lucide-react";
-import type { Task } from "@/lib/types";
+import type { TaskRecord } from "@/lib/types";
 import { SortableTaskRow } from "./SortableTaskRow";
 
 interface TasksPanelProps {
-  activeTasks: Task[];
-  completedTasks: Task[];
+  activeTasks: TaskRecord[];
+  completedTasks: TaskRecord[];
   onCompleteTask: (taskId: string) => void;
   onUncompleteTask: (taskId: string) => void;
   onAddTask: (text: string) => void;
@@ -241,7 +241,7 @@ export const TasksPanel = memo(function TasksPanel({
             }}
           >
             <span className="text-sm font-medium text-white">
-              {draggedTask.text}
+              {draggedTask.title}
             </span>
           </div>
         ) : null}

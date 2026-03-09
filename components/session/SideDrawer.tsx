@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, memo } from "react";
-import type { Task } from "@/lib/types";
+import type { TaskRecord } from "@/lib/types";
 import type { ChatMessage } from "@/lib/useChat";
 import { PanelHeader } from "./PanelHeader";
 import { TasksPanel } from "./TasksPanel";
@@ -11,8 +11,8 @@ interface SideDrawerProps {
   onClose: () => void;
   panel: "tasks" | "chat";
   // Tasks
-  activeTasks: Task[];
-  completedTasks: Task[];
+  activeTasks: TaskRecord[];
+  completedTasks: TaskRecord[];
   onCompleteTask: (taskId: string) => void;
   onUncompleteTask: (taskId: string) => void;
   onAddTask: (text: string) => void;

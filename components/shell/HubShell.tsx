@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { ReactNode, useState, useEffect, useCallback, lazy, Suspense } from "react";
-import { PartyPopper, Menu } from "lucide-react";
+import { PartyPopper, Plus, Menu } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { CHARACTERS } from "@/lib/constants";
@@ -12,6 +12,7 @@ const SIDEBAR_COLLAPSED_KEY = "focusparty-sidebar-collapsed";
 
 const PAGE_TITLES: Record<string, string> = {
   "/party": "Parties",
+  "/tasks": "Tasks",
   "/progress": "Progress",
   "/settings": "Settings",
 };
@@ -24,6 +25,14 @@ const LazyPartyList = lazy(() =>
   import("@/components/party/PartyList").then((m) => ({ default: m.PartyList }))
 );
 
+const LazyTaskBoard = lazy(() =>
+  import("@/components/tasks/TaskBoard").then((m) => ({ default: m.TaskBoard }))
+);
+
+const LazyProgressDashboard = lazy(() =>
+  import("@/components/progress/ProgressDashboard").then((m) => ({ default: m.ProgressDashboard }))
+);
+
 function renderTabContent(tab: string): ReactNode {
   switch (tab) {
     case "/party":
@@ -34,8 +43,22 @@ function renderTabContent(tab: string): ReactNode {
           </Suspense>
         </main>
       );
+    case "/tasks":
+      return (
+        <main className="flex-1">
+          <Suspense fallback={null}>
+            <LazyTaskBoard />
+          </Suspense>
+        </main>
+      );
     case "/progress":
-      return <main className="flex-1">{/* Content — title is in shell header */}</main>;
+      return (
+        <main className="flex-1">
+          <Suspense fallback={null}>
+            <LazyProgressDashboard />
+          </Suspense>
+        </main>
+      );
     case "/settings":
       return <main className="flex-1">{/* Content — title is in shell header */}</main>;
     default:
@@ -56,17 +79,35 @@ export function HubShell({ children }: { children: ReactNode }) {
   const title = getTitleForPath(effectivePath);
 
   useEffect(() => {
-    try {
-      const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-      if (isMobile) {
+    const COLLAPSE_BP = 1024;
+    let wasWide = window.innerWidth >= COLLAPSE_BP;
+
+    const apply = () => {
+      const isWide = window.innerWidth >= COLLAPSE_BP;
+      if (!isWide) {
         setCollapsed(true);
-        return;
+      } else if (isWide !== wasWide) {
+        // Only restore preference when crossing back above breakpoint
+        try {
+          const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+          setCollapsed(stored === "true");
+        } catch { /* ignore */ }
       }
-      const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-      if (stored !== null) setCollapsed(stored === "true");
-    } catch {
-      // ignore
+      wasWide = isWide;
+    };
+
+    // Initial check
+    if (!wasWide) {
+      setCollapsed(true);
+    } else {
+      try {
+        const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+        setCollapsed(stored === "true");
+      } catch { /* ignore */ }
     }
+
+    window.addEventListener("resize", apply);
+    return () => window.removeEventListener("resize", apply);
   }, []);
 
   const toggleCollapsed = useCallback(() => {
@@ -134,7 +175,7 @@ export function HubShell({ children }: { children: ReactNode }) {
         style={{ background: "var(--color-bg-primary)" }}
       >
         <div
-          className="flex h-full flex-col border border-[var(--color-border-default)] rounded-xl overflow-clip md:rounded-[var(--radius-xl)]"
+          className="flex h-full flex-col overflow-clip border border-[var(--color-border-default)] rounded-xl md:rounded-[var(--radius-xl)]"
           style={{
             background: "var(--color-bg-elevated)",
           }}
@@ -153,7 +194,23 @@ export function HubShell({ children }: { children: ReactNode }) {
                 {title}
               </span>
             </div>
-            {effectivePath !== "/party" ? (
+            {effectivePath === "/party" ? (
+              <div id="hub-header-action" />
+            ) : effectivePath === "/tasks" ? (
+              <button
+                type="button"
+                onClick={() => document.dispatchEvent(new CustomEvent("fp:create-task"))}
+                className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 sm:px-5"
+                style={{
+                  background: "var(--color-accent-primary)",
+                  color: "white",
+                }}
+                aria-label="New task"
+              >
+                <Plus size={18} strokeWidth={1.8} className="shrink-0" />
+                <span className="hidden text-sm font-semibold sm:inline">New Task</span>
+              </button>
+            ) : (
               <a
                 href="/party"
                 onClick={(e) => {
@@ -170,11 +227,9 @@ export function HubShell({ children }: { children: ReactNode }) {
                 <PartyPopper size={18} strokeWidth={1.8} className="shrink-0" />
                 <span className="hidden text-sm font-semibold sm:inline">Join Party</span>
               </a>
-            ) : (
-              <div id="hub-header-action" />
             )}
           </div>
-          <div className="min-h-0 flex-1 overflow-auto px-4 pb-5 md:px-6 md:pb-6">
+          <div className="fp-shell-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-4 pt-4 pb-5 md:px-6 md:pt-5 md:pb-6">
             {clientTab !== null ? renderTabContent(effectivePath) : children}
           </div>
         </div>

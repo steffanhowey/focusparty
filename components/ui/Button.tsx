@@ -3,31 +3,36 @@
 import { ButtonHTMLAttributes, ReactNode } from "react";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "cta";
+type ButtonSize = "default" | "sm";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
+  size?: ButtonSize;
   children: ReactNode;
   className?: string;
 }
 
-const variantStyles: Record<
-  ButtonVariant,
-  string
-> = {
+const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "h-12 rounded-full bg-[var(--color-accent-primary)] px-6 text-white transition-all duration-150 hover:bg-[var(--color-purple-800)] hover:shadow-[var(--shadow-glow-purple)] active:bg-[var(--color-purple-900)]",
+    "rounded-full bg-[var(--color-accent-primary)] text-white transition-all duration-150 hover:opacity-85 active:opacity-75",
   secondary:
-    "h-12 rounded-full border border-[var(--color-accent-primary)] bg-transparent text-[var(--color-accent-primary)] transition-colors duration-150 hover:bg-[var(--color-purple-200)]",
+    "rounded-full border border-[var(--color-accent-primary)] bg-transparent text-[var(--color-accent-primary)] transition-colors duration-150 hover:bg-[var(--color-accent-primary)]/10",
   ghost:
-    "h-12 rounded-full bg-transparent text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-[var(--color-bg-hover)]",
+    "rounded-full bg-transparent text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-[var(--color-bg-hover)]",
   danger:
-    "h-12 rounded-full bg-transparent text-[var(--color-coral-700)] transition-colors duration-150 hover:bg-[var(--color-coral-200)]",
+    "rounded-full bg-transparent text-[var(--color-coral-700)] transition-colors duration-150 hover:bg-[var(--color-coral-200)]",
   cta:
-    "h-14 rounded-full bg-[var(--color-accent-primary)] px-8 font-semibold text-white transition-all duration-150 hover:scale-[1.02] hover:shadow-[var(--shadow-glow-purple)] active:scale-[0.98]",
+    "rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-all duration-150 hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] active:opacity-75",
+};
+
+const sizeStyles: Record<ButtonSize, string> = {
+  default: "h-12 px-6",
+  sm: "h-9 px-4 text-sm",
 };
 
 export function Button({
   variant = "primary",
+  size = "default",
   children,
   className = "",
   ...props
@@ -35,7 +40,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`cursor-pointer font-medium disabled:cursor-not-allowed ${variantStyles[variant]} ${className}`}
+      className={`cursor-pointer font-medium disabled:cursor-not-allowed ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
       style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
       {...props}
     >

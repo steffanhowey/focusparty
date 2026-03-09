@@ -5,7 +5,7 @@
  * Parties is the app home. Icons: PartyPopper (parties), Flame (progress), Settings.
  */
 
-import { Flame, PartyPopper, Settings, type LucideIcon } from "lucide-react";
+import { Flame, ListTodo, PartyPopper, Settings, type LucideIcon } from "lucide-react";
 
 const NAV_ICON_SIZE = 20;
 
@@ -16,6 +16,7 @@ export const NAV_ITEMS: Array<{
   icon: LucideIcon;
 }> = [
   { id: "party", href: "/party", label: "Parties", icon: PartyPopper },
+  { id: "tasks", href: "/tasks", label: "Tasks", icon: ListTodo },
   { id: "progress", href: "/progress", label: "Progress", icon: Flame },
   { id: "settings", href: "/settings", label: "Settings", icon: Settings },
 ];

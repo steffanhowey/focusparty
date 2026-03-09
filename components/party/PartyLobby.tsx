@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { FlameIcon } from "@/components/ui/FlameIcon";
 import { Card } from "@/components/ui/Card";
 import { ParticipantList } from "./ParticipantList";
+import { LiveParticipantsStrip } from "./LiveParticipantsStrip";
+import { LiveActivityFeed } from "./LiveActivityFeed";
+import { ResumeSessionCard } from "./ResumeSessionCard";
 import { ShareLink } from "./ShareLink";
 import { CHARACTERS } from "@/lib/constants";
 import {
@@ -19,9 +22,14 @@ import {
   type Party,
   type PartyParticipant,
 } from "@/lib/parties";
+import { getActiveSessionForParty } from "@/lib/sessions";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { usePartyRealtime } from "@/lib/usePartyRealtime";
+import { usePartyPresence } from "@/lib/usePartyPresence";
+import { usePartyActivityFeed } from "@/lib/usePartyActivityFeed";
 import { useNotification } from "@/components/providers/NotificationProvider";
+import { usePartySummaryStats } from "@/lib/usePartySummaryStats";
+import type { SessionRow } from "@/lib/types";
 
 interface PartyLobbyProps {
   partyId: string;
@@ -40,6 +48,39 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
 
   const isCreator = party?.creator_id === userId;
   const isParticipant = participants.some((p) => p.user_id === userId);
+  const [activeSession, setActiveSession] = useState<SessionRow | null>(null);
+
+  // Presence tracking
+  const presence = usePartyPresence({
+    partyId,
+    userId,
+    displayName,
+    phase: null, // not in a session from the lobby
+    character: party?.character ?? null,
+  });
+
+  // Build a merged display name map from DB participants + presence
+  const displayNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    participants.forEach((p) => map.set(p.user_id, p.display_name));
+    presence.participants.forEach((p) => map.set(p.userId, p.displayName));
+    return map;
+  }, [participants, presence.participants]);
+
+  // Activity feed
+  const { events: feedEvents, isLoading: feedLoading } =
+    usePartyActivityFeed(partyId, displayNameMap);
+
+  // Party summary stats
+  const partySummary = usePartySummaryStats(partyId);
+
+  // Check for an existing active session (for resume card)
+  useEffect(() => {
+    if (!userId || !partyId) return;
+    getActiveSessionForParty(userId, partyId)
+      .then(setActiveSession)
+      .catch(() => {});
+  }, [userId, partyId]);
 
   const refreshParty = useCallback(async () => {
     try {
@@ -96,6 +137,16 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     onPartiesChange: refreshParty,
     onParticipantsChange: refreshParticipants,
   });
+
+  const handleResumeSession = useCallback(() => {
+    router.push("/session");
+  }, [router]);
+
+  const handleAbandonSession = useCallback(async () => {
+    setActiveSession(null);
+    // The session will remain "active" in DB until the user starts a new one
+    // (at which point the duplicate guard handles it) or it's explicitly ended
+  }, []);
 
   const handleStart = async () => {
     if (starting) return;
@@ -196,21 +247,67 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
           <p className="text-sm text-[var(--color-text-secondary)]">
             {party.planned_duration_min}m sprint &middot;{" "}
             <span style={{ color: c.primary }}>{c.name}</span> hosting
+            {presence.count > 0 && (
+              <span className="ml-1">
+                &middot; {presence.count} here
+              </span>
+            )}
           </p>
         </div>
       </div>
 
+      {/* Party summary stats */}
+      {!partySummary.loading && partySummary.sessionsToday > 0 && (
+        <div className="mb-4 flex gap-4 text-xs text-[var(--color-text-tertiary)]">
+          <span>
+            {partySummary.sessionsToday} session{partySummary.sessionsToday !== 1 ? "s" : ""} today
+          </span>
+          {partySummary.completedSprintsToday > 0 && (
+            <span>
+              {partySummary.completedSprintsToday} sprint{partySummary.completedSprintsToday !== 1 ? "s" : ""} completed
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Resume session card */}
+      {activeSession && (
+        <div className="mb-4">
+          <ResumeSessionCard
+            session={activeSession}
+            onResume={handleResumeSession}
+            onAbandon={handleAbandonSession}
+          />
+        </div>
+      )}
+
       {/* Participants */}
       <Card variant="default" className="mb-4 p-4">
-        <p className="mb-3 text-sm font-medium text-white">
-          {participants.length}/{party.max_participants} focus friends ready
-        </p>
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-medium text-white">
+            {participants.length}/{party.max_participants} focus friends ready
+          </p>
+          {presence.participants.length > 0 && (
+            <LiveParticipantsStrip
+              participants={presence.participants}
+              currentUserId={userId}
+              size="sm"
+              maxVisible={4}
+            />
+          )}
+        </div>
         <ParticipantList
           participants={participants}
           maxParticipants={party.max_participants}
           creatorId={party.creator_id}
           character={party.character}
         />
+      </Card>
+
+      {/* Activity feed */}
+      <Card variant="default" className="mb-4 p-4">
+        <p className="mb-2 text-sm font-medium text-white">Activity</p>
+        <LiveActivityFeed events={feedEvents} isLoading={feedLoading} />
       </Card>
 
       {/* Share link */}

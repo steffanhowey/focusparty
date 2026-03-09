@@ -76,7 +76,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         {title && (
           <h2
             id="modal-title"
-            className="mb-4 text-2xl font-bold text-white"
+            className="mb-4 text-xl font-bold text-white"
             style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             {title}
@@ -86,7 +86,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 cursor-pointer rounded p-1 text-[var(--color-text-tertiary)] hover:text-white"
+          className="absolute right-2 top-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-[var(--color-text-tertiary)] hover:text-white"
           aria-label="Close"
         >
           <span className="text-xl leading-none">&times;</span>

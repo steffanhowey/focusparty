@@ -1,5 +1,6 @@
 import { createClient } from "./supabase/client";
 import { generateInviteCode } from "./inviteCode";
+import { logEvent } from "./sessions";
 import type { CharacterId } from "./types";
 
 // ---------- Types ----------
@@ -199,6 +200,15 @@ export async function joinParty(
     .single();
 
   if (error) throw error;
+
+  // Log participant_joined event (fire-and-forget)
+  logEvent({
+    party_id: partyId,
+    user_id: userId,
+    event_type: "participant_joined",
+    body: displayName,
+  }).catch(() => {});
+
   return data;
 }
 
@@ -214,6 +224,13 @@ export async function leaveParty(
     .eq("user_id", userId);
 
   if (error) throw error;
+
+  // Log participant_left event (fire-and-forget)
+  logEvent({
+    party_id: partyId,
+    user_id: userId,
+    event_type: "participant_left",
+  }).catch(() => {});
 }
 
 /** Update party status (e.g., waiting → active). */

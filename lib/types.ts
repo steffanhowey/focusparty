@@ -103,12 +103,69 @@ export interface CharacterDef {
   roomBg: string;
 }
 
+/** @deprecated Use TaskRecord instead */
 export interface Task {
   id: string;
   text: string;
   completed: boolean;
   createdAt: number;
   completedAt: number | null;
+}
+
+// ─── Global Task System ─────────────────────────────────────
+
+export type TaskStatus = "todo" | "in_progress" | "done";
+export type TaskPriority = "none" | "p4" | "p3" | "p2" | "p1";
+
+export interface Project {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  emoji: string;
+  is_default: boolean;
+  position: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Label {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  created_at: string;
+}
+
+export interface TaskRecord {
+  id: string;
+  user_id: string;
+  project_id: string | null;
+  title: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  position: number;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
+  labels?: Label[];
+  project?: Project | null;
+}
+
+export interface TaskFilters {
+  projectId?: string | null;
+  priority?: TaskPriority[];
+  labelIds?: string[];
+  status?: TaskStatus[];
+  search?: string;
+}
+
+export type TaskSortField = "position" | "priority" | "created_at";
+export type TaskSortDir = "asc" | "desc";
+
+export interface TaskSort {
+  field: TaskSortField;
+  direction: TaskSortDir;
 }
 
 export type SessionMood = "energized" | "focused" | "neutral" | "tired" | "frustrated";
@@ -121,6 +178,142 @@ export interface SessionReflection {
   completedAt: string;
   sessionDurationSec: number;
 }
+
+// ─── Session Persistence ──────────────────────────────────────
+
+export type SessionStatus = "active" | "completed" | "abandoned";
+
+export interface SessionRow {
+  id: string;
+  user_id: string;
+  party_id: string | null;
+  task_id: string | null;
+  character: string | null;
+  goal_text: string | null;
+  phase: SessionPhase;
+  status: SessionStatus;
+  planned_duration_sec: number;
+  actual_duration_sec: number | null;
+  reflection_mood: SessionMood | null;
+  reflection_productivity: ProductivityRating | null;
+  started_at: string;
+  ended_at: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface SessionSprint {
+  id: string;
+  session_id: string;
+  sprint_number: number;
+  duration_sec: number;
+  started_at: string;
+  ended_at: string | null;
+  completed: boolean;
+  metadata: Record<string, unknown>;
+}
+
+export type GoalStatus = "declared" | "completed" | "abandoned";
+
+export interface SessionGoal {
+  id: string;
+  session_id: string;
+  sprint_id: string | null;
+  user_id: string;
+  task_id: string | null;
+  body: string;
+  status: GoalStatus;
+  declared_at: string;
+  completed_at: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export type ActivityActorType = "user" | "host" | "system";
+
+export type ActivityEventType =
+  | "session_started"
+  | "session_completed"
+  | "sprint_started"
+  | "sprint_completed"
+  | "goal_declared"
+  | "goal_completed"
+  | "task_completed"
+  | "reflection_submitted"
+  | "participant_joined"
+  | "participant_left";
+
+export interface ActivityEvent {
+  id: string;
+  party_id: string | null;
+  session_id: string | null;
+  user_id: string | null;
+  actor_type: ActivityActorType;
+  event_type: ActivityEventType;
+  body: string | null;
+  payload: Record<string, unknown>;
+  created_at: string;
+}
+
+// ─── Presence ────────────────────────────────────────────────
+
+export type ParticipantStatus =
+  | "idle"
+  | "starting"
+  | "focused"
+  | "reviewing"
+  | "on_break";
+
+export interface PresencePayload {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  character: CharacterId | null;
+  activeSessionId: string | null;
+  phase: SessionPhase | null;
+  status: ParticipantStatus;
+  goalPreview: string | null;
+  updatedAt: string;
+}
+
+export interface ActivityFeedItem extends ActivityEvent {
+  displayText: string;
+}
+
+// ─── Progress + Stats ─────────────────────────────────────────
+
+export interface UserSessionStats {
+  totalCompletedSessions: number;
+  totalFocusMinutes: number;
+  totalCompletedSprints: number;
+  sessionsThisWeek: number;
+}
+
+export interface UserStreakStats {
+  currentStreak: number;
+  bestStreak: number;
+  /** ISO date strings (YYYY-MM-DD) of active days, sorted descending. */
+  activeDays: string[];
+}
+
+export interface DailySessionCount {
+  /** YYYY-MM-DD */
+  day: string;
+  sessions: number;
+}
+
+export interface FavoritePartyStat {
+  partyId: string;
+  partyName: string;
+  sessionCount: number;
+  character: string | null;
+}
+
+export interface PartySummaryStats {
+  sessionsToday: number;
+  completedSprintsToday: number;
+}
+
+// ─── Toast System ─────────────────────────────────────────────
 
 export type ToastType = "info" | "success" | "warning" | "error" | "celebration";
 

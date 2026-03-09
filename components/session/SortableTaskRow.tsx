@@ -4,10 +4,10 @@ import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Grip, Check } from "lucide-react";
-import type { Task } from "@/lib/types";
+import type { TaskRecord } from "@/lib/types";
 
 interface SortableTaskRowProps {
-  task: Task;
+  task: TaskRecord;
   completed?: boolean;
   onComplete: (taskId: string) => void;
   onEdit: (taskId: string, newText: string) => void;
@@ -54,17 +54,17 @@ export const SortableTaskRow = memo(function SortableTaskRow({
 
   const startEditing = useCallback(() => {
     setIsEditing(true);
-    setEditText(task.text);
-  }, [task.text]);
+    setEditText(task.title);
+  }, [task.title]);
 
   const commitEdit = useCallback(() => {
     const trimmed = editText.trim();
-    if (trimmed && trimmed !== task.text) {
+    if (trimmed && trimmed !== task.title) {
       onEdit(task.id, trimmed);
     }
     setIsEditing(false);
     setEditText("");
-  }, [editText, task.text, task.id, onEdit]);
+  }, [editText, task.title, task.id, onEdit]);
 
   const cancelEdit = useCallback(() => {
     setIsEditing(false);
@@ -123,7 +123,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
           }`}
           onClick={startEditing}
         >
-          {task.text}
+          {task.title}
         </span>
       )}
 
@@ -134,7 +134,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
             type="button"
             onClick={() => onComplete(task.id)}
             className="flex h-[18px] w-[18px] items-center justify-center rounded-[4px] bg-emerald-500 transition-colors hover:bg-emerald-400"
-            aria-label={`Restore ${task.text}`}
+            aria-label={`Restore ${task.title}`}
           >
             <Check size={11} strokeWidth={2.5} className="text-white" />
           </button>
@@ -143,7 +143,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
             type="button"
             onClick={() => onComplete(task.id)}
             className="flex h-[18px] w-[18px] items-center justify-center rounded-[4px] border border-[var(--color-border-default)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
-            aria-label={`Complete ${task.text}`}
+            aria-label={`Complete ${task.title}`}
           >
             <Check
               size={11}

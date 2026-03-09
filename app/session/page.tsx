@@ -22,6 +22,9 @@ import { VibeBackground } from "@/components/session/VibeBackground";
 import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
 import { BreathingOverlay } from "@/components/session/BreathingOverlay";
 import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/lib/useCurrentUser";
+import { useSessionPersistence } from "@/lib/useSessionPersistence";
+import { usePartyPresence } from "@/lib/usePartyPresence";
 import type { SessionPhase, SessionReflection } from "@/lib/types";
 import type { VibeId } from "@/lib/musicConstants";
 
@@ -31,7 +34,9 @@ const DEFAULT_DURATION_SEC = 25 * 60;
 
 export default function SessionPage() {
   const router = useRouter();
+  const { userId, displayName } = useCurrentUser();
   const { characterAccent } = useTheme();
+  const persistence = useSessionPersistence(userId);
   const [phase, setPhase] = useState<SessionPhase>("setup");
   const [goal, setGoal] = useState("");
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
@@ -56,12 +61,28 @@ export default function SessionPage() {
   const handleTimerComplete = useCallback(() => {
     reviewElapsedRef.current = durationSec;
     setPhase("review");
-  }, [durationSec]);
+
+    // Persist: mark sprint completed + update phase
+    persistence.completeSprint().catch(() => {});
+    persistence.updatePhase("review").catch(() => {});
+  }, [durationSec, persistence]);
 
   const timer = useTimer(durationSec, handleTimerComplete);
   const camera = useCamera(false);
   const screenShare = useScreenShare();
   const { party, partyId } = useActiveParty();
+
+  // Presence: track this user's status for other party participants
+  usePartyPresence({
+    partyId: partyId ?? null,
+    userId,
+    displayName,
+    character: characterAccent,
+    activeSessionId: persistence.sessionRow?.id ?? null,
+    phase,
+    goalPreview: goal || null,
+  });
+
   const chat = useChat();
   const { settings, updateSetting } = useSettings();
   const music = useMusic();
@@ -89,6 +110,24 @@ export default function SessionPage() {
     reorderTasks,
   } = useTasks();
 
+  // Start fresh — no pre-selected task on setup
+  useEffect(() => { selectTask(null); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Hydrate: restore active session from DB after refresh
+  const hydrationApplied = useRef(false);
+  useEffect(() => {
+    if (hydrationApplied.current) return;
+    if (persistence.isHydrating) return;
+    hydrationApplied.current = true;
+
+    if (persistence.wasRestored && persistence.sessionRow) {
+      const s = persistence.sessionRow;
+      setPhase(s.phase);
+      setGoal(s.goal_text ?? "");
+      setDurationSec(s.planned_duration_sec);
+    }
+  }, [persistence.isHydrating, persistence.wasRestored, persistence.sessionRow]);
+
   const closePanel = useCallback(() => setActivePanel("none"), []);
   const handleToggleTasks = useCallback(
     () => setActivePanel((prev) => (prev === "tasks" ? "none" : "tasks")),
@@ -98,7 +137,7 @@ export default function SessionPage() {
   const handleStartSprint = useCallback(
     (durationMinutes: number) => {
       if (!activeTask) return;
-      setGoal(activeTask.text);
+      setGoal(activeTask.title);
       const sec = durationMinutes * 60;
       setDurationSec(sec);
       timer.reset(sec);
@@ -107,8 +146,38 @@ export default function SessionPage() {
       timer.start();
       setPhase("sprint");
       setSprintGoalCardOpen(false);
+
+      // Persist session + first sprint (fire-and-forget)
+      if (userId) {
+        persistence
+          .startSession({
+            user_id: userId,
+            party_id: partyId ?? undefined,
+            task_id: activeTask.id ?? undefined,
+            character: characterAccent,
+            goal_text: activeTask.title,
+            planned_duration_sec: sec,
+          })
+          .then((session) =>
+            persistence.startSprint({
+              session_id: session.id,
+              sprint_number: 1,
+              duration_sec: sec,
+            })
+          )
+          .then(() =>
+            persistence.declareGoal({
+              user_id: userId,
+              task_id: activeTask.id ?? undefined,
+              body: activeTask.title,
+            })
+          )
+          .catch((err) =>
+            console.error("[SessionPage] persist startSprint failed:", err)
+          );
+      }
     },
-    [activeTask, timer.reset, timer.start]
+    [activeTask, timer.reset, timer.start, userId, partyId, characterAccent, persistence]
   );
 
   const handleBreathingComplete = useCallback(() => {
@@ -143,23 +212,49 @@ export default function SessionPage() {
     screenShare.stop();
     music.pause();
     setPhase("review");
-  }, [durationSec, timer.getSnapshot, timer.pause, camera.stop, screenShare.stop, music.pause]);
+
+    // Persist: sprint ended early + update phase
+    persistence.completeSprint().catch(() => {});
+    persistence.updatePhase("review").catch(() => {});
+  }, [durationSec, timer.getSnapshot, timer.pause, camera.stop, screenShare.stop, music.pause, persistence]);
 
   const handleAnotherRound = useCallback(() => {
     timer.reset(durationSec);
     timer.start();
     setPhase("sprint");
-  }, [durationSec, timer.reset, timer.start]);
+
+    // Persist: new sprint
+    if (persistence.sessionRow) {
+      const nextNum = (persistence.currentSprint?.sprint_number ?? 0) + 1;
+      persistence
+        .startSprint({
+          session_id: persistence.sessionRow.id,
+          sprint_number: nextNum,
+          duration_sec: durationSec,
+        })
+        .catch(() => {});
+      persistence.updatePhase("sprint").catch(() => {});
+    }
+  }, [durationSec, timer.reset, timer.start, persistence]);
 
   const handleDone = useCallback(() => {
+    // Persist: end session as completed
+    persistence.endSession("completed").catch(() => {});
     router.push("/party");
-  }, [router]);
+  }, [router, persistence]);
 
   const handleReflectionComplete = useCallback(
-    (_reflection: SessionReflection) => {
-      // Future: persist to Supabase
+    (reflection: SessionReflection) => {
+      // Persist reflection to Supabase
+      persistence
+        .submitReflection({
+          mood: reflection.mood,
+          productivity: reflection.productivity,
+          actual_duration_sec: reflection.sessionDurationSec,
+        })
+        .catch(() => {});
     },
-    []
+    [persistence]
   );
 
   const handleStartTask = useCallback(
@@ -400,7 +495,7 @@ export default function SessionPage() {
 
       <SwitchTaskModal
         isOpen={pendingSwitchTaskId !== null}
-        currentTaskText={activeTask?.text ?? ""}
+        currentTaskText={activeTask?.title ?? ""}
         onComplete={handleSwitchComplete}
         onSwitch={handleSwitchSwitch}
         onCancel={handleSwitchCancel}

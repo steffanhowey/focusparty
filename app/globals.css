@@ -247,6 +247,41 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Shell — thin scrollbar --------------------------------------------------- */
+.fp-shell-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.fp-shell-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fp-shell-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fp-shell-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 100px;
+}
+
+.fp-shell-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="light"] .fp-shell-scroll {
+  scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+}
+
+[data-theme="light"] .fp-shell-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .fp-shell-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
 /* Task completion celebration */
 @keyframes fp-celebrate {
   0% { transform: scale(0) rotate(-15deg); opacity: 0; }
