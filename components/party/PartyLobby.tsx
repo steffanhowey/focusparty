@@ -2,16 +2,14 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Link2, Check } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { FlameIcon } from "@/components/ui/FlameIcon";
 import { Card } from "@/components/ui/Card";
-import { ParticipantList } from "./ParticipantList";
 import { LiveParticipantsStrip } from "./LiveParticipantsStrip";
 import { LiveActivityFeed } from "./LiveActivityFeed";
 import { ResumeSessionCard } from "./ResumeSessionCard";
-import { ShareLink } from "./ShareLink";
 import { CHARACTERS } from "@/lib/constants";
 import {
   getParty,
@@ -29,7 +27,17 @@ import { usePartyPresence } from "@/lib/usePartyPresence";
 import { usePartyActivityFeed } from "@/lib/usePartyActivityFeed";
 import { useNotification } from "@/components/providers/NotificationProvider";
 import { usePartySummaryStats } from "@/lib/usePartySummaryStats";
-import type { SessionRow } from "@/lib/types";
+import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
+import { getWorldConfig } from "@/lib/worlds";
+import type { RoomState, SessionRow } from "@/lib/types";
+
+const ROOM_STATE_CLASS: Record<RoomState, string> = {
+  quiet: "fp-room-quiet",
+  warming_up: "fp-room-warming",
+  focused: "fp-room-focused",
+  flowing: "fp-room-flowing",
+  cooling_down: "fp-room-cooling",
+};
 
 interface PartyLobbyProps {
   partyId: string;
@@ -46,6 +54,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   const [notFound, setNotFound] = useState(false);
   const [starting, setStarting] = useState(false);
   const [joiningRoom, setJoiningRoom] = useState(false);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   const isCreator = party?.creator_id === userId;
   const isParticipant = participants.some((p) => p.user_id === userId);
@@ -73,6 +82,13 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   const { events: feedEvents, isLoading: feedLoading } =
     usePartyActivityFeed(partyId, displayNameMap);
 
+  // Ambient room state
+  const roomState = useMemo(
+    () => computeRoomState(feedEvents, participants.length),
+    [feedEvents, participants.length]
+  );
+  const roomStateDisplay = ROOM_STATE_CONFIG[roomState];
+
   // Party summary stats
   const partySummary = usePartySummaryStats(partyId);
 
@@ -83,6 +99,22 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
       .then(setActiveSession)
       .catch(() => {});
   }, [userId, partyId]);
+
+  // Synthetic participants: heartbeat tick every 15s
+  useEffect(() => {
+    if (!partyId) return;
+
+    const tick = () =>
+      fetch("/api/synthetics/tick", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partyId }),
+      }).catch(() => {});
+
+    tick(); // fire immediately on mount
+    const id = setInterval(tick, 15_000);
+    return () => clearInterval(id);
+  }, [partyId]);
 
   const refreshParty = useCallback(async () => {
     try {
@@ -212,6 +244,20 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     }
   };
 
+  const handleCopyInvite = async () => {
+    const url =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/join/${partyId}`
+        : `/join/${partyId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setInviteCopied(true);
+      setTimeout(() => setInviteCopied(false), 2000);
+    } catch {
+      // silent
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -257,7 +303,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   const c = CHARACTERS[party.character];
 
   return (
-    <div className="mx-auto max-w-lg">
+    <div className={ROOM_STATE_CLASS[roomState]}>
       {/* Back link */}
       <Link
         href="/party"
@@ -268,7 +314,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
       </Link>
 
       {/* Party header */}
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-4 flex items-center gap-3">
         <div
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
           style={{ background: `${c.primary}20` }}
@@ -283,30 +329,31 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
             {party.name}
           </h2>
           <p className="text-sm text-[var(--color-text-secondary)]">
-            {party.planned_duration_min}m sprint &middot;{" "}
-            <span style={{ color: c.primary }}>{c.name}</span> hosting
+            {party.persistent
+              ? getWorldConfig(party.world_key).description
+              : <>{party.planned_duration_min}m sprint &middot;{" "}
+                <span style={{ color: c.primary }}>{c.name}</span> hosting</>}
             {presence.count > 0 && (
               <span className="ml-1">
                 &middot; {presence.count} here
               </span>
             )}
+            {!feedLoading && (
+              <span
+                className="ml-1"
+                style={{ color: roomStateDisplay.color }}
+              >
+                &middot; {roomStateDisplay.icon} {roomStateDisplay.label}
+              </span>
+            )}
+            {!partySummary.loading && partySummary.sessionsToday > 0 && (
+              <span className="ml-1 text-[var(--color-text-tertiary)]">
+                &middot; {partySummary.sessionsToday} session{partySummary.sessionsToday !== 1 ? "s" : ""} today
+              </span>
+            )}
           </p>
         </div>
       </div>
-
-      {/* Party summary stats */}
-      {!partySummary.loading && partySummary.sessionsToday > 0 && (
-        <div className="mb-4 flex gap-4 text-xs text-[var(--color-text-tertiary)]">
-          <span>
-            {partySummary.sessionsToday} session{partySummary.sessionsToday !== 1 ? "s" : ""} today
-          </span>
-          {partySummary.completedSprintsToday > 0 && (
-            <span>
-              {partySummary.completedSprintsToday} sprint{partySummary.completedSprintsToday !== 1 ? "s" : ""} completed
-            </span>
-          )}
-        </div>
-      )}
 
       {/* Resume session card */}
       {activeSession && (
@@ -319,7 +366,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
         </div>
       )}
 
-      {/* Participants */}
+      {/* Room Pulse — presence + activity */}
       <Card variant="default" className="mb-4 p-4">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-medium text-white">
@@ -334,30 +381,19 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
             />
           )}
         </div>
-        <ParticipantList
-          participants={participants}
-          maxParticipants={party.max_participants}
-          creatorId={party.creator_id}
-          character={party.character}
+        <div className="mb-3 border-t border-[var(--color-border-default)]" />
+        <LiveActivityFeed
+          events={feedEvents}
+          isLoading={feedLoading}
+          maxHeight={180}
         />
       </Card>
 
-      {/* Activity feed */}
-      <Card variant="default" className="mb-4 p-4">
-        <p className="mb-2 text-sm font-medium text-white">Activity</p>
-        <LiveActivityFeed events={feedEvents} isLoading={feedLoading} />
-      </Card>
-
-      {/* Share link */}
-      <div className="mb-6">
-        <ShareLink partyId={party.id} />
-      </div>
-
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex items-center gap-3">
         {!isParticipant && participants.length < party.max_participants && (
           <Button
-            variant="primary"
+            variant="cta"
             className="flex-1"
             onClick={handleJoin}
             disabled={joiningRoom}
@@ -367,7 +403,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
         )}
         {isParticipant && party.status === "active" && (
           <Button
-            variant="primary"
+            variant="cta"
             className="flex-1"
             onClick={() => router.push("/session")}
           >
@@ -376,7 +412,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
         )}
         {isCreator && isParticipant && party.status === "waiting" && (
           <Button
-            variant="primary"
+            variant="cta"
             className="flex-1"
             onClick={handleStart}
             disabled={starting || participants.length < 1}
@@ -385,9 +421,15 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
           </Button>
         )}
         {isParticipant && (
-          <Button variant="ghost" onClick={handleLeave}>
-            Leave
-          </Button>
+          <>
+            <Button variant="ghost" size="sm" onClick={handleCopyInvite}>
+              {inviteCopied ? <Check size={14} /> : <Link2 size={14} />}
+              <span className="ml-1.5">{inviteCopied ? "Copied" : "Invite"}</span>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleLeave}>
+              Leave
+            </Button>
+          </>
         )}
       </div>
     </div>

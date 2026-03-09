@@ -1,0 +1,711 @@
+"use client";
+
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useCurrentUser } from "@/lib/useCurrentUser";
+import { useSessionPersistence } from "@/lib/useSessionPersistence";
+import { usePartyPresence } from "@/lib/usePartyPresence";
+import { usePartyActivityFeed } from "@/lib/usePartyActivityFeed";
+import { useTimer } from "@/lib/useTimer";
+import { useCamera } from "@/lib/useCamera";
+import { useSettings } from "@/lib/useSettings";
+import { useTasks } from "@/lib/useTasks";
+import { useHostTriggers } from "@/lib/useHostTriggers";
+import { useMusic } from "@/lib/useMusic";
+import { useChat } from "@/lib/useChat";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import {
+  getParty,
+  updatePartyStatus,
+  getSyntheticParticipants,
+  type Party,
+  type SyntheticPresenceInfo,
+} from "@/lib/parties";
+import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
+import { getHostConfig } from "@/lib/hosts";
+import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
+import { EnvironmentBackground } from "@/components/environment/EnvironmentBackground";
+import { EnvironmentHeader } from "@/components/environment/EnvironmentHeader";
+import {
+  EnvironmentParticipants,
+  type ParticipantInfo,
+} from "@/components/environment/EnvironmentParticipants";
+import { ParticipantCard } from "@/components/environment/ParticipantCard";
+import { EnvironmentRail } from "@/components/environment/EnvironmentRail";
+import { EnvironmentSetup } from "@/components/environment/EnvironmentSetup";
+import { ActionBar } from "@/components/session/ActionBar";
+import { SideDrawer } from "@/components/session/SideDrawer";
+import { SettingsPanel } from "@/components/session/SettingsPanel";
+import { SessionReviewModal } from "@/components/session/SessionReviewModal";
+import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
+import { logEvent } from "@/lib/sessions";
+import { SYNTHETIC_POOL } from "@/lib/synthetics/pool";
+import type { SessionPhase, SessionReflection } from "@/lib/types";
+
+type SidePanel = "none" | "momentum" | "tasks" | "chat" | "settings";
+const PANEL_WIDTH = 380;
+const DEFAULT_DURATION_SEC = 25 * 60;
+
+export default function EnvironmentPage() {
+  const params = useParams();
+  const partyId = params.id as string;
+  const router = useRouter();
+  const { userId, displayName } = useCurrentUser();
+  const { characterAccent } = useTheme();
+
+  // ─── Party lookup ──────────────────────────────────────
+  const [party, setParty] = useState<Party | null>(null);
+  const [partyLoading, setPartyLoading] = useState(true);
+
+  useEffect(() => {
+    if (!partyId) return;
+    let cancelled = false;
+    getParty(partyId)
+      .then((p) => {
+        if (!cancelled) setParty(p);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setPartyLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [partyId]);
+
+  // ─── Synthetic participants (poll every 30s) ────────────
+  const [syntheticParticipants, setSyntheticParticipants] = useState<
+    SyntheticPresenceInfo[]
+  >([]);
+
+  useEffect(() => {
+    if (!partyId) return;
+    let cancelled = false;
+    const load = () =>
+      getSyntheticParticipants(partyId)
+        .then((sp) => {
+          if (!cancelled) setSyntheticParticipants(sp);
+        })
+        .catch(() => {});
+    load();
+    const id = setInterval(load, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [partyId]);
+
+  // ─── Derived config ────────────────────────────────────
+  const world = party ? getWorldConfig(party.world_key) : getWorldConfig("default");
+  const hostConfig = party
+    ? getHostConfig(getPartyHostPersonality(party))
+    : getHostConfig("default");
+
+  // ─── Session state machine ────────────────────────────
+  const persistence = useSessionPersistence(userId);
+  const [phase, setPhase] = useState<SessionPhase>("setup");
+  const [goal, setGoal] = useState("");
+  const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
+  const reviewElapsedRef = useRef(0);
+  const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
+  const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
+  const [micActive, setMicActive] = useState(false);
+
+  // ─── Side panel state (same pattern as session page) ──
+  const [activePanel, setActivePanel] = useState<SidePanel>("none");
+  const prevPanelRef = useRef<SidePanel>(activePanel);
+  const panelOpen = activePanel !== "none";
+  const wasOpen = prevPanelRef.current !== "none";
+  const shouldAnimatePanel = panelOpen !== wasOpen;
+  useEffect(() => {
+    prevPanelRef.current = activePanel;
+  }, [activePanel]);
+
+  // ─── Host triggers ref (break circular dep) ──────────
+  const hostTriggersRef = useRef<{ triggerReviewEntered: () => void }>({
+    triggerReviewEntered: () => {},
+  });
+
+  const handleTimerComplete = useCallback(() => {
+    reviewElapsedRef.current = durationSec;
+    setPhase("review");
+    persistence.completeSprint().catch(() => {});
+    persistence.updatePhase("review").catch(() => {});
+    hostTriggersRef.current.triggerReviewEntered();
+  }, [durationSec, persistence]);
+
+  const timer = useTimer(durationSec, handleTimerComplete);
+  const camera = useCamera(false);
+
+  // ─── Presence ──────────────────────────────────────────
+  const presence = usePartyPresence({
+    partyId,
+    userId,
+    displayName,
+    character: characterAccent,
+    activeSessionId: persistence.sessionRow?.id ?? null,
+    phase,
+    goalPreview: goal || null,
+  });
+
+  // ─── Activity feed + room state ───────────────────────
+  const feedDisplayNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    presence.participants.forEach((p) => map.set(p.userId, p.displayName));
+    return map;
+  }, [presence.participants]);
+
+  const { events: feedEvents } = usePartyActivityFeed(partyId, feedDisplayNameMap);
+  const roomState = useMemo(
+    () => computeRoomState(feedEvents, presence.participants.length),
+    [feedEvents, presence.participants.length]
+  );
+  const roomStateDisplay = ROOM_STATE_CONFIG[roomState];
+
+  // ─── AI host ───────────────────────────────────────────
+  const hostTriggers = useHostTriggers({
+    partyId,
+    sessionId: persistence.sessionRow?.id ?? null,
+    sprintId: persistence.currentSprint?.id ?? null,
+    userId,
+    goalSummary: goal || null,
+    participantCount: presence.count,
+    sprintNumber: persistence.currentSprint?.sprint_number ?? null,
+    sprintDurationSec: durationSec,
+    timer,
+    phase,
+  });
+  hostTriggersRef.current = hostTriggers;
+
+  // ─── Chat + Music + Settings ────────────────────────────
+  const chat = useChat();
+  const music = useMusic();
+  const { settings, updateSetting } = useSettings();
+
+  // ─── Tasks ─────────────────────────────────────────────
+  const {
+    activeTasks,
+    completedTasks,
+    activeTask,
+    addTask,
+    completeTask,
+    uncompleteTask,
+    deleteTask,
+    editTask,
+    selectTask,
+    reorderTasks,
+  } = useTasks();
+
+  // Clear task selection on mount (fresh start)
+  useEffect(() => {
+    selectTask(null);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Hydration: restore active session ─────────────────
+  const hydrationApplied = useRef(false);
+  useEffect(() => {
+    if (hydrationApplied.current) return;
+    if (persistence.isHydrating) return;
+    hydrationApplied.current = true;
+
+    if (persistence.wasRestored && persistence.sessionRow) {
+      const s = persistence.sessionRow;
+      setPhase(s.phase);
+      setGoal(s.goal_text ?? "");
+      setDurationSec(s.planned_duration_sec);
+    }
+  }, [persistence.isHydrating, persistence.wasRestored, persistence.sessionRow]);
+
+  // ─── Set default duration from world config ────────────
+  const defaultDurationApplied = useRef(false);
+  useEffect(() => {
+    if (!party || defaultDurationApplied.current) return;
+    defaultDurationApplied.current = true;
+    setDurationSec(world.defaultSprintLength * 60);
+  }, [party, world.defaultSprintLength]);
+
+  // ─── Sprint lifecycle ──────────────────────────────────
+
+  const handleStartSprint = useCallback(
+    (durationMinutes: number) => {
+      if (!activeTask) return;
+      setGoal(activeTask.title);
+      const sec = durationMinutes * 60;
+      setDurationSec(sec);
+      timer.reset(sec);
+      timer.start();
+      setPhase("sprint");
+      setSprintGoalCardOpen(false);
+
+      if (userId) {
+        persistence
+          .startSession({
+            user_id: userId,
+            party_id: partyId,
+            task_id: activeTask.id ?? undefined,
+            character: characterAccent,
+            goal_text: activeTask.title,
+            planned_duration_sec: sec,
+          })
+          .then((session) =>
+            persistence.startSprint({
+              session_id: session.id,
+              sprint_number: 1,
+              duration_sec: sec,
+            })
+          )
+          .then(() => {
+            persistence.declareGoal({
+              user_id: userId,
+              task_id: activeTask.id ?? undefined,
+              body: activeTask.title,
+            });
+            hostTriggers.triggerSessionStarted();
+            hostTriggers.triggerSprintStarted();
+          })
+          .catch((err) =>
+            console.error("[EnvironmentPage] persist startSprint failed:", err)
+          );
+      }
+    },
+    [activeTask, timer, userId, partyId, characterAccent, persistence, hostTriggers]
+  );
+
+  const handleEndSession = useCallback(() => {
+    reviewElapsedRef.current = durationSec - timer.getSnapshot().seconds;
+    timer.pause();
+    music.pause();
+    setPhase("review");
+    persistence.completeSprint().catch(() => {});
+    persistence.updatePhase("review").catch(() => {});
+    hostTriggers.triggerReviewEntered();
+  }, [durationSec, timer, music, persistence, hostTriggers]);
+
+  const handleAnotherRound = useCallback(() => {
+    timer.reset(durationSec);
+    timer.start();
+    setPhase("sprint");
+
+    if (persistence.sessionRow) {
+      const nextNum = (persistence.currentSprint?.sprint_number ?? 0) + 1;
+      persistence
+        .startSprint({
+          session_id: persistence.sessionRow.id,
+          sprint_number: nextNum,
+          duration_sec: durationSec,
+        })
+        .then(() => hostTriggers.triggerSprintStarted())
+        .catch(() => {});
+      persistence.updatePhase("sprint").catch(() => {});
+    }
+  }, [durationSec, timer, persistence, hostTriggers]);
+
+  const handleDone = useCallback(() => {
+    hostTriggers.triggerSessionCompleted();
+    persistence.endSession("completed").catch(() => {});
+    if (partyId && !party?.persistent) {
+      updatePartyStatus(partyId, "completed").catch(() => {});
+    }
+    router.push("/party");
+  }, [router, persistence, hostTriggers, partyId, party?.persistent]);
+
+  const handleReflectionComplete = useCallback(
+    (reflection: SessionReflection) => {
+      persistence
+        .submitReflection({
+          mood: reflection.mood,
+          productivity: reflection.productivity,
+          actual_duration_sec: reflection.sessionDurationSec,
+        })
+        .catch(() => {});
+    },
+    [persistence]
+  );
+
+  // ─── Timer controls (duration change + reset) ─────────
+
+  const currentDurationMin = Math.round(durationSec / 60);
+
+  const handleChangeDuration = useCallback(
+    (minutes: number) => {
+      const sec = minutes * 60;
+      setDurationSec(sec);
+      timer.reset(sec);
+      timer.start();
+      setSprintGoalCardOpen(false);
+    },
+    [timer]
+  );
+
+  const handleResetTimer = useCallback(() => {
+    timer.reset(durationSec);
+    timer.start();
+    setSprintGoalCardOpen(false);
+  }, [timer, durationSec]);
+
+  // ─── Panel toggles ───────────────────────────────────
+
+  const closePanel = useCallback(() => setActivePanel("none"), []);
+  const handleToggleMomentum = useCallback(
+    () => setActivePanel((prev) => (prev === "momentum" ? "none" : "momentum")),
+    []
+  );
+  const handleToggleTasks = useCallback(
+    () => setActivePanel((prev) => (prev === "tasks" ? "none" : "tasks")),
+    []
+  );
+  const handleToggleChat = useCallback(
+    () => setActivePanel((prev) => (prev === "chat" ? "none" : "chat")),
+    []
+  );
+  const handleToggleSettings = useCallback(
+    () => setActivePanel((prev) => (prev === "settings" ? "none" : "settings")),
+    []
+  );
+  const handleToggleMic = useCallback(() => setMicActive((v) => !v), []);
+  const handleToggleGoalCard = useCallback(
+    () => setSprintGoalCardOpen((v) => !v),
+    []
+  );
+  const handleCloseGoalCard = useCallback(() => setSprintGoalCardOpen(false), []);
+
+  // ─── Task switching ────────────────────────────────────
+
+  const handleStartTask = useCallback(
+    (taskId: string) => {
+      if (!activeTask || activeTask.id === taskId) {
+        selectTask(taskId);
+      } else {
+        setPendingSwitchTaskId(taskId);
+      }
+    },
+    [activeTask, selectTask]
+  );
+
+  const handleSwitchConfirm = useCallback(
+    (action: "complete" | "switch") => {
+      if (action === "complete" && activeTask) {
+        completeTask(activeTask.id);
+      }
+      if (pendingSwitchTaskId) {
+        selectTask(pendingSwitchTaskId);
+      }
+      setPendingSwitchTaskId(null);
+    },
+    [activeTask, completeTask, selectTask, pendingSwitchTaskId]
+  );
+
+  // ─── Participants for display (real + synthetic) ────────
+  const participantInfos = useMemo(() => {
+    const host: ParticipantInfo = {
+      id: "__host__",
+      displayName: hostConfig.hostName,
+      avatarUrl: hostConfig.avatarUrl,
+      isFocusing: true,
+      isHost: true,
+      participantType: "host",
+      hostPersonality: hostConfig.partyKey,
+    };
+    const real: ParticipantInfo[] = presence.participants.map((p) => ({
+      id: p.userId,
+      displayName: p.displayName,
+      avatarUrl: p.avatarUrl ?? null,
+      isFocusing: p.phase === "sprint",
+      isHost: false,
+      isCurrentUser: p.userId === userId,
+      participantType: "real" as const,
+      status: p.status,
+      goalPreview: p.goalPreview,
+    }));
+    const synthetic: ParticipantInfo[] = syntheticParticipants.map((sp) => {
+      const poolEntry = SYNTHETIC_POOL.find((s) => s.id === sp.id);
+      return {
+        id: sp.id,
+        displayName: sp.displayName,
+        avatarUrl: sp.avatarUrl,
+        isFocusing: true,
+        isHost: false,
+        participantType: "synthetic" as const,
+        archetype: poolEntry?.archetype,
+      };
+    });
+    return [host, ...real, ...synthetic];
+  }, [presence.participants, userId, syntheticParticipants, hostConfig]);
+
+  // ─── Participant card + high-five ─────────────────────
+  const [selectedParticipant, setSelectedParticipant] = useState<{
+    participant: ParticipantInfo;
+    anchorRect: DOMRect;
+  } | null>(null);
+  const [highFiveCooldowns, setHighFiveCooldowns] = useState<
+    Map<string, number>
+  >(new Map());
+  const HIGH_FIVE_COOLDOWN_MS = 30_000;
+
+  const handleParticipantClick = useCallback(
+    (participant: ParticipantInfo, rect: DOMRect) => {
+      if (selectedParticipant?.participant.id === participant.id) {
+        setSelectedParticipant(null);
+      } else {
+        setSelectedParticipant({ participant, anchorRect: rect });
+      }
+    },
+    [selectedParticipant]
+  );
+
+  const handleCloseCard = useCallback(() => {
+    setSelectedParticipant(null);
+  }, []);
+
+  const handleHighFive = useCallback(
+    async (targetId: string, targetName: string) => {
+      if (!userId) return;
+
+      // Set cooldown immediately
+      setHighFiveCooldowns((prev) => {
+        const next = new Map(prev);
+        next.set(targetId, Date.now() + HIGH_FIVE_COOLDOWN_MS);
+        return next;
+      });
+
+      try {
+        await logEvent({
+          party_id: partyId,
+          session_id: persistence.sessionRow?.id ?? null,
+          user_id: userId,
+          event_type: "high_five",
+          body: targetName,
+          payload: {
+            target_user_id: targetId,
+            target_display_name: targetName,
+          },
+        });
+      } catch (err) {
+        console.error("[EnvironmentPage] high five failed:", err);
+      }
+    },
+    [userId, partyId, persistence.sessionRow?.id]
+  );
+
+  // ─── Render ────────────────────────────────────────────
+
+  if (partyLoading || persistence.isHydrating) {
+    return <div className="h-full bg-black" />;
+  }
+
+  return (
+    <div className="relative flex h-full w-full animate-env-fade-in overflow-hidden bg-black">
+      {/* Background (always visible) */}
+      <EnvironmentBackground
+        imageUrl={world.environmentImage}
+        overlay={world.environmentOverlay}
+      />
+
+      {/* Hidden YouTube player for music */}
+      <div
+        data-music-container
+        style={{
+          position: "fixed",
+          bottom: 0,
+          right: 0,
+          width: 200,
+          height: 200,
+          clipPath: "inset(100%)",
+          overflow: "hidden",
+          pointerEvents: "none",
+        }}
+      >
+        <div id={music.playerContainerId} />
+      </div>
+
+      {/* Left-side participant strip (absolute, always visible during sprint) */}
+      {phase !== "setup" && (
+        <>
+          <EnvironmentParticipants
+            participants={participantInfos}
+            onParticipantClick={handleParticipantClick}
+            cameraStream={camera.stream}
+          />
+          {selectedParticipant && (
+            <ParticipantCard
+              participant={selectedParticipant.participant}
+              feedEvents={feedEvents}
+              onHighFive={handleHighFive}
+              highFiveCooldownUntil={
+                highFiveCooldowns.get(
+                  selectedParticipant.participant.id
+                ) ?? null
+              }
+              onClose={handleCloseCard}
+              anchorRect={selectedParticipant.anchorRect}
+            />
+          )}
+        </>
+      )}
+
+      {/* Main content — full width, flyout overlays on top */}
+      <div className="flex w-full flex-col pl-24">
+        {phase === "setup" ? (
+          <EnvironmentSetup
+            roomName={party?.name ?? world.label}
+            hostName={hostConfig.hostName}
+            hostAvatarUrl={hostConfig.avatarUrl}
+            accentColor={world.accentColor}
+            defaultDuration={world.defaultSprintLength}
+            activeTask={activeTask}
+            activeTasks={activeTasks}
+            onSelectTask={handleStartTask}
+            onAddTask={addTask}
+            onStartSprint={handleStartSprint}
+          />
+        ) : (
+          <>
+            {/* Room header */}
+            <EnvironmentHeader
+              roomName={party?.name ?? world.label}
+              inviteCode={party?.invite_code ?? null}
+              currentPartyId={partyId}
+              userId={userId}
+            />
+
+            {/* Spacer so action bar stays at bottom */}
+            <div className="relative flex-1">
+              {/* Click-away to close timer dropdown */}
+              {sprintGoalCardOpen && (
+                <div
+                  className="absolute inset-0 z-10"
+                  onClick={handleCloseGoalCard}
+                />
+              )}
+            </div>
+
+            {/* Action bar (identical to existing session) */}
+            {phase === "sprint" && (
+              <ActionBar
+                micActive={micActive}
+                onToggleMic={handleToggleMic}
+                cameraActive={camera.isActive}
+                onToggleCamera={camera.toggle}
+                onOpenChat={handleToggleChat}
+                onOpenTasks={handleToggleTasks}
+                onOpenSettings={handleToggleSettings}
+                chatActive={activePanel === "chat"}
+                tasksActive={activePanel === "tasks"}
+                settingsActive={activePanel === "settings"}
+                momentumActive={activePanel === "momentum"}
+                onOpenMomentum={handleToggleMomentum}
+                onEndSession={handleEndSession}
+                music={{
+                  popoverOpen: music.popoverOpen,
+                  togglePopover: music.togglePopover,
+                  closePopover: music.closePopover,
+                  activeVibe: music.activeVibe,
+                  selectVibe: music.selectVibe,
+                  isPlaying: music.isPlaying,
+                  togglePlayPause: music.togglePlayPause,
+                  volume: music.volume,
+                  setVolume: music.setVolume,
+                  status: music.status,
+                }}
+                timer={timer}
+                currentDurationMin={currentDurationMin}
+                onChangeDuration={handleChangeDuration}
+                onResetTimer={handleResetTimer}
+                goalCardOpen={sprintGoalCardOpen}
+                onToggleGoalCard={handleToggleGoalCard}
+                roomStateLabel={roomStateDisplay.label}
+                roomStateIcon={roomStateDisplay.icon}
+                roomStateColor={roomStateDisplay.color}
+              />
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Right flyout panel — absolutely positioned overlay */}
+      {phase !== "setup" && (
+        <div
+          className={`absolute right-0 top-0 z-20 h-full ${
+            shouldAnimatePanel
+              ? "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+              : ""
+          }`}
+          style={{ width: panelOpen ? PANEL_WIDTH : 0, overflow: "hidden" }}
+        >
+          <aside
+            className="flex flex-col rounded-xl border border-[var(--color-border-default)]"
+            style={{
+              width: PANEL_WIDTH - 16,
+              height: "calc(100% - 32px)",
+              margin: "16px 16px 16px 0",
+              background: "rgba(13,14,32,0.65)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              boxShadow:
+                "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+            }}
+            role="complementary"
+            aria-label={
+              activePanel === "momentum"
+                ? "Momentum"
+                : activePanel === "tasks"
+                  ? "Tasks"
+                  : activePanel === "chat"
+                    ? "Chat"
+                    : "Settings"
+            }
+          >
+            {activePanel === "momentum" && (
+              <EnvironmentRail
+                activityEvents={feedEvents}
+                onClose={closePanel}
+              />
+            )}
+            {(activePanel === "tasks" || activePanel === "chat") && (
+              <SideDrawer
+                onClose={closePanel}
+                panel={activePanel as "tasks" | "chat"}
+                activeTasks={activeTasks}
+                completedTasks={completedTasks}
+                onCompleteTask={completeTask}
+                onUncompleteTask={uncompleteTask}
+                onAddTask={addTask}
+                onDeleteTask={deleteTask}
+                onEditTask={editTask}
+                onReorderTasks={reorderTasks}
+                messages={chat.messages}
+                onSendMessage={chat.sendMessage}
+              />
+            )}
+            {activePanel === "settings" && (
+              <SettingsPanel
+                onClose={closePanel}
+                settings={settings}
+                onUpdateSetting={updateSetting}
+              />
+            )}
+          </aside>
+        </div>
+      )}
+
+      {/* Review modal */}
+      <SessionReviewModal
+        isOpen={phase === "review"}
+        sessionDurationSec={durationSec}
+        elapsedSec={reviewElapsedRef.current}
+        onAnotherRound={handleAnotherRound}
+        onDone={handleDone}
+        onReflectionComplete={handleReflectionComplete}
+      />
+
+      {/* Task switch confirmation */}
+      <SwitchTaskModal
+        isOpen={pendingSwitchTaskId !== null}
+        currentTaskText={activeTask?.title ?? ""}
+        onComplete={() => handleSwitchConfirm("complete")}
+        onSwitch={() => handleSwitchConfirm("switch")}
+        onCancel={() => setPendingSwitchTaskId(null)}
+      />
+    </div>
+  );
+}

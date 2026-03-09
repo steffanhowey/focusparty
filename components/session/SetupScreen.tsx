@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ChevronDown, Plus } from "lucide-react";
-import type { TaskRecord } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, ChevronDown, Plus } from "lucide-react";
+import type { TaskRecord, PresencePayload } from "@/lib/types";
+import { LiveParticipantsStrip } from "@/components/party/LiveParticipantsStrip";
 import { DurationPills } from "./DurationPills";
 
 interface SetupScreenProps {
@@ -14,6 +16,16 @@ interface SetupScreenProps {
   onAddTask: (text: string) => void;
   onDeleteTask: (taskId: string) => void;
   onStartSprint: (durationMinutes: number) => void;
+  roomName?: string | null;
+  roomSubtitle?: string | null;
+  hostAvatarUrl?: string | null;
+  defaultDuration?: number;
+  presenceParticipants?: PresencePayload[];
+  focusingCount?: number;
+  roomStateIcon?: string;
+  roomStateLabel?: string;
+  roomStateColor?: string;
+  currentUserId?: string | null;
 }
 
 const CARD_STYLE: React.CSSProperties = {
@@ -41,9 +53,20 @@ export function SetupScreen({
   onAddTask,
   onDeleteTask,
   onStartSprint,
+  roomName,
+  roomSubtitle,
+  hostAvatarUrl,
+  defaultDuration,
+  presenceParticipants,
+  focusingCount = 0,
+  roomStateIcon,
+  roomStateLabel,
+  roomStateColor,
+  currentUserId,
 }: SetupScreenProps) {
-  const [taskPickerOpen, setTaskPickerOpen] = useState(!activeTask);
-  const [duration, setDuration] = useState(25);
+  const router = useRouter();
+  const [taskPickerOpen, setTaskPickerOpen] = useState(false);
+  const [duration, setDuration] = useState(defaultDuration ?? 25);
   const [showAddInput, setShowAddInput] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -98,17 +121,85 @@ export function SetupScreen({
   const hasTasks = activeTasks.length > 0 || completedTasks.length > 0;
 
   return (
-    <div className="relative z-10 flex flex-1 items-center justify-center p-4">
+    <div className="relative z-10 flex flex-1 flex-col items-center justify-center p-4">
+      {roomName && (
+        <button
+          type="button"
+          onClick={() => router.push("/party")}
+          className="mb-3 flex w-full max-w-[480px] cursor-pointer items-center gap-1.5 text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-white"
+        >
+          <ArrowLeft size={14} />
+          Back to rooms
+        </button>
+      )}
       <div
         className="animate-fp-setup-enter w-full max-w-[480px] overflow-visible rounded-[var(--radius-lg)] border border-white/[0.08] p-8 shadow-xl"
         style={CARD_STYLE}
       >
-        <h2
-          className="mb-6 text-2xl font-bold text-[var(--color-text-primary)]"
-          style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
-        >
-          Ready to focus?
-        </h2>
+        {roomName && (
+          <div className="mb-5">
+            <h2
+              className="text-xl font-bold text-[var(--color-text-primary)]"
+              style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+            >
+              {roomName}
+            </h2>
+            {roomSubtitle && (
+              <p className="mt-1 flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)]">
+                {hostAvatarUrl && (
+                  <img
+                    src={hostAvatarUrl}
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="rounded-full"
+                  />
+                )}
+                {roomSubtitle}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Signals of life — only in room context */}
+        {roomName && presenceParticipants && presenceParticipants.length > 0 && (
+          <div className="mb-5 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
+              <span
+                className="inline-block h-2 w-2 rounded-full"
+                style={{ background: focusingCount > 0 ? "#10B981" : "#F59E0B" }}
+              />
+              <span>
+                {focusingCount > 0
+                  ? `${focusingCount} focusing now`
+                  : `${presenceParticipants.length} here now`}
+              </span>
+              {focusingCount > 0 && (
+                <span className="text-[var(--color-text-tertiary)]">&middot; Sprint in progress</span>
+              )}
+              {roomStateIcon && roomStateLabel && (
+                <span style={{ color: roomStateColor }}>
+                  &middot; {roomStateIcon} {roomStateLabel}
+                </span>
+              )}
+            </div>
+            <LiveParticipantsStrip
+              participants={presenceParticipants}
+              currentUserId={currentUserId}
+              size="sm"
+              maxVisible={4}
+            />
+          </div>
+        )}
+
+        {!roomName && (
+          <h2
+            className="mb-6 text-2xl font-bold text-[var(--color-text-primary)]"
+            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+          >
+            Ready to focus?
+          </h2>
+        )}
 
         <div className="space-y-5">
           {/* Task selector — inline dropdown */}

@@ -23,12 +23,15 @@ export interface HostConfig {
   styleGuide: HostStyleGuide;
   /** Minimum seconds between host messages for this personality. */
   cooldownSeconds: number;
+  /** Avatar image URL for the AI host. */
+  avatarUrl: string;
 }
 
 export const HOST_CONFIGS: Record<HostPersonality, HostConfig> = {
   default: {
     partyKey: "default",
     hostName: "Guide",
+    avatarUrl: "https://api.dicebear.com/9.x/bottts-neutral/png?seed=Guide&size=64",
     tone: "balanced, clear, encouraging",
     styleGuide: {
       toneInstruction:
@@ -46,6 +49,7 @@ export const HOST_CONFIGS: Record<HostPersonality, HostConfig> = {
   "vibe-coding": {
     partyKey: "vibe-coding",
     hostName: "Syntax",
+    avatarUrl: "https://api.dicebear.com/9.x/bottts-neutral/png?seed=Syntax&size=64",
     tone: "concise, builder-focused, energetic",
     styleGuide: {
       toneInstruction:
@@ -63,6 +67,7 @@ export const HOST_CONFIGS: Record<HostPersonality, HostConfig> = {
   "writer-room": {
     partyKey: "writer-room",
     hostName: "Quill",
+    avatarUrl: "https://api.dicebear.com/9.x/bottts-neutral/png?seed=Quill&size=64",
     tone: "calm, reflective, craft-oriented",
     styleGuide: {
       toneInstruction:
@@ -80,6 +85,7 @@ export const HOST_CONFIGS: Record<HostPersonality, HostConfig> = {
   "yc-build": {
     partyKey: "yc-build",
     hostName: "Atlas",
+    avatarUrl: "https://api.dicebear.com/9.x/bottts-neutral/png?seed=Atlas&size=64",
     tone: "ambitious, founder-minded, execution-focused",
     styleGuide: {
       toneInstruction:
@@ -97,6 +103,7 @@ export const HOST_CONFIGS: Record<HostPersonality, HostConfig> = {
   "gentle-start": {
     partyKey: "gentle-start",
     hostName: "Bloom",
+    avatarUrl: "https://api.dicebear.com/9.x/bottts-neutral/png?seed=Bloom&size=64",
     tone: "supportive, low-pressure, momentum-first",
     styleGuide: {
       toneInstruction:

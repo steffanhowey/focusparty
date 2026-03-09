@@ -1,5 +1,6 @@
 import { createClient } from "./supabase/admin";
 import { renderActivityEvent } from "./activityEventRender";
+import { computeRoomState } from "./roomState";
 import type { ActivityEvent, HostGenerationInput, HostTriggerType } from "./types";
 
 interface TriggerInput {
@@ -30,18 +31,24 @@ export async function buildHostContext(
   const supabase = createClient();
   const ctx = input.context ?? {};
 
-  // Fetch last 5 activity events for this party (compact summaries)
+  // Fetch last 20 activity events for this party (used for both summaries and room state)
   const { data: recentEvents } = await supabase
     .from("fp_activity_events")
-    .select("event_type, body, actor_type, payload, created_at")
+    .select("id, party_id, session_id, user_id, event_type, body, actor_type, payload, created_at")
     .eq("party_id", input.partyId)
     .order("created_at", { ascending: false })
-    .limit(5);
+    .limit(20);
 
-  const recentActivity = (recentEvents ?? []).map((e) => {
-    const rendered = renderActivityEvent(e as ActivityEvent, "Someone");
+  const allEvents = (recentEvents ?? []) as ActivityEvent[];
+
+  // Compact summaries for the host prompt (last 5 only)
+  const recentActivity = allEvents.slice(0, 5).map((e) => {
+    const rendered = renderActivityEvent(e, "Someone");
     return rendered.label;
   });
+
+  // Compute ambient room state from the full event window
+  const roomState = computeRoomState(allEvents, ctx.participantCount ?? 1);
 
   // Fetch last 3 host messages for deduplication
   const { data: hostEvents } = await supabase
@@ -68,6 +75,7 @@ export async function buildHostContext(
     sprintNumber: ctx.sprintNumber ?? null,
     sprintDurationSec: ctx.sprintDurationSec ?? null,
     sprintElapsedSec: ctx.sprintElapsedSec ?? null,
+    roomState,
   };
 }
 

@@ -1,24 +1,21 @@
 "use client";
 
-import { memo, useRef, useState, ReactNode } from "react";
+import { memo, useRef, ReactNode } from "react";
 import {
   Mic,
   MicOff,
   Video,
   VideoOff,
-  MonitorUp,
-  ScreenShareOff,
   MessageCircle,
-  UserPlus,
   ListTodo,
   Settings,
   Music,
   LogOut,
   ChevronUp,
   RotateCcw,
+  Activity,
 } from "lucide-react";
 import { MusicPopover } from "@/components/session/MusicPopover";
-import { InvitePopover } from "@/components/session/InvitePopover";
 import { DurationPills } from "./DurationPills";
 import { useTimerDisplay, type Timer } from "@/lib/useTimer";
 import type { VibeId, MusicStatus } from "@/lib/musicConstants";
@@ -48,10 +45,8 @@ interface ActionBarProps {
   chatActive: boolean;
   tasksActive: boolean;
   settingsActive: boolean;
-  screenShareActive: boolean;
-  onToggleScreenShare: () => void;
-  partyId: string | null;
-  inviteCode: string | null;
+  momentumActive?: boolean;
+  onOpenMomentum?: () => void;
   onEndSession: () => void;
   music: MusicProps;
   timer: Timer;
@@ -60,6 +55,10 @@ interface ActionBarProps {
   onResetTimer?: () => void;
   goalCardOpen?: boolean;
   onToggleGoalCard?: () => void;
+  /** Optional ambient room state shown below the timer pill */
+  roomStateLabel?: string;
+  roomStateIcon?: string;
+  roomStateColor?: string;
 }
 
 const ICON = { size: 18, strokeWidth: 1.8 } as const;
@@ -86,10 +85,8 @@ export const ActionBar = memo(function ActionBar({
   chatActive,
   tasksActive,
   settingsActive,
-  screenShareActive,
-  onToggleScreenShare,
-  partyId,
-  inviteCode,
+  momentumActive,
+  onOpenMomentum,
   onEndSession,
   music,
   timer,
@@ -98,10 +95,11 @@ export const ActionBar = memo(function ActionBar({
   onResetTimer,
   goalCardOpen,
   onToggleGoalCard,
+  roomStateLabel,
+  roomStateIcon,
+  roomStateColor,
 }: ActionBarProps) {
   const musicWrapperRef = useRef<HTMLDivElement>(null);
-  const inviteWrapperRef = useRef<HTMLDivElement>(null);
-  const [invitePopoverOpen, setInvitePopoverOpen] = useState(false);
   const { formatted, seconds } = useTimerDisplay(timer);
   const iconShadow = { filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))" } as const;
   const btn =
@@ -119,7 +117,7 @@ export const ActionBar = memo(function ActionBar({
       {/* ── Floating timer pill ── */}
       <div
         ref={dragRef}
-        className="absolute top-10 left-1/2 z-20"
+        className="absolute top-4 left-1/2 z-20"
         style={dragStyle}
       >
         <div className="relative">
@@ -158,6 +156,20 @@ export const ActionBar = memo(function ActionBar({
               className={`text-[var(--color-text-tertiary)] transition-transform duration-200 ${goalCardOpen ? "" : "rotate-180"}`}
             />
           </button>
+
+          {/* Room state label */}
+          {roomStateLabel && (
+            <p
+              className="mt-1.5 text-center text-xs font-medium transition-colors duration-500"
+              style={{
+                color: roomStateColor ?? "rgba(255,255,255,0.4)",
+                textShadow: "0 1px 6px rgba(0,0,0,0.6)",
+              }}
+            >
+              {roomStateIcon && <span className="mr-1">{roomStateIcon}</span>}
+              {roomStateLabel}
+            </p>
+          )}
 
           {/* Downward dropdown */}
           {goalCardOpen && currentDurationMin != null && onChangeDuration && onResetTimer && (
@@ -254,56 +266,6 @@ export const ActionBar = memo(function ActionBar({
           />
         </div>
 
-        <div ref={inviteWrapperRef} className="relative">
-          <Tip label="Invite">
-            <button
-              type="button"
-              onClick={() => setInvitePopoverOpen((prev) => !prev)}
-              className={invitePopoverOpen ? activeBtn : defaultBtn}
-              aria-label="Invite to party"
-              aria-expanded={invitePopoverOpen}
-              style={iconShadow}
-            >
-              <UserPlus {...ICON} />
-            </button>
-          </Tip>
-
-          <InvitePopover
-            isOpen={invitePopoverOpen}
-            onClose={() => setInvitePopoverOpen(false)}
-            wrapperRef={inviteWrapperRef}
-            inviteCode={inviteCode}
-          />
-        </div>
-
-        <div className="mx-0.5 h-6 w-px bg-white/10" />
-
-        <Tip label={screenShareActive ? "Stop sharing" : "Share screen"}>
-          <button
-            type="button"
-            onClick={onToggleScreenShare}
-            className={`relative flex h-10 cursor-pointer items-center gap-1.5 rounded-full px-4 text-xs font-medium transition-colors ${
-              screenShareActive
-                ? "bg-[var(--color-coral-700)] text-white hover:brightness-110"
-                : "bg-[var(--color-green-800)] text-white hover:bg-[var(--color-green-700)]"
-            }`}
-            aria-label={screenShareActive ? "Stop sharing" : "Share screen"}
-            style={iconShadow}
-          >
-            {screenShareActive ? (
-              <ScreenShareOff size={16} strokeWidth={1.8} />
-            ) : (
-              <MonitorUp size={16} strokeWidth={1.8} />
-            )}
-            <span>{screenShareActive ? "Stop" : "Share"}</span>
-            {screenShareActive && (
-              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-[var(--color-coral-700)]" />
-            )}
-          </button>
-        </Tip>
-
-        <div className="mx-0.5 h-6 w-px bg-white/10" />
-
         <Tip label="Tasks">
           <button
             type="button"
@@ -327,6 +289,20 @@ export const ActionBar = memo(function ActionBar({
             <MessageCircle {...ICON} />
           </button>
         </Tip>
+
+        {onOpenMomentum && (
+          <Tip label="Momentum">
+            <button
+              type="button"
+              onClick={onOpenMomentum}
+              className={momentumActive ? activeBtn : defaultBtn}
+              aria-label="Momentum"
+              style={iconShadow}
+            >
+              <Activity {...ICON} />
+            </button>
+          </Tip>
+        )}
 
         <Tip label="Settings">
           <button

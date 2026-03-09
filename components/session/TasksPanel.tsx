@@ -132,7 +132,7 @@ export const TasksPanel = memo(function TasksPanel({
         style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}
       >
         {/* Sortable task list */}
-        <div className="-ml-2 flex-1 overflow-y-auto pl-2">
+        <div className="fp-shell-scroll -ml-2 flex-1 overflow-y-auto pl-2">
           <SortableContext
             items={allIds}
             strategy={verticalListSortingStrategy}

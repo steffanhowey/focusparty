@@ -1,6 +1,7 @@
 import { createClient } from "./supabase/client";
 import { generateInviteCode } from "./inviteCode";
 import { logEvent } from "./sessions";
+import { SYNTHETIC_POOL } from "./synthetics/pool";
 import type { CharacterId } from "./types";
 
 // ---------- Types ----------
@@ -9,7 +10,7 @@ export type PartyStatus = "waiting" | "active" | "completed";
 
 export interface Party {
   id: string;
-  creator_id: string;
+  creator_id: string | null;
   name: string;
   character: CharacterId;
   planned_duration_min: number;
@@ -19,6 +20,7 @@ export interface Party {
   invite_code: string;
   world_key: string;
   host_personality: string;
+  persistent: boolean;
 }
 
 export interface PartyParticipant {
@@ -30,15 +32,26 @@ export interface PartyParticipant {
   left_at: string | null;
 }
 
+export interface SyntheticPresenceInfo {
+  id: string;
+  displayName: string;
+  avatarUrl: string;
+}
+
 export interface PartyWithCount extends Party {
+  /** Combined real + synthetic presence count. */
   participant_count: number;
+  /** Active synthetic participants with avatar details. */
+  synthetic_participants: SyntheticPresenceInfo[];
 }
 
 // ---------- Queries ----------
 
 /** Fetch discoverable parties (waiting + active), ordered by newest first. */
 export async function listDiscoverableParties(): Promise<PartyWithCount[]> {
-  const { data: parties, error } = await createClient()
+  const supabase = createClient();
+
+  const { data: parties, error } = await supabase
     .from("fp_parties")
     .select("*")
     .in("status", ["waiting", "active"])
@@ -49,7 +62,7 @@ export async function listDiscoverableParties(): Promise<PartyWithCount[]> {
 
   // Fetch active participant counts
   const partyIds = parties.map((p: Party) => p.id);
-  const { data: participants, error: countErr } = await createClient()
+  const { data: participants, error: countErr } = await supabase
     .from("fp_party_participants")
     .select("party_id")
     .in("party_id", partyIds)
@@ -62,10 +75,119 @@ export async function listDiscoverableParties(): Promise<PartyWithCount[]> {
     countMap.set(row.party_id, (countMap.get(row.party_id) ?? 0) + 1);
   });
 
-  return parties.map((p: Party) => ({
-    ...p,
-    participant_count: countMap.get(p.id) ?? 0,
-  }));
+  // Derive active synthetic counts from recent activity events
+  const syntheticCounts = await getActiveSyntheticPresence(supabase, partyIds);
+
+  // Sort: persistent rooms first (in stable world order), then user-created by newest
+  const WORLD_ORDER = ["default", "vibe-coding", "writer-room", "yc-build", "gentle-start"];
+  return parties
+    .map((p: Party) => {
+      const realCount = countMap.get(p.id) ?? 0;
+      const synParticipants = syntheticCounts.get(p.id) ?? [];
+      return {
+        ...p,
+        participant_count: realCount + synParticipants.length,
+        synthetic_participants: synParticipants,
+      };
+    })
+    .sort((a, b) => {
+      if (a.persistent && !b.persistent) return -1;
+      if (!a.persistent && b.persistent) return 1;
+      if (a.persistent && b.persistent) {
+        return WORLD_ORDER.indexOf(a.world_key) - WORLD_ORDER.indexOf(b.world_key);
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+}
+
+/**
+ * Derive which synthetics are currently "active" (joined or in_session)
+ * per room by scanning recent activity events. Returns avatar details.
+ */
+async function getActiveSyntheticPresence(
+  supabase: ReturnType<typeof createClient>,
+  partyIds: string[]
+): Promise<Map<string, SyntheticPresenceInfo[]>> {
+  const cutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(); // 2 hours
+
+  const { data, error } = await supabase
+    .from("fp_activity_events")
+    .select("party_id, event_type, payload")
+    .eq("actor_type", "synthetic")
+    .in("party_id", partyIds)
+    .gte("created_at", cutoff)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("[parties] getActiveSyntheticPresence error:", error);
+    return new Map();
+  }
+
+  // Build a lookup from synthetic id → pool entry
+  const poolMap = new Map(SYNTHETIC_POOL.map((s) => [s.id, s]));
+
+  // Group events by party_id, then derive state per synthetic
+  const byParty = new Map<string, typeof data>();
+  for (const row of data ?? []) {
+    const pid = row.party_id as string;
+    if (!pid) continue;
+    if (!byParty.has(pid)) byParty.set(pid, []);
+    byParty.get(pid)!.push(row);
+  }
+
+  const result = new Map<string, SyntheticPresenceInfo[]>();
+
+  for (const [partyId, events] of byParty) {
+    const stateMap = new Map<string, string>();
+    for (const e of events) {
+      const synId = (e.payload as Record<string, unknown>)?.synthetic_id as string | undefined;
+      if (!synId) continue;
+      switch (e.event_type) {
+        case "participant_joined":
+          stateMap.set(synId, "joined");
+          break;
+        case "session_started":
+        case "sprint_completed":
+          stateMap.set(synId, "in_session");
+          break;
+        case "session_completed":
+          stateMap.set(synId, "joined");
+          break;
+        case "participant_left":
+          stateMap.set(synId, "absent");
+          break;
+      }
+    }
+
+    const active: SyntheticPresenceInfo[] = [];
+    for (const [synId, state] of stateMap) {
+      if (state === "joined" || state === "in_session") {
+        const poolEntry = poolMap.get(synId);
+        if (poolEntry) {
+          active.push({
+            id: poolEntry.id,
+            displayName: poolEntry.displayName,
+            avatarUrl: poolEntry.avatarUrl,
+          });
+        }
+      }
+    }
+    if (active.length > 0) result.set(partyId, active);
+  }
+
+  return result;
+}
+
+/**
+ * Fetch active synthetic participants for a single party.
+ * Public wrapper around the private getActiveSyntheticPresence function.
+ */
+export async function getSyntheticParticipants(
+  partyId: string
+): Promise<SyntheticPresenceInfo[]> {
+  const supabase = createClient();
+  const result = await getActiveSyntheticPresence(supabase, [partyId]);
+  return result.get(partyId) ?? [];
 }
 
 /** Fetch a single party by ID. */
@@ -118,6 +240,27 @@ export async function getActivePartyForUser(
   return row.fp_parties ?? null;
 }
 
+/** Fetch all active/waiting parties the user has joined (and not left). */
+export async function getUserActiveParties(
+  userId: string
+): Promise<Party[]> {
+  const { data, error } = await createClient()
+    .from("fp_party_participants")
+    .select("party_id, fp_parties!inner(*)")
+    .eq("user_id", userId)
+    .is("left_at", null)
+    .in("fp_parties.status", ["waiting", "active"])
+    .order("joined_at", { ascending: false });
+
+  if (error) throw error;
+  if (!data || data.length === 0) return [];
+
+  return data.map(
+    (row) =>
+      (row as unknown as { party_id: string; fp_parties: Party }).fp_parties
+  );
+}
+
 /** Fetch a single party by invite code. */
 export async function getPartyByInviteCode(
   code: string
@@ -144,6 +287,8 @@ export interface CreatePartyInput {
   planned_duration_min: number;
   max_participants: number;
   status?: PartyStatus;
+  world_key?: string;
+  host_personality?: string;
 }
 
 /** Create a new party and auto-join the creator. */

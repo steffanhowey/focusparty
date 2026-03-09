@@ -228,7 +228,7 @@ export interface SessionGoal {
   metadata: Record<string, unknown>;
 }
 
-export type ActivityActorType = "user" | "host" | "system";
+export type ActivityActorType = "user" | "host" | "system" | "synthetic";
 
 export type ActivityEventType =
   | "session_started"
@@ -241,7 +241,17 @@ export type ActivityEventType =
   | "reflection_submitted"
   | "participant_joined"
   | "participant_left"
-  | "host_prompt";
+  | "host_prompt"
+  | "high_five";
+
+// ─── Room State ──────────────────────────────────────────────
+
+export type RoomState =
+  | "quiet"
+  | "warming_up"
+  | "focused"
+  | "flowing"
+  | "cooling_down";
 
 // ─── AI Host ─────────────────────────────────────────────────
 
@@ -267,6 +277,7 @@ export interface HostGenerationInput {
   sprintNumber: number | null;
   sprintDurationSec: number | null;
   sprintElapsedSec: number | null;
+  roomState: RoomState | null;
 }
 
 export interface HostGenerationResult {

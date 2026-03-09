@@ -10,6 +10,9 @@ import { useSettings } from "@/lib/useSettings";
 import { useTasks } from "@/lib/useTasks";
 import { useMusic } from "@/lib/useMusic";
 import { useActiveParty } from "@/lib/useActiveParty";
+import { updatePartyStatus } from "@/lib/parties";
+import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
+import { getHostConfig } from "@/lib/hosts";
 import { TopBar } from "@/components/session/TopBar";
 import { SplitScreen } from "@/components/session/SplitScreen";
 import { SetupScreen } from "@/components/session/SetupScreen";
@@ -25,6 +28,8 @@ import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useSessionPersistence } from "@/lib/useSessionPersistence";
 import { usePartyPresence } from "@/lib/usePartyPresence";
+import { usePartyActivityFeed } from "@/lib/usePartyActivityFeed";
+import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
 import { useHostTriggers } from "@/lib/useHostTriggers";
 import type { SessionPhase, SessionReflection } from "@/lib/types";
 import type { VibeId } from "@/lib/musicConstants";
@@ -86,6 +91,21 @@ export default function SessionPage() {
     phase,
     goalPreview: goal || null,
   });
+
+  // Room signals: activity feed + room state for setup screen
+  const feedDisplayNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    presence.participants.forEach((p) => map.set(p.userId, p.displayName));
+    return map;
+  }, [presence.participants]);
+
+  const { events: feedEvents } =
+    usePartyActivityFeed(partyId ?? "", feedDisplayNameMap);
+  const roomState = useMemo(
+    () => computeRoomState(feedEvents, presence.participants.length),
+    [feedEvents, presence.participants.length]
+  );
+  const roomStateDisplay = ROOM_STATE_CONFIG[roomState];
 
   // AI host: fire trigger prompts at key session moments
   const hostTriggers = useHostTriggers({
@@ -266,8 +286,13 @@ export default function SessionPage() {
     hostTriggers.triggerSessionCompleted();
     // Persist: end session as completed
     persistence.endSession("completed").catch(() => {});
+    // Mark non-persistent parties as completed so they stop appearing in discovery
+    // Persistent rooms stay active permanently.
+    if (partyId && !party?.persistent) {
+      updatePartyStatus(partyId, "completed").catch(() => {});
+    }
     router.push("/party");
-  }, [router, persistence, hostTriggers]);
+  }, [router, persistence, hostTriggers, partyId, party?.persistent]);
 
   const handleReflectionComplete = useCallback(
     (reflection: SessionReflection) => {
@@ -389,6 +414,24 @@ export default function SessionPage() {
           onAddTask={addTask}
           onDeleteTask={deleteTask}
           onStartSprint={handleStartSprint}
+          roomName={party?.name ?? null}
+          roomSubtitle={
+            party
+              ? `${getHostConfig(getPartyHostPersonality(party)).hostName} hosting`
+              : null
+          }
+          hostAvatarUrl={
+            party
+              ? getHostConfig(getPartyHostPersonality(party)).avatarUrl
+              : null
+          }
+          defaultDuration={party ? getWorldConfig(party.world_key).defaultSprintLength : undefined}
+          presenceParticipants={presence.participants}
+          focusingCount={presence.participants.filter(p => p.phase === "sprint").length}
+          roomStateIcon={roomStateDisplay.icon}
+          roomStateLabel={roomStateDisplay.label}
+          roomStateColor={roomStateDisplay.color}
+          currentUserId={userId}
         />
       ) : phase === "breathing" ? null : (
         <>
@@ -432,10 +475,6 @@ export default function SessionPage() {
                   chatActive={activePanel === "chat"}
                   tasksActive={activePanel === "tasks"}
                   settingsActive={activePanel === "settings"}
-                  screenShareActive={screenShare.isActive}
-                  onToggleScreenShare={screenShare.toggle}
-                  partyId={partyId}
-                  inviteCode={party?.invite_code ?? null}
                   onEndSession={handleEndSession}
                   music={{
                     popoverOpen: music.popoverOpen,

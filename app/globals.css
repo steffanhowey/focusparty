@@ -382,3 +382,60 @@ body {
     animation: none;
   }
 }
+
+/* ─── Room Energy Visualization ──────────────────────────────────────────────
+   Ambient visual feedback based on computed room state.
+   Colors match ROOM_STATE_CONFIG in lib/roomState.ts.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* All room states share a smooth transition between energy levels */
+[class*="fp-room-"] {
+  transition: box-shadow var(--transition-ambient), background var(--transition-ambient);
+}
+
+/* Quiet — no visual effect (baseline) */
+.fp-room-quiet {
+  /* intentionally empty — room's natural state */
+}
+
+/* Warming Up — subtle amber glow at edges */
+.fp-room-warming {
+  box-shadow: 0 8px 40px -12px rgba(245, 158, 11, 0.08),
+              0 0 80px -20px rgba(245, 158, 11, 0.05);
+}
+
+/* Focused — deeper warm glow, more prominent */
+.fp-room-focused {
+  box-shadow: 0 8px 40px -12px rgba(239, 68, 68, 0.10),
+              0 0 80px -20px rgba(239, 68, 68, 0.06);
+}
+
+/* Flowing — purple energy glow with gentle pulse */
+.fp-room-flowing {
+  box-shadow: 0 8px 40px -12px rgba(139, 92, 246, 0.12),
+              0 0 80px -20px rgba(139, 92, 246, 0.08);
+  animation: fp-room-pulse 4s ease-in-out infinite;
+}
+
+@keyframes fp-room-pulse {
+  0%, 100% {
+    box-shadow: 0 8px 40px -12px rgba(139, 92, 246, 0.12),
+                0 0 80px -20px rgba(139, 92, 246, 0.08);
+  }
+  50% {
+    box-shadow: 0 8px 50px -10px rgba(139, 92, 246, 0.18),
+                0 0 100px -16px rgba(139, 92, 246, 0.12);
+  }
+}
+
+/* Cooling Down — soft blue glow, fading */
+.fp-room-cooling {
+  box-shadow: 0 8px 40px -12px rgba(92, 194, 236, 0.08),
+              0 0 80px -20px rgba(92, 194, 236, 0.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-room-flowing {
+    animation: none;
+  }
+}

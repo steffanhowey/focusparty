@@ -10,6 +10,10 @@ interface InvitePopoverProps {
   onClose: () => void;
   wrapperRef: RefObject<HTMLDivElement | null>;
   inviteCode: string | null;
+  /** Open above (default, for bottom action bar) or below (for top header) */
+  position?: "above" | "below";
+  /** Horizontal alignment: center (default) or right-aligned to trigger */
+  align?: "center" | "right";
 }
 
 export function InvitePopover({
@@ -17,6 +21,8 @@ export function InvitePopover({
   onClose,
   wrapperRef,
   inviteCode,
+  position = "above",
+  align = "center",
 }: InvitePopoverProps) {
   const { showToast } = useNotification();
   const { userId } = useCurrentUser();
@@ -80,7 +86,9 @@ export function InvitePopover({
 
   return (
     <div
-      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl"
+      className={`absolute rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl ${
+        position === "below" ? "top-full mt-3" : "bottom-full mb-3"
+      } ${align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"}`}
       style={{
         background: "rgba(13,14,32,0.65)",
         backdropFilter: "blur(24px)",

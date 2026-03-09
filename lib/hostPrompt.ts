@@ -43,6 +43,7 @@ ${triggerHint ? `Style hint: ${triggerHint}` : ""}
 Goal: ${input.goalSummary ?? "(no goal set)"}
 Sprint: ${input.sprintNumber != null ? `#${input.sprintNumber}` : "n/a"}, duration: ${input.sprintDurationSec != null ? `${Math.round(input.sprintDurationSec / 60)}min` : "n/a"}, elapsed: ${input.sprintElapsedSec != null ? `${Math.round(input.sprintElapsedSec / 60)}min` : "n/a"}
 Participants: ${input.participantCount}
+Room state: ${input.roomState ?? "unknown"}
 Recent activity:
 ${input.recentActivity.length > 0 ? input.recentActivity.map((a) => `- ${a}`).join("\n") : "(none)"}`;
 

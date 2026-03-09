@@ -7,7 +7,7 @@ export default async function PartyLobbyPage({
 }) {
   const { id } = await params;
   return (
-    <main className="flex-1">
+    <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
       <PartyLobby partyId={id} />
     </main>
   );

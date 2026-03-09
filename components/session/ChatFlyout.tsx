@@ -23,9 +23,10 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
     }
   }, [messages.length]);
 
-  // Focus input on mount
+  // Focus input on mount (preventScroll avoids shifting the page
+  // while the flyout panel is still animating from width: 0)
   useEffect(() => {
-    inputRef.current?.focus();
+    inputRef.current?.focus({ preventScroll: true });
   }, []);
 
   const handleSubmit = useCallback(() => {
@@ -47,7 +48,7 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
   return (
     <>
       {/* Messages */}
-      <div className="flex flex-1 flex-col overflow-y-auto px-4 py-3" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+      <div className="fp-shell-scroll flex flex-1 flex-col overflow-y-auto px-4 py-3" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
         {messages.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
             <p className="text-center text-sm text-[var(--color-text-tertiary)]">

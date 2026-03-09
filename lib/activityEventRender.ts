@@ -9,6 +9,7 @@ import {
   Zap,
   Sparkles,
   CircleDot,
+  Hand,
   type LucideIcon,
 } from "lucide-react";
 import type { ActivityEvent } from "./types";
@@ -143,6 +144,17 @@ export function renderActivityEvent(
         label: `${hostName}: ${hostBody}`,
         tone: "info",
         color: "#8C55EF",
+      };
+    }
+
+    case "high_five": {
+      const targetName =
+        (event.payload?.target_display_name as string) || "someone";
+      return {
+        icon: Hand,
+        label: `${name} high-fived ${targetName}`,
+        tone: "success",
+        color: "#F59E0B",
       };
     }
 
