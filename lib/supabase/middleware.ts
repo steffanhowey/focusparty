@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Routes that require an authenticated session. */
-const PROTECTED_PREFIXES = ["/party", "/session", "/settings", "/progress", "/onboard"];
+const PROTECTED_PREFIXES = ["/party", "/session", "/settings", "/progress", "/onboard", "/admin"];
 
 export async function updateSession(request: NextRequest) {
   // Don't interfere with the auth callback — the route handler

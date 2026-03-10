@@ -40,7 +40,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`cursor-pointer font-medium disabled:cursor-not-allowed ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
+      className={`inline-flex items-center whitespace-nowrap cursor-pointer font-medium disabled:cursor-not-allowed ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
       style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
       {...props}
     >

@@ -1,0 +1,157 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+
+export function SettingsView() {
+  const [usernames, setUsernames] = useState<string[]>([]);
+  const [newUsername, setNewUsername] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const fetchUsernames = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/reserved-usernames");
+      const data = await res.json();
+      setUsernames(data.usernames ?? []);
+    } catch (err) {
+      console.error("Failed to fetch usernames:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUsernames();
+  }, [fetchUsernames]);
+
+  const handleAdd = async () => {
+    if (!newUsername.trim()) return;
+    try {
+      await fetch("/api/admin/reserved-usernames", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: newUsername.trim() }),
+      });
+      setNewUsername("");
+      fetchUsernames();
+    } catch (err) {
+      console.error("Failed to add username:", err);
+    }
+  };
+
+  const handleDelete = async (username: string) => {
+    try {
+      await fetch(`/api/admin/reserved-usernames/${username}`, {
+        method: "DELETE",
+      });
+      fetchUsernames();
+    } catch (err) {
+      console.error("Failed to delete username:", err);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Reserved Usernames */}
+      <div>
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          Reserved Usernames
+        </h2>
+
+        {/* Add Form */}
+        <div className="mb-4 flex gap-2">
+          <input
+            type="text"
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            placeholder="username to reserve..."
+            className="h-10 flex-1 rounded-full border border-[var(--color-border-default)] bg-white/[0.04] px-4 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] outline-none focus:border-[var(--color-border-focus)]"
+          />
+          <Button variant="primary" size="sm" onClick={handleAdd}>
+            <Plus size={16} strokeWidth={1.8} className="mr-1" />
+            Add
+          </Button>
+        </div>
+
+        {/* List */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div
+              className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"
+              style={{ color: "var(--color-text-tertiary)" }}
+            />
+          </div>
+        ) : (
+          <div
+            className="rounded-xl border border-[var(--color-border-default)] divide-y divide-[var(--color-border-subtle)]"
+            style={{ background: "var(--color-bg-elevated)" }}
+          >
+            {usernames.length === 0 ? (
+              <div className="px-4 py-8 text-center text-sm text-[var(--color-text-tertiary)]">
+                No reserved usernames
+              </div>
+            ) : (
+              usernames.map((name) => (
+                <div
+                  key={name}
+                  className="flex items-center justify-between px-4 py-2.5"
+                >
+                  <span className="text-sm font-mono text-[var(--color-text-secondary)]">
+                    {name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(name)}
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-accent-error)]"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+        <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
+          {usernames.length} reserved usernames
+        </p>
+      </div>
+
+      {/* Worlds Config (read-only) */}
+      <div>
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          Worlds
+        </h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { key: "default", label: "Default", color: "#7c5cfc" },
+            { key: "vibe-coding", label: "Vibe Coding", color: "#5BC682" },
+            { key: "writer-room", label: "Writer Room", color: "#5CC2EC" },
+            { key: "yc-build", label: "YC Build", color: "#F5C54E" },
+            { key: "gentle-start", label: "Gentle Start", color: "#ADE2C0" },
+          ].map((world) => (
+            <div
+              key={world.key}
+              className="rounded-xl border border-[var(--color-border-default)] p-4"
+              style={{ background: "var(--color-bg-elevated)" }}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-3 w-3 shrink-0 rounded-full"
+                  style={{ background: world.color }}
+                />
+                <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                  {world.label}
+                </span>
+              </div>
+              <p className="mt-1 text-xs font-mono text-[var(--color-text-tertiary)]">
+                {world.key}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

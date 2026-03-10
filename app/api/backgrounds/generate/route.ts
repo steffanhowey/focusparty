@@ -9,6 +9,7 @@ import {
 } from "@/lib/backgroundPromptCompiler";
 import type { WorldKey } from "@/lib/worlds";
 import { TIME_OF_DAY_STATES, type TimeOfDayState } from "@/lib/timeOfDay";
+import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
 
 let _openai: OpenAI | null = null;
 function getOpenAI(): OpenAI {
@@ -40,18 +41,8 @@ const VALID_WORLD_KEYS: Set<string> = new Set([
  * Returns: { jobId, results: [{ assetId, url, success, error? }] }
  */
 export async function POST(request: Request) {
-  // Auth check
-  const authHeader = request.headers.get("authorization");
-  const secret = process.env.ADMIN_SECRET;
-
-  if (!secret) {
-    return NextResponse.json(
-      { error: "ADMIN_SECRET env var not configured" },
-      { status: 500 }
-    );
-  }
-
-  if (authHeader !== `Bearer ${secret}`) {
+  // Auth check (ADMIN_SECRET, CRON_SECRET, or session-based admin)
+  if (!(await verifyAdminAuth(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/admin";
 import { TIME_OF_DAY_STATES } from "@/lib/timeOfDay";
+import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
 
 /**
  * Rotates each room's active background to the next approved candidate.
@@ -12,28 +13,15 @@ import { TIME_OF_DAY_STATES } from "@/lib/timeOfDay";
  *   Optional body: { worldKey?: string } to rotate a single room.
  */
 
-function verifyAuth(request: Request): boolean {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-
-  const authHeader = request.headers.get("authorization");
-  if (authHeader === `Bearer ${secret}`) return true;
-
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
-
-  return false;
-}
-
 export async function GET(request: Request) {
-  if (!verifyAuth(request)) {
+  if (!(await verifyAdminAuth(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return rotateAll(null);
 }
 
 export async function POST(request: Request) {
-  if (!verifyAuth(request)) {
+  if (!(await verifyAdminAuth(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

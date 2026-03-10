@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/admin";
+import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
 
 type ReviewAction = "approve" | "reject" | "activate" | "archive";
 
@@ -7,7 +8,7 @@ type ReviewAction = "approve" | "reject" | "activate" | "archive";
  * POST /api/backgrounds/review
  *
  * Admin endpoint to approve, reject, activate, or archive a background asset.
- * Protected by ADMIN_SECRET.
+ * Protected by ADMIN_SECRET or session-based admin auth.
  *
  * Body: {
  *   assetId: string,
@@ -17,17 +18,7 @@ type ReviewAction = "approve" | "reject" | "activate" | "archive";
  * }
  */
 export async function POST(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  const secret = process.env.ADMIN_SECRET;
-
-  if (!secret) {
-    return NextResponse.json(
-      { error: "ADMIN_SECRET env var not configured" },
-      { status: 500 }
-    );
-  }
-
-  if (authHeader !== `Bearer ${secret}`) {
+  if (!(await verifyAdminAuth(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
