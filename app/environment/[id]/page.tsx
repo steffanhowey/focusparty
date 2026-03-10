@@ -24,6 +24,7 @@ import {
 import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
 import { getHostConfig } from "@/lib/hosts";
 import { getActiveBackground, type ActiveBackground } from "@/lib/roomBackgrounds";
+import { getUserTimeState } from "@/lib/timeOfDay";
 import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
 import { EnvironmentBackground } from "@/components/environment/EnvironmentBackground";
 import { EnvironmentHeader } from "@/components/environment/EnvironmentHeader";
@@ -106,11 +107,13 @@ export default function EnvironmentPage() {
     : getHostConfig("default");
 
   // ─── AI background (falls back to static Unsplash) ───
+  // Lock the time state on mount so it never changes mid-session
+  const lockedTimeStateRef = useRef(getUserTimeState());
   const [aiBackground, setAiBackground] = useState<ActiveBackground | null>(null);
   useEffect(() => {
     const wk = party?.world_key;
     if (!wk) return;
-    getActiveBackground(wk).then(setAiBackground).catch(() => {});
+    getActiveBackground(wk, lockedTimeStateRef.current).then(setAiBackground).catch(() => {});
   }, [party?.world_key]);
   const backgroundImageUrl = aiBackground?.publicUrl ?? world.environmentImage;
 

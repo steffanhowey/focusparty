@@ -5,6 +5,7 @@
 
 import { createHash } from "crypto";
 import type { RoomVisualProfile } from "./roomVisualProfiles";
+import type { TimeOfDayState } from "./timeOfDay";
 
 export interface CompiledPrompt {
   /** Full assembled prompt text for gpt-image-1. */
@@ -16,8 +17,8 @@ export interface CompiledPrompt {
 export interface PromptOptions {
   /** Free-form seed string to encourage variation between candidates. */
   variationSeed?: string;
-  /** Time-of-day hint for lighting/mood variation. */
-  timeOfDay?: "morning" | "afternoon" | "evening" | "night";
+  /** Time-of-day state for lighting/mood variation. */
+  timeOfDay?: TimeOfDayState;
 }
 
 /**
@@ -30,6 +31,13 @@ export function compileBackgroundPrompt(
   options?: PromptOptions
 ): CompiledPrompt {
   const sections: string[] = [];
+  const timeState = options?.timeOfDay;
+
+  // Resolve time-of-day overrides (afternoon uses base profile as-is)
+  const timeOverride =
+    timeState && timeState !== "afternoon"
+      ? profile.timeOverrides?.[timeState]
+      : undefined;
 
   // 1. Intent
   sections.push(
@@ -44,25 +52,34 @@ export function compileBackgroundPrompt(
     `Required visual elements that must appear: ${profile.continuityAnchors.join("; ")}.`
   );
 
-  // 4. Color palette
+  // 4. Color palette (merge time overrides if present)
+  const dominant =
+    timeOverride?.paletteAdjust?.dominant ?? profile.palette.dominant;
+  const accent =
+    timeOverride?.paletteAdjust?.accent ?? profile.palette.accent;
   sections.push(
     [
       "Color palette:",
-      `  Dominant colors: ${profile.palette.dominant.join(", ")}.`,
-      `  Accent colors: ${profile.palette.accent.join(", ")}.`,
+      `  Dominant colors: ${dominant.join(", ")}.`,
+      `  Accent colors: ${accent.join(", ")}.`,
       `  Colors to avoid: ${profile.palette.avoid.join(", ")}.`,
     ].join("\n")
   );
 
-  // 5. Lighting
-  sections.push(`Lighting: ${profile.lighting}`);
+  // 5. Lighting (use time override if available)
+  const lightingText = timeOverride?.lighting ?? profile.lighting;
+  sections.push(`Lighting: ${lightingText}`);
 
   // 6. Camera
   sections.push(`Camera: ${profile.cameraRules}`);
 
-  // 7. Time of day variation
-  if (options?.timeOfDay) {
-    sections.push(`Time of day: ${options.timeOfDay}.`);
+  // 7. Time of day context (rich when override exists, simple otherwise)
+  if (timeState && timeOverride) {
+    sections.push(
+      `Time of day: ${timeState.replace("_", " ")}. Mood and atmosphere: ${timeOverride.mood}`
+    );
+  } else if (timeState) {
+    sections.push(`Time of day: ${timeState.replace("_", " ")}.`);
   }
 
   // 8. Variation seed

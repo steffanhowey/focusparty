@@ -66,7 +66,7 @@ export async function POST(request: Request) {
   // Fetch the target asset
   const { data: asset, error: fetchError } = await supabase
     .from("fp_room_background_assets")
-    .select("id, world_key, status")
+    .select("id, world_key, status, time_of_day_state")
     .eq("id", assetId)
     .single();
 
@@ -114,11 +114,12 @@ export async function POST(request: Request) {
     }
 
     case "activate": {
-      // Archive current active background for this world (if any)
+      // Archive current active background for this (world, time state)
       await supabase
         .from("fp_room_background_assets")
         .update({ status: "archived", archived_at: now })
         .eq("world_key", asset.world_key)
+        .eq("time_of_day_state", asset.time_of_day_state)
         .eq("status", "active");
 
       // Activate the target asset

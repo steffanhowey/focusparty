@@ -8,6 +8,7 @@ import {
   type PromptOptions,
 } from "@/lib/backgroundPromptCompiler";
 import type { WorldKey } from "@/lib/worlds";
+import { TIME_OF_DAY_STATES, type TimeOfDayState } from "@/lib/timeOfDay";
 
 let _openai: OpenAI | null = null;
 function getOpenAI(): OpenAI {
@@ -33,7 +34,7 @@ const VALID_WORLD_KEYS: Set<string> = new Set([
  *   worldKey: string,
  *   count?: number,          // 1-5, default 3
  *   variationSeed?: string,
- *   timeOfDay?: "morning" | "afternoon" | "evening" | "night"
+ *   timeOfDay?: "morning" | "afternoon" | "evening" | "late_night"
  * }
  *
  * Returns: { jobId, results: [{ assetId, url, success, error? }] }
@@ -76,13 +77,20 @@ export async function POST(request: Request) {
     );
   }
 
+  // Validate and resolve time-of-day state
+  const validTimeStates = new Set<string>(TIME_OF_DAY_STATES);
+  const timeOfDayState: TimeOfDayState =
+    timeOfDay && validTimeStates.has(timeOfDay)
+      ? (timeOfDay as TimeOfDayState)
+      : "afternoon";
+
   const candidateCount = Math.min(Math.max(1, count), 5);
 
   // Compile prompt
   const profile = getRoomVisualProfile(worldKey);
   const compiled = compileBackgroundPrompt(profile, {
     variationSeed,
-    timeOfDay,
+    timeOfDay: timeOfDayState,
   });
 
   const openai = getOpenAI();
@@ -161,8 +169,8 @@ export async function POST(request: Request) {
         .webp({ quality: 75 })
         .toBuffer();
 
-      // Upload main image
-      const mainPath = `${worldKey}/${jobId}/candidate-${i}.webp`;
+      // Upload main image (organized by time state)
+      const mainPath = `${worldKey}/${timeOfDayState}/${jobId}/candidate-${i}.webp`;
       const { error: mainUploadErr } = await supabase.storage
         .from("room-backgrounds")
         .upload(mainPath, mainBuffer, {
@@ -182,7 +190,7 @@ export async function POST(request: Request) {
       }
 
       // Upload thumbnail
-      const thumbPath = `${worldKey}/${jobId}/candidate-${i}-thumb.webp`;
+      const thumbPath = `${worldKey}/${timeOfDayState}/${jobId}/candidate-${i}-thumb.webp`;
       await supabase.storage
         .from("room-backgrounds")
         .upload(thumbPath, thumbBuffer, {
@@ -207,6 +215,7 @@ export async function POST(request: Request) {
           storage_path: mainPath,
           public_url: publicUrl,
           status: "candidate",
+          time_of_day_state: timeOfDayState,
           width: 1920,
           height: 1080,
           file_size_bytes: mainBuffer.length,
@@ -227,7 +236,7 @@ export async function POST(request: Request) {
       }
 
       results.push({ assetId: asset.id, url: publicUrl, success: true });
-      console.log(`[bg-generate] ✓ ${worldKey} candidate ${i} → ${publicUrl}`);
+      console.log(`[bg-generate] ✓ ${worldKey}/${timeOfDayState} candidate ${i} → ${publicUrl}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       console.error(`[bg-generate] Error for candidate ${i}:`, message);

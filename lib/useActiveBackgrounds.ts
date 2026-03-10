@@ -5,9 +5,11 @@ import {
   getAllActiveBackgrounds,
   type ActiveBackground,
 } from "./roomBackgrounds";
+import { getUserTimeState } from "./timeOfDay";
 
 /**
- * Fetches all active AI-generated room backgrounds once on mount.
+ * Fetches all active AI-generated room backgrounds for the user's
+ * current time-of-day state, once on mount.
  * Returns a map from worldKey → ActiveBackground.
  */
 export function useActiveBackgrounds() {
@@ -16,7 +18,8 @@ export function useActiveBackgrounds() {
   >(new Map());
 
   useEffect(() => {
-    getAllActiveBackgrounds().then(setBackgrounds).catch(() => {});
+    const timeState = getUserTimeState();
+    getAllActiveBackgrounds(timeState).then(setBackgrounds).catch(() => {});
   }, []);
 
   return backgrounds;

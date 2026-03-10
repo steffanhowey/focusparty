@@ -11,6 +11,7 @@ import {
   getAllActiveBackgrounds,
   type ActiveBackground,
 } from "@/lib/roomBackgrounds";
+import { getUserTimeState } from "@/lib/timeOfDay";
 
 interface EnvironmentHeaderProps {
   roomName: string;
@@ -41,9 +42,10 @@ export function EnvironmentHeader({
     if (!switcherOpen || !userId) return;
     let cancelled = false;
     setPartiesLoading(true);
+    const timeState = getUserTimeState();
     Promise.all([
       getUserActiveParties(userId),
-      getAllActiveBackgrounds(),
+      getAllActiveBackgrounds(timeState),
     ])
       .then(([p, bg]) => {
         if (!cancelled) {
