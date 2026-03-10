@@ -11,14 +11,14 @@ import {
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { RotateCw, ListTodo } from "lucide-react";
+import { RotateCw, ListTodo, X } from "lucide-react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useTasks } from "@/lib/useTasks";
 import { usePartyPresence } from "@/lib/usePartyPresence";
 import { usePartyActivityFeed } from "@/lib/usePartyActivityFeed";
 import { useRoomSprint } from "@/lib/useRoomSprint";
 import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
-import { getParty, joinParty, type Party } from "@/lib/parties";
+import { getParty, joinParty, getSyntheticParticipants, type Party, type SyntheticPresenceInfo } from "@/lib/parties";
 import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
 import { getHostConfig } from "@/lib/hosts";
 import { DurationPills } from "@/components/session/DurationPills";
@@ -30,9 +30,11 @@ interface JoinRoomModalProps {
   isOpen: boolean;
   onClose: () => void;
   backgrounds?: Map<string, ActiveBackground>;
+  onJoin?: (config: JoinConfig) => void;
 }
 
 type SprintMode = "current" | "next" | "fresh";
+type ModalPhase = "form" | "countdown";
 
 /** Config stored in sessionStorage for the environment page to read. */
 export interface JoinConfig {
@@ -47,13 +49,15 @@ function formatMinutes(seconds: number): string {
   return `${m}m`;
 }
 
-export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoomModalProps) {
+export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }: JoinRoomModalProps) {
   const router = useRouter();
   const { userId, displayName, username } = useCurrentUser();
   const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const previousActive = useRef<HTMLElement | null>(null);
+  const [formHeight, setFormHeight] = useState<number | null>(null);
 
   // ─── Party data ──────────────────────────────────────────
   const [party, setParty] = useState<Party | null>(null);
@@ -67,6 +71,17 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
       .then((p) => { if (!cancelled) setParty(p); })
       .catch(() => {})
       .finally(() => { if (!cancelled) setPartyLoading(false); });
+    return () => { cancelled = true; };
+  }, [isOpen, partyId]);
+
+  // ─── Synthetic participants ─────────────────────────────
+  const [syntheticParticipants, setSyntheticParticipants] = useState<SyntheticPresenceInfo[]>([]);
+  useEffect(() => {
+    if (!isOpen || !partyId) return;
+    let cancelled = false;
+    getSyntheticParticipants(partyId)
+      .then((sp) => { if (!cancelled) setSyntheticParticipants(sp); })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [isOpen, partyId]);
 
@@ -114,6 +129,11 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
   const [isJoining, setIsJoining] = useState(false);
   const [showTaskPicker, setShowTaskPicker] = useState(false);
 
+  // ─── Countdown state ──────────────────────────────────────────
+  const [modalPhase, setModalPhase] = useState<ModalPhase>("form");
+  const [countdownNumber, setCountdownNumber] = useState(5);
+  const joinConfigRef = useRef<JoinConfig | null>(null);
+
   // Reset form state when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -123,6 +143,10 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
       setFreshDuration(world.defaultSprintLength);
       setIsJoining(false);
       setShowTaskPicker(false);
+      setModalPhase("form");
+      setCountdownNumber(5);
+      setFormHeight(null);
+      joinConfigRef.current = null;
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -200,23 +224,28 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
     setIsJoining(true);
 
     try {
-      // Join the party
+      // Join the party (user appears in room during countdown)
       await joinParty(partyId, userId, displayName);
 
       // If a task was selected, select it in the task system
       if (selectedTaskId) selectTask(selectedTaskId);
 
-      // Store join config for the environment page
-      const config: JoinConfig = {
+      // Store config for after countdown completes
+      joinConfigRef.current = {
         taskId: selectedTaskId,
         goalText: goalText.trim() || selectedTask?.title || "",
         durationSec,
         autoStart: sprintMode === "current" || sprintMode === "fresh",
       };
-      sessionStorage.setItem("fp_join_config", JSON.stringify(config));
 
-      router.push(`/environment/${partyId}`);
-      onClose();
+      // Capture panel dimensions so countdown screen matches exactly
+      if (panelRef.current) {
+        setFormHeight(panelRef.current.offsetHeight);
+      }
+
+      // Transition to countdown phase
+      setModalPhase("countdown");
+      setIsJoining(false);
     } catch (err) {
       console.error("[JoinRoomModal] join failed:", err);
       setIsJoining(false);
@@ -224,8 +253,36 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
   }, [
     userId, hasGoal, isJoining, partyId, displayName,
     selectedTaskId, goalText, selectedTask, durationSec,
-    sprintMode, selectTask, router, onClose,
+    sprintMode, selectTask,
   ]);
+
+  // ─── Countdown timer ─────────────────────────────────────────
+  useEffect(() => {
+    if (modalPhase !== "countdown") return;
+    let count = 5;
+    setCountdownNumber(5);
+
+    const interval = setInterval(() => {
+      count -= 1;
+      if (count > 0) {
+        setCountdownNumber(count);
+      } else {
+        clearInterval(interval);
+        // Countdown complete — start session and close modal
+        if (joinConfigRef.current) {
+          if (onJoin) {
+            onJoin(joinConfigRef.current);
+          } else {
+            sessionStorage.setItem("fp_join_config", JSON.stringify(joinConfigRef.current));
+            router.push(`/environment/${partyId}`);
+          }
+        }
+        onClose();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [modalPhase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Modal plumbing ────────────────────────────────────────
   useEffect(() => { setMounted(true); }, []);
@@ -249,9 +306,9 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
 
   if (!isOpen || !mounted || typeof document === "undefined") return null;
 
-  // ─── Avatar cluster (inline) ──────────────────────────────
-  const visibleAvatars = presence.participants.slice(0, 4);
-  const avatarOverflow = presence.count - visibleAvatars.length;
+  // ─── Avatar cluster (synthetic participants) ────────────────
+  const visibleSynthAvatars = syntheticParticipants.slice(0, 4);
+  const synthOverflow = syntheticParticipants.length - visibleSynthAvatars.length;
 
   const content = (
     <div
@@ -270,16 +327,18 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
         onClick={onClose}
       />
 
-      {/* Modal panel */}
+      {/* Modal panel — dead center */}
       <div
+        ref={panelRef}
         className="relative w-full max-w-[520px] overflow-hidden rounded-[var(--radius-xl)]"
         style={{
-          background: "rgba(13,14,32,0.92)",
+          background: "rgba(13,14,32,0.94)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
           boxShadow:
             "0 16px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
+          ...(modalPhase === "countdown" && formHeight ? { height: formHeight } : {}),
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -287,22 +346,65 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-3 top-3 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-white/40 transition hover:text-white"
+          className="absolute right-3 top-3 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-white/40 transition hover:bg-white/[0.08] hover:text-white/70"
           aria-label="Close"
         >
-          <span className="text-lg leading-none">&times;</span>
+          <X size={15} strokeWidth={2.5} />
         </button>
 
         {partyLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
           </div>
+        ) : modalPhase === "countdown" ? (
+          /* ── COUNTDOWN SCREEN ──────────────────────────── */
+          <div
+            className="flex h-full flex-col items-center justify-center px-5"
+            style={{ animation: "fp-setup-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
+          >
+            {/* Countdown number */}
+            <div
+              key={countdownNumber}
+              className="animate-countdown-pop select-none text-8xl font-bold text-white"
+              style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+            >
+              {countdownNumber}
+            </div>
+
+            {/* Subtitle */}
+            <p className="mt-4 text-sm text-white/50">
+              Get ready to focus
+            </p>
+
+            {/* Progress dots */}
+            <div className="mt-6 flex items-center gap-2">
+              {[5, 4, 3, 2, 1].map((n) => {
+                const isCompleted = n > countdownNumber;
+                const isActive = n === countdownNumber;
+                return (
+                  <div
+                    key={n}
+                    className="h-2 w-2 rounded-full transition-all duration-300"
+                    style={{
+                      background: isCompleted
+                        ? "var(--color-accent-primary)"
+                        : isActive
+                          ? "var(--color-accent-primary)"
+                          : "rgba(255,255,255,0.12)",
+                      opacity: isActive ? 1 : isCompleted ? 0.6 : 1,
+                      transform: isActive ? "scale(1.3)" : "scale(1)",
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
         ) : (
           <>
             {/* ── HEADER: Cover image + room info ─────────── */}
             <div className="flex gap-4 p-5 pb-0">
               {/* Cover image */}
-              <div className="relative h-[100px] w-[140px] shrink-0 overflow-hidden rounded-lg">
+              <div className="relative h-[100px] w-[140px] shrink-0 overflow-hidden rounded-[var(--radius-md)]">
                 {coverSrc ? (
                   <Image
                     src={coverSrc}
@@ -352,27 +454,14 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                   )}
                 </div>
 
-                {/* Room state badge */}
-                {roomState !== "quiet" && (
-                  <span
-                    className="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
-                    style={{
-                      background: `${roomStateDisplay.color}15`,
-                      color: roomStateDisplay.color,
-                    }}
-                  >
-                    {roomStateDisplay.icon} {roomStateDisplay.label}
-                  </span>
-                )}
-
                 {/* Avatars */}
-                {visibleAvatars.length > 0 && (
+                {visibleSynthAvatars.length > 0 && (
                   <div className="mt-2 flex items-center">
                     <span className="flex">
-                      {visibleAvatars.map((p, i) => (
+                      {visibleSynthAvatars.map((p, i) => (
                         <img
-                          key={p.userId}
-                          src={p.avatarUrl ?? `https://api.dicebear.com/7.x/thumbs/svg?seed=${p.userId}`}
+                          key={p.id}
+                          src={p.avatarUrl}
                           alt={p.displayName}
                           width={22}
                           height={22}
@@ -382,15 +471,15 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                             height: 22,
                             marginLeft: i === 0 ? 0 : -5,
                             border: "1.5px solid rgba(13,14,32,0.9)",
-                            zIndex: visibleAvatars.length - i,
+                            zIndex: visibleSynthAvatars.length - i,
                             position: "relative",
                           }}
                         />
                       ))}
                     </span>
-                    {avatarOverflow > 0 && (
+                    {synthOverflow > 0 && (
                       <span className="ml-1.5 text-[11px] text-white/40">
-                        +{avatarOverflow}
+                        +{synthOverflow}
                       </span>
                     )}
                   </div>
@@ -416,7 +505,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                   onChange={(e) => handleGoalChange(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && hasGoal) handleJoin(); }}
                   placeholder="Write your task or goal..."
-                  className="w-full rounded-lg py-2.5 pl-3 pr-10 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-white/20"
+                  className="w-full rounded-full py-2.5 pl-4 pr-10 text-sm text-white placeholder-white/30 outline-none ring-0 ring-white/0 transition-all focus:ring-1 focus:ring-white/12"
                   style={{
                     background: "var(--color-bg-elevated)",
                     border: "1px solid rgba(255,255,255,0.08)",
@@ -432,12 +521,14 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                 </button>
               </div>
 
-              {/* Task picker dropdown */}
+              {/* Task picker dropdown — absolute so it doesn't push modal content */}
               {showTaskPicker && activeTasks.length > 0 && (
                 <div
-                  className="mt-1.5 max-h-40 overflow-y-auto rounded-lg py-1 shadow-2xl"
+                  className="absolute left-0 right-0 z-20 mx-5 mt-1.5 max-h-40 overflow-y-auto rounded-xl py-1 shadow-2xl"
                   style={{
                     background: "rgba(13,14,32,0.95)",
+                    backdropFilter: "blur(16px)",
+                    WebkitBackdropFilter: "blur(16px)",
                     border: "1px solid rgba(255,255,255,0.08)",
                   }}
                 >
@@ -446,7 +537,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                       key={task.id}
                       type="button"
                       onClick={() => handleTaskPickerSelect(task.id, task.title)}
-                      className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-white/5"
+                      className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-white/[0.08]"
                       style={{
                         color:
                           selectedTaskId === task.id
@@ -460,16 +551,16 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                 </div>
               )}
 
-              {/* Suggestion pills */}
+              {/* Suggestion pills — single row, truncating */}
               {taskSuggestions.length > 0 && (
-                <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  <span className="text-[11px] text-white/35">Suggestions:</span>
+                <div className="mt-3 flex items-center gap-1.5 overflow-hidden">
+                  <span className="shrink-0 text-[11px] text-white/35">Suggestions:</span>
                   {taskSuggestions.map((task, i) => (
                     <button
                       key={task.id}
                       type="button"
                       onClick={() => handleSuggestionClick(task, i === 0)}
-                      className="cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-medium transition-all"
+                      className="min-w-0 cursor-pointer truncate rounded-full px-2.5 py-1 text-[11px] font-medium transition-all"
                       style={{
                         background:
                           selectedTaskId === task.id
@@ -492,13 +583,13 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                           strokeWidth={2.5}
                         />
                       )}
-                      {i === 0 ? `Continue: ${task.title.slice(0, 22)}${task.title.length > 22 ? "..." : ""}` : task.title.slice(0, 25) + (task.title.length > 25 ? "..." : "")}
+                      {i === 0 ? `Continue: ${task.title}` : task.title}
                     </button>
                   ))}
                   <button
                     type="button"
                     onClick={handleCustomClick}
-                    className="cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-medium text-white/35 transition-colors hover:text-white/55"
+                    className="shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-medium text-white/35 transition-colors hover:text-white/55"
                     style={{
                       background: "rgba(255,255,255,0.04)",
                       border: "1px solid transparent",
@@ -525,7 +616,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                     <button
                       type="button"
                       onClick={() => setSprintMode("current")}
-                      className="flex w-full cursor-pointer items-center justify-between rounded-lg px-4 py-3 text-left transition-all"
+                      className="flex w-full cursor-pointer items-center justify-between rounded-xl px-4 py-3 text-left transition-all"
                       style={{
                         background:
                           sprintMode === "current"
@@ -549,7 +640,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                             Current Sprint
                           </span>
                         </div>
-                        <p className="mt-0.5 text-xs text-white/45">
+                        <p className="mt-0.5 text-xs text-white/50">
                           {formatMinutes(roomSprint.remainingSeconds)} remaining &middot; {roomSprint.focusingCount} people focusing
                         </p>
                       </div>
@@ -576,7 +667,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                     <button
                       type="button"
                       onClick={() => setSprintMode("next")}
-                      className="flex w-full cursor-pointer items-center justify-between rounded-lg px-4 py-3 text-left transition-all"
+                      className="flex w-full cursor-pointer items-center justify-between rounded-xl px-4 py-3 text-left transition-all"
                       style={{
                         background:
                           sprintMode === "next"
@@ -600,7 +691,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                             Next Sprint
                           </span>
                         </div>
-                        <p className="mt-0.5 text-xs text-white/45">
+                        <p className="mt-0.5 text-xs text-white/50">
                           Starts in {formatMinutes(roomSprint.remainingSeconds)} &middot; Join fresh with group
                         </p>
                       </div>
@@ -650,8 +741,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
                 type="button"
                 onClick={handleJoin}
                 disabled={!hasGoal || isJoining}
-                className="cursor-pointer rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-opacity disabled:cursor-default disabled:opacity-40"
-                style={{ background: world.accentColor }}
+                className="cursor-pointer rounded-full bg-[var(--color-accent-primary)] px-6 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] active:opacity-75 disabled:cursor-default disabled:opacity-40 disabled:hover:scale-100"
               >
                 {isJoining ? (
                   <span className="flex items-center gap-2">

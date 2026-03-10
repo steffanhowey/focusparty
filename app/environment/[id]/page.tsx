@@ -43,7 +43,7 @@ import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
 import { logEvent } from "@/lib/sessions";
 import { computeRemainingSeconds } from "@/lib/sprintTime";
 import { SYNTHETIC_POOL } from "@/lib/synthetics/pool";
-import type { JoinConfig } from "@/components/party/JoinRoomModal";
+import { JoinRoomModal, type JoinConfig } from "@/components/party/JoinRoomModal";
 import type { SessionPhase, SessionReflection } from "@/lib/types";
 
 type SidePanel = "none" | "momentum" | "tasks" | "chat" | "settings";
@@ -116,10 +116,15 @@ export default function EnvironmentPage() {
     getActiveBackground(wk, lockedTimeStateRef.current).then(setAiBackground).catch(() => {});
   }, [party?.world_key]);
   const backgroundImageUrl = aiBackground?.publicUrl ?? null;
+  const modalBackgrounds = useMemo(() => {
+    if (!aiBackground || !party?.world_key) return undefined;
+    return new Map([[party.world_key, aiBackground]]);
+  }, [aiBackground, party?.world_key]);
 
   // ─── Session state machine ────────────────────────────
   const persistence = useSessionPersistence(userId);
   const [phase, setPhase] = useState<SessionPhase>("setup");
+  const [showJoinModal, setShowJoinModal] = useState(true);
   const [goal, setGoal] = useState("");
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
   const reviewElapsedRef = useRef(0);
@@ -285,6 +290,62 @@ export default function EnvironmentPage() {
       }
     } catch {}
   }, []);
+
+  // ─── Hide join modal if session already exists ──────────
+  useEffect(() => {
+    if (persistence.wasRestored) setShowJoinModal(false);
+    if (joinConfigRef.current) setShowJoinModal(false);
+  }, [persistence.wasRestored]);
+
+  // ─── Handle join from modal ───────────────────────────────
+  const handleJoinFromModal = useCallback((config: JoinConfig) => {
+    joinConfigRef.current = config;
+    setShowJoinModal(false);
+
+    // Apply the config directly (same as Priority 2 hydration)
+    if (config.taskId) selectTask(config.taskId);
+    setGoal(config.goalText);
+    setDurationSec(config.durationSec);
+
+    if (config.autoStart && userId) {
+      const sec = config.durationSec;
+      timer.reset(sec);
+      timer.start();
+      setPhase("sprint");
+      setSprintGoalCardOpen(false);
+
+      persistence
+        .startSession({
+          user_id: userId,
+          party_id: partyId,
+          task_id: config.taskId ?? undefined,
+          character: characterAccent,
+          goal_text: config.goalText,
+          planned_duration_sec: sec,
+        })
+        .then((session) =>
+          persistence.startSprint({
+            session_id: session.id,
+            sprint_number: 1,
+            duration_sec: sec,
+          })
+        )
+        .then(() => {
+          if (config.goalText) {
+            persistence.declareGoal({
+              user_id: userId,
+              task_id: config.taskId ?? undefined,
+              body: config.goalText,
+            });
+          }
+          hostTriggers.triggerSessionStarted();
+          hostTriggers.triggerSprintStarted();
+        })
+        .catch((err) =>
+          console.error("[EnvironmentPage] join from modal failed:", err)
+        );
+    }
+  }, [userId, partyId, characterAccent, timer, persistence, hostTriggers, selectTask]);
 
   // Clear task selection on mount (skip if restoring active sprint or join config present)
   const taskClearRef = useRef(false);
@@ -766,7 +827,7 @@ export default function EnvironmentPage() {
 
       {/* Main content — full width, flyout overlays on top */}
       <div className="flex w-full flex-col pl-24">
-        {phase === "setup" ? (
+        {phase === "setup" && !showJoinModal ? (
           <EnvironmentSetup
             roomName={party?.name ?? world.label}
             hostName={hostConfig.hostName}
@@ -932,6 +993,17 @@ export default function EnvironmentPage() {
         onSwitch={() => handleSwitchConfirm("switch")}
         onCancel={() => setPendingSwitchTaskId(null)}
       />
+
+      {/* Join room modal — shown on first visit before joining */}
+      {showJoinModal && (
+        <JoinRoomModal
+          partyId={partyId}
+          isOpen={showJoinModal}
+          onClose={() => setShowJoinModal(false)}
+          onJoin={handleJoinFromModal}
+          backgrounds={modalBackgrounds}
+        />
+      )}
     </div>
   );
 }

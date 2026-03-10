@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Zap, Target, Meh, BatteryLow, CloudLightning } from "lucide-react";
+import { Zap, Target, Meh, BatteryLow, CloudLightning, X } from "lucide-react";
 import type { SessionMood, SessionReflection } from "@/lib/types";
 
 /* ─── Constants ──────────────────────────────────────────── */
@@ -120,13 +120,14 @@ export function SessionReviewModal({
 
       {/* Modal card */}
       <div
-        className="animate-fp-review-enter relative w-full max-w-[480px] rounded-[var(--radius-lg)] border border-white/[0.08] p-8 shadow-xl"
+        className="animate-fp-review-enter relative w-full max-w-[520px] overflow-hidden rounded-[var(--radius-xl)] p-8"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "rgba(13,14,32,0.95)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+          background: "rgba(13,14,32,0.94)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          boxShadow: "0 16px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
           "--color-bg-elevated": "#11132b",
           "--color-text-primary": "#ffffff",
           "--color-text-secondary": "#c3c4ca",
@@ -136,6 +137,16 @@ export function SessionReviewModal({
           "--color-border-focus": "#7c5cfc",
         } as React.CSSProperties}
       >
+        {/* Close button */}
+        <button
+          type="button"
+          onClick={() => handleAction(onDone)}
+          className="absolute right-3 top-3 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-white/40 transition hover:bg-white/[0.08] hover:text-white/70"
+          aria-label="Close"
+        >
+          <X size={15} strokeWidth={2.5} />
+        </button>
+
         {/* ── Celebration header ── */}
         <div className="mb-8 text-center">
           <h2
@@ -186,7 +197,7 @@ export function SessionReviewModal({
             data-autofocus
             type="button"
             onClick={() => handleAction(onAnotherRound)}
-            className="h-12 w-full cursor-pointer rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-all duration-150 hover:bg-[var(--color-accent-secondary)] hover:shadow-[var(--shadow-glow-purple)]"
+            className="h-12 w-full cursor-pointer rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-all duration-150 hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] active:opacity-75"
             style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             Another round
@@ -194,7 +205,7 @@ export function SessionReviewModal({
           <button
             type="button"
             onClick={() => handleAction(onDone)}
-            className="h-12 w-full cursor-pointer rounded-full border border-[var(--color-border-default)] font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-white/5"
+            className="h-12 w-full cursor-pointer rounded-full border border-[var(--color-border-default)] font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.08]"
           >
             Done for now
           </button>

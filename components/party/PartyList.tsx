@@ -2,20 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useDiscoverableParties } from "@/lib/useDiscoverableParties";
 import { RoomCard } from "./RoomCard";
 import { EmptyState } from "./EmptyState";
 import { CreatePartyModal } from "./CreatePartyModal";
-import { JoinRoomModal } from "./JoinRoomModal";
 import { useActiveBackgrounds } from "@/lib/useActiveBackgrounds";
 
 export function PartyList() {
+  const router = useRouter();
   const { requireAuth } = useCurrentUser();
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [joinPartyId, setJoinPartyId] = useState<string | null>(null);
 
   const { parties, loading, error } = useDiscoverableParties();
   const backgrounds = useActiveBackgrounds();
@@ -42,9 +42,9 @@ export function PartyList() {
     setShowCreate(true);
   };
 
-  const handleOpenJoinModal = (partyId: string) => {
+  const handleOpenRoom = (partyId: string) => {
     if (!requireAuth()) return;
-    setJoinPartyId(partyId);
+    router.push(`/environment/${partyId}`);
   };
 
   const startButton = (
@@ -72,15 +72,6 @@ export function PartyList() {
         isOpen={showCreate}
         onClose={() => setShowCreate(false)}
       />
-
-      {joinPartyId && (
-        <JoinRoomModal
-          partyId={joinPartyId}
-          isOpen
-          onClose={() => setJoinPartyId(null)}
-          backgrounds={backgrounds}
-        />
-      )}
 
       <div className="px-4 py-6 sm:px-6">
         {loading ? (
@@ -111,7 +102,7 @@ export function PartyList() {
                         key={party.id}
                         party={party}
                         backgrounds={backgrounds}
-                        onClick={() => handleOpenJoinModal(party.id)}
+                        onClick={() => handleOpenRoom(party.id)}
                       />
                     ))}
                 </div>
@@ -132,7 +123,7 @@ export function PartyList() {
                         key={party.id}
                         party={party}
                         backgrounds={backgrounds}
-                        onClick={() => handleOpenJoinModal(party.id)}
+                        onClick={() => handleOpenRoom(party.id)}
                       />
                     ))}
                 </div>
