@@ -38,7 +38,7 @@ export function ProgressDashboard() {
   const chartData = chartRange === "7d" ? progress.chart7d : progress.chart30d;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <p className="text-sm text-[var(--color-text-secondary)]">

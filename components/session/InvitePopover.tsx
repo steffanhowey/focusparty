@@ -90,7 +90,7 @@ export function InvitePopover({
         position === "below" ? "top-full mt-3" : "bottom-full mb-3"
       } ${align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"}`}
       style={{
-        background: "rgba(13,14,32,0.65)",
+        background: "rgba(10,10,10,0.65)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         zIndex: 40,

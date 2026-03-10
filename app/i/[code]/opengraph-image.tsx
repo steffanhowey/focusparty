@@ -32,11 +32,11 @@ export default async function Image({
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            background: "linear-gradient(135deg, #1a1235 0%, #0d0e20 50%, #11132B 100%)",
+            background: "linear-gradient(135deg, #111111 0%, #0a0a0a 50%, #141414 100%)",
             fontFamily: "sans-serif",
           }}
         >
-          <div style={{ fontSize: 32, color: "#888995" }}>FocusParty</div>
+          <div style={{ fontSize: 32, color: "#888888" }}>FocusParty</div>
           <div style={{ fontSize: 48, color: "#ffffff", marginTop: 20, fontWeight: 700 }}>
             Party not found
           </div>
@@ -67,13 +67,13 @@ export default async function Image({
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          background: `linear-gradient(135deg, ${character.primary}18 0%, #0d0e20 50%, #11132B 100%)`,
+          background: `linear-gradient(135deg, ${character.primary}18 0%, #0a0a0a 50%, #141414 100%)`,
           fontFamily: "sans-serif",
           padding: 60,
         }}
       >
         {/* Brand */}
-        <div style={{ fontSize: 24, color: "#888995", marginBottom: 40, letterSpacing: 1 }}>
+        <div style={{ fontSize: 24, color: "#888888", marginBottom: 40, letterSpacing: 1 }}>
           FocusParty
         </div>
 
@@ -104,7 +104,7 @@ export default async function Image({
 
         {/* Creator attribution */}
         {creatorName && (
-          <div style={{ fontSize: 22, color: "#c3c4ca", marginTop: 16 }}>
+          <div style={{ fontSize: 22, color: "#c0c0c0", marginTop: 16 }}>
             Hosted by {creatorName}
           </div>
         )}

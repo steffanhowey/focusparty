@@ -11,7 +11,7 @@ export const ROOM_STATE_CONFIG: Record<
   RoomState,
   { label: string; icon: string; color: string }
 > = {
-  quiet: { label: "Quiet Room", icon: "🌙", color: "#888995" },
+  quiet: { label: "Quiet Room", icon: "🌙", color: "#888888" },
   warming_up: { label: "Warming Up", icon: "🌿", color: "#F59E0B" },
   focused: { label: "Deep Focus", icon: "🔥", color: "#EF4444" },
   flowing: { label: "Flowing", icon: "⚡", color: "#8B5CF6" },

@@ -73,7 +73,7 @@ export function TimerDropdown({
         <div
           className="absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl"
           style={{
-            background: "rgba(13,14,32,0.95)",
+            background: "rgba(10,10,10,0.95)",
             backdropFilter: "blur(20px)",
             zIndex: 40,
             minWidth: 220,

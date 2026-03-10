@@ -15,7 +15,7 @@ export const STATUS_CONFIG: Record<
   TaskStatus,
   { label: string; color: string }
 > = {
-  todo: { label: "To Do", color: "#888995" },
+  todo: { label: "To Do", color: "#888888" },
   in_progress: { label: "In Progress", color: "#7c5cfc" },
   done: { label: "Done", color: "#5BC682" },
 };

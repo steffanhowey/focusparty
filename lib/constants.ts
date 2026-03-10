@@ -9,7 +9,7 @@ export const CHARACTERS: Record<CharacterId, CharacterDef> = {
     secondary: "#EE984B",
     accent: "#F5C54E",
     glow: "rgba(233,104,97,0.25)",
-    roomBg: "linear-gradient(135deg, #2a1a16 0%, #1f1520 50%, #11132B 100%)",
+    roomBg: "linear-gradient(135deg, #2a1a16 0%, #1f1520 50%, #141414 100%)",
   },
   moss: {
     id: "moss",
@@ -19,7 +19,7 @@ export const CHARACTERS: Record<CharacterId, CharacterDef> = {
     secondary: "#5CC2EC",
     accent: "#ADE2C0",
     glow: "rgba(91,198,130,0.25)",
-    roomBg: "linear-gradient(135deg, #0f1f18 0%, #111a20 50%, #11132B 100%)",
+    roomBg: "linear-gradient(135deg, #0f1f18 0%, #111a20 50%, #141414 100%)",
   },
   byte: {
     id: "byte",
@@ -29,7 +29,7 @@ export const CHARACTERS: Record<CharacterId, CharacterDef> = {
     secondary: "#8C55EF",
     accent: "#A9ADF7",
     glow: "rgba(83,90,238,0.25)",
-    roomBg: "linear-gradient(135deg, #12132e 0%, #1a1235 50%, #11132B 100%)",
+    roomBg: "linear-gradient(135deg, #121212 0%, #111111 50%, #141414 100%)",
   },
 };
 

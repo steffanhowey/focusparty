@@ -8,7 +8,6 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 import { CHARACTERS } from "@/lib/constants";
 import { CLIENT_NAV_HREFS } from "./navItems";
 
-const SIDEBAR_COLLAPSED_KEY = "focusparty-sidebar-collapsed";
 
 const PAGE_TITLES: Record<string, string> = {
   "/party": "Parties",
@@ -81,55 +80,15 @@ export function HubShell({ children }: { children: ReactNode }) {
   const { characterAccent } = useTheme();
   const c = CHARACTERS[characterAccent];
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [clientTab, setClientTab] = useState<string | null>(null);
 
   // Single source of truth: clientTab (after first nav click) or pathname (initial server render)
   const effectivePath = clientTab ?? pathname;
   const title = getTitleForPath(effectivePath);
 
-  useEffect(() => {
-    const COLLAPSE_BP = 1024;
-    let wasWide = window.innerWidth >= COLLAPSE_BP;
-
-    const apply = () => {
-      const isWide = window.innerWidth >= COLLAPSE_BP;
-      if (!isWide) {
-        setCollapsed(true);
-      } else if (isWide !== wasWide) {
-        // Only restore preference when crossing back above breakpoint
-        try {
-          const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-          setCollapsed(stored === "true");
-        } catch { /* ignore */ }
-      }
-      wasWide = isWide;
-    };
-
-    // Initial check
-    if (!wasWide) {
-      setCollapsed(true);
-    } else {
-      try {
-        const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-        setCollapsed(stored === "true");
-      } catch { /* ignore */ }
-    }
-
-    window.addEventListener("resize", apply);
-    return () => window.removeEventListener("resize", apply);
-  }, []);
-
-  const toggleCollapsed = useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen((prev) => !prev);
   }, []);
 
   const handleNavClick = useCallback((href: string) => {
@@ -140,7 +99,7 @@ export function HubShell({ children }: { children: ReactNode }) {
 
   const handleMobileNavClick = useCallback((href: string) => {
     handleNavClick(href);
-    setCollapsed(true);
+    setMobileMenuOpen(false);
   }, [handleNavClick]);
 
   // Clear stale clientTab when Next.js navigates to a non-client-tab route
@@ -165,45 +124,37 @@ export function HubShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  const showHamburger = collapsed; // desktop: only when collapsed. Mobile: always (handled by CSS).
-  const showMobileOverlay = !collapsed;
-
   return (
     <div className="flex h-screen overflow-hidden safe-bottom">
-      {/* Desktop sidebar: hidden below md */}
+      {/* Desktop sidebar: always expanded, hidden below md */}
       <div className="hidden md:flex md:flex-shrink-0">
-        <Sidebar collapsed={collapsed} onToggleCollapsed={toggleCollapsed} onNavClick={handleNavClick} />
+        <Sidebar onNavClick={handleNavClick} />
       </div>
-      {/* Mobile overlay: drawer when hamburger opens (collapsed=false) */}
-      {showMobileOverlay && (
+      {/* Mobile overlay drawer */}
+      {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <button
             type="button"
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={toggleCollapsed}
+            onClick={toggleMobileMenu}
             aria-label="Close menu"
           />
-          <div className="relative h-full w-60 flex-shrink-0 shadow-xl">
-            <Sidebar collapsed={false} onToggleCollapsed={toggleCollapsed} onNavClick={handleMobileNavClick} />
+          <div className="relative h-full w-56 flex-shrink-0 shadow-xl">
+            <Sidebar onNavClick={handleMobileNavClick} />
           </div>
         </div>
       )}
       <div
-        className={`min-w-0 flex-1 overflow-hidden ${collapsed ? "pl-0 pt-2 pr-2 pb-2 md:pt-4 md:pr-4 md:pb-4 md:pl-0" : "p-2 md:p-4"}`}
+        className="min-w-0 flex-1 flex flex-col overflow-hidden"
         style={{ background: "var(--color-bg-primary)" }}
       >
-        <div
-          className="flex h-full flex-col overflow-clip border border-[var(--color-border-default)] rounded-xl md:rounded-[var(--radius-xl)]"
-          style={{
-            background: "var(--color-bg-elevated)",
-          }}
-        >
+        {effectivePath !== "/party" && (
           <div className="flex h-16 shrink-0 items-center justify-between gap-4 px-4 md:px-5 lg:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <button
                 type="button"
-                onClick={toggleCollapsed}
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-active)] hover:text-[var(--color-text-primary)] ${showHamburger ? "flex md:flex" : "flex md:hidden"}`}
+                onClick={toggleMobileMenu}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-active)] hover:text-[var(--color-text-primary)] md:hidden"
                 aria-label="Open menu"
               >
                 <Menu size={20} strokeWidth={1.8} />
@@ -212,9 +163,7 @@ export function HubShell({ children }: { children: ReactNode }) {
                 {title}
               </span>
             </div>
-            {effectivePath === "/party" ? (
-              <div id="hub-header-action" />
-            ) : effectivePath === "/tasks" ? (
+            {effectivePath === "/tasks" ? (
               <button
                 type="button"
                 onClick={() => document.dispatchEvent(new CustomEvent("fp:create-task"))}
@@ -247,9 +196,9 @@ export function HubShell({ children }: { children: ReactNode }) {
               </a>
             )}
           </div>
-          <div className="fp-shell-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-4 pt-4 pb-5 md:px-6 md:pt-5 md:pb-6">
-            {clientTab !== null ? renderTabContent(effectivePath) : children}
-          </div>
+        )}
+        <div className="fp-shell-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-4 pt-4 pb-5 md:px-5 md:pt-5 md:pb-6 lg:px-6">
+          {clientTab !== null ? renderTabContent(effectivePath) : children}
         </div>
       </div>
     </div>

@@ -60,7 +60,7 @@ export const PARTICIPANT_STATUS_CONFIG: Record<
   ParticipantStatus,
   { label: string; color: string; dotColor: string }
 > = {
-  idle: { label: "Idle", color: "#888995", dotColor: "#888995" },
+  idle: { label: "Idle", color: "#888888", dotColor: "#888888" },
   starting: { label: "Starting", color: "#F5C54E", dotColor: "#F5C54E" },
   focused: { label: "Focused", color: "#5BC682", dotColor: "#5BC682" },
   reviewing: { label: "Reviewing", color: "#5CC2EC", dotColor: "#5CC2EC" },

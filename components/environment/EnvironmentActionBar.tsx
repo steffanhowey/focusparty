@@ -24,7 +24,7 @@ export function EnvironmentActionBar({
       <div
         className="flex items-center gap-1 rounded-full px-2 py-1.5"
         style={{
-          background: "rgba(13,14,32,0.55)",
+          background: "rgba(10,10,10,0.55)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",

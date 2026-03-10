@@ -1,28 +1,39 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useDiscoverableParties } from "@/lib/useDiscoverableParties";
 import { RoomCard } from "./RoomCard";
+import { FeaturedRoom } from "@/components/party/FeaturedRoom";
 import { EmptyState } from "./EmptyState";
 import { CreatePartyModal } from "./CreatePartyModal";
 import { useActiveBackgrounds } from "@/lib/useActiveBackgrounds";
+import { ChevronDown } from "lucide-react";
+
+type RoomFilter = "all" | "most-active" | "coding" | "writing" | "calm";
+
+const FILTER_OPTIONS: { value: RoomFilter; label: string }[] = [
+  { value: "all", label: "All Rooms" },
+  { value: "most-active", label: "Most Active" },
+  { value: "coding", label: "Coding & Building" },
+  { value: "writing", label: "Writing & Focus" },
+  { value: "calm", label: "Calm & Gentle" },
+];
+
+const FILTER_WORLD_KEYS: Record<string, string[]> = {
+  coding: ["vibe-coding", "yc-build"],
+  writing: ["writer-room", "default"],
+  calm: ["gentle-start"],
+};
 
 export function PartyList() {
   const router = useRouter();
   const { requireAuth } = useCurrentUser();
-  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   const [showCreate, setShowCreate] = useState(false);
 
   const { parties, loading, error } = useDiscoverableParties();
   const backgrounds = useActiveBackgrounds();
-
-  useEffect(() => {
-    setHeaderSlot(document.getElementById("hub-header-action"));
-  }, []);
 
   // Synthetic participants: trigger a global tick every 30s while on discovery page
   useEffect(() => {
@@ -37,43 +48,37 @@ export function PartyList() {
     return () => clearInterval(id);
   }, []);
 
-  const handleStartParty = () => {
-    if (!requireAuth()) return;
-    setShowCreate(true);
-  };
-
   const handleOpenRoom = (partyId: string) => {
     if (!requireAuth()) return;
     router.push(`/environment/${partyId}`);
   };
 
-  const startButton = (
-    <button
-      type="button"
-      onClick={handleStartParty}
-      className="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full px-4 sm:px-5"
-      style={{
-        background: "var(--color-accent-primary)",
-        color: "white",
-      }}
-    >
-      <Plus size={18} strokeWidth={2} className="shrink-0" />
-      <span className="hidden text-sm font-semibold sm:inline">
-        Start Party
-      </span>
-    </button>
-  );
+  // Pick the featured room: most participants among persistent rooms
+  const persistentRooms = parties.filter((p) => p.persistent);
+  const featuredRoom = persistentRooms.length > 0
+    ? persistentRooms.reduce((a, b) => (b.participant_count > a.participant_count ? b : a))
+    : null;
+  const remainingRooms = persistentRooms.filter((p) => p.id !== featuredRoom?.id);
+  const communityRooms = parties.filter((p) => !p.persistent);
+  const allListedRooms = [...remainingRooms, ...communityRooms];
+
+  const [filter, setFilter] = useState<RoomFilter>("all");
+
+  const filteredRooms = (() => {
+    if (filter === "all") return allListedRooms;
+    if (filter === "most-active") return [...allListedRooms].sort((a, b) => b.participant_count - a.participant_count);
+    const keys = FILTER_WORLD_KEYS[filter];
+    return keys ? allListedRooms.filter((p) => keys.includes(p.world_key)) : allListedRooms;
+  })();
 
   return (
     <>
-      {headerSlot && createPortal(startButton, headerSlot)}
-
       <CreatePartyModal
         isOpen={showCreate}
         onClose={() => setShowCreate(false)}
       />
 
-      <div className="px-4 py-6 sm:px-6">
+      <div>
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-text-tertiary)] border-t-transparent" />
@@ -88,44 +93,52 @@ export function PartyList() {
           <EmptyState />
         ) : (
           <>
-            {/* Persistent rooms */}
-            {parties.filter((p) => p.persistent).length > 0 && (
-              <section>
-                <h2 className="mb-3 text-sm font-semibold text-[var(--color-text-secondary)]">
-                  Rooms
-                </h2>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {parties
-                    .filter((p) => p.persistent)
-                    .map((party) => (
-                      <RoomCard
-                        key={party.id}
-                        party={party}
-                        backgrounds={backgrounds}
-                        onClick={() => handleOpenRoom(party.id)}
-                      />
-                    ))}
-                </div>
+            {/* Featured room e-spot */}
+            {featuredRoom && (
+              <section className="mb-8">
+                <FeaturedRoom
+                  party={featuredRoom}
+                  backgrounds={backgrounds}
+                  onClick={() => handleOpenRoom(featuredRoom.id)}
+                />
               </section>
             )}
 
-            {/* User-created rooms */}
-            {parties.filter((p) => !p.persistent).length > 0 && (
-              <section className={parties.some((p) => p.persistent) ? "mt-8" : ""}>
-                <h2 className="mb-3 text-sm font-semibold text-[var(--color-text-secondary)]">
-                  Community Rooms
-                </h2>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {parties
-                    .filter((p) => !p.persistent)
-                    .map((party) => (
-                      <RoomCard
-                        key={party.id}
-                        party={party}
-                        backgrounds={backgrounds}
-                        onClick={() => handleOpenRoom(party.id)}
-                      />
-                    ))}
+            {/* All rooms */}
+            {allListedRooms.length > 0 && (
+              <section>
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                    Rooms
+                  </h2>
+                  <div className="relative">
+                    <select
+                      value={filter}
+                      onChange={(e) => setFilter(e.target.value as RoomFilter)}
+                      className="cursor-pointer appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+                    >
+                      {FILTER_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={14}
+                      strokeWidth={1.5}
+                      className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredRooms.map((party) => (
+                    <RoomCard
+                      key={party.id}
+                      party={party}
+                      backgrounds={backgrounds}
+                      onClick={() => handleOpenRoom(party.id)}
+                    />
+                  ))}
                 </div>
               </section>
             )}

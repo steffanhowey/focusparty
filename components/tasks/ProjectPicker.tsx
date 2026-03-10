@@ -107,7 +107,7 @@ export function ProjectPicker({
   const dropdown = open ? (
     <div
       ref={dropdownRef}
-      className="rounded-2xl border border-[var(--color-border-default)] bg-[rgba(13,14,32,0.95)] p-1.5 shadow-2xl backdrop-blur-[20px]"
+      className="rounded-2xl border border-[var(--color-border-default)] bg-[rgba(10,10,10,0.95)] p-1.5 shadow-2xl backdrop-blur-[20px]"
       style={{
         position: "fixed",
         top: pos.top,

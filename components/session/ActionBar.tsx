@@ -74,7 +74,7 @@ function Tip({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="group/tip relative">
       {children}
-      <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[rgba(13,14,32,0.9)] px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100">
+      <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[rgba(10,10,10,0.9)] px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100">
         {label}
       </span>
     </div>
@@ -138,7 +138,7 @@ export const ActionBar = memo(function ActionBar({
             onClick={() => { if (!wasDraggedRef.current) onToggleGoalCard?.(); }}
             className="flex cursor-pointer items-center gap-2 rounded-full border border-white/[0.08] px-5 py-2 transition-colors hover:bg-white/10"
             style={{
-              background: "rgba(13,14,32,0.55)",
+              background: "rgba(10,10,10,0.55)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
               boxShadow: "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)",
@@ -188,7 +188,7 @@ export const ActionBar = memo(function ActionBar({
             <div
               className="absolute top-full left-1/2 mt-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3"
               style={{
-                background: "rgba(13,14,32,0.80)",
+                background: "rgba(10,10,10,0.80)",
                 backdropFilter: "blur(24px)",
                 WebkitBackdropFilter: "blur(24px)",
                 textShadow: "0 1px 4px rgba(0,0,0,0.5)",
@@ -218,7 +218,7 @@ export const ActionBar = memo(function ActionBar({
       <div
         className="absolute bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border border-white/[0.08] px-2 py-1.5"
         style={{
-          background: "rgba(13,14,32,0.55)",
+          background: "rgba(10,10,10,0.55)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           boxShadow: "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)",

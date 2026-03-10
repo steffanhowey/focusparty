@@ -34,7 +34,7 @@ const TONE_COLORS: Record<EventTone, string> = {
   success: "#5BC682",
   warning: "#F5C54E",
   info: "#5CC2EC",
-  neutral: "#888995",
+  neutral: "#888888",
 };
 
 // ─── Actor Name Resolution ───────────────────────────────────

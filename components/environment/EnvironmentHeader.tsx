@@ -136,7 +136,7 @@ export function EnvironmentHeader({
           <div
             className="absolute left-0 top-full mt-2 overflow-hidden rounded-lg border border-[var(--color-border-default)] shadow-2xl"
             style={{
-              background: "rgba(13,14,32,0.95)",
+              background: "rgba(10,10,10,0.95)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
               zIndex: 40,

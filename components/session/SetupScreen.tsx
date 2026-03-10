@@ -29,15 +29,15 @@ interface SetupScreenProps {
 }
 
 const CARD_STYLE: React.CSSProperties = {
-  background: "rgba(13,14,32,0.95)",
+  background: "rgba(10,10,10,0.95)",
   backdropFilter: "blur(20px)",
   WebkitBackdropFilter: "blur(20px)",
   boxShadow:
     "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
-  "--color-bg-elevated": "#11132b",
+  "--color-bg-elevated": "#141414",
   "--color-text-primary": "#ffffff",
-  "--color-text-secondary": "#c3c4ca",
-  "--color-text-tertiary": "#888995",
+  "--color-text-secondary": "#c0c0c0",
+  "--color-text-tertiary": "#888888",
   "--color-text-on-accent": "#ffffff",
   "--color-border-default": "rgba(255, 255, 255, 0.08)",
   "--color-border-focus": "#7c5cfc",
@@ -234,7 +234,7 @@ export function SetupScreen({
                 <div
                   className="absolute top-full left-0 mt-2 w-full rounded-xl border border-[var(--color-border-default)]"
                   style={{
-                    background: "rgba(13,14,32,0.95)",
+                    background: "rgba(10,10,10,0.95)",
                     backdropFilter: "blur(20px)",
                     zIndex: 50,
                     textShadow: "0 1px 4px rgba(0,0,0,0.6)",

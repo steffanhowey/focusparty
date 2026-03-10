@@ -925,7 +925,7 @@ export default function EnvironmentPage() {
               width: PANEL_WIDTH - 16,
               height: "calc(100% - 32px)",
               margin: "16px 16px 16px 0",
-              background: "rgba(13,14,32,0.65)",
+              background: "rgba(10,10,10,0.65)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
               boxShadow:

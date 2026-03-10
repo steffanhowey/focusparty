@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
-import { ChevronLeft, ChevronDown, ChevronUp, Sun, Moon, CreditCard, Settings, LogOut, LogIn } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, CreditCard, Settings, LogOut, LogIn } from "lucide-react";
 import { Logo } from "./Logo";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -11,13 +11,13 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 import { NAV_ITEMS, NavIcon } from "./navItems";
 import { PLAN_LABELS, STUB_PLAN } from "@/lib/constants";
 
-const SIDEBAR_WIDTH_EXPANDED = "w-60";
+const SIDEBAR_WIDTH_EXPANDED = "w-56";
 const SIDEBAR_WIDTH_RAILS = "w-14 md:w-18";
 const RAILS_INSET_X = "px-2 md:px-4";
 
 /** Shared vertical rhythm tokens (used in both expanded and rails). */
 const SECTION_GAP = "pt-4";
-const NAV_ITEM_GAP = "gap-1";
+const NAV_ITEM_GAP = "gap-1.5";
 const BOTTOM_PAD = "pb-5";
 
 interface SidebarProps {
@@ -126,17 +126,14 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
   );
 
   const asideClass = collapsed
-    ? `${SIDEBAR_WIDTH_RAILS} relative z-[var(--z-card)] flex h-screen flex-shrink-0 flex-col overflow-visible pt-2 md:pt-4 transition-[width] duration-200 ease-out`
-    : `${SIDEBAR_WIDTH_EXPANDED} relative z-[var(--z-card)] flex h-screen flex-shrink-0 flex-col overflow-visible pt-2 md:pt-4 transition-[width] duration-200 ease-out`;
+    ? `${SIDEBAR_WIDTH_RAILS} relative z-[var(--z-card)] flex h-screen flex-shrink-0 flex-col overflow-visible transition-[width] duration-200 ease-out`
+    : `${SIDEBAR_WIDTH_EXPANDED} relative z-[var(--z-card)] flex h-screen flex-shrink-0 flex-col overflow-visible transition-[width] duration-200 ease-out`;
 
   return (
-    <aside className={asideClass} style={{ background: "var(--color-bg-primary)" }}>
+    <aside className={`${asideClass} backdrop-blur-xl`} style={{ background: "rgba(10, 10, 10, 0.7)", borderRight: "1px solid rgba(255,255,255,0.06)" }}>
       {collapsed ? (
-        <div className={`flex min-h-0 flex-1 flex-col ${RAILS_INSET_X}`}>
-          <div className="flex h-16 shrink-0 items-center justify-center">
-            <Logo href="/party" variant="small" />
-          </div>
-          <nav className={`flex shrink-0 flex-col items-center ${NAV_ITEM_GAP} ${SECTION_GAP}`}>
+        <div className={`flex min-h-0 flex-1 flex-col ${RAILS_INSET_X} pt-4`}>
+          <nav className={`flex shrink-0 flex-col items-center ${NAV_ITEM_GAP}`}>
             {NAV_ITEMS.map((item) => {
               const isActive = activeId === item.id;
               return (
@@ -149,9 +146,8 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                       onNavClick(item.href);
                     }
                   }}
-                  className="flex h-10 min-h-10 w-10 min-w-10 shrink-0 items-center justify-center rounded-lg transition-[color,background] duration-150"
+                  className={`flex h-10 min-h-10 w-10 min-w-10 shrink-0 items-center justify-center rounded-lg border-l-2 transition-all duration-150 ${isActive ? "border-[var(--color-accent-error)] bg-white/[0.06] backdrop-blur-sm" : "border-transparent"}`}
                   style={{
-                    background: isActive ? "var(--color-bg-active)" : "transparent",
                     color: isActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
                   }}
                   aria-current={isActive ? "page" : undefined}
@@ -206,22 +202,10 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
         </div>
       ) : (
         <>
-          <div className="flex h-16 shrink-0 items-center justify-between gap-2 px-4">
-            <div className="flex min-w-0 flex-1 items-center">
-              <Logo href="/party" variant={colorMode === "light" ? "light" : "dark"} />
-            </div>
-            {onToggleCollapsed && (
-              <button
-                type="button"
-                onClick={onToggleCollapsed}
-                className="flex shrink-0 items-center justify-center rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-active)] hover:text-[var(--color-text-primary)]"
-                aria-label="Collapse sidebar"
-              >
-                <ChevronLeft size={18} strokeWidth={2} />
-              </button>
-            )}
+          <div className="flex h-14 shrink-0 items-center px-4">
+            <Logo href="/party" maxWidth={150} />
           </div>
-          <nav className={`flex flex-col ${NAV_ITEM_GAP} ${SECTION_GAP} px-4`}>
+          <nav className={`flex flex-col ${NAV_ITEM_GAP} px-3 pt-2`}>
             {NAV_ITEMS.map((item) => {
               const isActive = activeId === item.id;
               return (
@@ -234,9 +218,8 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                       onNavClick(item.href);
                     }
                   }}
-                  className="flex h-10 items-center gap-3 rounded-lg -ml-2 pl-2 pr-3 transition-[color,background] duration-150"
+                  className={`-mx-3 flex h-12 items-center gap-3 border-l-2 px-[calc(0.75rem+0.625rem)] transition-all duration-150 ${isActive ? "border-[var(--color-accent-error)] bg-white/[0.06]" : "border-transparent"}`}
                   style={{
-                    background: isActive ? "var(--color-bg-active)" : "transparent",
                     color: isActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
                   }}
                   aria-current={isActive ? "page" : undefined}
@@ -249,7 +232,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
               );
             })}
           </nav>
-          <div ref={profileRef} className={`relative mt-auto flex flex-col gap-3 ${BOTTOM_PAD} px-4`}>
+          <div ref={profileRef} className={`relative mt-auto flex flex-col gap-3 ${BOTTOM_PAD} px-3`}>
             {profileMenuOpen && (
               <div
                 className="absolute bottom-full left-0 right-0 z-[var(--z-dropdown)] mb-2 overflow-hidden rounded-lg shadow-lg"
@@ -261,7 +244,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
             <button
               type="button"
               onClick={() => setProfileMenuOpen((o) => !o)}
-              className="flex w-full items-center gap-3 rounded-lg py-1.5 pr-2"
+              className="flex w-full items-center gap-3 rounded-lg py-1.5 pl-1 pr-2"
               aria-expanded={profileMenuOpen}
               aria-haspopup="true"
               aria-label="Profile menu"

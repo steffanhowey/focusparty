@@ -173,7 +173,7 @@ export function ParticipantCard({
       style={{
         top,
         left,
-        background: "rgba(13,14,32,0.85)",
+        background: "rgba(10,10,10,0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         boxShadow:

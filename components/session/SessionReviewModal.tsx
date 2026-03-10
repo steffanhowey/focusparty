@@ -123,15 +123,15 @@ export function SessionReviewModal({
         className="animate-fp-review-enter relative w-full max-w-[520px] overflow-hidden rounded-[var(--radius-xl)] p-8"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "rgba(13,14,32,0.94)",
+          background: "rgba(10,10,10,0.94)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
           boxShadow: "0 16px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
-          "--color-bg-elevated": "#11132b",
+          "--color-bg-elevated": "#141414",
           "--color-text-primary": "#ffffff",
-          "--color-text-secondary": "#c3c4ca",
-          "--color-text-tertiary": "#888995",
+          "--color-text-secondary": "#c0c0c0",
+          "--color-text-tertiary": "#888888",
           "--color-text-on-accent": "#ffffff",
           "--color-border-default": "rgba(255, 255, 255, 0.08)",
           "--color-border-focus": "#7c5cfc",

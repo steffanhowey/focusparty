@@ -104,7 +104,7 @@ export function ProfileSettings() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-8 px-4 py-8 sm:px-0">
+    <div className="space-y-8 py-8">
       <div>
         <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Profile</h2>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">

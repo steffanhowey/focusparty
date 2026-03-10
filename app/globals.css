@@ -72,17 +72,17 @@
   --color-green-300: #eff9f3;
   --color-green-200: #f7fcf9;
 
-  --color-navy-900: #080a15;
-  --color-navy-800: #0d0e20;
+  --color-navy-900: #050505;
+  --color-navy-800: #0a0a0a;
   /* Step between 800 and 700 for low-contrast elevated surfaces (e.g. main container) */
-  --color-navy-750: #0e1024;
-  --color-navy-700: #11132b;
-  --color-navy-500: #888995;
-  --color-navy-400: #c3c4ca;
-  --color-navy-300: #e7e7ea;
-  --color-navy-200: #f3f3f4;
+  --color-navy-750: #0e0e0e;
+  --color-navy-700: #141414;
+  --color-navy-500: #888888;
+  --color-navy-400: #c0c0c0;
+  --color-navy-300: #e5e5e5;
+  --color-navy-200: #f2f2f2;
 
-  /* Semantic (dark) — background navy-900; container slightly lighter so it’s visible but not high contrast */
+  /* Semantic (dark) — dark charcoal backgrounds */
   --color-bg-primary: var(--color-navy-800);
   --color-bg-secondary: var(--color-navy-800);
   --color-bg-elevated: var(--color-navy-700);
@@ -140,10 +140,10 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(17, 19, 43, 0.06);
-  --shadow-md: 0 4px 12px rgba(17, 19, 43, 0.08);
-  --shadow-lg: 0 8px 24px rgba(17, 19, 43, 0.12);
-  --shadow-xl: 0 16px 48px rgba(17, 19, 43, 0.16);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
   --shadow-glow-purple: 0 0 20px rgba(83, 90, 238, 0.3);
   --shadow-glow-ember: 0 0 20px rgba(233, 104, 97, 0.3);
   --shadow-glow-moss: 0 0 20px rgba(91, 198, 130, 0.3);

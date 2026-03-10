@@ -3,15 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 
-const LOGO_DARK_MODE = "/logo/Group%2039.png";
+const LOGO_DARK_MODE = "/logo/focusparty_new.png";
+const LOGO_MARK = "/logo/focusparty_logo_mark.png";
 const LOGO_LIGHT_MODE = "/logo/Group%2040.png";
-const LOGO_SMALL = "/logo/small.png";
 
-/** Nav logo height in pixels. Kept modest for a refined sidebar presence. */
+/** Nav logo height in pixels. */
 const NAV_LOGO_HEIGHT = 28;
-
-/** Height for small (rails) logo. */
-const SMALL_LOGO_HEIGHT = 24;
 
 interface LogoProps {
   /** Height in pixels. Default 28 for nav, 24 for small variant. */
@@ -29,13 +26,13 @@ export function Logo({
   maxWidth = 120,
 }: LogoProps) {
   const src =
-    variant === "small"
-      ? LOGO_SMALL
-      : variant === "light"
-        ? LOGO_LIGHT_MODE
+    variant === "light"
+      ? LOGO_LIGHT_MODE
+      : variant === "small"
+        ? LOGO_MARK
         : LOGO_DARK_MODE;
-  const resolvedHeight = height ?? (variant === "small" ? SMALL_LOGO_HEIGHT : NAV_LOGO_HEIGHT);
-  const resolvedMaxWidth = variant === "small" ? 40 : maxWidth;
+  const resolvedHeight = height ?? NAV_LOGO_HEIGHT;
+  const resolvedMaxWidth = variant === "small" ? 28 : maxWidth;
 
   const image = (
     <span

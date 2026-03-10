@@ -332,7 +332,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
         ref={panelRef}
         className="relative w-full max-w-[520px] overflow-hidden rounded-[var(--radius-xl)]"
         style={{
-          background: "rgba(13,14,32,0.94)",
+          background: "rgba(10,10,10,0.94)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
@@ -470,7 +470,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                             width: 22,
                             height: 22,
                             marginLeft: i === 0 ? 0 : -5,
-                            border: "1.5px solid rgba(13,14,32,0.9)",
+                            border: "1.5px solid rgba(10,10,10,0.9)",
                             zIndex: visibleSynthAvatars.length - i,
                             position: "relative",
                           }}
@@ -526,7 +526,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                 <div
                   className="absolute left-0 right-0 z-20 mx-5 mt-1.5 max-h-40 overflow-y-auto rounded-xl py-1 shadow-2xl"
                   style={{
-                    background: "rgba(13,14,32,0.95)",
+                    background: "rgba(10,10,10,0.95)",
                     backdropFilter: "blur(16px)",
                     WebkitBackdropFilter: "blur(16px)",
                     border: "1px solid rgba(255,255,255,0.08)",

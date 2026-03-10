@@ -135,7 +135,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
       className={`fixed inset-0 flex flex-col items-center justify-center transition-opacity ${
         exiting ? "opacity-0 duration-300" : "opacity-100 duration-400"
       }`}
-      style={{ zIndex: 45, background: "#080a15" }}
+      style={{ zIndex: 45, background: "#050505" }}
       role="status"
       aria-live="polite"
       aria-label="Breathing exercise"
@@ -154,13 +154,13 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
       {/* Goal text — reinforces intention, fades during launch */}
       {goalText && (
         <p
-          className="absolute top-16 left-1/2 -translate-x-1/2 text-center text-sm text-[#888995] transition-opacity duration-300"
+          className="absolute top-16 left-1/2 -translate-x-1/2 text-center text-sm text-[#888888] transition-opacity duration-300"
           style={{
             animation: "fp-breathe-fade-in 0.8s ease 0.3s both",
             opacity: launching ? 0 : undefined,
           }}
         >
-          Focusing on: <span className="text-[#c3c4ca]">{goalText}</span>
+          Focusing on: <span className="text-[#c0c0c0]">{goalText}</span>
         </p>
       )}
 
@@ -226,7 +226,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
       >
         <p
           key={`${phase}-${breath}`}
-          className={`text-xl font-semibold ${isDone ? "text-white" : "text-[#c3c4ca]"}`}
+          className={`text-xl font-semibold ${isDone ? "text-white" : "text-[#c0c0c0]"}`}
           style={{
             fontFamily: "var(--font-montserrat), sans-serif",
             animation: isDone
@@ -285,7 +285,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
         <button
           type="button"
           onClick={handleSkip}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer text-xs text-[#555] transition-colors hover:text-[#888995]"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer text-xs text-[#555] transition-colors hover:text-[#888888]"
         >
           Skip
         </button>
