@@ -72,7 +72,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
 
   const world = party ? getWorldConfig(party.world_key) : getWorldConfig("default");
   const aiBg = backgrounds?.get(party?.world_key ?? "default");
-  const coverSrc = aiBg?.thumbUrl ?? world.coverImage;
+  const coverSrc = aiBg?.thumbUrl ?? null;
   const hostConfig = party
     ? getHostConfig(getPartyHostPersonality(party))
     : getHostConfig("default");
@@ -303,13 +303,20 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoo
             <div className="flex gap-4 p-5 pb-0">
               {/* Cover image */}
               <div className="relative h-[100px] w-[140px] shrink-0 overflow-hidden rounded-lg">
-                <Image
-                  src={coverSrc}
-                  alt={world.label}
-                  fill
-                  sizes="140px"
-                  className="object-cover"
-                />
+                {coverSrc ? (
+                  <Image
+                    src={coverSrc}
+                    alt={world.label}
+                    fill
+                    sizes="140px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: world.placeholderGradient }}
+                  />
+                )}
               </div>
 
               {/* Room info */}

@@ -24,10 +24,8 @@ export interface WorldConfig {
   targetRoomSize: number;
   /** Accent color hex for UI elements (pills, borders) in this world. */
   accentColor: string;
-  /** Cover image URL for room cards. */
-  coverImage: string;
-  /** High-res environment image for the immersive session background. */
-  environmentImage: string;
+  /** CSS gradient used as placeholder when no AI background is available. */
+  placeholderGradient: string;
   /** CSS gradient overlay for text readability over the environment image. */
   environmentOverlay: string;
 }
@@ -41,10 +39,8 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     defaultSprintLength: 50,
     targetRoomSize: 10,
     accentColor: "#3B82F6",
-    coverImage:
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
-    environmentImage:
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80",
+    placeholderGradient:
+      "linear-gradient(135deg, #1a1c3a 0%, #1e2a4a 50%, #162040 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
   },
@@ -57,10 +53,8 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     defaultSprintLength: 50,
     targetRoomSize: 12,
     accentColor: "#10B981",
-    coverImage:
-      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=80",
-    environmentImage:
-      "https://images.unsplash.com/photo-1550439062-609e1531270e?w=1920&q=80",
+    placeholderGradient:
+      "linear-gradient(135deg, #0f2922 0%, #152e2a 50%, #0d2618 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.35) 100%)",
   },
@@ -73,10 +67,8 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     defaultSprintLength: 45,
     targetRoomSize: 10,
     accentColor: "#8B5CF6",
-    coverImage:
-      "https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?w=600&q=80",
-    environmentImage:
-      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1920&q=80",
+    placeholderGradient:
+      "linear-gradient(135deg, #1e1633 0%, #27204a 50%, #1a1230 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
   },
@@ -89,10 +81,8 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     defaultSprintLength: 60,
     targetRoomSize: 15,
     accentColor: "#F59E0B",
-    coverImage:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80",
-    environmentImage:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1920&q=80",
+    placeholderGradient:
+      "linear-gradient(135deg, #2a2010 0%, #33280f 50%, #211a08 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.3) 100%)",
   },
@@ -105,10 +95,8 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     defaultSprintLength: 25,
     targetRoomSize: 8,
     accentColor: "#EC4899",
-    coverImage:
-      "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=80",
-    environmentImage:
-      "https://images.unsplash.com/photo-1416339306562-f3d12fefd36f?w=1920&q=80",
+    placeholderGradient:
+      "linear-gradient(135deg, #2a1525 0%, #331a2e 50%, #20101c 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.25) 100%)",
   },

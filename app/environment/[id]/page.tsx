@@ -106,7 +106,7 @@ export default function EnvironmentPage() {
     ? getHostConfig(getPartyHostPersonality(party))
     : getHostConfig("default");
 
-  // ─── AI background (falls back to static Unsplash) ───
+  // ─── AI background (falls back to placeholder gradient) ───
   // Lock the time state on mount so it never changes mid-session
   const lockedTimeStateRef = useRef(getUserTimeState());
   const [aiBackground, setAiBackground] = useState<ActiveBackground | null>(null);
@@ -115,7 +115,7 @@ export default function EnvironmentPage() {
     if (!wk) return;
     getActiveBackground(wk, lockedTimeStateRef.current).then(setAiBackground).catch(() => {});
   }, [party?.world_key]);
-  const backgroundImageUrl = aiBackground?.publicUrl ?? world.environmentImage;
+  const backgroundImageUrl = aiBackground?.publicUrl ?? null;
 
   // ─── Session state machine ────────────────────────────
   const persistence = useSessionPersistence(userId);
@@ -718,6 +718,7 @@ export default function EnvironmentPage() {
       <EnvironmentBackground
         imageUrl={backgroundImageUrl}
         overlay={world.environmentOverlay}
+        placeholderGradient={world.placeholderGradient}
       />
 
       {/* Hidden YouTube player for music */}

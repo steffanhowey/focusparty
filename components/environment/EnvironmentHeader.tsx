@@ -68,10 +68,12 @@ export function EnvironmentHeader({
     for (const p of parties) {
       if (p.id === currentPartyId) continue;
       router.prefetch(`/environment/${p.id}`);
-      // Warm the browser image cache — prefer AI background, fallback to static
+      // Warm the browser image cache for AI backgrounds
       const aiBg = backgrounds.get(p.world_key);
-      const img = new window.Image();
-      img.src = aiBg?.publicUrl ?? getWorldConfig(p.world_key).environmentImage;
+      if (aiBg?.publicUrl) {
+        const img = new window.Image();
+        img.src = aiBg.publicUrl;
+      }
     }
   }, [parties, backgrounds, currentPartyId, router]);
 
@@ -167,7 +169,7 @@ export function EnvironmentHeader({
               parties.map((p, i) => {
                 const isCurrent = p.id === currentPartyId;
                 const world = getWorldConfig(p.world_key);
-                const switcherThumb = backgrounds.get(p.world_key)?.thumbUrl ?? world.coverImage;
+                const switcherThumb = backgrounds.get(p.world_key)?.thumbUrl ?? null;
                 return (
                   <div key={p.id}>
                     {i > 0 && (
@@ -185,13 +187,20 @@ export function EnvironmentHeader({
                       }`}
                     >
                       {/* Thumbnail */}
-                      <Image
-                        src={switcherThumb}
-                        alt={p.name}
-                        width={44}
-                        height={44}
-                        className="h-11 w-11 shrink-0 rounded-md object-cover"
-                      />
+                      {switcherThumb ? (
+                        <Image
+                          src={switcherThumb}
+                          alt={p.name}
+                          width={44}
+                          height={44}
+                          className="h-11 w-11 shrink-0 rounded-md object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="h-11 w-11 shrink-0 rounded-md"
+                          style={{ background: world.placeholderGradient }}
+                        />
+                      )}
                       {/* Text */}
                       <div className="min-w-0 flex-1 text-left">
                         <p className={`truncate text-sm font-medium ${isCurrent ? "text-white" : "text-[var(--color-text-secondary)]"}`}>

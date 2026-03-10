@@ -65,7 +65,7 @@ function AvatarCluster({
 export function RoomCard({ party, backgrounds, onClick, isJoining }: RoomCardProps) {
   const world = getWorldConfig(party.world_key);
   const aiBg = backgrounds?.get(party.world_key);
-  const coverSrc = aiBg?.thumbUrl ?? world.coverImage;
+  const coverSrc = aiBg?.thumbUrl ?? null;
   const hostConfig = getHostConfig(getPartyHostPersonality(party));
   const isFull = !party.persistent && party.participant_count >= party.max_participants;
 
@@ -109,13 +109,20 @@ export function RoomCard({ party, backgrounds, onClick, isJoining }: RoomCardPro
       {/* Cover image — persistent rooms only */}
       {party.persistent && (
         <div className="relative h-[120px] w-full">
-          <Image
-            src={coverSrc}
-            alt={world.label}
-            fill
-            sizes="(max-width: 640px) 100vw, 400px"
-            className="object-cover"
-          />
+          {coverSrc ? (
+            <Image
+              src={coverSrc}
+              alt={world.label}
+              fill
+              sizes="(max-width: 640px) 100vw, 400px"
+              className="object-cover"
+            />
+          ) : (
+            <div
+              className="absolute inset-0"
+              style={{ background: world.placeholderGradient }}
+            />
+          )}
           {/* Gradient fade to card bg */}
           <div
             className="absolute inset-x-0 bottom-0 h-10"
