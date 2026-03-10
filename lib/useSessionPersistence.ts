@@ -60,6 +60,7 @@ interface UseSessionPersistenceReturn {
   declareGoal: (input: {
     user_id: string;
     task_id?: string | null;
+    goal_id?: string | null;
     body: string;
   }) => Promise<SessionGoal | null>;
 
@@ -263,6 +264,7 @@ export function useSessionPersistence(
     async (input: {
       user_id: string;
       task_id?: string | null;
+      goal_id?: string | null;
       body: string;
     }): Promise<SessionGoal | null> => {
       const s = sessionRef.current;
@@ -273,6 +275,7 @@ export function useSessionPersistence(
           sprint_id: sprintRef.current?.id ?? null,
           user_id: input.user_id,
           task_id: input.task_id ?? null,
+          goal_id: input.goal_id ?? null,
           body: input.body,
         });
         safeLog("goal_declared", input.body);

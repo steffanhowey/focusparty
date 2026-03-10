@@ -6,7 +6,7 @@ import { Providers } from "@/components/providers/Providers";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const viewport: Viewport = {
@@ -27,10 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <head>
-        <link rel="preconnect" href="https://www.youtube.com" />
-        <link rel="preconnect" href="https://www.google.com" />
-      </head>
+      <head />
       <body className="antialiased">
         <Providers>{children}</Providers>
       </body>

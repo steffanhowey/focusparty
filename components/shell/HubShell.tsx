@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { ReactNode, useState, useEffect, useCallback, lazy, Suspense } from "react";
-import { PartyPopper, Plus, Menu } from "lucide-react";
+import { DoorOpen, Plus, Menu } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { CHARACTERS } from "@/lib/constants";
@@ -10,22 +10,22 @@ import { CLIENT_NAV_HREFS } from "./navItems";
 
 
 const PAGE_TITLES: Record<string, string> = {
-  "/party": "Parties",
-  "/tasks": "Tasks",
-  "/progress": "Progress",
+  "/rooms": "Rooms",
+  "/commitments": "Commitments",
+  "/stats": "Stats",
   "/settings": "Settings",
 };
 
 function getTitleForPath(pathname: string): string {
-  return PAGE_TITLES[pathname] ?? "Parties";
+  return PAGE_TITLES[pathname] ?? "Rooms";
 }
 
 const LazyPartyList = lazy(() =>
   import("@/components/party/PartyList").then((m) => ({ default: m.PartyList }))
 );
 
-const LazyTaskBoard = lazy(() =>
-  import("@/components/tasks/TaskBoard").then((m) => ({ default: m.TaskBoard }))
+const LazyGoalBoard = lazy(() =>
+  import("@/components/goals/GoalBoard").then((m) => ({ default: m.GoalBoard }))
 );
 
 const LazyProgressDashboard = lazy(() =>
@@ -38,7 +38,7 @@ const LazyProfileSettings = lazy(() =>
 
 function renderTabContent(tab: string): ReactNode {
   switch (tab) {
-    case "/party":
+    case "/rooms":
       return (
         <main className="flex-1">
           <Suspense fallback={null}>
@@ -46,15 +46,15 @@ function renderTabContent(tab: string): ReactNode {
           </Suspense>
         </main>
       );
-    case "/tasks":
+    case "/commitments":
       return (
         <main className="flex-1">
           <Suspense fallback={null}>
-            <LazyTaskBoard />
+            <LazyGoalBoard />
           </Suspense>
         </main>
       );
-    case "/progress":
+    case "/stats":
       return (
         <main className="flex-1">
           <Suspense fallback={null}>
@@ -103,7 +103,7 @@ export function HubShell({ children }: { children: ReactNode }) {
   }, [handleNavClick]);
 
   // Clear stale clientTab when Next.js navigates to a non-client-tab route
-  // (e.g., <Link> from /party grid to /party/[id])
+  // (e.g., <Link> from /rooms grid to /rooms/[id])
   useEffect(() => {
     if (clientTab !== null && !CLIENT_NAV_HREFS.has(pathname)) {
       setClientTab(null);
@@ -148,7 +148,7 @@ export function HubShell({ children }: { children: ReactNode }) {
         className="min-w-0 flex-1 flex flex-col overflow-hidden"
         style={{ background: "var(--color-bg-primary)" }}
       >
-        {effectivePath !== "/party" && (
+        {effectivePath !== "/rooms" && (
           <div className="flex h-16 shrink-0 items-center justify-between gap-4 px-4 md:px-5 lg:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <button
@@ -163,36 +163,36 @@ export function HubShell({ children }: { children: ReactNode }) {
                 {title}
               </span>
             </div>
-            {effectivePath === "/tasks" ? (
+            {effectivePath === "/commitments" ? (
               <button
                 type="button"
-                onClick={() => document.dispatchEvent(new CustomEvent("fp:create-task"))}
+                onClick={() => document.dispatchEvent(new CustomEvent("fp:create-goal"))}
                 className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 sm:px-5"
                 style={{
                   background: "var(--color-accent-primary)",
                   color: "white",
                 }}
-                aria-label="New task"
+                aria-label="New commitment"
               >
                 <Plus size={18} strokeWidth={1.8} className="shrink-0" />
-                <span className="hidden text-sm font-semibold sm:inline">New Task</span>
+                <span className="hidden text-sm font-semibold sm:inline">New Commitment</span>
               </button>
             ) : (
               <a
-                href="/party"
+                href="/rooms"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleNavClick("/party");
+                  handleNavClick("/rooms");
                 }}
                 className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 sm:px-5"
                 style={{
                   background: "var(--color-accent-primary)",
                   color: "white",
                 }}
-                aria-label="Join party"
+                aria-label="Join room"
               >
-                <PartyPopper size={18} strokeWidth={1.8} className="shrink-0" />
-                <span className="hidden text-sm font-semibold sm:inline">Join Party</span>
+                <DoorOpen size={18} strokeWidth={1.8} className="shrink-0" />
+                <span className="hidden text-sm font-semibold sm:inline">Join Room</span>
               </a>
             )}
           </div>

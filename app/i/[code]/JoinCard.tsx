@@ -43,7 +43,7 @@ export function JoinCard({
     setJoining(true);
     try {
       await joinParty(party.id, userId!, displayName);
-      router.push(party.status === "active" ? "/session" : `/party/${party.id}`);
+      router.push(party.status === "active" ? "/session" : `/rooms/${party.id}`);
     } catch {
       setJoining(false);
     }
@@ -55,7 +55,7 @@ export function JoinCard({
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo href="/" height={32} maxWidth={140} />
           <Link
-            href="/party"
+            href="/rooms"
             className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >
             Open app
@@ -73,7 +73,7 @@ export function JoinCard({
               This party may have ended or the link is invalid.
             </p>
             <Link
-              href="/party"
+              href="/rooms"
               className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[var(--color-accent-primary)] px-8 font-medium text-white transition-all hover:bg-[var(--color-purple-800)]"
             >
               Go to app
@@ -171,7 +171,7 @@ export function JoinCard({
 
             <div className="mt-4 text-center">
               <Link
-                href="/party"
+                href="/rooms"
                 className="text-sm text-[var(--color-text-secondary)] hover:text-white"
               >
                 Back to app

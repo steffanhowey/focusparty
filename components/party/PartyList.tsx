@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useDiscoverableParties } from "@/lib/useDiscoverableParties";
+import { useVibePreview } from "@/lib/useVibePreview";
 import { RoomCard } from "./RoomCard";
 import { FeaturedRoom } from "@/components/party/FeaturedRoom";
 import { EmptyState } from "./EmptyState";
@@ -34,6 +35,7 @@ export function PartyList() {
 
   const { parties, loading, error } = useDiscoverableParties();
   const backgrounds = useActiveBackgrounds();
+  const preview = useVibePreview();
 
   // Synthetic participants: trigger a global tick every 30s while on discovery page
   useEffect(() => {
@@ -42,7 +44,7 @@ export function PartyList() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
-      }).catch(() => {});
+      }).catch((err) => console.error("Failed to tick synthetics:", err));
     tick();
     const id = setInterval(tick, 30_000);
     return () => clearInterval(id);
@@ -50,6 +52,8 @@ export function PartyList() {
 
   const handleOpenRoom = (partyId: string) => {
     if (!requireAuth()) return;
+    // Stop any active preview before navigating
+    preview.stopPreview();
     router.push(`/environment/${partyId}`);
   };
 
@@ -100,6 +104,9 @@ export function PartyList() {
                   party={featuredRoom}
                   backgrounds={backgrounds}
                   onClick={() => handleOpenRoom(featuredRoom.id)}
+                  isPreviewPlaying={preview.previewingWorldKey === featuredRoom.world_key && (preview.status === "playing" || preview.status === "loading")}
+                  previewStatus={preview.status}
+                  onTogglePreview={() => preview.togglePreview(featuredRoom.world_key)}
                 />
               </section>
             )}
@@ -137,6 +144,17 @@ export function PartyList() {
                       party={party}
                       backgrounds={backgrounds}
                       onClick={() => handleOpenRoom(party.id)}
+                      isPreviewPlaying={
+                        party.persistent &&
+                        preview.previewingWorldKey === party.world_key &&
+                        (preview.status === "playing" || preview.status === "loading")
+                      }
+                      previewStatus={preview.status}
+                      onTogglePreview={
+                        party.persistent
+                          ? () => preview.togglePreview(party.world_key)
+                          : undefined
+                      }
                     />
                   ))}
                 </div>
@@ -144,6 +162,22 @@ export function PartyList() {
             )}
           </>
         )}
+      </div>
+
+      {/* Hidden YouTube preview player container */}
+      <div
+        data-preview-container
+        style={{
+          position: "fixed",
+          bottom: 0,
+          right: 0,
+          width: 200,
+          height: 200,
+          clipPath: "inset(100%)",
+          pointerEvents: "none",
+        }}
+      >
+        <div id={preview.playerContainerId} />
       </div>
     </>
   );

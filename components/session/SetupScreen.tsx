@@ -125,7 +125,7 @@ export function SetupScreen({
       {roomName && (
         <button
           type="button"
-          onClick={() => router.push("/party")}
+          onClick={() => router.push("/rooms")}
           className="mb-3 flex w-full max-w-[480px] cursor-pointer items-center gap-1.5 text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-white"
         >
           <ArrowLeft size={14} />

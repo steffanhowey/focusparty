@@ -10,21 +10,14 @@ import { useTimer } from "@/lib/useTimer";
 import { useCamera } from "@/lib/useCamera";
 import { useSettings } from "@/lib/useSettings";
 import { useTasks } from "@/lib/useTasks";
+import { useGoals } from "@/lib/useGoals";
+import { useCommitments } from "@/lib/useCommitments";
 import { useHostTriggers } from "@/lib/useHostTriggers";
 import { useMusic } from "@/lib/useMusic";
 import { useChat } from "@/lib/useChat";
 import { useTheme } from "@/components/providers/ThemeProvider";
-import {
-  getParty,
-  updatePartyStatus,
-  getSyntheticParticipants,
-  type Party,
-  type SyntheticPresenceInfo,
-} from "@/lib/parties";
-import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
-import { getHostConfig } from "@/lib/hosts";
-import { getActiveBackground, type ActiveBackground } from "@/lib/roomBackgrounds";
-import { getUserTimeState } from "@/lib/timeOfDay";
+import { updatePartyStatus, type Party } from "@/lib/parties";
+import { useEnvironmentParty } from "@/lib/useEnvironmentParty";
 import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
 import { EnvironmentBackground } from "@/components/environment/EnvironmentBackground";
 import { EnvironmentHeader } from "@/components/environment/EnvironmentHeader";
@@ -36,6 +29,7 @@ import { ParticipantCard } from "@/components/environment/ParticipantCard";
 import { EnvironmentRail } from "@/components/environment/EnvironmentRail";
 import { EnvironmentSetup } from "@/components/environment/EnvironmentSetup";
 import { ActionBar } from "@/components/session/ActionBar";
+import { SprintGoalBanner } from "@/components/session/SprintGoalBanner";
 import { SideDrawer } from "@/components/session/SideDrawer";
 import { SettingsPanel } from "@/components/session/SettingsPanel";
 import { SessionReviewModal } from "@/components/session/SessionReviewModal";
@@ -44,7 +38,9 @@ import { logEvent } from "@/lib/sessions";
 import { computeRemainingSeconds } from "@/lib/sprintTime";
 import { SYNTHETIC_POOL } from "@/lib/synthetics/pool";
 import { JoinRoomModal, type JoinConfig } from "@/components/party/JoinRoomModal";
-import type { SessionPhase, SessionReflection } from "@/lib/types";
+import type { SessionPhase, SessionReflection, SprintResolution } from "@/lib/types";
+import { updateSessionGoalStatus } from "@/lib/sessions";
+import { checkGoalCompletion } from "@/lib/goalCascade";
 
 type SidePanel = "none" | "momentum" | "tasks" | "chat" | "settings";
 type CelebrationInfo = { color: string; text: string };
@@ -58,68 +54,16 @@ export default function EnvironmentPage() {
   const { userId, displayName, username, avatarUrl } = useCurrentUser();
   const { characterAccent } = useTheme();
 
-  // ─── Party lookup ──────────────────────────────────────
-  const [party, setParty] = useState<Party | null>(null);
-  const [partyLoading, setPartyLoading] = useState(true);
-
-  useEffect(() => {
-    if (!partyId) return;
-    let cancelled = false;
-    getParty(partyId)
-      .then((p) => {
-        if (!cancelled) setParty(p);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setPartyLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [partyId]);
-
-  // ─── Synthetic participants (poll every 30s) ────────────
-  const [syntheticParticipants, setSyntheticParticipants] = useState<
-    SyntheticPresenceInfo[]
-  >([]);
-
-  useEffect(() => {
-    if (!partyId) return;
-    let cancelled = false;
-    const load = () =>
-      getSyntheticParticipants(partyId)
-        .then((sp) => {
-          if (!cancelled) setSyntheticParticipants(sp);
-        })
-        .catch(() => {});
-    load();
-    const id = setInterval(load, 30_000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [partyId]);
-
-  // ─── Derived config ────────────────────────────────────
-  const world = party ? getWorldConfig(party.world_key) : getWorldConfig("default");
-  const hostConfig = party
-    ? getHostConfig(getPartyHostPersonality(party))
-    : getHostConfig("default");
-
-  // ─── AI background (falls back to placeholder gradient) ───
-  // Lock the time state on mount so it never changes mid-session
-  const lockedTimeStateRef = useRef(getUserTimeState());
-  const [aiBackground, setAiBackground] = useState<ActiveBackground | null>(null);
-  useEffect(() => {
-    const wk = party?.world_key;
-    if (!wk) return;
-    getActiveBackground(wk, lockedTimeStateRef.current).then(setAiBackground).catch(() => {});
-  }, [party?.world_key]);
-  const backgroundImageUrl = aiBackground?.publicUrl ?? null;
-  const modalBackgrounds = useMemo(() => {
-    if (!aiBackground || !party?.world_key) return undefined;
-    return new Map([[party.world_key, aiBackground]]);
-  }, [aiBackground, party?.world_key]);
+  // ─── Party data, config & background ──────────────────
+  const {
+    party,
+    partyLoading,
+    syntheticParticipants,
+    world,
+    hostConfig,
+    backgroundImageUrl,
+    modalBackgrounds,
+  } = useEnvironmentParty(partyId);
 
   // ─── Session state machine ────────────────────────────
   const persistence = useSessionPersistence(userId);
@@ -130,6 +74,8 @@ export default function EnvironmentPage() {
   const reviewElapsedRef = useRef(0);
   const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
+  const [commitmentType, setCommitmentType] = useState<import("@/lib/types").CommitmentType>("personal");
+  const [sessionGoalId, setSessionGoalId] = useState<string | null>(null);
   const [micActive, setMicActive] = useState(false);
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [celebrations, setCelebrations] = useState<Map<string, CelebrationInfo>>(new Map());
@@ -153,8 +99,9 @@ export default function EnvironmentPage() {
   const handleTimerComplete = useCallback(() => {
     reviewElapsedRef.current = durationSec;
     setPhase("review");
-    persistence.completeSprint().catch(() => {});
-    persistence.updatePhase("review").catch(() => {});
+    // fire-and-forget: non-critical persistence
+    persistence.completeSprint().catch((err) => console.error("Failed to complete sprint:", err));
+    persistence.updatePhase("review").catch((err) => console.error("Failed to update phase to review:", err));
     hostTriggersRef.current.triggerReviewEntered();
   }, [durationSec, persistence]);
 
@@ -265,6 +212,21 @@ export default function EnvironmentPage() {
   const music = useMusic();
   const { settings, updateSetting } = useSettings();
 
+  // Auto-play the room's vibe when entering sprint phase
+  const prevPhaseRef = useRef(phase);
+  useEffect(() => {
+    const wasNotSprint = prevPhaseRef.current !== "sprint";
+    prevPhaseRef.current = phase;
+    if (phase !== "sprint" || !wasNotSprint) return;
+
+    // Only select if not already playing the room's vibe
+    if (music.activeVibe !== world.vibeKey) {
+      music.selectVibe(world.vibeKey);
+    } else if (!music.isPlaying) {
+      music.play();
+    }
+  }, [phase, world.vibeKey, music]);
+
   // ─── Tasks ─────────────────────────────────────────────
   const {
     activeTasks,
@@ -278,6 +240,67 @@ export default function EnvironmentPage() {
     selectTask,
     reorderTasks,
   } = useTasks();
+
+  // ─── Goals (for task drawer context) ─────────────────────
+  const { activeGoals } = useGoals();
+  const commitments = useCommitments();
+  const activeGoalForTask = useMemo(() => {
+    if (!activeTask?.goal_id) return null;
+    return activeGoals.find((g) => g.id === activeTask.goal_id) ?? null;
+  }, [activeTask?.goal_id, activeGoals]);
+
+  const goalTasks = useMemo(() => {
+    if (!activeGoalForTask) return undefined;
+    return [...activeTasks, ...completedTasks].filter(
+      (t) => t.goal_id === activeGoalForTask.id
+    );
+  }, [activeGoalForTask, activeTasks, completedTasks]);
+
+  const [isAISuggesting, setIsAISuggesting] = useState(false);
+
+  const handleSetSprintGoal = useCallback(
+    (taskId: string) => {
+      const task = [...activeTasks, ...completedTasks].find((t) => t.id === taskId);
+      if (task) {
+        setGoal(task.title);
+        selectTask(taskId);
+      }
+    },
+    [activeTasks, completedTasks, selectTask]
+  );
+
+  const handleAISuggest = useCallback(async () => {
+    if (!activeGoalForTask || !goalTasks) return;
+    setIsAISuggesting(true);
+    try {
+      const res = await fetch("/api/goals/suggest-next", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          goalTitle: activeGoalForTask.title,
+          tasks: goalTasks.map((t) => ({ title: t.title, status: t.status })),
+        }),
+      });
+      if (!res.ok) throw new Error("AI suggest failed");
+      const data = await res.json();
+      if (data.suggestedTaskTitle) {
+        // Find matching existing task or create new
+        const existing = goalTasks.find(
+          (t) => t.title === data.suggestedTaskTitle && t.status !== "done"
+        );
+        if (existing) {
+          handleSetSprintGoal(existing.id);
+        } else {
+          // Create as new task under this goal
+          addTask({ title: data.suggestedTaskTitle, goal_id: activeGoalForTask.id });
+        }
+      }
+    } catch (err) {
+      console.error("AI suggest failed:", err);
+    } finally {
+      setIsAISuggesting(false);
+    }
+  }, [activeGoalForTask, goalTasks, handleSetSprintGoal, addTask]);
 
   // ─── Join config from modal (sessionStorage) ──────────────
   const joinConfigRef = useRef<JoinConfig | null>(null);
@@ -330,14 +353,54 @@ export default function EnvironmentPage() {
             duration_sec: sec,
           })
         )
-        .then(() => {
+        .then(async () => {
+          // Auto-create task from freeform text if no task was selected
+          let taskId = config.taskId;
+          if (!taskId && config.goalText) {
+            const createdId = await addTask({ title: config.goalText });
+            if (createdId) {
+              taskId = createdId;
+              selectTask(createdId);
+            }
+          }
+
+          let sgId: string | null = null;
           if (config.goalText) {
-            persistence.declareGoal({
+            const sg = await persistence.declareGoal({
               user_id: userId,
-              task_id: config.taskId ?? undefined,
+              task_id: taskId ?? undefined,
+              goal_id: config.goalId ?? undefined,
               body: config.goalText,
             });
+            if (sg) {
+              sgId = sg.id;
+              setSessionGoalId(sg.id);
+            }
           }
+          const ct = config.commitmentType || "personal";
+          setCommitmentType(ct);
+
+          // Create commitment
+          commitments.createCommitment({
+            user_id: userId,
+            session_goal_id: sgId,
+            session_id: persistence.sessionRow?.id ?? null,
+            goal_id: config.goalId ?? null,
+            type: ct,
+          });
+
+          // Log commitment event for social/locked
+          if (ct !== "personal" && persistence.sessionRow) {
+            logEvent({
+              party_id: partyId,
+              session_id: persistence.sessionRow.id,
+              user_id: userId,
+              event_type: "commitment_declared",
+              body: config.goalText,
+              payload: { commitment_type: ct },
+            }).catch(() => {});
+          }
+
           hostTriggers.triggerSessionStarted();
           hostTriggers.triggerSprintStarted();
         })
@@ -520,8 +583,9 @@ export default function EnvironmentPage() {
     timer.pause();
     music.pause();
     setPhase("review");
-    persistence.completeSprint().catch(() => {});
-    persistence.updatePhase("review").catch(() => {});
+    // fire-and-forget: non-critical persistence
+    persistence.completeSprint().catch((err) => console.error("Failed to complete sprint:", err));
+    persistence.updatePhase("review").catch((err) => console.error("Failed to update phase to review:", err));
     hostTriggers.triggerReviewEntered();
   }, [durationSec, timer, music, persistence, hostTriggers]);
 
@@ -539,18 +603,21 @@ export default function EnvironmentPage() {
           duration_sec: durationSec,
         })
         .then(() => hostTriggers.triggerSprintStarted())
-        .catch(() => {});
-      persistence.updatePhase("sprint").catch(() => {});
+        .catch((err) => console.error("Failed to start another sprint:", err));
+      // fire-and-forget: non-critical persistence
+      persistence.updatePhase("sprint").catch((err) => console.error("Failed to update phase to sprint:", err));
     }
   }, [durationSec, timer, persistence, hostTriggers]);
 
   const handleDone = useCallback(() => {
     hostTriggers.triggerSessionCompleted();
-    persistence.endSession("completed").catch(() => {});
+    // fire-and-forget: non-critical persistence
+    persistence.endSession("completed").catch((err) => console.error("Failed to end session:", err));
+    // fire-and-forget: non-critical persistence
     if (partyId && !party?.persistent) {
-      updatePartyStatus(partyId, "completed").catch(() => {});
+      updatePartyStatus(partyId, "completed").catch((err) => console.error("Failed to update party status:", err));
     }
-    router.push("/party");
+    router.push("/rooms");
   }, [router, persistence, hostTriggers, partyId, party?.persistent]);
 
   const handleReflectionComplete = useCallback(
@@ -561,9 +628,101 @@ export default function EnvironmentPage() {
           productivity: reflection.productivity,
           actual_duration_sec: reflection.sessionDurationSec,
         })
-        .catch(() => {});
+        .catch((err) => console.error("Failed to submit reflection:", err));
     },
     [persistence]
+  );
+
+  // ─── Sprint resolution handler (sequenced) ─────────────
+  const handleResolution = useCallback(
+    async (res: SprintResolution) => {
+      try {
+        // 1. Complete task first (if applicable) — must happen before cascade
+        if (res === "completed" && activeTask) {
+          completeTask(activeTask.id);
+        }
+
+        // 2. Update session goal status
+        if (sessionGoalId) {
+          const goalStatus =
+            res === "completed" ? "completed"
+              : res === "partial" ? "partial"
+                : res === "abandon" ? "abandoned"
+                  : "declared"; // "continue" keeps it active
+          if (goalStatus !== "declared") {
+            await updateSessionGoalStatus(sessionGoalId, goalStatus);
+          }
+        }
+
+        // 3. Resolve commitment
+        if (commitments.activeCommitment) {
+          const commitStatus =
+            res === "completed" ? "succeeded" as const
+              : res === "abandon" ? "failed" as const
+                : null; // partial/continue stay active
+          if (commitStatus) {
+            await commitments.resolveCommitment(commitStatus);
+
+            // Log commitment event for social/locked (fire-and-forget)
+            if (commitmentType !== "personal" && userId && persistence.sessionRow) {
+              logEvent({
+                party_id: partyId,
+                session_id: persistence.sessionRow.id,
+                user_id: userId,
+                event_type: commitStatus === "succeeded" ? "commitment_succeeded" : "commitment_failed",
+                body: goal || undefined,
+              }).catch(() => {});
+            }
+          }
+        }
+
+        // 4. Check goal cascade (all tasks done → auto-complete goal)
+        if (res === "completed" && activeGoalForTask && goalTasks && userId) {
+          // Mark current task as done in the snapshot for cascade check
+          const tasksAfterComplete = goalTasks.map((t) =>
+            t.id === activeTask?.id ? { ...t, status: "done" as const } : t
+          );
+          await checkGoalCompletion(
+            activeGoalForTask.id,
+            activeGoalForTask.title,
+            tasksAfterComplete,
+            { userId, partyId, sessionId: persistence.sessionRow?.id ?? null }
+          );
+        }
+      } catch (err) {
+        console.error("[handleResolution] error:", err);
+      }
+    },
+    [sessionGoalId, activeTask, activeGoalForTask, goalTasks, completeTask, commitments, commitmentType, goal, userId, partyId, persistence.sessionRow?.id]
+  );
+
+  // ─── Task completion with goal cascade ─────────────────
+  const handleCompleteTask = useCallback(
+    async (taskId: string) => {
+      completeTask(taskId);
+
+      // Check goal cascade: if completed task belongs to a goal, see if all siblings are now done
+      if (!userId) return;
+      const task = [...activeTasks, ...completedTasks].find((t) => t.id === taskId);
+      if (task?.goal_id) {
+        const goal = activeGoals.find((g) => g.id === task.goal_id);
+        if (goal) {
+          const allTasks = [...activeTasks, ...completedTasks].filter(
+            (t) => t.goal_id === task.goal_id
+          );
+          // Mark this task as done in the snapshot
+          const updated = allTasks.map((t) =>
+            t.id === taskId ? { ...t, status: "done" as const } : t
+          );
+          checkGoalCompletion(goal.id, goal.title, updated, {
+            userId,
+            partyId,
+            sessionId: persistence.sessionRow?.id ?? null,
+          }).catch((err) => console.error("Goal cascade check failed:", err));
+        }
+      }
+    },
+    [completeTask, activeTasks, completedTasks, activeGoals, userId, partyId, persistence.sessionRow?.id]
   );
 
   // ─── Timer controls (duration change + reset) ─────────
@@ -862,6 +1021,25 @@ export default function EnvironmentPage() {
               )}
             </div>
 
+            {/* Sprint goal banner */}
+            {phase === "sprint" && goal && (
+              <div className="mb-3 px-2">
+                <SprintGoalBanner
+                  goalText={goal}
+                  parentGoalTitle={activeGoalForTask?.title ?? null}
+                  commitmentType={commitmentType}
+                  taskProgress={
+                    goalTasks
+                      ? {
+                          completed: goalTasks.filter((t) => t.status === "done").length,
+                          total: goalTasks.length,
+                        }
+                      : null
+                  }
+                />
+              </div>
+            )}
+
             {/* Action bar (identical to existing session) */}
             {phase === "sprint" && (
               <ActionBar
@@ -889,6 +1067,7 @@ export default function EnvironmentPage() {
                   volume: music.volume,
                   setVolume: music.setVolume,
                   status: music.status,
+                  roomControlled: true,
                 }}
                 timer={timer}
                 currentDurationMin={currentDurationMin}
@@ -954,12 +1133,17 @@ export default function EnvironmentPage() {
                 panel={activePanel as "tasks" | "chat"}
                 activeTasks={activeTasks}
                 completedTasks={completedTasks}
-                onCompleteTask={completeTask}
+                onCompleteTask={handleCompleteTask}
                 onUncompleteTask={uncompleteTask}
                 onAddTask={addTask}
                 onDeleteTask={deleteTask}
                 onEditTask={editTask}
                 onReorderTasks={reorderTasks}
+                activeGoal={activeGoalForTask}
+                goalTasks={goalTasks}
+                onSetSprintGoal={handleSetSprintGoal}
+                onAISuggest={activeGoalForTask ? handleAISuggest : undefined}
+                isAISuggesting={isAISuggesting}
                 messages={chat.messages}
                 onSendMessage={chat.sendMessage}
               />
@@ -980,6 +1164,9 @@ export default function EnvironmentPage() {
         isOpen={phase === "review"}
         sessionDurationSec={durationSec}
         elapsedSec={reviewElapsedRef.current}
+        sprintGoalText={goal || null}
+        parentGoalTitle={activeGoalForTask?.title ?? null}
+        onResolution={handleResolution}
         onAnotherRound={handleAnotherRound}
         onDone={handleDone}
         onReflectionComplete={handleReflectionComplete}

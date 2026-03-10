@@ -84,7 +84,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
       );
 
       handleClose();
-      router.push(`/party/${party.id}`);
+      router.push(`/rooms/${party.id}`);
     } catch {
       showToast({
         type: "error",

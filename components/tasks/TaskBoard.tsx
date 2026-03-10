@@ -16,7 +16,7 @@ import { CreateTaskModal } from "./CreateTaskModal";
 import { TaskDetailModal } from "./TaskDetailModal";
 import { LabelManager } from "./LabelManager";
 
-export function TaskBoard() {
+export function TaskBoard({ goalId }: { goalId?: string }) {
   const { userId, isLoading: authLoading } = useCurrentUser();
   const {
     tasks,
@@ -59,6 +59,11 @@ export function TaskBoard() {
   const filteredTasks = useMemo(() => {
     let result = tasks;
 
+    // Scope to goal when drilled in
+    if (goalId) {
+      result = result.filter((t) => t.goal_id === goalId);
+    }
+
     if (selectedProjectId) {
       result = result.filter((t) => t.project_id === selectedProjectId);
     }
@@ -75,13 +80,16 @@ export function TaskBoard() {
     }
 
     return result;
-  }, [tasks, selectedProjectId, selectedPriorities, selectedStatuses, selectedLabelIds]);
+  }, [tasks, goalId, selectedProjectId, selectedPriorities, selectedStatuses, selectedLabelIds]);
 
   const handleAddTask = useCallback(
     async (title: string, status?: TaskStatus) => {
-      await addTask(status && status !== "todo" ? { title, status } : title);
+      const input: { title: string; status?: TaskStatus; goal_id?: string } =
+        status && status !== "todo" ? { title, status } : { title };
+      if (goalId) input.goal_id = goalId;
+      await addTask(input);
     },
-    [addTask]
+    [addTask, goalId]
   );
 
   const handleCreateFromModal = useCallback(
@@ -91,9 +99,9 @@ export function TaskBoard() {
       priority: TaskPriority;
       project_id: string | null;
     }) => {
-      await addTask(input);
+      await addTask({ ...input, ...(goalId ? { goal_id: goalId } : {}) });
     },
-    [addTask]
+    [addTask, goalId]
   );
 
   const handleTaskClick = useCallback((task: TaskRecord) => {

@@ -34,13 +34,15 @@ export const TaskCard = memo(function TaskCard({
   const isDone = task.status === "done";
 
   return (
-    <div
+    <button
       ref={setNodeRef}
+      type="button"
       style={style}
       {...attributes}
       {...listeners}
       onClick={() => onClick?.(task)}
-      className="group rounded-[var(--radius-sm)] border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 transition-shadow hover:shadow-[var(--shadow-sm)] md:cursor-grab md:touch-none md:active:cursor-grabbing"
+      aria-label={`Task: ${task.title}`}
+      className="group w-full rounded-[var(--radius-sm)] border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 text-left transition-shadow hover:shadow-[var(--shadow-sm)] md:cursor-grab md:touch-none md:active:cursor-grabbing"
     >
       <div className="flex items-start gap-2">
         {/* Drag handle icon — desktop only */}
@@ -78,6 +80,6 @@ export const TaskCard = memo(function TaskCard({
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 });

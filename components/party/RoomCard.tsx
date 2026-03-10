@@ -1,17 +1,24 @@
 "use client";
 
 import Image from "next/image";
-import { Users } from "lucide-react";
+import { Users, Play, Pause } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { getWorldConfig } from "@/lib/worlds";
 import type { PartyWithCount, SyntheticPresenceInfo } from "@/lib/parties";
 import type { ActiveBackground } from "@/lib/roomBackgrounds";
+import type { MusicStatus } from "@/lib/musicConstants";
 
 interface RoomCardProps {
   party: PartyWithCount;
   backgrounds?: Map<string, ActiveBackground>;
   onClick?: () => void;
   isJoining?: boolean;
+  /** Whether this room's vibe is currently being previewed */
+  isPreviewPlaying?: boolean;
+  /** Preview player status (for loading state) */
+  previewStatus?: MusicStatus;
+  /** Called when user clicks the vibe check button */
+  onTogglePreview?: () => void;
 }
 
 /* ── Tiny ambient avatar cluster with real images ── */
@@ -60,7 +67,32 @@ function AvatarCluster({
   );
 }
 
-export function RoomCard({ party, backgrounds, onClick, isJoining }: RoomCardProps) {
+/* ── CSS equalizer bars (pure CSS animation) ── */
+function Equalizer() {
+  return (
+    <span className="flex items-end gap-[2px]" style={{ height: 12 }}>
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="w-[3px] rounded-full bg-white"
+          style={{
+            animation: `fp-eq-bar 0.8s ease-in-out ${i * 0.15}s infinite alternate`,
+          }}
+        />
+      ))}
+    </span>
+  );
+}
+
+export function RoomCard({
+  party,
+  backgrounds,
+  onClick,
+  isJoining,
+  isPreviewPlaying,
+  previewStatus,
+  onTogglePreview,
+}: RoomCardProps) {
   const world = getWorldConfig(party.world_key);
   const aiBg = backgrounds?.get(party.world_key);
   const coverSrc = aiBg?.thumbUrl ?? null;
@@ -83,6 +115,8 @@ export function RoomCard({ party, backgrounds, onClick, isJoining }: RoomCardPro
 
   const s = statusConfig[status];
 
+  const isPreviewLoading = previewStatus === "loading" && isPreviewPlaying;
+
   const cardContent = party.persistent ? (
     <div
       className={`transition-all duration-150 ${
@@ -90,7 +124,17 @@ export function RoomCard({ party, backgrounds, onClick, isJoining }: RoomCardPro
       }`}
     >
       {/* Image card */}
-      <div className="relative h-[200px] w-full overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-default)] shadow-[var(--shadow-sm)] transition-shadow hover:shadow-[var(--shadow-md)]">
+      <div
+        className="group/card relative h-[200px] w-full overflow-hidden rounded-[var(--radius-md)] border shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)]"
+        style={{
+          borderColor: isPreviewPlaying
+            ? `${world.accentColor}60`
+            : "var(--color-border-default)",
+          boxShadow: isPreviewPlaying
+            ? `0 0 0 1px ${world.accentColor}30, var(--shadow-sm)`
+            : undefined,
+        }}
+      >
         {isJoining && (
           <div className="absolute inset-0 z-10 flex items-center justify-center" style={{ background: "rgba(10,10,10,0.6)" }}>
             <div className="flex items-center gap-2 text-sm font-medium text-white">
@@ -112,6 +156,47 @@ export function RoomCard({ party, backgrounds, onClick, isJoining }: RoomCardPro
             className="absolute inset-0"
             style={{ background: world.placeholderGradient }}
           />
+        )}
+
+        {/* Vibe check overlay — visible on hover (desktop) or always (mobile/touch) */}
+        {onTogglePreview && !isJoining && (
+          <div
+            className={`absolute inset-0 z-[5] flex items-center justify-center transition-opacity duration-200 ${
+              isPreviewPlaying
+                ? "opacity-100"
+                : "opacity-0 group-hover/card:opacity-100 touch-device:opacity-100"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTogglePreview();
+              }}
+              className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 transition-all hover:scale-105"
+              style={{
+                background: "rgba(10,10,10,0.55)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+              }}
+              aria-label={isPreviewPlaying ? "Stop vibe check" : "Vibe check"}
+            >
+              {isPreviewLoading ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              ) : isPreviewPlaying ? (
+                <>
+                  <Equalizer />
+                  <span className="text-xs font-medium text-white">Playing</span>
+                </>
+              ) : (
+                <>
+                  <Play size={14} fill="white" className="text-white" />
+                  <span className="text-xs font-medium text-white">Vibe Check</span>
+                </>
+              )}
+            </button>
+          </div>
         )}
       </div>
 

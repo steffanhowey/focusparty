@@ -89,7 +89,11 @@ export function usePartyActivityFeed(
         (payload) => {
           const newEvent = payload.new as ActivityEvent;
           const enriched = enrichEvent(newEvent, nameMapRef.current);
-          setEvents((prev) => [...prev, enriched]);
+          setEvents((prev) => {
+            const next = [...prev, enriched];
+            // Cap at 150 to prevent unbounded memory growth in long sessions
+            return next.length > 150 ? next.slice(-100) : next;
+          });
         }
       )
       .subscribe();

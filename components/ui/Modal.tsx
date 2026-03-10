@@ -9,6 +9,7 @@ import {
   KeyboardEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 
 interface ModalProps {
   isOpen: boolean;
@@ -42,6 +43,8 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       previousActive.current?.focus();
     };
   }, [isOpen]);
+
+  useFocusTrap(overlayRef, isOpen && mounted);
 
   useEffect(() => {
     if (!isOpen || !mounted) return;

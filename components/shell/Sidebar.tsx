@@ -45,7 +45,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
     .join(" ");
   const planLabel = PLAN_LABELS[STUB_PLAN];
 
-  const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "party";
+  const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "rooms";
 
   useEffect(() => {
     if (!profileMenuOpen) return;
@@ -203,7 +203,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
       ) : (
         <>
           <div className="flex h-14 shrink-0 items-center px-4">
-            <Logo href="/party" maxWidth={150} />
+            <Logo href="/rooms" maxWidth={150} />
           </div>
           <nav className={`flex flex-col ${NAV_ITEM_GAP} px-3 pt-2`}>
             {NAV_ITEMS.map((item) => {

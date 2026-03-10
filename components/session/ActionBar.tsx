@@ -34,6 +34,8 @@ export interface MusicProps {
   volume: number;
   setVolume: (volume: number) => void;
   status: MusicStatus;
+  /** When true, vibe selection is hidden — the room controls the vibe. */
+  roomControlled?: boolean;
 }
 
 interface ActionBarProps {
@@ -275,6 +277,7 @@ export const ActionBar = memo(function ActionBar({
             volume={music.volume}
             onSetVolume={music.setVolume}
             status={music.status}
+            roomControlled={music.roomControlled}
           />
         </div>
 

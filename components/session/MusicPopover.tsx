@@ -2,7 +2,7 @@
 
 import { type RefObject, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
-import { VIBES, VIBE_ICONS, type VibeId, type MusicStatus } from "@/lib/musicConstants";
+import { VIBES, VIBE_ICONS, type VibeId, type MusicStatus, VIBES_MAP } from "@/lib/musicConstants";
 
 interface MusicPopoverProps {
   isOpen: boolean;
@@ -16,6 +16,8 @@ interface MusicPopoverProps {
   volume: number;
   onSetVolume: (volume: number) => void;
   status: MusicStatus;
+  /** When true, vibe selection is hidden — the room controls the vibe. */
+  roomControlled?: boolean;
 }
 
 export function MusicPopover({
@@ -29,6 +31,7 @@ export function MusicPopover({
   volume,
   onSetVolume,
   status,
+  roomControlled,
 }: MusicPopoverProps) {
   // Click-outside and Escape to close (same pattern as TimerDropdown)
   useEffect(() => {
@@ -57,6 +60,10 @@ export function MusicPopover({
   const isLoading = status === "loading";
   const isError = status === "error";
 
+  // Look up the active vibe config for the label
+  const activeVibeConfig = activeVibe ? VIBES_MAP[activeVibe] : null;
+  const ActiveVibeIcon = activeVibe ? VIBE_ICONS[activeVibe] : null;
+
   return (
     <div
       className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl"
@@ -72,35 +79,49 @@ export function MusicPopover({
       role="dialog"
       aria-label="Music player"
     >
-      {/* Vibe section */}
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-        Vibe
-      </p>
+      {roomControlled ? (
+        /* Room-controlled: show vibe label as informational, no selector */
+        activeVibeConfig && ActiveVibeIcon ? (
+          <div className="mb-2.5 flex items-center gap-2.5 px-1">
+            <ActiveVibeIcon size={14} strokeWidth={1.8} className="flex-shrink-0 text-[var(--color-text-secondary)]" />
+            <span className="text-xs font-medium text-[var(--color-text-secondary)]">
+              {activeVibeConfig.label}
+            </span>
+          </div>
+        ) : null
+      ) : (
+        /* User-controlled: full vibe selector */
+        <>
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            Vibe
+          </p>
 
-      <div className="flex flex-col gap-1">
-        {VIBES.map((vibe) => {
-          const isActive = activeVibe === vibe.id;
-          const Icon = VIBE_ICONS[vibe.id];
-          return (
-            <button
-              key={vibe.id}
-              type="button"
-              onClick={() => onSelectVibe(vibe.id)}
-              className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors ${
-                isActive
-                  ? "bg-[var(--color-accent-primary)]/20 text-white ring-1 ring-[var(--color-accent-primary)]/40"
-                  : "text-[var(--color-text-secondary)] hover:bg-white/[0.06] hover:text-white"
-              }`}
-            >
-              <Icon size={14} strokeWidth={1.8} className="flex-shrink-0" />
-              <span className="text-xs font-medium">{vibe.label}</span>
-            </button>
-          );
-        })}
-      </div>
+          <div className="flex flex-col gap-1">
+            {VIBES.map((vibe) => {
+              const isActive = activeVibe === vibe.id;
+              const Icon = VIBE_ICONS[vibe.id];
+              return (
+                <button
+                  key={vibe.id}
+                  type="button"
+                  onClick={() => onSelectVibe(vibe.id)}
+                  className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors ${
+                    isActive
+                      ? "bg-[var(--color-accent-primary)]/20 text-white ring-1 ring-[var(--color-accent-primary)]/40"
+                      : "text-[var(--color-text-secondary)] hover:bg-white/[0.06] hover:text-white"
+                  }`}
+                >
+                  <Icon size={14} strokeWidth={1.8} className="flex-shrink-0" />
+                  <span className="text-xs font-medium">{vibe.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-      {/* Divider */}
-      <div className="my-2.5 border-t border-[var(--color-border-subtle)]" />
+          {/* Divider */}
+          <div className="my-2.5 border-t border-[var(--color-border-subtle)]" />
+        </>
+      )}
 
       {/* Transport controls */}
       <div className="flex items-center gap-2">
@@ -147,7 +168,9 @@ export function MusicPopover({
       {/* Error message */}
       {isError && (
         <p className="mt-2 text-[11px] text-[var(--color-coral-700)]">
-          Unable to load audio. Try another vibe.
+          {roomControlled
+            ? "Unable to load audio. Try refreshing."
+            : "Unable to load audio. Try another vibe."}
         </p>
       )}
     </div>

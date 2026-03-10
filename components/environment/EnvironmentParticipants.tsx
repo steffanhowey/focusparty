@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import type { ParticipantStatus } from "@/lib/types";
 import type { SyntheticArchetype } from "@/lib/synthetics/pool";
@@ -40,7 +40,7 @@ function fallbackAvatar(seed: string): string {
   return `https://api.dicebear.com/9.x/notionists-neutral/png?seed=${encodeURIComponent(seed)}&size=80`;
 }
 
-export function EnvironmentParticipants({
+export const EnvironmentParticipants = memo(function EnvironmentParticipants({
   participants,
   onParticipantClick,
   cameraStream,
@@ -227,7 +227,7 @@ export function EnvironmentParticipants({
       )}
     </div>
   );
-}
+});
 
 /* ─── Live camera feed rendered as a circular avatar ───── */
 

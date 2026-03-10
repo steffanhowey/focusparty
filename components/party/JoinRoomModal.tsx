@@ -10,10 +10,15 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { RotateCw, ListTodo, X } from "lucide-react";
+import { RotateCw, ListTodo, X, Sparkles, Loader2 } from "lucide-react";
+import { JoinCountdownScreen } from "./JoinCountdownScreen";
+import { JoinRoomHeader } from "./JoinRoomHeader";
+import { JoinSprintOptions } from "./JoinSprintOptions";
+import { CommitmentPicker } from "./CommitmentPicker";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useTasks } from "@/lib/useTasks";
+import { useGoals } from "@/lib/useGoals";
+import type { CommitmentType } from "@/lib/types";
 import { usePartyPresence } from "@/lib/usePartyPresence";
 import { usePartyActivityFeed } from "@/lib/usePartyActivityFeed";
 import { useRoomSprint } from "@/lib/useRoomSprint";
@@ -21,8 +26,7 @@ import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
 import { getParty, joinParty, getSyntheticParticipants, type Party, type SyntheticPresenceInfo } from "@/lib/parties";
 import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
 import { getHostConfig } from "@/lib/hosts";
-import { DurationPills } from "@/components/session/DurationPills";
-import { SPRINT_DURATION_OPTIONS } from "@/lib/constants";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 import type { ActiveBackground } from "@/lib/roomBackgrounds";
 
 interface JoinRoomModalProps {
@@ -39,9 +43,11 @@ type ModalPhase = "form" | "countdown";
 /** Config stored in sessionStorage for the environment page to read. */
 export interface JoinConfig {
   taskId: string | null;
+  goalId: string | null;
   goalText: string;
   durationSec: number;
   autoStart: boolean;
+  commitmentType: CommitmentType;
 }
 
 function formatMinutes(seconds: number): string {
@@ -58,6 +64,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
   const inputRef = useRef<HTMLInputElement>(null);
   const previousActive = useRef<HTMLElement | null>(null);
   const [formHeight, setFormHeight] = useState<number | null>(null);
+  useFocusTrap(overlayRef, isOpen && mounted);
 
   // ─── Party data ──────────────────────────────────────────
   const [party, setParty] = useState<Party | null>(null);
@@ -69,7 +76,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
     setPartyLoading(true);
     getParty(partyId)
       .then((p) => { if (!cancelled) setParty(p); })
-      .catch(() => {})
+      .catch((err) => console.error("Failed to fetch party:", err))
       .finally(() => { if (!cancelled) setPartyLoading(false); });
     return () => { cancelled = true; };
   }, [isOpen, partyId]);
@@ -81,7 +88,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
     let cancelled = false;
     getSyntheticParticipants(partyId)
       .then((sp) => { if (!cancelled) setSyntheticParticipants(sp); })
-      .catch(() => {});
+      .catch((err) => console.error("Failed to fetch synthetic participants:", err));
     return () => { cancelled = true; };
   }, [isOpen, partyId]);
 
@@ -118,12 +125,15 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
   );
   const roomStateDisplay = ROOM_STATE_CONFIG[roomState];
 
-  // ─── Tasks ────────────────────────────────────────────────
+  // ─── Tasks + Goals ──────────────────────────────────────────
   const { activeTasks, activeTask, selectTask, addTask } = useTasks();
+  const { activeGoals } = useGoals();
 
   // ─── Form state ────────────────────────────────────────────
   const [goalText, setGoalText] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [commitmentType, setCommitmentType] = useState<CommitmentType>("personal");
+  const [isAISuggesting, setIsAISuggesting] = useState(false);
   const [sprintMode, setSprintMode] = useState<SprintMode>("current");
   const [freshDuration, setFreshDuration] = useState(world.defaultSprintLength);
   const [isJoining, setIsJoining] = useState(false);
@@ -143,6 +153,8 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
       setFreshDuration(world.defaultSprintLength);
       setIsJoining(false);
       setShowTaskPicker(false);
+      setCommitmentType("personal");
+      setIsAISuggesting(false);
       setModalPhase("form");
       setCountdownNumber(5);
       setFormHeight(null);
@@ -157,16 +169,28 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
     }
   }, [roomSprint.hasActiveSprint, sprintMode]);
 
-  // ─── Task suggestions (up to 3 active tasks) ──────────────
+  // ─── Task suggestions (up to 3, goal-linked tasks first) ──
   const taskSuggestions = useMemo(() => {
-    // Sort by updated_at desc to get most recent first
-    const sorted = [...activeTasks].sort(
-      (a, b) =>
+    const sorted = [...activeTasks].sort((a, b) => {
+      // Goal-linked tasks first
+      const aHasGoal = a.goal_id ? 1 : 0;
+      const bHasGoal = b.goal_id ? 1 : 0;
+      if (bHasGoal !== aHasGoal) return bHasGoal - aHasGoal;
+      // Then by recency
+      return (
         new Date(b.updated_at ?? b.created_at).getTime() -
         new Date(a.updated_at ?? a.created_at).getTime()
-    );
+      );
+    });
     return sorted.slice(0, 3);
   }, [activeTasks]);
+
+  // Derive goal_id from selected task
+  const selectedGoalId = useMemo(() => {
+    if (!selectedTaskId) return null;
+    const task = activeTasks.find((t) => t.id === selectedTaskId);
+    return task?.goal_id ?? null;
+  }, [selectedTaskId, activeTasks]);
 
   const selectedTask = useMemo(
     () => activeTasks.find((t) => t.id === selectedTaskId) ?? null,
@@ -219,6 +243,42 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
     []
   );
 
+  const handleAISuggest = useCallback(async () => {
+    if (activeGoals.length === 0) return;
+    setIsAISuggesting(true);
+    try {
+      // Pick the first active goal for AI suggestion
+      const goal = activeGoals[0];
+      const goalTasks = activeTasks.filter((t) => t.goal_id === goal.id);
+      const res = await fetch("/api/goals/suggest-next", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          goalTitle: goal.title,
+          tasks: goalTasks.map((t) => ({ title: t.title, status: t.status })),
+        }),
+      });
+      if (!res.ok) throw new Error("AI suggest failed");
+      const data = await res.json();
+      if (data.suggestedTaskTitle) {
+        const existing = goalTasks.find(
+          (t) => t.title === data.suggestedTaskTitle && t.status !== "done"
+        );
+        if (existing) {
+          setSelectedTaskId(existing.id);
+          setGoalText(existing.title);
+        } else {
+          setSelectedTaskId(null);
+          setGoalText(data.suggestedTaskTitle);
+        }
+      }
+    } catch (err) {
+      console.error("AI suggest failed:", err);
+    } finally {
+      setIsAISuggesting(false);
+    }
+  }, [activeGoals, activeTasks]);
+
   const handleJoin = useCallback(async () => {
     if (!userId || !hasGoal || isJoining) return;
     setIsJoining(true);
@@ -233,9 +293,11 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
       // Store config for after countdown completes
       joinConfigRef.current = {
         taskId: selectedTaskId,
+        goalId: selectedGoalId,
         goalText: goalText.trim() || selectedTask?.title || "",
         durationSec,
         autoStart: sprintMode === "current" || sprintMode === "fresh",
+        commitmentType,
       };
 
       // Capture panel dimensions so countdown screen matches exactly
@@ -252,8 +314,8 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
     }
   }, [
     userId, hasGoal, isJoining, partyId, displayName,
-    selectedTaskId, goalText, selectedTask, durationSec,
-    sprintMode, selectTask,
+    selectedTaskId, selectedGoalId, goalText, selectedTask, durationSec,
+    sprintMode, commitmentType, selectTask,
   ]);
 
   // ─── Countdown timer ─────────────────────────────────────────
@@ -306,10 +368,6 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
 
   if (!isOpen || !mounted || typeof document === "undefined") return null;
 
-  // ─── Avatar cluster (synthetic participants) ────────────────
-  const visibleSynthAvatars = syntheticParticipants.slice(0, 4);
-  const synthOverflow = syntheticParticipants.length - visibleSynthAvatars.length;
-
   const content = (
     <div
       ref={overlayRef}
@@ -357,135 +415,19 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
           </div>
         ) : modalPhase === "countdown" ? (
-          /* ── COUNTDOWN SCREEN ──────────────────────────── */
-          <div
-            className="flex h-full flex-col items-center justify-center px-5"
-            style={{ animation: "fp-setup-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
-          >
-            {/* Countdown number */}
-            <div
-              key={countdownNumber}
-              className="animate-countdown-pop select-none text-8xl font-bold text-white"
-              style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
-            >
-              {countdownNumber}
-            </div>
-
-            {/* Subtitle */}
-            <p className="mt-4 text-sm text-white/50">
-              Get ready to focus
-            </p>
-
-            {/* Progress dots */}
-            <div className="mt-6 flex items-center gap-2">
-              {[5, 4, 3, 2, 1].map((n) => {
-                const isCompleted = n > countdownNumber;
-                const isActive = n === countdownNumber;
-                return (
-                  <div
-                    key={n}
-                    className="h-2 w-2 rounded-full transition-all duration-300"
-                    style={{
-                      background: isCompleted
-                        ? "var(--color-accent-primary)"
-                        : isActive
-                          ? "var(--color-accent-primary)"
-                          : "rgba(255,255,255,0.12)",
-                      opacity: isActive ? 1 : isCompleted ? 0.6 : 1,
-                      transform: isActive ? "scale(1.3)" : "scale(1)",
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </div>
+          <JoinCountdownScreen countdownNumber={countdownNumber} />
         ) : (
           <>
-            {/* ── HEADER: Cover image + room info ─────────── */}
-            <div className="flex gap-4 p-5 pb-0">
-              {/* Cover image */}
-              <div className="relative h-[100px] w-[140px] shrink-0 overflow-hidden rounded-[var(--radius-md)]">
-                {coverSrc ? (
-                  <Image
-                    src={coverSrc}
-                    alt={world.label}
-                    fill
-                    sizes="140px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <div
-                    className="absolute inset-0"
-                    style={{ background: world.placeholderGradient }}
-                  />
-                )}
-              </div>
-
-              {/* Room info */}
-              <div className="min-w-0 flex-1 pt-0.5">
-                <h2
-                  className="truncate text-xl font-bold text-white"
-                  style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
-                >
-                  {party?.name ?? world.label}
-                </h2>
-
-                {/* Meta line */}
-                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-white/50">
-                  <Image
-                    src={hostConfig.avatarUrl}
-                    alt={hostConfig.hostName}
-                    width={16}
-                    height={16}
-                    className="rounded-full"
-                  />
-                  <span>{hostConfig.hostName} hosting</span>
-                  {roomSprint.focusingCount > 0 && (
-                    <>
-                      <span className="text-white/25">&middot;</span>
-                      <span>{roomSprint.focusingCount} focusing now</span>
-                    </>
-                  )}
-                  {roomSprint.hasActiveSprint && (
-                    <>
-                      <span className="text-white/25">&middot;</span>
-                      <span>{formatMinutes(roomSprint.remainingSeconds)} remaining</span>
-                    </>
-                  )}
-                </div>
-
-                {/* Avatars */}
-                {visibleSynthAvatars.length > 0 && (
-                  <div className="mt-2 flex items-center">
-                    <span className="flex">
-                      {visibleSynthAvatars.map((p, i) => (
-                        <img
-                          key={p.id}
-                          src={p.avatarUrl}
-                          alt={p.displayName}
-                          width={22}
-                          height={22}
-                          className="rounded-full object-cover"
-                          style={{
-                            width: 22,
-                            height: 22,
-                            marginLeft: i === 0 ? 0 : -5,
-                            border: "1.5px solid rgba(10,10,10,0.9)",
-                            zIndex: visibleSynthAvatars.length - i,
-                            position: "relative",
-                          }}
-                        />
-                      ))}
-                    </span>
-                    {synthOverflow > 0 && (
-                      <span className="ml-1.5 text-[11px] text-white/40">
-                        +{synthOverflow}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+            <JoinRoomHeader
+              party={party}
+              world={world}
+              hostConfig={hostConfig}
+              coverSrc={coverSrc}
+              focusingCount={roomSprint.focusingCount}
+              hasActiveSprint={roomSprint.hasActiveSprint}
+              remainingSeconds={roomSprint.remainingSeconds}
+              syntheticParticipants={syntheticParticipants}
+            />
 
             {/* Divider */}
             <div className="mx-5 mt-4 border-t border-white/6" />
@@ -521,10 +463,10 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                 </button>
               </div>
 
-              {/* Task picker dropdown — absolute so it doesn't push modal content */}
+              {/* Task picker dropdown — grouped by goal */}
               {showTaskPicker && activeTasks.length > 0 && (
                 <div
-                  className="absolute left-0 right-0 z-20 mx-5 mt-1.5 max-h-40 overflow-y-auto rounded-xl py-1 shadow-2xl"
+                  className="absolute left-0 right-0 z-20 mx-5 mt-1.5 max-h-48 overflow-y-auto rounded-xl py-1 shadow-2xl"
                   style={{
                     background: "rgba(10,10,10,0.95)",
                     backdropFilter: "blur(16px)",
@@ -532,22 +474,54 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                     border: "1px solid rgba(255,255,255,0.08)",
                   }}
                 >
-                  {activeTasks.map((task) => (
-                    <button
-                      key={task.id}
-                      type="button"
-                      onClick={() => handleTaskPickerSelect(task.id, task.title)}
-                      className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-white/[0.08]"
-                      style={{
-                        color:
-                          selectedTaskId === task.id
-                            ? world.accentColor
-                            : "rgba(255,255,255,0.7)",
-                      }}
-                    >
-                      <span className="truncate">{task.title}</span>
-                    </button>
-                  ))}
+                  {/* Tasks grouped by goal */}
+                  {activeGoals.map((goal) => {
+                    const goalTasks = activeTasks.filter((t) => t.goal_id === goal.id);
+                    if (goalTasks.length === 0) return null;
+                    return (
+                      <div key={goal.id}>
+                        <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/30">
+                          {goal.title}
+                        </div>
+                        {goalTasks.map((task) => (
+                          <button
+                            key={task.id}
+                            type="button"
+                            onClick={() => handleTaskPickerSelect(task.id, task.title)}
+                            className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-white/[0.08]"
+                            style={{
+                              color: selectedTaskId === task.id ? world.accentColor : "rgba(255,255,255,0.7)",
+                            }}
+                          >
+                            <span className="truncate">{task.title}</span>
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })}
+                  {/* Loose tasks (no goal) */}
+                  {activeTasks.filter((t) => !t.goal_id).length > 0 && (
+                    <div>
+                      {activeGoals.length > 0 && (
+                        <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/30">
+                          Other tasks
+                        </div>
+                      )}
+                      {activeTasks.filter((t) => !t.goal_id).map((task) => (
+                        <button
+                          key={task.id}
+                          type="button"
+                          onClick={() => handleTaskPickerSelect(task.id, task.title)}
+                          className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-white/[0.08]"
+                          style={{
+                            color: selectedTaskId === task.id ? world.accentColor : "rgba(255,255,255,0.7)",
+                          }}
+                        >
+                          <span className="truncate">{task.title}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -597,6 +571,26 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                   >
                     Custom...
                   </button>
+                  {activeGoals.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleAISuggest}
+                      disabled={isAISuggesting}
+                      className="shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors disabled:cursor-default disabled:opacity-50"
+                      style={{
+                        background: `${world.accentColor}15`,
+                        color: world.accentColor,
+                        border: `1px solid ${world.accentColor}30`,
+                      }}
+                    >
+                      {isAISuggesting ? (
+                        <Loader2 size={10} className="inline-block animate-spin mr-1" />
+                      ) : (
+                        <Sparkles size={10} className="inline-block mr-1" />
+                      )}
+                      {isAISuggesting ? "Thinking..." : "Suggest"}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -604,129 +598,23 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
             {/* Divider */}
             <div className="mx-5 mt-4 border-t border-white/6" />
 
-            {/* ── SPRINT OPTIONS ──────────────────────────── */}
-            <div className="px-5 pt-4">
-              {roomSprint.hasActiveSprint ? (
-                <>
-                  <label className="mb-2 block text-sm font-semibold text-white">
-                    Join
-                  </label>
-                  <div className="flex flex-col gap-2">
-                    {/* Current Sprint */}
-                    <button
-                      type="button"
-                      onClick={() => setSprintMode("current")}
-                      className="flex w-full cursor-pointer items-center justify-between rounded-xl px-4 py-3 text-left transition-all"
-                      style={{
-                        background:
-                          sprintMode === "current"
-                            ? `${world.accentColor}0C`
-                            : "transparent",
-                        border:
-                          sprintMode === "current"
-                            ? `1.5px solid ${world.accentColor}60`
-                            : "1.5px solid rgba(255,255,255,0.08)",
-                      }}
-                    >
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          {sprintMode === "current" && (
-                            <span
-                              className="inline-block h-1.5 w-1.5 rounded-full"
-                              style={{ background: world.accentColor }}
-                            />
-                          )}
-                          <span className="text-sm font-semibold text-white">
-                            Current Sprint
-                          </span>
-                        </div>
-                        <p className="mt-0.5 text-xs text-white/50">
-                          {formatMinutes(roomSprint.remainingSeconds)} remaining &middot; {roomSprint.focusingCount} people focusing
-                        </p>
-                      </div>
-                      {/* Radio indicator */}
-                      <div
-                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
-                        style={{
-                          borderColor:
-                            sprintMode === "current"
-                              ? world.accentColor
-                              : "rgba(255,255,255,0.2)",
-                        }}
-                      >
-                        {sprintMode === "current" && (
-                          <div
-                            className="h-2.5 w-2.5 rounded-full"
-                            style={{ background: world.accentColor }}
-                          />
-                        )}
-                      </div>
-                    </button>
+            <JoinSprintOptions
+              hasActiveSprint={roomSprint.hasActiveSprint}
+              remainingSeconds={roomSprint.remainingSeconds}
+              focusingCount={roomSprint.focusingCount}
+              sprintMode={sprintMode}
+              onSprintModeChange={setSprintMode}
+              freshDuration={freshDuration}
+              onFreshDurationChange={setFreshDuration}
+              accentColor={world.accentColor}
+            />
 
-                    {/* Next Sprint */}
-                    <button
-                      type="button"
-                      onClick={() => setSprintMode("next")}
-                      className="flex w-full cursor-pointer items-center justify-between rounded-xl px-4 py-3 text-left transition-all"
-                      style={{
-                        background:
-                          sprintMode === "next"
-                            ? `${world.accentColor}0C`
-                            : "transparent",
-                        border:
-                          sprintMode === "next"
-                            ? `1.5px solid ${world.accentColor}60`
-                            : "1.5px solid rgba(255,255,255,0.08)",
-                      }}
-                    >
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          {sprintMode === "next" && (
-                            <span
-                              className="inline-block h-1.5 w-1.5 rounded-full"
-                              style={{ background: world.accentColor }}
-                            />
-                          )}
-                          <span className="text-sm font-semibold text-white">
-                            Next Sprint
-                          </span>
-                        </div>
-                        <p className="mt-0.5 text-xs text-white/50">
-                          Starts in {formatMinutes(roomSprint.remainingSeconds)} &middot; Join fresh with group
-                        </p>
-                      </div>
-                      <div
-                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
-                        style={{
-                          borderColor:
-                            sprintMode === "next"
-                              ? world.accentColor
-                              : "rgba(255,255,255,0.2)",
-                        }}
-                      >
-                        {sprintMode === "next" && (
-                          <div
-                            className="h-2.5 w-2.5 rounded-full"
-                            style={{ background: world.accentColor }}
-                          />
-                        )}
-                      </div>
-                    </button>
-                  </div>
-                </>
-              ) : (
-                /* Quiet room — show duration pills */
-                <>
-                  <label className="mb-2 block text-sm font-semibold text-white">
-                    Sprint duration
-                  </label>
-                  <DurationPills
-                    value={freshDuration}
-                    onChange={setFreshDuration}
-                  />
-                </>
-              )}
-            </div>
+            {/* Commitment level */}
+            <CommitmentPicker
+              value={commitmentType}
+              onChange={setCommitmentType}
+              accentColor={world.accentColor}
+            />
 
             {/* ── FOOTER ──────────────────────────────────── */}
             <div className="flex items-center justify-end gap-3 px-5 pb-5 pt-5">

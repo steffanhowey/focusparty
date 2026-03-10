@@ -4,6 +4,7 @@
 // Keyed by the `world_key` column on fp_parties.
 
 import type { HostPersonality } from "./hosts";
+import type { VibeId } from "./musicConstants";
 
 export type WorldKey =
   | "default"
@@ -28,6 +29,8 @@ export interface WorldConfig {
   placeholderGradient: string;
   /** CSS gradient overlay for text readability over the environment image. */
   environmentOverlay: string;
+  /** The music vibe assigned to rooms in this world. */
+  vibeKey: VibeId;
 }
 
 export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
@@ -43,6 +46,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
       "linear-gradient(135deg, #1a1c3a 0%, #1e2a4a 50%, #162040 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
+    vibeKey: "calm-focus",
   },
 
   "vibe-coding": {
@@ -57,6 +61,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
       "linear-gradient(135deg, #0f2922 0%, #152e2a 50%, #0d2618 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.35) 100%)",
+    vibeKey: "energizing-flow",
   },
 
   "writer-room": {
@@ -71,6 +76,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
       "linear-gradient(135deg, #1e1633 0%, #27204a 50%, #1a1230 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
+    vibeKey: "deep-concentration",
   },
 
   "yc-build": {
@@ -85,6 +91,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
       "linear-gradient(135deg, #2a2010 0%, #33280f 50%, #211a08 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.3) 100%)",
+    vibeKey: "energizing-flow",
   },
 
   "gentle-start": {
@@ -99,6 +106,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
       "linear-gradient(135deg, #2a1525 0%, #331a2e 50%, #20101c 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.25) 100%)",
+    vibeKey: "ambient-chill",
   },
 };
 

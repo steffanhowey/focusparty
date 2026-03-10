@@ -71,9 +71,9 @@ export default function SessionPage() {
     reviewElapsedRef.current = durationSec;
     setPhase("review");
 
-    // Persist: mark sprint completed + update phase
-    persistence.completeSprint().catch(() => {});
-    persistence.updatePhase("review").catch(() => {});
+    // fire-and-forget: non-critical persistence
+    persistence.completeSprint().catch((err) => console.error("Failed to complete sprint:", err));
+    persistence.updatePhase("review").catch((err) => console.error("Failed to update phase to review:", err));
     hostTriggersRef.current.triggerReviewEntered();
   }, [durationSec, persistence]);
 
@@ -128,6 +128,21 @@ export default function SessionPage() {
   const chat = useChat();
   const { settings, updateSetting } = useSettings();
   const music = useMusic();
+
+  // Auto-play default vibe (calm-focus) when entering sprint phase
+  const prevPhaseRef = useRef(phase);
+  useEffect(() => {
+    const wasNotSprint = prevPhaseRef.current !== "sprint";
+    prevPhaseRef.current = phase;
+    if (phase !== "sprint" || !wasNotSprint) return;
+
+    const defaultVibe = "calm-focus" as const;
+    if (music.activeVibe !== defaultVibe) {
+      music.selectVibe(defaultVibe);
+    } else if (!music.isPlaying) {
+      music.play();
+    }
+  }, [phase, music]);
 
   // Sync background vibe with music vibe changes (only during sprint)
   const musicVibeInitRef = useRef(true);
@@ -281,9 +296,9 @@ export default function SessionPage() {
     music.pause();
     setPhase("review");
 
-    // Persist: sprint ended early + update phase
-    persistence.completeSprint().catch(() => {});
-    persistence.updatePhase("review").catch(() => {});
+    // fire-and-forget: non-critical persistence
+    persistence.completeSprint().catch((err) => console.error("Failed to complete sprint:", err));
+    persistence.updatePhase("review").catch((err) => console.error("Failed to update phase to review:", err));
     hostTriggers.triggerReviewEntered();
   }, [durationSec, timer.getSnapshot, timer.pause, camera.stop, screenShare.stop, music.pause, persistence, hostTriggers]);
 
@@ -302,22 +317,24 @@ export default function SessionPage() {
           duration_sec: durationSec,
         })
         .then(() => hostTriggers.triggerSprintStarted())
-        .catch(() => {});
-      persistence.updatePhase("sprint").catch(() => {});
+        .catch((err) => console.error("Failed to start another sprint:", err));
+      // fire-and-forget: non-critical persistence
+      persistence.updatePhase("sprint").catch((err) => console.error("Failed to update phase to sprint:", err));
     }
   }, [durationSec, timer.reset, timer.start, persistence, hostTriggers]);
 
   const handleDone = useCallback(() => {
     // AI host: notify session completed before navigating away
     hostTriggers.triggerSessionCompleted();
-    // Persist: end session as completed
-    persistence.endSession("completed").catch(() => {});
+    // fire-and-forget: non-critical persistence
+    persistence.endSession("completed").catch((err) => console.error("Failed to end session:", err));
     // Mark non-persistent parties as completed so they stop appearing in discovery
     // Persistent rooms stay active permanently.
+    // fire-and-forget: non-critical persistence
     if (partyId && !party?.persistent) {
-      updatePartyStatus(partyId, "completed").catch(() => {});
+      updatePartyStatus(partyId, "completed").catch((err) => console.error("Failed to update party status:", err));
     }
-    router.push("/party");
+    router.push("/rooms");
   }, [router, persistence, hostTriggers, partyId, party?.persistent]);
 
   const handleReflectionComplete = useCallback(
@@ -329,7 +346,7 @@ export default function SessionPage() {
           productivity: reflection.productivity,
           actual_duration_sec: reflection.sessionDurationSec,
         })
-        .catch(() => {});
+        .catch((err) => console.error("Failed to submit reflection:", err));
     },
     [persistence]
   );
@@ -513,6 +530,7 @@ export default function SessionPage() {
                     volume: music.volume,
                     setVolume: music.setVolume,
                     status: music.status,
+                    roomControlled: true,
                   }}
                   timer={timer}
                   currentDurationMin={durationMin}

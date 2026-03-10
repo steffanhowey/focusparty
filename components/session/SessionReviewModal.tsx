@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Zap, Target, Meh, BatteryLow, CloudLightning, X } from "lucide-react";
-import type { SessionMood, SessionReflection } from "@/lib/types";
+import { Zap, Target, Meh, BatteryLow, CloudLightning, X, CheckCircle2, Clock, RotateCw, ArrowRight } from "lucide-react";
+import { useFocusTrap } from "@/lib/useFocusTrap";
+import type { SessionMood, SessionReflection, SprintResolution } from "@/lib/types";
 
 /* ─── Constants ──────────────────────────────────────────── */
 
@@ -15,12 +16,23 @@ const MOODS: { id: SessionMood; icon: typeof Zap; label: string }[] = [
   { id: "frustrated", icon: CloudLightning, label: "Frustrated" },
 ];
 
+const RESOLUTIONS: { id: SprintResolution; icon: typeof CheckCircle2; label: string; desc: string }[] = [
+  { id: "completed", icon: CheckCircle2, label: "Completed", desc: "Finished what I set out to do" },
+  { id: "partial", icon: Clock, label: "Partially done", desc: "Made progress, not done yet" },
+  { id: "continue", icon: RotateCw, label: "Continue next sprint", desc: "Picking up where I left off" },
+  { id: "abandon", icon: ArrowRight, label: "Switch task", desc: "Moving on to something else" },
+];
+
 /* ─── Props ──────────────────────────────────────────────── */
 
 interface SessionReviewModalProps {
   isOpen: boolean;
   sessionDurationSec: number;
   elapsedSec: number;
+  /** Sprint goal context — if provided, shows resolution step */
+  sprintGoalText?: string | null;
+  parentGoalTitle?: string | null;
+  onResolution?: (resolution: SprintResolution) => void;
   onAnotherRound: () => void;
   onDone: () => void;
   onReflectionComplete: (reflection: SessionReflection) => void;
@@ -32,15 +44,21 @@ export function SessionReviewModal({
   isOpen,
   sessionDurationSec,
   elapsedSec,
+  sprintGoalText,
+  parentGoalTitle,
+  onResolution,
   onAnotherRound,
   onDone,
   onReflectionComplete,
 }: SessionReviewModalProps) {
   const [mounted, setMounted] = useState(false);
   const [mood, setMood] = useState<SessionMood | null>(null);
+  const [resolution, setResolution] = useState<SprintResolution | null>(null);
+  const hasSprintGoal = !!sprintGoalText;
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const previousActive = useRef<HTMLElement | null>(null);
+  useFocusTrap(overlayRef, isOpen && mounted);
 
   useEffect(() => {
     setMounted(true);
@@ -72,6 +90,7 @@ export function SessionReviewModal({
   useEffect(() => {
     if (isOpen) {
       setMood(null);
+      setResolution(null);
     }
   }, [isOpen]);
 
@@ -87,6 +106,7 @@ export function SessionReviewModal({
   });
 
   const handleAction = (action: () => void) => {
+    if (resolution && onResolution) onResolution(resolution);
     onReflectionComplete(buildReflection());
     action();
   };
@@ -160,6 +180,52 @@ export function SessionReviewModal({
             {elapsedMin} min session
           </span>
         </div>
+
+        {/* ── Sprint resolution (if goal context exists) ── */}
+        {hasSprintGoal && (
+          <div className="mb-7">
+            <div className="mb-3 rounded-lg px-3 py-2" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <p className="truncate text-sm font-medium text-white">{sprintGoalText}</p>
+              {parentGoalTitle && (
+                <p className="mt-0.5 truncate text-[11px] text-[var(--color-text-tertiary)]">
+                  Part of: {parentGoalTitle}
+                </p>
+              )}
+            </div>
+            <p className="mb-2.5 text-sm font-medium text-[var(--color-text-secondary)]">
+              How did it go?
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {RESOLUTIONS.map(({ id, icon: Icon, label, desc }) => {
+                const selected = resolution === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setResolution(selected ? null : id)}
+                    className={`flex cursor-pointer items-start gap-2.5 rounded-[var(--radius-md)] border px-3 py-2.5 text-left transition-all duration-150 ${
+                      selected
+                        ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-primary)]/10"
+                        : "border-[var(--color-border-default)] hover:border-[var(--color-border-focus)]"
+                    }`}
+                  >
+                    <Icon
+                      size={16}
+                      strokeWidth={1.8}
+                      className={`mt-0.5 shrink-0 ${selected ? "text-[var(--color-accent-primary)]" : "text-[var(--color-text-tertiary)]"}`}
+                    />
+                    <div>
+                      <p className={`text-xs font-semibold ${selected ? "text-white" : "text-[var(--color-text-secondary)]"}`}>
+                        {label}
+                      </p>
+                      <p className="text-[10px] text-[var(--color-text-tertiary)]">{desc}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* ── Mood selector ── */}
         <div className="mb-7">

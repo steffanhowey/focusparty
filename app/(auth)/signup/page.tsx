@@ -38,7 +38,7 @@ function SignUpForm() {
   const [loading, setLoading] = useState(false);
 
   if (authState === "authenticated") {
-    const next = searchParams.get("next") ?? "/party";
+    const next = searchParams.get("next") ?? "/rooms";
     router.replace(next);
     return null;
   }

@@ -106,3 +106,38 @@ export const VIBE_ICONS: Record<VibeId, LucideIcon> = {
 export const DEFAULT_VOLUME = 50;
 export const MUSIC_STORAGE_KEY = "focusparty-music";
 export const YT_PLAYER_ID = "fp-yt-player";
+export const YT_PREVIEW_PLAYER_ID = "fp-yt-preview";
+
+/* ─── Volume persistence (shared by useMusic & useVibePreview) ── */
+
+interface MusicPrefs {
+  vibe: VibeId | null;
+  volume: number;
+}
+
+const PREFS_DEFAULTS: MusicPrefs = { vibe: null, volume: DEFAULT_VOLUME };
+
+export function loadMusicPrefs(): MusicPrefs {
+  if (typeof window === "undefined") return PREFS_DEFAULTS;
+  try {
+    const raw = localStorage.getItem(MUSIC_STORAGE_KEY);
+    if (!raw) return PREFS_DEFAULTS;
+    return { ...PREFS_DEFAULTS, ...JSON.parse(raw) };
+  } catch {
+    return PREFS_DEFAULTS;
+  }
+}
+
+export function persistMusicPrefs(prefs: MusicPrefs) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(MUSIC_STORAGE_KEY, JSON.stringify(prefs));
+}
+
+export function getPersistedVolume(): number {
+  return loadMusicPrefs().volume;
+}
+
+export function setPersistedVolume(vol: number): void {
+  const prefs = loadMusicPrefs();
+  persistMusicPrefs({ ...prefs, volume: vol });
+}

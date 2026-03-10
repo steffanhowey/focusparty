@@ -491,3 +491,16 @@ body {
     animation: none;
   }
 }
+
+/* ── Vibe Check: Equalizer bars animation ── */
+@keyframes fp-eq-bar {
+  0% { height: 3px; }
+  100% { height: 12px; }
+}
+
+/* ── Touch device: show vibe check button without hover ── */
+@media (hover: none) {
+  .touch-device\:opacity-100 {
+    opacity: 1 !important;
+  }
+}

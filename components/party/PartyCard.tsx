@@ -15,7 +15,7 @@ export function PartyCard({ party }: PartyCardProps) {
   const isFull = party.participant_count >= party.max_participants;
 
   return (
-    <Link href={`/party/${party.id}`} className="block">
+    <Link href={`/rooms/${party.id}`} className="block">
       <Card
         variant="character"
         character={party.character}

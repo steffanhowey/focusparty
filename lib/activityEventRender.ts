@@ -13,6 +13,8 @@ import {
   TrendingUp,
   Rocket,
   RotateCcw,
+  Lock,
+  XCircle,
   type LucideIcon,
 } from "lucide-react";
 import type { ActivityEvent } from "./types";
@@ -51,6 +53,9 @@ const ACTOR_IN_BODY_EVENTS = new Set([
   "sprint_completed",
   "sprint_started",
   "check_in",
+  "commitment_declared",
+  "commitment_succeeded",
+  "commitment_failed",
 ]);
 
 // ─── Renderer ───────────────────────────────────────────────
@@ -230,6 +235,50 @@ export function renderActivityEvent(
             color: TONE_COLORS.info,
           };
       }
+    }
+
+    case "commitment_declared": {
+      const commitType = event.payload?.commitment_type as string | undefined;
+      const label =
+        commitType === "locked"
+          ? `${name} locked in a commitment`
+          : commitType === "social"
+            ? `${name} made a social commitment`
+            : `${name} committed to a sprint`;
+      return {
+        icon: Lock,
+        label,
+        tone: "info",
+        color: TONE_COLORS.info,
+      };
+    }
+
+    case "commitment_succeeded":
+      return {
+        icon: Trophy,
+        label: `${name} delivered on their commitment`,
+        tone: "success",
+        color: "#F59E0B",
+      };
+
+    case "commitment_failed":
+      return {
+        icon: XCircle,
+        label: `${name} switched focus`,
+        tone: "neutral",
+        color: TONE_COLORS.neutral,
+      };
+
+    case "goal_shipped": {
+      const goalTitle = event.payload?.goal_title as string | undefined;
+      return {
+        icon: Rocket,
+        label: goalTitle
+          ? `${name} shipped: ${goalTitle.length > 30 ? goalTitle.slice(0, 27) + "..." : goalTitle}`
+          : `${name} shipped a goal`,
+        tone: "success",
+        color: "#F59E0B",
+      };
     }
 
     default:

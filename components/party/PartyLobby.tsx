@@ -98,7 +98,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     if (!userId || !partyId) return;
     getActiveSessionForParty(userId, partyId)
       .then(setActiveSession)
-      .catch(() => {});
+      .catch((err) => console.error("Failed to fetch active session:", err));
   }, [userId, partyId]);
 
   // Synthetic participants: heartbeat tick every 15s
@@ -110,7 +110,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ partyId }),
-      }).catch(() => {});
+      }).catch((err) => console.error("Failed to tick synthetics:", err));
 
     tick(); // fire immediately on mount
     const id = setInterval(tick, 15_000);
@@ -239,9 +239,9 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     if (!userId) return;
     try {
       await leaveParty(partyId, userId);
-      router.push("/party");
+      router.push("/rooms");
     } catch {
-      router.push("/party");
+      router.push("/rooms");
     }
   };
 
@@ -270,15 +270,15 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   if (notFound || !party) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <h3 className="text-lg font-semibold text-white">Party not found</h3>
+        <h3 className="text-lg font-semibold text-white">Room not found</h3>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          This party may have ended or doesn&apos;t exist.
+          This room may have ended or doesn&apos;t exist.
         </p>
         <Link
-          href="/party"
+          href="/rooms"
           className="mt-4 text-sm font-medium text-[var(--color-accent-primary)] hover:underline"
         >
-          Back to parties
+          Back to rooms
         </Link>
       </div>
     );
@@ -287,15 +287,15 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   if (party.status === "completed") {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <h3 className="text-lg font-semibold text-white">Party ended</h3>
+        <h3 className="text-lg font-semibold text-white">Room ended</h3>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          This party has already completed.
+          This room has already completed.
         </p>
         <Link
-          href="/party"
+          href="/rooms"
           className="mt-4 text-sm font-medium text-[var(--color-accent-primary)] hover:underline"
         >
-          Back to parties
+          Back to rooms
         </Link>
       </div>
     );
@@ -307,11 +307,11 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     <div className={ROOM_STATE_CLASS[roomState]}>
       {/* Back link */}
       <Link
-        href="/party"
+        href="/rooms"
         className="mb-5 inline-flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] hover:text-white"
       >
         <ArrowLeft size={16} />
-        All parties
+        All rooms
       </Link>
 
       {/* Party header */}

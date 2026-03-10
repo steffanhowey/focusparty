@@ -101,29 +101,64 @@ export function useTasks() {
     init();
   }, [userId, fetchTasks]);
 
-  // Realtime subscription
+  // Realtime subscription — apply incremental updates instead of full refetch
   useEffect(() => {
     if (!userId) return;
 
     const client = createClient();
     const channel = client
-      .channel("tasks-realtime")
+      .channel(`tasks-realtime-${userId}`)
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "fp_tasks",
           filter: `user_id=eq.${userId}`,
         },
-        () => fetchTasks()
+        (payload) => {
+          const newTask = payload.new as TaskRecord;
+          setTasks((prev) => {
+            // Skip if we already have this task (optimistic insert)
+            if (prev.some((t) => t.id === newTask.id)) return prev;
+            return [newTask, ...prev];
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "fp_tasks",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const updated = payload.new as TaskRecord;
+          setTasks((prev) =>
+            prev.map((t) => (t.id === updated.id ? { ...t, ...updated } : t))
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "fp_tasks",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const deletedId = (payload.old as { id: string }).id;
+          setTasks((prev) => prev.filter((t) => t.id !== deletedId));
+        }
       )
       .subscribe();
 
     return () => {
       client.removeChannel(channel);
     };
-  }, [userId, fetchTasks]);
+  }, [userId]);
 
   // ─── Derived lists ──────────────────────────────────────────
 
@@ -170,28 +205,37 @@ export function useTasks() {
         status?: TaskStatus;
         priority?: TaskPriority;
         project_id?: string | null;
+        goal_id?: string | null;
+        description?: string | null;
+        ai_generated?: boolean;
       }
-    ) => {
-      if (!userId) return;
+    ): Promise<string | null> => {
+      if (!userId) return null;
 
       const input = typeof titleOrInput === "string"
         ? { title: titleOrInput }
         : titleOrInput;
       const trimmed = input.title.trim();
-      if (!trimmed) return;
+      if (!trimmed) return null;
 
       const status = input.status ?? "todo";
       const priority = input.priority ?? "none";
       const project_id = input.project_id ?? null;
+      const goal_id = input.goal_id ?? null;
+      const description = input.description ?? null;
+      const ai_generated = input.ai_generated ?? false;
 
       // Optimistic: add to front
       const optimistic: TaskRecord = {
         id: crypto.randomUUID(),
         user_id: userId,
         project_id,
+        goal_id,
         title: trimmed,
+        description,
         status,
         priority,
+        ai_generated,
         position: 0,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -206,15 +250,20 @@ export function useTasks() {
           status,
           priority,
           project_id,
+          goal_id,
+          description,
+          ai_generated,
         });
         // Replace optimistic with real
         setTasks((prev) =>
           prev.map((t) => (t.id === optimistic.id ? created : t))
         );
+        return created.id;
       } catch (err) {
         console.error("Failed to create task:", err);
         // Revert optimistic
         setTasks((prev) => prev.filter((t) => t.id !== optimistic.id));
+        return null;
       }
     },
     [userId]
@@ -296,7 +345,7 @@ export function useTasks() {
     async (
       taskId: string,
       updates: Partial<
-        Pick<TaskRecord, "title" | "status" | "priority" | "project_id" | "position" | "completed_at">
+        Pick<TaskRecord, "title" | "description" | "status" | "priority" | "project_id" | "goal_id" | "position" | "completed_at">
       >
     ) => {
       setTasks((prev) =>

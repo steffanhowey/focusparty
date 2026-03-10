@@ -15,6 +15,20 @@ import type {
   PartySummaryStats,
 } from "./types";
 
+// ─── Column constants (avoid select("*") to prevent over-fetching) ────
+
+const SESSION_COLS =
+  "id, user_id, party_id, task_id, character, goal_text, phase, status, planned_duration_sec, actual_duration_sec, reflection_mood, reflection_productivity, started_at, ended_at, metadata, created_at";
+
+const SPRINT_COLS =
+  "id, session_id, sprint_number, duration_sec, started_at, ended_at, completed, metadata";
+
+const GOAL_COLS =
+  "id, session_id, sprint_id, user_id, task_id, goal_id, body, status, declared_at, completed_at, metadata";
+
+const EVENT_COLS =
+  "id, party_id, session_id, user_id, actor_type, event_type, body, payload, created_at";
+
 // ─── Session Queries ──────────────────────────────────────────
 
 /** Get the user's currently active session (if any). */
@@ -23,7 +37,7 @@ export async function getActiveSession(
 ): Promise<SessionRow | null> {
   const { data, error } = await createClient()
     .from("fp_sessions")
-    .select("*")
+    .select(SESSION_COLS)
     .eq("user_id", userId)
     .eq("status", "active")
     .order("created_at", { ascending: false })
@@ -41,7 +55,7 @@ export async function getActiveSessionForParty(
 ): Promise<SessionRow | null> {
   const { data, error } = await createClient()
     .from("fp_sessions")
-    .select("*")
+    .select(SESSION_COLS)
     .eq("user_id", userId)
     .eq("party_id", partyId)
     .eq("status", "active")
@@ -60,7 +74,7 @@ export async function listSessions(
 ): Promise<SessionRow[]> {
   const { data, error } = await createClient()
     .from("fp_sessions")
-    .select("*")
+    .select(SESSION_COLS)
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -91,7 +105,7 @@ export async function createSession(input: {
       phase: "sprint" as SessionPhase,
       status: "active",
     })
-    .select("*")
+    .select(SESSION_COLS)
     .single();
 
   if (error) throw error;
@@ -129,7 +143,7 @@ export async function listSprints(
 ): Promise<SessionSprint[]> {
   const { data, error } = await createClient()
     .from("fp_session_sprints")
-    .select("*")
+    .select(SPRINT_COLS)
     .eq("session_id", sessionId)
     .order("sprint_number", { ascending: true });
 
@@ -151,7 +165,7 @@ export async function createSprint(input: {
       sprint_number: input.sprint_number,
       duration_sec: input.duration_sec,
     })
-    .select("*")
+    .select(SPRINT_COLS)
     .single();
 
   if (error) throw error;
@@ -177,7 +191,7 @@ export async function listGoals(
 ): Promise<SessionGoal[]> {
   const { data, error } = await createClient()
     .from("fp_session_goals")
-    .select("*")
+    .select(GOAL_COLS)
     .eq("session_id", sessionId)
     .order("declared_at", { ascending: true });
 
@@ -192,6 +206,7 @@ export async function createGoal(input: {
   sprint_id?: string | null;
   user_id: string;
   task_id?: string | null;
+  goal_id?: string | null;
   body: string;
 }): Promise<SessionGoal> {
   const { data, error } = await createClient()
@@ -201,9 +216,10 @@ export async function createGoal(input: {
       sprint_id: input.sprint_id ?? null,
       user_id: input.user_id,
       task_id: input.task_id ?? null,
+      goal_id: input.goal_id ?? null,
       body: input.body,
     })
-    .select("*")
+    .select(GOAL_COLS)
     .single();
 
   if (error) throw error;
@@ -217,6 +233,23 @@ export async function completeGoal(goalId: string): Promise<void> {
       status: "completed",
       completed_at: new Date().toISOString(),
     })
+    .eq("id", goalId);
+
+  if (error) throw error;
+}
+
+/** Update a session goal's status (for sprint resolution). */
+export async function updateSessionGoalStatus(
+  goalId: string,
+  status: "declared" | "completed" | "abandoned" | "partial"
+): Promise<void> {
+  const updates: Record<string, unknown> = { status };
+  if (status === "completed") {
+    updates.completed_at = new Date().toISOString();
+  }
+  const { error } = await createClient()
+    .from("fp_session_goals")
+    .update(updates)
     .eq("id", goalId);
 
   if (error) throw error;
@@ -253,7 +286,7 @@ export async function listPartyEvents(
 ): Promise<ActivityEvent[]> {
   const { data, error } = await createClient()
     .from("fp_activity_events")
-    .select("*")
+    .select(EVENT_COLS)
     .eq("party_id", partyId)
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -268,7 +301,7 @@ export async function listUserEvents(
 ): Promise<ActivityEvent[]> {
   const { data, error } = await createClient()
     .from("fp_activity_events")
-    .select("*")
+    .select(EVENT_COLS)
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);

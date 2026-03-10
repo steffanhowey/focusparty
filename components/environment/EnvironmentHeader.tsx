@@ -53,7 +53,7 @@ export function EnvironmentHeader({
           setBackgrounds(bg);
         }
       })
-      .catch(() => {})
+      .catch((err) => console.error("Failed to load party switcher data:", err))
       .finally(() => {
         if (!cancelled) setPartiesLoading(false);
       });

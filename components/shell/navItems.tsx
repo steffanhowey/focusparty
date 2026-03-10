@@ -2,10 +2,10 @@
 
 /**
  * Shared nav config for Hub sidebar and session menu drawer.
- * Parties is the app home. Icons: PartyPopper (parties), Flame (progress), Settings.
+ * Rooms is the app home. Icons: DoorOpen (rooms), Target (commitments), BarChart3 (stats), Settings.
  */
 
-import { Flame, ListTodo, PartyPopper, Settings, type LucideIcon } from "lucide-react";
+import { BarChart3, DoorOpen, Target, Settings, type LucideIcon } from "lucide-react";
 
 const NAV_ICON_SIZE = 20;
 
@@ -15,9 +15,9 @@ export const NAV_ITEMS: Array<{
   label: string;
   icon: LucideIcon;
 }> = [
-  { id: "party", href: "/party", label: "Parties", icon: PartyPopper },
-  { id: "tasks", href: "/tasks", label: "Tasks", icon: ListTodo },
-  { id: "progress", href: "/progress", label: "Progress", icon: Flame },
+  { id: "rooms", href: "/rooms", label: "Rooms", icon: DoorOpen },
+  { id: "commitments", href: "/commitments", label: "Commitments", icon: Target },
+  { id: "stats", href: "/stats", label: "Stats", icon: BarChart3 },
   { id: "settings", href: "/settings", label: "Settings", icon: Settings },
 ];
 

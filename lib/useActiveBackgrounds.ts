@@ -19,7 +19,7 @@ export function useActiveBackgrounds() {
 
   useEffect(() => {
     const timeState = getUserTimeState();
-    getAllActiveBackgrounds(timeState).then(setBackgrounds).catch(() => {});
+    getAllActiveBackgrounds(timeState).then(setBackgrounds).catch((err) => console.error("Failed to load active backgrounds:", err));
   }, []);
 
   return backgrounds;

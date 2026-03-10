@@ -5,78 +5,11 @@ import {
   type VibeId,
   type MusicStatus,
   VIBES_MAP,
-  DEFAULT_VOLUME,
-  MUSIC_STORAGE_KEY,
   YT_PLAYER_ID,
+  loadMusicPrefs,
+  persistMusicPrefs,
 } from "@/lib/musicConstants";
-
-/* ------------------------------------------------------------------ */
-/*  localStorage persistence (mirrors useSettings.ts pattern)         */
-/* ------------------------------------------------------------------ */
-
-interface MusicPrefs {
-  vibe: VibeId | null;
-  volume: number;
-}
-
-const DEFAULTS: MusicPrefs = { vibe: null, volume: DEFAULT_VOLUME };
-
-function loadPrefs(): MusicPrefs {
-  if (typeof window === "undefined") return DEFAULTS;
-  try {
-    const raw = localStorage.getItem(MUSIC_STORAGE_KEY);
-    if (!raw) return DEFAULTS;
-    return { ...DEFAULTS, ...JSON.parse(raw) };
-  } catch {
-    return DEFAULTS;
-  }
-}
-
-function persistPrefs(prefs: MusicPrefs) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(MUSIC_STORAGE_KEY, JSON.stringify(prefs));
-}
-
-/* ------------------------------------------------------------------ */
-/*  YouTube IFrame API loader                                         */
-/* ------------------------------------------------------------------ */
-
-let apiPromise: Promise<void> | null = null;
-
-function loadYouTubeAPI(): Promise<void> {
-  if (apiPromise) return apiPromise;
-
-  apiPromise = new Promise<void>((resolve, reject) => {
-    if (window.YT?.Player) {
-      resolve();
-      return;
-    }
-
-    const existing = document.querySelector(
-      'script[src*="youtube.com/iframe_api"]',
-    );
-    if (existing) {
-      const check = setInterval(() => {
-        if (window.YT?.Player) {
-          clearInterval(check);
-          resolve();
-        }
-      }, 100);
-      return;
-    }
-
-    const tag = document.createElement("script");
-    tag.src = "https://www.youtube.com/iframe_api";
-    tag.onerror = () => {
-      apiPromise = null;
-      reject(new Error("Failed to load YouTube IFrame API"));
-    };
-    window.onYouTubeIframeAPIReady = () => resolve();
-    document.head.appendChild(tag);
-  });
-
-  return apiPromise;
-}
+import { loadYouTubeAPI } from "@/lib/youtubeApi";
 
 /* ------------------------------------------------------------------ */
 /*  useMusic hook                                                     */
@@ -85,9 +18,9 @@ function loadYouTubeAPI(): Promise<void> {
 export function useMusic() {
   const [status, setStatus] = useState<MusicStatus>("idle");
   const [activeVibe, setActiveVibe] = useState<VibeId | null>(
-    () => loadPrefs().vibe,
+    () => loadMusicPrefs().vibe,
   );
-  const [volume, setVolumeState] = useState(() => loadPrefs().volume);
+  const [volume, setVolumeState] = useState(() => loadMusicPrefs().volume);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   const playerRef = useRef<YTPlayer | null>(null);
@@ -259,7 +192,7 @@ export function useMusic() {
     // ready when the user clicks play. We intentionally do NOT create
     // the player here — Chrome's autoplay policy requires the player
     // iframe to be created within a user-gesture call stack.
-    loadYouTubeAPI().catch(() => {});
+    loadYouTubeAPI().catch((err) => console.error("Failed to preload YouTube API:", err));
 
     return () => {
       try {
@@ -276,7 +209,7 @@ export function useMusic() {
   const selectVibe = useCallback(
     (vibeId: VibeId) => {
       setActiveVibe(vibeId);
-      persistPrefs({ vibe: vibeId, volume: volumeRef.current });
+      persistMusicPrefs({ vibe: vibeId, volume: volumeRef.current });
 
       const config = VIBES_MAP[vibeId];
       if (!config) return;
@@ -305,7 +238,7 @@ export function useMusic() {
     // No player yet — create one with the persisted or first vibe
     const vibeId = activeVibeRef.current ?? "calm-focus";
     setActiveVibe(vibeId);
-    persistPrefs({ vibe: vibeId, volume: volumeRef.current });
+    persistMusicPrefs({ vibe: vibeId, volume: volumeRef.current });
 
     const config = VIBES_MAP[vibeId];
     if (!config) return;
@@ -349,7 +282,7 @@ export function useMusic() {
     const clamped = Math.max(0, Math.min(100, vol));
     setVolumeState(clamped);
     playerRef.current?.setVolume(clamped);
-    persistPrefs({ vibe: activeVibeRef.current, volume: clamped });
+    persistMusicPrefs({ vibe: activeVibeRef.current, volume: clamped });
   }, []);
 
   const togglePopover = useCallback(() => {

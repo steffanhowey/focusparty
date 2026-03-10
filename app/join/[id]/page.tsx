@@ -62,7 +62,7 @@ export default function JoinPartyPage({
     setJoining(true);
     try {
       await joinParty(id, userId!, displayName);
-      router.push(party?.status === "active" ? "/session" : `/party/${id}`);
+      router.push(party?.status === "active" ? "/session" : `/rooms/${id}`);
     } catch {
       setJoining(false);
     }
@@ -79,7 +79,7 @@ export default function JoinPartyPage({
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo href="/" height={32} maxWidth={140} />
           <Link
-            href="/party"
+            href="/rooms"
             className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >
             Open app
@@ -103,7 +103,7 @@ export default function JoinPartyPage({
               This party may have ended or the link is invalid.
             </p>
             <Link
-              href="/party"
+              href="/rooms"
               className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[var(--color-accent-primary)] px-8 font-medium text-white transition-all hover:bg-[var(--color-purple-800)]"
             >
               Go to app
@@ -190,7 +190,7 @@ export default function JoinPartyPage({
 
             <div className="mt-4 text-center">
               <Link
-                href="/party"
+                href="/rooms"
                 className="text-sm text-[var(--color-text-secondary)] hover:text-white"
               >
                 Back to app

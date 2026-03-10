@@ -16,8 +16,9 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, ChevronRight } from "lucide-react";
-import type { TaskRecord } from "@/lib/types";
+import { Plus, ChevronRight, Target, Sparkles, Loader2 } from "lucide-react";
+import type { TaskRecord, GoalRecord } from "@/lib/types";
+import { computeGoalProgress } from "@/lib/goals";
 import { SortableTaskRow } from "./SortableTaskRow";
 
 interface TasksPanelProps {
@@ -29,6 +30,12 @@ interface TasksPanelProps {
   onDeleteTask: (taskId: string) => void;
   onEditTask: (taskId: string, newText: string) => void;
   onReorderTasks: (activeId: string, overId: string) => void;
+  // Goal context (optional)
+  activeGoal?: GoalRecord | null;
+  goalTasks?: TaskRecord[];
+  onSetSprintGoal?: (taskId: string) => void;
+  onAISuggest?: () => void;
+  isAISuggesting?: boolean;
 }
 
 export const TasksPanel = memo(function TasksPanel({
@@ -40,6 +47,11 @@ export const TasksPanel = memo(function TasksPanel({
   onDeleteTask,
   onEditTask,
   onReorderTasks,
+  activeGoal,
+  goalTasks,
+  onSetSprintGoal,
+  onAISuggest,
+  isAISuggesting,
 }: TasksPanelProps) {
   const [newTaskText, setNewTaskText] = useState("");
   const [showCompleted, setShowCompleted] = useState(false);
@@ -131,6 +143,65 @@ export const TasksPanel = memo(function TasksPanel({
         className="flex flex-1 flex-col overflow-hidden px-4 py-3"
         style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}
       >
+        {/* Goal context header */}
+        {activeGoal && goalTasks && (
+          <div className="mb-2 rounded-lg border border-white/6 px-3 py-2.5" style={{ background: "rgba(255,255,255,0.03)" }}>
+            <div className="flex items-center gap-2">
+              <Target size={14} className="shrink-0 text-[var(--color-accent-primary)]" />
+              <span className="min-w-0 flex-1 truncate text-xs font-semibold text-white">
+                {activeGoal.title}
+              </span>
+              <span className="shrink-0 text-[10px] text-[var(--color-text-tertiary)]">
+                {computeGoalProgress(goalTasks).completed}/{computeGoalProgress(goalTasks).total}
+              </span>
+            </div>
+            {/* Goal tasks with "Set as sprint goal" */}
+            {goalTasks.filter((t) => t.status !== "done").length > 0 && (
+              <div className="mt-2 space-y-0.5">
+                {goalTasks
+                  .filter((t) => t.status !== "done")
+                  .map((task) => (
+                    <div
+                      key={task.id}
+                      className="group flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-white/[0.04]"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => onCompleteTask(task.id)}
+                        className="flex h-3.5 w-3.5 shrink-0 cursor-pointer items-center justify-center rounded-[4px] border border-white/20 transition-colors hover:border-white/40"
+                        aria-label="Complete"
+                      />
+                      <span className="min-w-0 flex-1 truncate text-[11px] text-[var(--color-text-secondary)]">
+                        {task.title}
+                      </span>
+                      {onSetSprintGoal && (
+                        <button
+                          type="button"
+                          onClick={() => onSetSprintGoal(task.id)}
+                          className="shrink-0 cursor-pointer rounded px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-accent-primary)] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[var(--color-accent-primary)]/10"
+                        >
+                          Sprint this
+                        </button>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            )}
+            {/* AI suggest button */}
+            {onAISuggest && (
+              <button
+                type="button"
+                onClick={onAISuggest}
+                disabled={isAISuggesting}
+                className="mt-2 flex w-full cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1.5 text-[11px] font-medium text-[var(--color-accent-primary)] transition-colors hover:bg-[var(--color-accent-primary)]/10 disabled:cursor-default disabled:opacity-50"
+              >
+                {isAISuggesting ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                {isAISuggesting ? "Suggesting..." : "What should I do next?"}
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Sortable task list */}
         <div className="fp-shell-scroll -ml-2 flex-1 overflow-y-auto pl-2">
           <SortableContext

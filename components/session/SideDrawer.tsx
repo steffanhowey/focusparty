@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, memo } from "react";
-import type { TaskRecord } from "@/lib/types";
+import type { TaskRecord, GoalRecord } from "@/lib/types";
 import type { ChatMessage } from "@/lib/useChat";
 import { PanelHeader } from "./PanelHeader";
 import { TasksPanel } from "./TasksPanel";
@@ -19,6 +19,12 @@ interface SideDrawerProps {
   onDeleteTask: (taskId: string) => void;
   onEditTask: (taskId: string, newText: string) => void;
   onReorderTasks: (activeId: string, overId: string) => void;
+  // Goal context (optional)
+  activeGoal?: GoalRecord | null;
+  goalTasks?: TaskRecord[];
+  onSetSprintGoal?: (taskId: string) => void;
+  onAISuggest?: () => void;
+  isAISuggesting?: boolean;
   // Chat
   messages: ChatMessage[];
   onSendMessage: (text: string) => void;
@@ -35,6 +41,11 @@ export const SideDrawer = memo(function SideDrawer({
   onDeleteTask,
   onEditTask,
   onReorderTasks,
+  activeGoal,
+  goalTasks,
+  onSetSprintGoal,
+  onAISuggest,
+  isAISuggesting,
   messages,
   onSendMessage,
 }: SideDrawerProps) {
@@ -63,6 +74,11 @@ export const SideDrawer = memo(function SideDrawer({
             onDeleteTask={onDeleteTask}
             onEditTask={onEditTask}
             onReorderTasks={onReorderTasks}
+            activeGoal={activeGoal}
+            goalTasks={goalTasks}
+            onSetSprintGoal={onSetSprintGoal}
+            onAISuggest={onAISuggest}
+            isAISuggesting={isAISuggesting}
           />
         </div>
       )}

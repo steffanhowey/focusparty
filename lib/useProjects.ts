@@ -36,29 +36,63 @@ export function useProjects() {
     fetchProjects();
   }, [userId, fetchProjects]);
 
-  // Realtime
+  // Realtime — apply incremental updates instead of full refetch
   useEffect(() => {
     if (!userId) return;
 
     const client = createClient();
     const channel = client
-      .channel("projects-realtime")
+      .channel(`projects-realtime-${userId}`)
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "fp_projects",
           filter: `user_id=eq.${userId}`,
         },
-        () => fetchProjects()
+        (payload) => {
+          const newProject = payload.new as Project;
+          setProjects((prev) => {
+            if (prev.some((p) => p.id === newProject.id)) return prev;
+            return [...prev, newProject];
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "fp_projects",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const updated = payload.new as Project;
+          setProjects((prev) =>
+            prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "fp_projects",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const deletedId = (payload.old as { id: string }).id;
+          setProjects((prev) => prev.filter((p) => p.id !== deletedId));
+        }
       )
       .subscribe();
 
     return () => {
       client.removeChannel(channel);
     };
-  }, [userId, fetchProjects]);
+  }, [userId]);
 
   const createProject = useCallback(
     async (input: { name: string; color: string; emoji: string }) => {

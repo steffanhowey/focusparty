@@ -1,14 +1,39 @@
 "use client";
 
 import Image from "next/image";
+import { Play, Pause } from "lucide-react";
 import { getWorldConfig } from "@/lib/worlds";
 import type { PartyWithCount, SyntheticPresenceInfo } from "@/lib/parties";
 import type { ActiveBackground } from "@/lib/roomBackgrounds";
+import type { MusicStatus } from "@/lib/musicConstants";
 
 interface FeaturedRoomProps {
   party: PartyWithCount;
   backgrounds?: Map<string, ActiveBackground>;
   onClick?: () => void;
+  /** Whether this room's vibe is currently being previewed */
+  isPreviewPlaying?: boolean;
+  /** Preview player status (for loading state) */
+  previewStatus?: MusicStatus;
+  /** Called when user clicks the vibe check button */
+  onTogglePreview?: () => void;
+}
+
+/* ── CSS equalizer bars ── */
+function Equalizer() {
+  return (
+    <span className="flex items-end gap-[2px]" style={{ height: 14 }}>
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="w-[3px] rounded-full bg-white"
+          style={{
+            animation: `fp-eq-bar 0.8s ease-in-out ${i * 0.15}s infinite alternate`,
+          }}
+        />
+      ))}
+    </span>
+  );
 }
 
 function FeaturedAvatars({
@@ -56,14 +81,22 @@ function FeaturedAvatars({
   );
 }
 
-export function FeaturedRoom({ party, backgrounds, onClick }: FeaturedRoomProps) {
+export function FeaturedRoom({
+  party,
+  backgrounds,
+  onClick,
+  isPreviewPlaying,
+  previewStatus,
+  onTogglePreview,
+}: FeaturedRoomProps) {
   const world = getWorldConfig(party.world_key);
   const aiBg = backgrounds?.get(party.world_key);
   const coverSrc = aiBg?.publicUrl ?? null;
+  const isPreviewLoading = previewStatus === "loading" && isPreviewPlaying;
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-[var(--radius-md)] cursor-pointer"
+      className="group/featured relative w-full overflow-hidden rounded-[var(--radius-md)] cursor-pointer"
       style={{ height: "clamp(300px, 40vh, 440px)" }}
       onClick={onClick}
       role="button"
@@ -116,6 +149,34 @@ export function FeaturedRoom({ party, backgrounds, onClick }: FeaturedRoomProps)
             <span className="inline-flex items-center rounded-full bg-[var(--color-accent-error)] px-5 py-2 text-sm font-bold uppercase tracking-wide text-white">
               Join
             </span>
+
+            {/* Vibe Check button */}
+            {onTogglePreview && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTogglePreview();
+                }}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white transition-all hover:scale-105"
+                style={{
+                  background: "rgba(255,255,255,0.12)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                }}
+                aria-label={isPreviewPlaying ? "Stop vibe check" : "Vibe check"}
+              >
+                {isPreviewLoading ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                ) : isPreviewPlaying ? (
+                  <Equalizer />
+                ) : (
+                  <Play size={14} fill="white" className="text-white" />
+                )}
+                <span>{isPreviewPlaying ? "Playing" : "Vibe Check"}</span>
+              </button>
+            )}
+
             <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1.5 backdrop-blur-sm">
               <FeaturedAvatars
                 participants={party.synthetic_participants}

@@ -123,9 +123,15 @@ export function usePartyPresence(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partyId, userId]);
 
-  // Re-track when tracked properties change (no channel reconnect)
+  // Re-track when tracked properties actually change (skip redundant updates)
+  const lastTrackedRef = useRef<string>("");
   useEffect(() => {
     if (!channelRef.current || !userId) return;
+
+    // Build a fingerprint of the trackable fields to avoid redundant re-tracks
+    const fingerprint = JSON.stringify([userId, displayName, avatarUrl, character, activeSessionId, phase, goalPreview]);
+    if (fingerprint === lastTrackedRef.current) return;
+    lastTrackedRef.current = fingerprint;
 
     const payload = buildPresencePayload({
       userId,

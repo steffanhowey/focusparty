@@ -53,10 +53,34 @@ export async function listTasks(
 
 // ─── Mutations ───────────────────────────────────────────────
 
+/** Fetch tasks for a specific goal. */
+export async function listTasksByGoal(goalId: string): Promise<TaskRecord[]> {
+  const client = createClient();
+  const { data, error } = await client
+    .from("fp_tasks")
+    .select(
+      "*, project:fp_projects(*), labels:fp_task_labels(label:fp_labels(*))"
+    )
+    .eq("goal_id", goalId)
+    .order("position", { ascending: true });
+
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    ...row,
+    labels:
+      row.labels
+        ?.map((tl: any) => tl.label)
+        .filter(Boolean) ?? [],
+  }));
+}
+
 export async function createTask(input: {
   user_id: string;
   title: string;
   project_id?: string | null;
+  goal_id?: string | null;
+  description?: string | null;
+  ai_generated?: boolean;
   priority?: TaskPriority;
   status?: TaskStatus;
   position?: number;
@@ -67,6 +91,9 @@ export async function createTask(input: {
       user_id: input.user_id,
       title: input.title,
       project_id: input.project_id ?? null,
+      goal_id: input.goal_id ?? null,
+      description: input.description ?? null,
+      ai_generated: input.ai_generated ?? false,
       priority: input.priority ?? "none",
       status: input.status ?? "todo",
       position: input.position ?? 0,
@@ -91,7 +118,7 @@ export async function updateTask(
   updates: Partial<
     Pick<
       TaskRecord,
-      "title" | "status" | "priority" | "project_id" | "position" | "completed_at"
+      "title" | "description" | "status" | "priority" | "project_id" | "goal_id" | "position" | "completed_at"
     >
   >
 ): Promise<TaskRecord> {

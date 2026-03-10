@@ -46,6 +46,14 @@ export interface PartyWithCount extends Party {
   synthetic_participants: SyntheticPresenceInfo[];
 }
 
+// ---------- Column constants ----------
+
+const PARTY_COLS =
+  "id, creator_id, name, character, planned_duration_min, max_participants, status, created_at, invite_code, world_key, host_personality, persistent";
+
+const PARTICIPANT_COLS =
+  "id, party_id, user_id, display_name, joined_at, left_at";
+
 // ---------- Queries ----------
 
 /** Fetch discoverable parties (waiting + active), ordered by newest first. */
@@ -54,7 +62,7 @@ export async function listDiscoverableParties(): Promise<PartyWithCount[]> {
 
   const { data: parties, error } = await supabase
     .from("fp_parties")
-    .select("*")
+    .select(PARTY_COLS)
     .in("status", ["waiting", "active"])
     .order("created_at", { ascending: false });
 
@@ -196,7 +204,7 @@ export async function getSyntheticParticipants(
 export async function getParty(partyId: string): Promise<Party | null> {
   const { data, error } = await createClient()
     .from("fp_parties")
-    .select("*")
+    .select(PARTY_COLS)
     .eq("id", partyId)
     .single();
 
@@ -213,7 +221,7 @@ export async function getPartyParticipants(
 ): Promise<PartyParticipant[]> {
   const { data, error } = await createClient()
     .from("fp_party_participants")
-    .select("*")
+    .select(PARTICIPANT_COLS)
     .eq("party_id", partyId)
     .is("left_at", null)
     .order("joined_at", { ascending: true });
@@ -269,7 +277,7 @@ export async function getPartyByInviteCode(
 ): Promise<Party | null> {
   const { data, error } = await createClient()
     .from("fp_parties")
-    .select("*")
+    .select(PARTY_COLS)
     .eq("invite_code", code)
     .single();
 
@@ -356,7 +364,7 @@ export async function joinParty(
     user_id: userId,
     event_type: "participant_joined",
     body: displayName,
-  }).catch(() => {});
+  }).catch((err) => console.error("Failed to log participant_joined event:", err));
 
   return data;
 }
@@ -379,7 +387,7 @@ export async function leaveParty(
     party_id: partyId,
     user_id: userId,
     event_type: "participant_left",
-  }).catch(() => {});
+  }).catch((err) => console.error("Failed to log participant_left event:", err));
 }
 
 /** Update party status (e.g., waiting → active). */
