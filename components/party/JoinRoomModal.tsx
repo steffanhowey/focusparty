@@ -23,11 +23,13 @@ import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
 import { getHostConfig } from "@/lib/hosts";
 import { DurationPills } from "@/components/session/DurationPills";
 import { SPRINT_DURATION_OPTIONS } from "@/lib/constants";
+import type { ActiveBackground } from "@/lib/roomBackgrounds";
 
 interface JoinRoomModalProps {
   partyId: string;
   isOpen: boolean;
   onClose: () => void;
+  backgrounds?: Map<string, ActiveBackground>;
 }
 
 type SprintMode = "current" | "next" | "fresh";
@@ -45,7 +47,7 @@ function formatMinutes(seconds: number): string {
   return `${m}m`;
 }
 
-export function JoinRoomModal({ partyId, isOpen, onClose }: JoinRoomModalProps) {
+export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds }: JoinRoomModalProps) {
   const router = useRouter();
   const { userId, displayName, username } = useCurrentUser();
   const [mounted, setMounted] = useState(false);
@@ -69,6 +71,8 @@ export function JoinRoomModal({ partyId, isOpen, onClose }: JoinRoomModalProps) 
   }, [isOpen, partyId]);
 
   const world = party ? getWorldConfig(party.world_key) : getWorldConfig("default");
+  const aiBg = backgrounds?.get(party?.world_key ?? "default");
+  const coverSrc = aiBg?.thumbUrl ?? world.coverImage;
   const hostConfig = party
     ? getHostConfig(getPartyHostPersonality(party))
     : getHostConfig("default");
@@ -300,7 +304,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose }: JoinRoomModalProps) 
               {/* Cover image */}
               <div className="relative h-[100px] w-[140px] shrink-0 overflow-hidden rounded-lg">
                 <Image
-                  src={world.coverImage}
+                  src={coverSrc}
                   alt={world.label}
                   fill
                   sizes="140px"

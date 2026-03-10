@@ -9,6 +9,7 @@ import { RoomCard } from "./RoomCard";
 import { EmptyState } from "./EmptyState";
 import { CreatePartyModal } from "./CreatePartyModal";
 import { JoinRoomModal } from "./JoinRoomModal";
+import { useActiveBackgrounds } from "@/lib/useActiveBackgrounds";
 
 export function PartyList() {
   const { requireAuth } = useCurrentUser();
@@ -17,6 +18,7 @@ export function PartyList() {
   const [joinPartyId, setJoinPartyId] = useState<string | null>(null);
 
   const { parties, loading, error } = useDiscoverableParties();
+  const backgrounds = useActiveBackgrounds();
 
   useEffect(() => {
     setHeaderSlot(document.getElementById("hub-header-action"));
@@ -76,6 +78,7 @@ export function PartyList() {
           partyId={joinPartyId}
           isOpen
           onClose={() => setJoinPartyId(null)}
+          backgrounds={backgrounds}
         />
       )}
 
@@ -107,6 +110,7 @@ export function PartyList() {
                       <RoomCard
                         key={party.id}
                         party={party}
+                        backgrounds={backgrounds}
                         onClick={() => handleOpenJoinModal(party.id)}
                       />
                     ))}
@@ -127,6 +131,7 @@ export function PartyList() {
                       <RoomCard
                         key={party.id}
                         party={party}
+                        backgrounds={backgrounds}
                         onClick={() => handleOpenJoinModal(party.id)}
                       />
                     ))}

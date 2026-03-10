@@ -7,9 +7,11 @@ import { getWorldConfig } from "@/lib/worlds";
 import { getHostConfig } from "@/lib/hosts";
 import { getPartyHostPersonality } from "@/lib/worlds";
 import type { PartyWithCount, SyntheticPresenceInfo } from "@/lib/parties";
+import type { ActiveBackground } from "@/lib/roomBackgrounds";
 
 interface RoomCardProps {
   party: PartyWithCount;
+  backgrounds?: Map<string, ActiveBackground>;
   onClick?: () => void;
   isJoining?: boolean;
 }
@@ -60,8 +62,10 @@ function AvatarCluster({
   );
 }
 
-export function RoomCard({ party, onClick, isJoining }: RoomCardProps) {
+export function RoomCard({ party, backgrounds, onClick, isJoining }: RoomCardProps) {
   const world = getWorldConfig(party.world_key);
+  const aiBg = backgrounds?.get(party.world_key);
+  const coverSrc = aiBg?.thumbUrl ?? world.coverImage;
   const hostConfig = getHostConfig(getPartyHostPersonality(party));
   const isFull = !party.persistent && party.participant_count >= party.max_participants;
 
@@ -106,7 +110,7 @@ export function RoomCard({ party, onClick, isJoining }: RoomCardProps) {
       {party.persistent && (
         <div className="relative h-[120px] w-full">
           <Image
-            src={world.coverImage}
+            src={coverSrc}
             alt={world.label}
             fill
             sizes="(max-width: 640px) 100vw, 400px"

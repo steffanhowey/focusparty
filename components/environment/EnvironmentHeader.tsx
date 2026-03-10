@@ -7,6 +7,10 @@ import { UserPlus, ChevronDown, Check } from "lucide-react";
 import { InvitePopover } from "@/components/session/InvitePopover";
 import { getUserActiveParties, type Party } from "@/lib/parties";
 import { getWorldConfig } from "@/lib/worlds";
+import {
+  getAllActiveBackgrounds,
+  type ActiveBackground,
+} from "@/lib/roomBackgrounds";
 
 interface EnvironmentHeaderProps {
   roomName: string;
@@ -30,15 +34,22 @@ export function EnvironmentHeader({
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [parties, setParties] = useState<Party[]>([]);
   const [partiesLoading, setPartiesLoading] = useState(false);
+  const [backgrounds, setBackgrounds] = useState<Map<string, ActiveBackground>>(new Map());
 
   // Fetch parties each time the dropdown opens
   useEffect(() => {
     if (!switcherOpen || !userId) return;
     let cancelled = false;
     setPartiesLoading(true);
-    getUserActiveParties(userId)
-      .then((p) => {
-        if (!cancelled) setParties(p);
+    Promise.all([
+      getUserActiveParties(userId),
+      getAllActiveBackgrounds(),
+    ])
+      .then(([p, bg]) => {
+        if (!cancelled) {
+          setParties(p);
+          setBackgrounds(bg);
+        }
       })
       .catch(() => {})
       .finally(() => {
@@ -54,14 +65,13 @@ export function EnvironmentHeader({
     if (parties.length === 0) return;
     for (const p of parties) {
       if (p.id === currentPartyId) continue;
-      // Prefetch the Next.js route (JS bundle + RSC payload)
       router.prefetch(`/environment/${p.id}`);
-      // Warm the browser image cache for the environment background
-      const world = getWorldConfig(p.world_key);
+      // Warm the browser image cache — prefer AI background, fallback to static
+      const aiBg = backgrounds.get(p.world_key);
       const img = new window.Image();
-      img.src = world.environmentImage;
+      img.src = aiBg?.publicUrl ?? getWorldConfig(p.world_key).environmentImage;
     }
-  }, [parties, currentPartyId, router]);
+  }, [parties, backgrounds, currentPartyId, router]);
 
   // Click-outside + Escape to close switcher
   useEffect(() => {
@@ -155,6 +165,7 @@ export function EnvironmentHeader({
               parties.map((p, i) => {
                 const isCurrent = p.id === currentPartyId;
                 const world = getWorldConfig(p.world_key);
+                const switcherThumb = backgrounds.get(p.world_key)?.thumbUrl ?? world.coverImage;
                 return (
                   <div key={p.id}>
                     {i > 0 && (
@@ -173,7 +184,7 @@ export function EnvironmentHeader({
                     >
                       {/* Thumbnail */}
                       <Image
-                        src={world.coverImage}
+                        src={switcherThumb}
                         alt={p.name}
                         width={44}
                         height={44}

@@ -106,7 +106,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     targetRoomSize: 8,
     accentColor: "#EC4899",
     coverImage:
-      "https://images.unsplash.com/photo-1510563929435-3907abb2943a?w=600&q=80",
+      "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=80",
     environmentImage:
       "https://images.unsplash.com/photo-1416339306562-f3d12fefd36f?w=1920&q=80",
     environmentOverlay:

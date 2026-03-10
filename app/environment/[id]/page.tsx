@@ -23,6 +23,7 @@ import {
 } from "@/lib/parties";
 import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
 import { getHostConfig } from "@/lib/hosts";
+import { getActiveBackground, type ActiveBackground } from "@/lib/roomBackgrounds";
 import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
 import { EnvironmentBackground } from "@/components/environment/EnvironmentBackground";
 import { EnvironmentHeader } from "@/components/environment/EnvironmentHeader";
@@ -103,6 +104,15 @@ export default function EnvironmentPage() {
   const hostConfig = party
     ? getHostConfig(getPartyHostPersonality(party))
     : getHostConfig("default");
+
+  // ─── AI background (falls back to static Unsplash) ───
+  const [aiBackground, setAiBackground] = useState<ActiveBackground | null>(null);
+  useEffect(() => {
+    const wk = party?.world_key;
+    if (!wk) return;
+    getActiveBackground(wk).then(setAiBackground).catch(() => {});
+  }, [party?.world_key]);
+  const backgroundImageUrl = aiBackground?.publicUrl ?? world.environmentImage;
 
   // ─── Session state machine ────────────────────────────
   const persistence = useSessionPersistence(userId);
@@ -703,7 +713,7 @@ export default function EnvironmentPage() {
     <div className="relative flex h-full w-full animate-env-fade-in overflow-hidden bg-black">
       {/* Background (always visible) */}
       <EnvironmentBackground
-        imageUrl={world.environmentImage}
+        imageUrl={backgroundImageUrl}
         overlay={world.environmentOverlay}
       />
 

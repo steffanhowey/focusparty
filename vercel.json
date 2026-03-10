@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/backgrounds/rotate",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}
