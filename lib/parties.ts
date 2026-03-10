@@ -36,6 +36,7 @@ export interface SyntheticPresenceInfo {
   id: string;
   displayName: string;
   avatarUrl: string;
+  handle: string;
 }
 
 export interface PartyWithCount extends Party {
@@ -168,6 +169,7 @@ async function getActiveSyntheticPresence(
             id: poolEntry.id,
             displayName: poolEntry.displayName,
             avatarUrl: poolEntry.avatarUrl,
+            handle: poolEntry.handle,
           });
         }
       }

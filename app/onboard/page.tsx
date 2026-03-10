@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Logo } from "@/components/shell/Logo";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import { createParty } from "@/lib/parties";
-import { PartyPopper } from "lucide-react";
+import { useUsernameValidation } from "@/lib/username";
+import { PartyPopper, Check, X, Loader2, RefreshCw } from "lucide-react";
 
-const STEPS = ["Display name", "Avatar", "Start focusing"];
+const STEPS_FULL = ["Identity", "Avatar", "Start focusing"];
+const STEPS_RE_ONBOARD = ["Identity", "Avatar"];
 
 function getInitials(name: string) {
   return name
@@ -21,27 +23,112 @@ function getInitials(name: string) {
 }
 
 export default function OnboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
+        <p className="text-[var(--color-text-secondary)]">Loading...</p>
+      </div>
+    }>
+      <OnboardContent />
+    </Suspense>
+  );
+}
+
+function OnboardContent() {
   const { user, authState } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
-  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Re-onboarding mode: existing user coming back to set username
+  const isReOnboard = searchParams.get("step") === "username";
+  const STEPS = isReOnboard ? STEPS_RE_ONBOARD : STEPS_FULL;
 
   const [step, setStep] = useState(0);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
 
-  // Pre-fill display name from user metadata
+  const username = useUsernameValidation();
+
+  // Pre-fill display name from user metadata or existing profile
   useEffect(() => {
     if (!user) return;
-    const meta = user.user_metadata;
-    const first = meta?.first_name ?? "";
-    const last = meta?.last_name ?? "";
-    const full = `${first} ${last}`.trim();
-    if (full) setDisplayName(full);
+
+    if (isReOnboard) {
+      // For re-onboarding, fetch existing display name from profile
+      const fetchProfile = async () => {
+        const { data } = await supabase
+          .from("fp_profiles")
+          .select("display_name, avatar_url")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (data?.display_name) setDisplayName(data.display_name);
+        if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+      };
+      fetchProfile();
+    } else {
+      const meta = user.user_metadata;
+      const first = meta?.first_name ?? "";
+      const last = meta?.last_name ?? "";
+      const full = `${first} ${last}`.trim();
+      if (full) setDisplayName(full);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Auto-generate avatar when entering step 1 (avatar step)
+  useEffect(() => {
+    if (step === 1 && !avatarUrl && !generating && user && username.value) {
+      generateAvatar();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
+  const generateAvatar = useCallback(async () => {
+    if (!user || !username.value) return;
+    setGenerating(true);
+    setGenError(null);
+
+    try {
+      const res = await fetch("/api/avatar/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username.value, userId: user.id }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.fallback) {
+          // Use DiceBear fallback
+          const fallbackUrl = `https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${username.value}`;
+          setAvatarUrl(fallbackUrl);
+          setGenError("AI generation unavailable. Using a placeholder — you can regenerate later from Settings.");
+          // Save fallback URL to profile
+          await supabase
+            .from("fp_profiles")
+            .update({ avatar_url: fallbackUrl })
+            .eq("id", user.id);
+        } else {
+          setGenError("Failed to generate avatar. Try again.");
+        }
+      } else {
+        const data = await res.json();
+        setAvatarUrl(data.url);
+      }
+    } catch {
+      setGenError("Failed to generate avatar. Try again.");
+    } finally {
+      setGenerating(false);
+    }
+  }, [user, username.value, supabase]);
+
+  const shuffleAvatar = () => {
+    setAvatarUrl(null);
+    generateAvatar();
+  };
 
   if (authState === "loading") {
     return (
@@ -56,47 +143,37 @@ export default function OnboardPage() {
     return null;
   }
 
-  const handleAvatarUpload = async (file: File) => {
-    if (!user) return;
-
-    // Show local preview immediately
-    setAvatarPreview(URL.createObjectURL(file));
-    setUploading(true);
-
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/avatar.${ext}`;
-
-    const { error } = await supabase.storage
-      .from("avatars")
-      .upload(path, file, { upsert: true });
-
-    if (!error) {
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(path);
-      setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
-    }
-    setUploading(false);
-  };
-
-  const saveDisplayName = async () => {
-    if (!user || !displayName.trim()) return;
+  const saveIdentity = async () => {
+    if (!user || !displayName.trim() || !username.isValid) return;
     setSaving(true);
-    await supabase
+
+    const { error } = await supabase
       .from("fp_profiles")
-      .update({ display_name: displayName.trim() })
+      .update({
+        display_name: displayName.trim(),
+        username: username.value,
+      })
       .eq("id", user.id);
+
+    if (error) {
+      // Handle unique constraint violation (race condition)
+      if (error.code === "23505") {
+        setSaving(false);
+        username.setValue(username.value); // re-trigger availability check
+        return;
+      }
+      console.error("[onboard] Save identity failed:", error);
+    }
+
     setSaving(false);
     setStep(1);
   };
 
-  const saveAvatar = async () => {
-    if (!user) return;
-    if (avatarUrl) {
-      await supabase
-        .from("fp_profiles")
-        .update({ avatar_url: avatarUrl })
-        .eq("id", user.id);
+  const confirmAvatar = () => {
+    if (isReOnboard) {
+      // Re-onboarding complete — redirect back to app
+      router.push("/session");
+      return;
     }
     setStep(2);
   };
@@ -108,7 +185,6 @@ export default function OnboardPage() {
     // Navigate immediately — DB calls fire in background
     router.push("/session");
 
-    // Fire all DB work in parallel, no awaiting
     supabase
       .from("fp_profiles")
       .update({ onboarding_completed: true })
@@ -125,6 +201,21 @@ export default function OnboardPage() {
       },
       displayName
     );
+  };
+
+  // Username status indicator
+  const usernameIndicator = () => {
+    switch (username.status) {
+      case "checking":
+        return <Loader2 size={16} className="animate-spin text-[var(--color-text-tertiary)]" />;
+      case "available":
+        return <Check size={16} className="text-[#5BC682]" />;
+      case "taken":
+      case "invalid":
+        return <X size={16} className="text-[#EF5555]" />;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -152,17 +243,20 @@ export default function OnboardPage() {
           ))}
         </div>
 
-        {/* Step 1: Display name */}
+        {/* Step 1: Identity — display name + username */}
         {step === 0 && (
           <>
             <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
-              What should we call you?
+              {isReOnboard ? "Claim your handle" : "Who are you?"}
             </h1>
             <p className="mt-2 text-[var(--color-text-secondary)]">
-              This is how you&apos;ll appear in focus sessions.
+              {isReOnboard
+                ? "Pick a unique @username — this is how others will find you."
+                : "Set your name and pick a unique @username."}
             </p>
 
             <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
+              {/* Display name */}
               <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
                 Display name
               </label>
@@ -173,10 +267,45 @@ export default function OnboardPage() {
                 placeholder="Your name"
                 className="h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-4 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
               />
+
+              {/* Username */}
+              <label className="mb-1.5 mt-5 block text-xs font-medium text-[var(--color-text-secondary)]">
+                Username
+              </label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-tertiary)]">
+                  @
+                </span>
+                <input
+                  type="text"
+                  value={username.value}
+                  onChange={(e) => username.setValue(e.target.value)}
+                  placeholder="your_handle"
+                  className="h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] pl-8 pr-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
+                  style={{
+                    borderColor:
+                      username.status === "available"
+                        ? "#5BC682"
+                        : username.status === "taken" || username.status === "invalid"
+                          ? "#EF5555"
+                          : undefined,
+                  }}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {usernameIndicator()}
+                </span>
+              </div>
+              {username.error && (
+                <p className="mt-1.5 text-xs text-[#EF5555]">{username.error}</p>
+              )}
+              {username.status === "available" && (
+                <p className="mt-1.5 text-xs text-[#5BC682]">@{username.value} is available</p>
+              )}
+
               <button
-                onClick={saveDisplayName}
-                disabled={!displayName.trim() || saving}
-                className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
+                onClick={saveIdentity}
+                disabled={!displayName.trim() || !username.isValid || saving}
+                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Continue"}
               </button>
@@ -184,89 +313,96 @@ export default function OnboardPage() {
           </>
         )}
 
-        {/* Step 2: Avatar */}
+        {/* Step 2: Avatar — AI-generated */}
         {step === 1 && (
           <>
             <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
-              Add a profile picture
+              Here&apos;s your look
             </h1>
             <p className="mt-2 text-[var(--color-text-secondary)]">
-              Upload a photo or use your initials.
+              We generated a unique avatar just for you.
             </p>
 
             <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
-              <div className="flex flex-col items-center gap-4">
-                {/* Avatar preview */}
-                <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-[var(--color-border-default)]">
-                  {avatarPreview || avatarUrl ? (
+              <div className="flex flex-col items-center gap-5">
+                {/* Avatar display */}
+                <div className="relative h-[120px] w-[120px] overflow-hidden rounded-full border-2 border-[var(--color-border-default)]">
+                  {generating ? (
+                    <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg-active)]">
+                      <div className="h-full w-full animate-pulse bg-gradient-to-br from-[var(--color-bg-active)] via-[var(--color-bg-hover)] to-[var(--color-bg-active)]" />
+                      <Loader2
+                        size={32}
+                        className="absolute animate-spin text-[var(--color-text-tertiary)]"
+                      />
+                    </div>
+                  ) : avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={(avatarPreview || avatarUrl)!}
-                      alt="Avatar"
+                      src={avatarUrl}
+                      alt="Your avatar"
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg-active)] text-2xl font-bold text-[var(--color-text-secondary)]">
+                    <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg-active)] text-3xl font-bold text-[var(--color-text-secondary)]">
                       {getInitials(displayName || "FP")}
                     </div>
                   )}
                 </div>
 
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleAvatarUpload(file);
-                  }}
-                />
-
+                {/* Shuffle button */}
                 <button
-                  onClick={() => fileRef.current?.click()}
-                  disabled={uploading}
-                  className="rounded-full border border-[var(--color-border-default)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
+                  onClick={shuffleAvatar}
+                  disabled={generating}
+                  className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border-default)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] disabled:opacity-50"
                 >
-                  {uploading ? "Uploading..." : "Upload photo"}
+                  <RefreshCw size={14} strokeWidth={2} className={generating ? "animate-spin" : ""} />
+                  {generating ? "Generating..." : "Shuffle"}
                 </button>
+
+                {genError && (
+                  <p className="text-center text-xs text-[var(--color-text-tertiary)]">{genError}</p>
+                )}
               </div>
 
               <button
-                onClick={saveAvatar}
-                disabled={uploading}
+                onClick={confirmAvatar}
+                disabled={generating || !avatarUrl}
                 className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
               >
-                {uploading
-                  ? "Uploading..."
-                  : avatarPreview || avatarUrl
-                    ? "Continue"
-                    : "Skip for now"}
+                {isReOnboard ? "Done" : "Looks good"}
               </button>
             </div>
           </>
         )}
 
-        {/* Step 3: Start focusing */}
-        {step === 2 && (
+        {/* Step 3: Start focusing (only for new users) */}
+        {step === 2 && !isReOnboard && (
           <>
             <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
               You&apos;re all set!
             </h1>
             <p className="mt-2 text-[var(--color-text-secondary)]">
-              Start your first focus session and see what FocusParty is all
-              about.
+              Start your first focus session and see what FocusParty is all about.
             </p>
 
             <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6 text-center">
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                Welcome, <strong className="text-[var(--color-text-primary)]">{displayName}</strong>.
-                Let&apos;s get focused.
-              </p>
+              {/* Avatar + username welcome */}
+              <div className="mb-4 flex flex-col items-center gap-3">
+                {avatarUrl && (
+                  <div className="h-16 w-16 overflow-hidden rounded-full border-2 border-[var(--color-border-default)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+                  </div>
+                )}
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  Welcome, <strong className="text-[var(--color-text-primary)]">@{username.value}</strong>.
+                  Let&apos;s get focused.
+                </p>
+              </div>
               <button
                 onClick={completeOnboarding}
                 disabled={saving}
-                className="mt-6 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
+                className="mt-2 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
               >
                 <PartyPopper size={20} strokeWidth={1.8} />
                 {saving ? "Joining..." : "Join a party"}

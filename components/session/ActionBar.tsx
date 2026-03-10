@@ -14,8 +14,10 @@ import {
   ChevronUp,
   RotateCcw,
   Activity,
+  Zap,
 } from "lucide-react";
 import { MusicPopover } from "@/components/session/MusicPopover";
+import { CheckInMenu } from "@/components/session/CheckInMenu";
 import { DurationPills } from "./DurationPills";
 import { useTimerDisplay, type Timer } from "@/lib/useTimer";
 import type { VibeId, MusicStatus } from "@/lib/musicConstants";
@@ -59,6 +61,11 @@ interface ActionBarProps {
   roomStateLabel?: string;
   roomStateIcon?: string;
   roomStateColor?: string;
+  /** Check-in menu state */
+  checkInOpen?: boolean;
+  onToggleCheckIn?: () => void;
+  onCloseCheckIn?: () => void;
+  onCheckIn?: (action: string, message?: string) => void;
 }
 
 const ICON = { size: 18, strokeWidth: 1.8 } as const;
@@ -98,8 +105,13 @@ export const ActionBar = memo(function ActionBar({
   roomStateLabel,
   roomStateIcon,
   roomStateColor,
+  checkInOpen,
+  onToggleCheckIn,
+  onCloseCheckIn,
+  onCheckIn,
 }: ActionBarProps) {
   const musicWrapperRef = useRef<HTMLDivElement>(null);
+  const checkInWrapperRef = useRef<HTMLDivElement>(null);
   const { formatted, seconds } = useTimerDisplay(timer);
   const iconShadow = { filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))" } as const;
   const btn =
@@ -265,6 +277,30 @@ export const ActionBar = memo(function ActionBar({
             status={music.status}
           />
         </div>
+
+        {onToggleCheckIn && onCheckIn && (
+          <div ref={checkInWrapperRef} className="relative">
+            <Tip label="Check In">
+              <button
+                type="button"
+                onClick={onToggleCheckIn}
+                className={checkInOpen ? activeBtn : defaultBtn}
+                aria-label="Check in"
+                aria-expanded={checkInOpen}
+                style={iconShadow}
+              >
+                <Zap {...ICON} />
+              </button>
+            </Tip>
+
+            <CheckInMenu
+              isOpen={checkInOpen ?? false}
+              onClose={onCloseCheckIn ?? onToggleCheckIn}
+              wrapperRef={checkInWrapperRef}
+              onCheckIn={onCheckIn}
+            />
+          </div>
+        )}
 
         <Tip label="Tasks">
           <button

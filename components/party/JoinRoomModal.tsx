@@ -47,7 +47,7 @@ function formatMinutes(seconds: number): string {
 
 export function JoinRoomModal({ partyId, isOpen, onClose }: JoinRoomModalProps) {
   const router = useRouter();
-  const { userId, displayName } = useCurrentUser();
+  const { userId, displayName, username } = useCurrentUser();
   const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -78,6 +78,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose }: JoinRoomModalProps) 
     partyId: isOpen ? partyId : null,
     userId,
     displayName,
+    username,
   });
 
   const feedNameMap = useMemo(() => {

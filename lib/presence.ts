@@ -26,6 +26,7 @@ export function phaseToStatus(phase: SessionPhase | null): ParticipantStatus {
 export function buildPresencePayload(input: {
   userId: string;
   displayName: string;
+  username?: string | null;
   avatarUrl?: string | null;
   character?: CharacterId | null;
   activeSessionId?: string | null;
@@ -35,6 +36,7 @@ export function buildPresencePayload(input: {
   return {
     userId: input.userId,
     displayName: input.displayName,
+    username: input.username ?? null,
     avatarUrl: input.avatarUrl ?? null,
     character: (input.character as CharacterId) ?? null,
     activeSessionId: input.activeSessionId ?? null,

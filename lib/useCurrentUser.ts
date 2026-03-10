@@ -1,11 +1,13 @@
 "use client";
 
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useProfile } from "./useProfile";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
 export function useCurrentUser() {
   const { user, authState } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
   const router = useRouter();
 
   const requireAuth = useCallback(
@@ -25,12 +27,15 @@ export function useCurrentUser() {
   return {
     userId: user?.id ?? null,
     displayName:
+      profile?.display_name ??
       user?.user_metadata?.display_name ??
       user?.email?.split("@")[0] ??
       "Guest",
+    username: profile?.username ?? null,
+    avatarUrl: profile?.avatar_url ?? null,
     email: user?.email ?? null,
     isAuthenticated: authState === "authenticated",
-    isLoading: authState === "loading",
+    isLoading: authState === "loading" || profileLoading,
     requireAuth,
   };
 }

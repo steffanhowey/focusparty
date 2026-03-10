@@ -14,6 +14,7 @@ interface UsePartyPresenceInput {
   partyId: string | null;
   userId: string | null;
   displayName: string;
+  username?: string | null;
   avatarUrl?: string | null;
   character?: CharacterId | null;
   activeSessionId?: string | null;
@@ -43,6 +44,7 @@ export function usePartyPresence(
     partyId,
     userId,
     displayName,
+    username,
     avatarUrl,
     character,
     activeSessionId,
@@ -95,6 +97,7 @@ export function usePartyPresence(
           const payload = buildPresencePayload({
             userId,
             displayName,
+            username,
             avatarUrl,
             character,
             activeSessionId,
@@ -134,7 +137,7 @@ export function usePartyPresence(
       goalPreview,
     });
     channelRef.current.track(payload);
-  }, [userId, displayName, avatarUrl, character, activeSessionId, phase, goalPreview]);
+  }, [userId, displayName, username, avatarUrl, character, activeSessionId, phase, goalPreview]);
 
   const updatePresence = useCallback(
     (updates: Partial<PresencePayload>) => {

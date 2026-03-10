@@ -41,7 +41,7 @@ const DEFAULT_DURATION_SEC = 25 * 60;
 
 export default function SessionPage() {
   const router = useRouter();
-  const { userId, displayName } = useCurrentUser();
+  const { userId, displayName, username, avatarUrl } = useCurrentUser();
   const { characterAccent } = useTheme();
   const persistence = useSessionPersistence(userId);
   const [phase, setPhase] = useState<SessionPhase>("setup");
@@ -87,6 +87,8 @@ export default function SessionPage() {
     partyId: partyId ?? null,
     userId,
     displayName,
+    username,
+    avatarUrl,
     character: characterAccent,
     activeSessionId: persistence.sessionRow?.id ?? null,
     phase,

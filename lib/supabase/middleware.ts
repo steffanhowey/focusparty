@@ -65,7 +65,7 @@ export async function updateSession(request: NextRequest) {
     if (onboardingCookie !== "1") {
       const { data: profile } = await supabase
         .from("fp_profiles")
-        .select("onboarding_completed")
+        .select("onboarding_completed, username")
         .eq("id", user.id)
         .single();
 
@@ -76,7 +76,15 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(onboardUrl);
       }
 
-      if (profile?.onboarding_completed) {
+      // Force re-onboarding for users who completed onboarding but have no username
+      if (profile?.onboarding_completed && !profile.username) {
+        const onboardUrl = request.nextUrl.clone();
+        onboardUrl.pathname = "/onboard";
+        onboardUrl.searchParams.set("step", "username");
+        return NextResponse.redirect(onboardUrl);
+      }
+
+      if (profile?.onboarding_completed && profile.username) {
         supabaseResponse.cookies.set("fp_onboarded", "1", {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",

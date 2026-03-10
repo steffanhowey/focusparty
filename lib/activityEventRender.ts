@@ -10,6 +10,9 @@ import {
   Sparkles,
   CircleDot,
   Hand,
+  TrendingUp,
+  Rocket,
+  RotateCcw,
   type LucideIcon,
 } from "lucide-react";
 import type { ActivityEvent } from "./types";
@@ -34,18 +37,41 @@ const TONE_COLORS: Record<EventTone, string> = {
   neutral: "#888995",
 };
 
+// ─── Actor Name Resolution ───────────────────────────────────
+
+/**
+ * Event types where `event.body` contains the actor's display name
+ * (as opposed to content like a goal or host message).
+ */
+const ACTOR_IN_BODY_EVENTS = new Set([
+  "participant_joined",
+  "participant_left",
+  "session_started",
+  "session_completed",
+  "sprint_completed",
+  "sprint_started",
+  "check_in",
+]);
+
 // ─── Renderer ───────────────────────────────────────────────
 
 /**
  * Unified event rendering logic.
  * Used by both the room activity feed and the personal progress feed
  * to ensure consistent language and iconography.
+ *
+ * When no explicit actorName is provided, auto-resolves from event.body
+ * for event types where body = actor display name (join, leave, sprint, etc.).
  */
 export function renderActivityEvent(
   event: ActivityEvent,
   actorName?: string
 ): RenderedActivityEvent {
-  const name = actorName || "Someone";
+  const name =
+    actorName ||
+    (ACTOR_IN_BODY_EVENTS.has(event.event_type) && event.body
+      ? event.body
+      : "Someone");
 
   switch (event.event_type) {
     case "session_started":
@@ -156,6 +182,54 @@ export function renderActivityEvent(
         tone: "success",
         color: "#F59E0B",
       };
+    }
+
+    case "check_in": {
+      const action = event.payload?.action as string | undefined;
+      const message = event.payload?.message as string | undefined;
+      const taskTitle = event.payload?.task_title as string | undefined;
+
+      switch (action) {
+        case "progress":
+          return {
+            icon: TrendingUp,
+            label: `${name} is making progress`,
+            tone: "success",
+            color: TONE_COLORS.success,
+          };
+        case "ship":
+          return {
+            icon: Rocket,
+            label: taskTitle
+              ? `${name} shipped ${taskTitle.length > 30 ? taskTitle.slice(0, 27) + "..." : taskTitle}`
+              : `${name} shipped something`,
+            tone: "success",
+            color: "#F59E0B",
+          };
+        case "reset":
+          return {
+            icon: RotateCcw,
+            label: `${name} is resetting`,
+            tone: "warning",
+            color: TONE_COLORS.warning,
+          };
+        case "update":
+          return {
+            icon: MessageSquare,
+            label: message
+              ? `${name}: "${message.length > 40 ? message.slice(0, 37) + "..." : message}"`
+              : `${name} shared an update`,
+            tone: "info",
+            color: TONE_COLORS.info,
+          };
+        default:
+          return {
+            icon: Zap,
+            label: `${name} checked in`,
+            tone: "info",
+            color: TONE_COLORS.info,
+          };
+      }
     }
 
     default:

@@ -201,20 +201,31 @@ export function ParticipantCard({
               : participant.displayName}
           </p>
 
-          {/* Real user status */}
-          {participant.participantType === "real" && statusConfig && (
-            <span
-              className="text-xs font-medium"
-              style={{ color: statusConfig.color }}
-            >
-              {statusConfig.label}
+          {/* @username + status for real users */}
+          {participant.participantType === "real" && (
+            <span className="flex items-center gap-1.5 text-xs">
+              {participant.username && (
+                <span className="text-white/40">@{participant.username}</span>
+              )}
+              {statusConfig && (
+                <span className="font-medium" style={{ color: statusConfig.color }}>
+                  {participant.username ? `· ${statusConfig.label}` : statusConfig.label}
+                </span>
+              )}
             </span>
           )}
 
-          {/* Synthetic archetype */}
-          {participant.participantType === "synthetic" && archetypeConfig && (
-            <span className="text-xs text-white/50">
-              {archetypeConfig.label}
+          {/* Synthetic handle + archetype */}
+          {participant.participantType === "synthetic" && (
+            <span className="flex items-center gap-1.5 text-xs">
+              {participant.username && (
+                <span className="text-white/40">@{participant.username}</span>
+              )}
+              {archetypeConfig && (
+                <span className="text-white/50">
+                  {participant.username ? `· ${archetypeConfig.label}` : archetypeConfig.label}
+                </span>
+              )}
             </span>
           )}
 

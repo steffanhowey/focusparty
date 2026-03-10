@@ -6,9 +6,10 @@ import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronDown, ChevronUp, Sun, Moon, CreditCard, Settings, LogOut, LogIn } from "lucide-react";
 import { Logo } from "./Logo";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { NAV_ITEMS, NavIcon } from "./navItems";
-import { PLAN_LABELS, STUB_DISPLAY_NAME, STUB_PLAN } from "@/lib/constants";
+import { PLAN_LABELS, STUB_PLAN } from "@/lib/constants";
 
 const SIDEBAR_WIDTH_EXPANDED = "w-60";
 const SIDEBAR_WIDTH_RAILS = "w-14 md:w-18";
@@ -32,22 +33,16 @@ const PROFILE_MENU_STYLE = {
 
 export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: SidebarProps) {
   const pathname = usePathname();
-  const { user, authState, signOut } = useAuth();
+  const { authState, signOut } = useAuth();
+  const { displayName: rawDisplayName, username, avatarUrl } = useCurrentUser();
   const { colorMode, setColorMode } = useTheme();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  const rawName =
-    user?.user_metadata?.display_name ??
-    user?.user_metadata?.full_name ??
-    user?.email?.split("@")[0] ??
-    STUB_DISPLAY_NAME;
-  const displayName = rawName
+  const displayName = rawDisplayName
     .split(/[\s._-]+/)
     .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
-  const avatarUrl: string | undefined =
-    user?.user_metadata?.avatar_url ?? user?.user_metadata?.picture;
   const planLabel = PLAN_LABELS[STUB_PLAN];
 
   const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "party";
@@ -183,9 +178,10 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
               aria-expanded={profileMenuOpen}
               aria-haspopup="true"
               aria-label="Profile menu"
-              title={`${displayName} · ${planLabel}`}
+              title={username ? `@${username}` : `${displayName} · ${planLabel}`}
             >
               {avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={avatarUrl}
                   alt=""
@@ -271,6 +267,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
               aria-label="Profile menu"
             >
               {avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={avatarUrl}
                   alt=""
@@ -295,7 +292,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                   {displayName}
                 </p>
                 <p className="truncate text-xs font-medium text-[var(--color-text-tertiary)]">
-                  {planLabel}
+                  {username ? `@${username}` : planLabel}
                 </p>
               </div>
               <span className="shrink-0 text-[var(--color-text-tertiary)]">

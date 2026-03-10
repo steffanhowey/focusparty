@@ -57,23 +57,38 @@ export function LiveParticipantsStrip({
                 marginLeft: i === 0 ? 0 : -overlap,
                 zIndex: visible.length - i,
               }}
-              title={`${p.displayName} \u00b7 ${statusCfg.label}`}
+              title={`${p.username ? `@${p.username}` : p.displayName} \u00b7 ${statusCfg.label}`}
             >
-              {/* Avatar circle */}
-              <div
-                className="flex items-center justify-center rounded-full border-2 font-semibold"
-                style={{
-                  width: px,
-                  height: px,
-                  borderColor,
-                  background: bgColor,
-                  color: charDef?.primary ?? "var(--color-text-secondary)",
-                  fontSize: size === "sm" ? 11 : 13,
-                  boxShadow: "0 0 0 2px var(--color-bg-secondary)",
-                }}
-              >
-                {initial}
-              </div>
+              {/* Avatar — image if available, initial fallback */}
+              {p.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={p.avatarUrl}
+                  alt={p.displayName}
+                  className="rounded-full object-cover"
+                  style={{
+                    width: px,
+                    height: px,
+                    border: `2px solid ${borderColor}`,
+                    boxShadow: "0 0 0 2px var(--color-bg-secondary)",
+                  }}
+                />
+              ) : (
+                <div
+                  className="flex items-center justify-center rounded-full border-2 font-semibold"
+                  style={{
+                    width: px,
+                    height: px,
+                    borderColor,
+                    background: bgColor,
+                    color: charDef?.primary ?? "var(--color-text-secondary)",
+                    fontSize: size === "sm" ? 11 : 13,
+                    boxShadow: "0 0 0 2px var(--color-bg-secondary)",
+                  }}
+                >
+                  {initial}
+                </div>
+              )}
 
               {/* Status dot */}
               <div

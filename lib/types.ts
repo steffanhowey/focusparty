@@ -243,7 +243,8 @@ export type ActivityEventType =
   | "participant_left"
   | "host_prompt"
   | "high_five"
-  | "room_entered";
+  | "room_entered"
+  | "check_in";
 
 // ─── Room State ──────────────────────────────────────────────
 
@@ -312,6 +313,7 @@ export type ParticipantStatus =
 export interface PresencePayload {
   userId: string;
   displayName: string;
+  username: string | null;
   avatarUrl: string | null;
   character: CharacterId | null;
   activeSessionId: string | null;

@@ -45,6 +45,7 @@ import type { JoinConfig } from "@/components/party/JoinRoomModal";
 import type { SessionPhase, SessionReflection } from "@/lib/types";
 
 type SidePanel = "none" | "momentum" | "tasks" | "chat" | "settings";
+type CelebrationInfo = { color: string; text: string };
 const PANEL_WIDTH = 380;
 const DEFAULT_DURATION_SEC = 25 * 60;
 
@@ -52,7 +53,7 @@ export default function EnvironmentPage() {
   const params = useParams();
   const partyId = params.id as string;
   const router = useRouter();
-  const { userId, displayName } = useCurrentUser();
+  const { userId, displayName, username, avatarUrl } = useCurrentUser();
   const { characterAccent } = useTheme();
 
   // ─── Party lookup ──────────────────────────────────────
@@ -112,6 +113,9 @@ export default function EnvironmentPage() {
   const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [micActive, setMicActive] = useState(false);
+  const [checkInOpen, setCheckInOpen] = useState(false);
+  const [celebrations, setCelebrations] = useState<Map<string, CelebrationInfo>>(new Map());
+  const lastFeedLengthRef = useRef(0);
 
   // ─── Side panel state (same pattern as session page) ──
   const [activePanel, setActivePanel] = useState<SidePanel>("none");
@@ -144,6 +148,8 @@ export default function EnvironmentPage() {
     partyId,
     userId,
     displayName,
+    username,
+    avatarUrl,
     character: characterAccent,
     activeSessionId: persistence.sessionRow?.id ?? null,
     phase,
@@ -163,6 +169,63 @@ export default function EnvironmentPage() {
     [feedEvents, presence.participants.length]
   );
   const roomStateDisplay = ROOM_STATE_CONFIG[roomState];
+
+  // ─── Avatar celebration bursts (check-in + high-five) ──
+  useEffect(() => {
+    if (feedEvents.length <= lastFeedLengthRef.current) {
+      lastFeedLengthRef.current = feedEvents.length;
+      return;
+    }
+    const newEvents = feedEvents.slice(lastFeedLengthRef.current);
+    lastFeedLengthRef.current = feedEvents.length;
+
+    for (const event of newEvents) {
+      let targetId: string | null = null;
+      let color = "#5CC2EC";
+      let text = "";
+
+      if (event.event_type === "check_in") {
+        targetId =
+          event.actor_type === "synthetic"
+            ? (event.payload?.synthetic_id as string) ?? null
+            : event.user_id;
+        const action = event.payload?.action as string;
+        const taskTitle = event.payload?.task_title as string | undefined;
+        const message = event.payload?.message as string | undefined;
+
+        if (action === "progress") {
+          color = "#5BC682";
+          text = "Making progress";
+        } else if (action === "ship") {
+          color = "#F59E0B";
+          text = taskTitle ? `Shipped ${taskTitle}` : "Shipped something";
+        } else if (action === "reset") {
+          color = "#F5C54E";
+          text = "Taking a reset";
+        } else if (action === "update") {
+          color = "#5CC2EC";
+          text = message || "Shared an update";
+        }
+      }
+
+      if (event.event_type === "high_five") {
+        targetId = (event.payload?.target_user_id as string) ?? null;
+        color = "#F59E0B";
+        text = "High five!";
+      }
+
+      if (targetId) {
+        setCelebrations((prev) => new Map(prev).set(targetId!, { color, text }));
+        setTimeout(() => {
+          setCelebrations((prev) => {
+            const next = new Map(prev);
+            next.delete(targetId!);
+            return next;
+          });
+        }, 2000);
+      }
+    }
+  }, [feedEvents.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── AI host ───────────────────────────────────────────
   const hostTriggers = useHostTriggers({
@@ -476,6 +539,40 @@ export default function EnvironmentPage() {
   );
   const handleCloseGoalCard = useCallback(() => setSprintGoalCardOpen(false), []);
 
+  // ─── Check-in ───────────────────────────────────────────
+
+  const handleToggleCheckIn = useCallback(() => {
+    setCheckInOpen((v) => !v);
+  }, []);
+
+  const handleCloseCheckIn = useCallback(() => {
+    setCheckInOpen(false);
+  }, []);
+
+  const handleCheckIn = useCallback(
+    (action: string, message?: string) => {
+      if (!userId) return;
+      setCheckInOpen(false);
+
+      const taskTitle = activeTask?.title;
+      logEvent({
+        party_id: partyId,
+        session_id: persistence.sessionRow?.id ?? null,
+        user_id: userId,
+        event_type: "check_in",
+        body: displayName,
+        payload: {
+          action,
+          ...(message && { message }),
+          ...(action === "ship" && taskTitle && { task_title: taskTitle }),
+        },
+      }).catch((err) =>
+        console.error("[EnvironmentPage] check-in failed:", err?.message ?? err?.code ?? JSON.stringify(err))
+      );
+    },
+    [userId, partyId, persistence.sessionRow?.id, displayName, activeTask?.title]
+  );
+
   // ─── Task switching ────────────────────────────────────
 
   const handleStartTask = useCallback(
@@ -516,6 +613,7 @@ export default function EnvironmentPage() {
     const real: ParticipantInfo[] = presence.participants.map((p) => ({
       id: p.userId,
       displayName: p.displayName,
+      username: p.username ?? null,
       avatarUrl: p.avatarUrl ?? null,
       isFocusing: p.phase === "sprint",
       isHost: false,
@@ -529,6 +627,7 @@ export default function EnvironmentPage() {
       return {
         id: sp.id,
         displayName: sp.displayName,
+        username: sp.handle,
         avatarUrl: sp.avatarUrl,
         isFocusing: true,
         isHost: false,
@@ -632,6 +731,7 @@ export default function EnvironmentPage() {
             participants={participantInfos}
             onParticipantClick={handleParticipantClick}
             cameraStream={camera.stream}
+            celebrations={celebrations}
           />
           {selectedParticipant && (
             <ParticipantCard
@@ -724,6 +824,10 @@ export default function EnvironmentPage() {
                 roomStateLabel={roomStateDisplay.label}
                 roomStateIcon={roomStateDisplay.icon}
                 roomStateColor={roomStateDisplay.color}
+                checkInOpen={checkInOpen}
+                onToggleCheckIn={handleToggleCheckIn}
+                onCloseCheckIn={handleCloseCheckIn}
+                onCheckIn={handleCheckIn}
               />
             )}
           </>

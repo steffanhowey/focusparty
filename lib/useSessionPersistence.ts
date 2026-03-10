@@ -98,11 +98,18 @@ export function useSessionPersistence(
   sprintRef.current = currentSprint;
 
   // ── Hydration: check for active session on mount ──
+  //
+  // IMPORTANT: When userId is null (auth still loading), we intentionally
+  // keep isHydrating=true (its initial value). This prevents page-level
+  // hydration effects from firing prematurely and marking themselves as
+  // "applied" before we've actually checked the database. Once userId
+  // arrives, we fetch the active session and only then set isHydrating=false.
   useEffect(() => {
-    if (!userId) {
-      setIsHydrating(false);
-      return;
-    }
+    if (!userId) return;
+
+    // (Re-)enter hydrating state — critical when userId transitions
+    // from null → real value after auth loads.
+    setIsHydrating(true);
 
     let cancelled = false;
 

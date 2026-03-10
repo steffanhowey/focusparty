@@ -33,6 +33,10 @@ const LazyProgressDashboard = lazy(() =>
   import("@/components/progress/ProgressDashboard").then((m) => ({ default: m.ProgressDashboard }))
 );
 
+const LazyProfileSettings = lazy(() =>
+  import("@/components/settings/ProfileSettings").then((m) => ({ default: m.ProfileSettings }))
+);
+
 function renderTabContent(tab: string): ReactNode {
   switch (tab) {
     case "/party":
@@ -60,7 +64,13 @@ function renderTabContent(tab: string): ReactNode {
         </main>
       );
     case "/settings":
-      return <main className="flex-1">{/* Content — title is in shell header */}</main>;
+      return (
+        <main className="flex-1">
+          <Suspense fallback={null}>
+            <LazyProfileSettings />
+          </Suspense>
+        </main>
+      );
     default:
       return null;
   }

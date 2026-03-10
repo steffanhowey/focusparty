@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import type { ParticipantStatus } from "@/lib/types";
 import type { SyntheticArchetype } from "@/lib/synthetics/pool";
+import { AvatarCelebration } from "./AvatarCelebration";
 
 export interface ParticipantInfo {
   id: string;
   displayName: string;
+  username?: string | null;
   avatarUrl?: string | null;
   isFocusing?: boolean;
   isHost?: boolean;
@@ -29,6 +31,8 @@ interface EnvironmentParticipantsProps {
   onParticipantClick?: (participant: ParticipantInfo, rect: DOMRect) => void;
   /** Active camera stream for the current user — replaces their avatar when present */
   cameraStream?: MediaStream | null;
+  /** Map of participant id → celebration info for active burst + status text */
+  celebrations?: Map<string, { color: string; text: string }>;
 }
 
 /** Generate a consistent DiceBear avatar URL from a user ID or name. */
@@ -40,12 +44,89 @@ export function EnvironmentParticipants({
   participants,
   onParticipantClick,
   cameraStream,
+  celebrations,
 }: EnvironmentParticipantsProps) {
+  const [expanded, setExpanded] = useState(false);
+  const [itemsPerColumn, setItemsPerColumn] = useState(8);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Measure container height and compute how many avatars fit per column
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const availableHeight = el.clientHeight - 80 - 96; // pt-20, pb-24
+      // Each item: 64px avatar + 4px gap-1 + ~16px name = ~84px
+      // gap-y-4 = 16px between items → 100px per slot, last has no trailing gap
+      const computed = Math.max(1, Math.floor((availableHeight + 16) / 100));
+      setItemsPerColumn(computed);
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Reorder so current user is at top of column 2 (or right after host if single column)
+  const orderedParticipants = useMemo(() => {
+    const currentUserIdx = participants.findIndex((p) => p.isCurrentUser);
+    if (currentUserIdx === -1) return participants;
+
+    const currentUser = participants[currentUserIdx];
+    const others = participants.filter((_, i) => i !== currentUserIdx);
+
+    if (participants.length > itemsPerColumn) {
+      // 2+ columns: host fills top of col 1, current user tops col 2
+      const col1 = others.slice(0, itemsPerColumn);
+      const afterCol1 = others.slice(itemsPerColumn);
+      return [...col1, currentUser, ...afterCol1];
+    }
+    // Single column: current user right after host
+    return [others[0], currentUser, ...others.slice(1)];
+  }, [participants, itemsPerColumn]);
+
+  const maxCollapsedSlots = itemsPerColumn * 2;
+  const hasOverflow = !expanded && participants.length > maxCollapsedSlots;
+
+  const visibleParticipants = useMemo(() => {
+    if (expanded || !hasOverflow) return orderedParticipants;
+    return orderedParticipants.slice(0, maxCollapsedSlots - 1);
+  }, [expanded, hasOverflow, orderedParticipants, maxCollapsedSlots]);
+
+  const overflowCount = hasOverflow
+    ? participants.length - (maxCollapsedSlots - 1)
+    : 0;
+
+  const handleExpand = useCallback(() => setExpanded(true), []);
+  const handleCollapse = useCallback(() => setExpanded(false), []);
+
+  // Auto-collapse when participants drop below threshold
+  useEffect(() => {
+    if (expanded && participants.length <= maxCollapsedSlots) {
+      setExpanded(false);
+    }
+  }, [expanded, participants.length, maxCollapsedSlots]);
+
   if (participants.length === 0) return null;
 
+  const badgeStyle = {
+    background: "rgba(255, 255, 255, 0.10)",
+    border: "2px solid rgba(255,255,255,0.12)",
+    boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
+  };
+
   return (
-    <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full flex-col flex-wrap content-start items-center gap-x-3 gap-y-4 overflow-hidden px-4 pb-24 pt-20">
-      {participants.map((p) => (
+    <div
+      ref={containerRef}
+      className={`pointer-events-none absolute left-0 top-0 z-10 flex h-full flex-col flex-wrap content-start items-center gap-x-3 gap-y-4 px-4 pb-24 pt-20 ${
+        expanded ? "" : "overflow-hidden"
+      }`}
+    >
+      {visibleParticipants.map((p) => (
         <div
           key={p.id}
           className="pointer-events-auto flex cursor-pointer flex-col items-center gap-1"
@@ -57,7 +138,7 @@ export function EnvironmentParticipants({
           {/* Avatar — live camera feed for current user, static image for others */}
           <div className="relative">
             {p.isCurrentUser && cameraStream ? (
-              <CameraAvatar stream={cameraStream} />
+              <CameraAvatar stream={cameraStream} celebrationColor={celebrations?.get(p.id)?.color} />
             ) : (
               <Image
                 src={p.avatarUrl || fallbackAvatar(p.id || p.displayName)}
@@ -68,24 +149,89 @@ export function EnvironmentParticipants({
                 style={{
                   border: "2px solid rgba(255,255,255,0.12)",
                   boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+                  ...(celebrations?.has(p.id) && {
+                    "--burst-color": celebrations.get(p.id)!.color,
+                    animation: "fp-burst-glow 1.4s ease-out",
+                  } as React.CSSProperties),
                 }}
               />
+            )}
+            {celebrations?.has(p.id) && (
+              <AvatarCelebration color={celebrations.get(p.id)!.color} />
+            )}
+            {celebrations?.get(p.id)?.text && (
+              <div
+                className="fp-status-text pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2"
+                style={{ animation: "fp-status-float 2s ease-out forwards" }}
+              >
+                <span
+                  className="block max-w-[120px] truncate whitespace-nowrap rounded-full px-2 py-0.5 text-center text-[10px] font-medium leading-tight"
+                  style={{
+                    backgroundColor: "rgba(0, 0, 0, 0.65)",
+                    color: celebrations.get(p.id)!.color,
+                    backdropFilter: "blur(4px)",
+                    WebkitBackdropFilter: "blur(4px)",
+                  }}
+                >
+                  {celebrations.get(p.id)!.text}
+                </span>
+              </div>
             )}
           </div>
 
           {/* Name */}
           <span className="max-w-[80px] truncate text-center text-xs font-medium text-white/70">
-            {p.isHost ? "Host" : p.isCurrentUser ? "You" : p.displayName.split(" ")[0]}
+            {p.isHost ? "Host" : p.isCurrentUser ? "You" : p.username ? `@${p.username}` : p.displayName.split(" ")[0]}
           </span>
         </div>
       ))}
+
+      {/* +X overflow badge */}
+      {hasOverflow && (
+        <div
+          className="pointer-events-auto flex cursor-pointer flex-col items-center gap-1"
+          onClick={handleExpand}
+        >
+          <div
+            className="flex h-16 w-16 items-center justify-center rounded-full transition-transform duration-150 hover:scale-105"
+            style={badgeStyle}
+          >
+            <span className="text-sm font-semibold text-white/80">
+              +{overflowCount}
+            </span>
+          </div>
+          <span className="max-w-[80px] truncate text-center text-xs font-medium text-white/50">
+            more
+          </span>
+        </div>
+      )}
+
+      {/* Collapse button */}
+      {expanded && participants.length > maxCollapsedSlots && (
+        <div
+          className="pointer-events-auto flex cursor-pointer flex-col items-center gap-1"
+          onClick={handleCollapse}
+        >
+          <div
+            className="flex h-16 w-16 items-center justify-center rounded-full transition-transform duration-150 hover:scale-105"
+            style={badgeStyle}
+          >
+            <span className="text-base font-semibold text-white/80">
+              &minus;
+            </span>
+          </div>
+          <span className="max-w-[80px] truncate text-center text-xs font-medium text-white/50">
+            less
+          </span>
+        </div>
+      )}
     </div>
   );
 }
 
 /* ─── Live camera feed rendered as a circular avatar ───── */
 
-function CameraAvatar({ stream }: { stream: MediaStream }) {
+function CameraAvatar({ stream, celebrationColor }: { stream: MediaStream; celebrationColor?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -108,6 +254,10 @@ function CameraAvatar({ stream }: { stream: MediaStream }) {
         border: "2px solid rgba(255,255,255,0.12)",
         boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
         transform: "scaleX(-1)",
+        ...(celebrationColor && {
+          "--burst-color": celebrationColor,
+          animation: "fp-burst-glow 1.4s ease-out",
+        } as React.CSSProperties),
       }}
     />
   );

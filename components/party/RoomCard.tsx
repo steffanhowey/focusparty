@@ -36,6 +36,7 @@ function AvatarCluster({
             key={p.id}
             src={p.avatarUrl}
             alt={p.displayName}
+            title={`@${p.handle}`}
             width={size}
             height={size}
             className="rounded-full object-cover"

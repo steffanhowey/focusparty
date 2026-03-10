@@ -46,7 +46,7 @@ interface PartyLobbyProps {
 export function PartyLobby({ partyId }: PartyLobbyProps) {
   const router = useRouter();
   const { showToast } = useNotification();
-  const { userId, displayName, isAuthenticated } = useCurrentUser();
+  const { userId, displayName, username, isAuthenticated } = useCurrentUser();
 
   const [party, setParty] = useState<Party | null>(null);
   const [participants, setParticipants] = useState<PartyParticipant[]>([]);
@@ -66,6 +66,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     partyId,
     userId,
     displayName,
+    username,
     phase: null, // not in a session from the lobby
     character: party?.character ?? null,
   });

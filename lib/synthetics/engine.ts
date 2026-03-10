@@ -6,6 +6,7 @@
 import { createClient } from "@/lib/supabase/admin";
 import {
   SYNTHETIC_POOL,
+  type SyntheticArchetype,
   type SyntheticParticipant,
   type SyntheticEventType,
 } from "./pool";
@@ -167,7 +168,8 @@ function buildSyntheticStates(
         });
         break;
       case "sprint_completed":
-        // stays in_session after completing a sprint
+      case "check_in":
+        // stays in_session after completing a sprint or checking in
         stateMap.set(synId, {
           state: "in_session",
           joinedAt: stateMap.get(synId)?.joinedAt ?? null,
@@ -230,6 +232,10 @@ function getValidTransitions(
         eventType: "session_completed",
         weight: synthetic.activityBias.session_completed,
       });
+      transitions.push({
+        eventType: "check_in",
+        weight: synthetic.activityBias.check_in,
+      });
       break;
   }
 
@@ -254,12 +260,14 @@ function getRoomStateBias(
       // Warming rooms: favor session starts and sprints
       if (eventType === "session_started") return 1.4;
       if (eventType === "sprint_completed") return 1.2;
+      if (eventType === "check_in") return 1.2;
       if (eventType === "participant_left") return 0.3;
       return 1.0;
 
     case "focused":
-      // Focused rooms: favor sprint completions, suppress joins
+      // Focused rooms: favor sprint completions and check-ins, suppress joins
       if (eventType === "sprint_completed") return 1.5;
+      if (eventType === "check_in") return 1.3;
       if (eventType === "participant_joined") return 0.5;
       if (eventType === "participant_left") return 0.3;
       return 1.0;
@@ -277,6 +285,44 @@ function getRoomStateBias(
 
     default:
       return 1.0;
+  }
+}
+
+// ─── Check-In Payload Generator ────────────────────────────
+
+const SYNTHETIC_SHIP_TASKS: Record<SyntheticArchetype, string[]> = {
+  coder: ["a new component", "a bug fix", "an API endpoint", "a refactor", "a test suite"],
+  writer: ["a blog draft", "a chapter outline", "an edit pass", "a content brief", "a newsletter"],
+  founder: ["a pitch update", "a landing page", "a feature spec", "a growth experiment", "investor notes"],
+  gentle: ["a journal entry", "a study guide", "a design sketch", "a mood board", "a reading list"],
+};
+
+const SYNTHETIC_UPDATE_MSGS: string[] = [
+  "Deep in flow right now",
+  "Making steady progress",
+  "Almost done with this chunk",
+  "Hit a groove, keeping going",
+  "Wrapping up a tricky section",
+  "Feeling productive today",
+  "One more push then break",
+];
+
+function generateCheckInPayload(
+  synthetic: SyntheticParticipant
+): Record<string, unknown> {
+  const roll = Math.random();
+  if (roll < 0.6) {
+    return { action: "progress" };
+  } else if (roll < 0.85) {
+    const tasks = SYNTHETIC_SHIP_TASKS[synthetic.archetype];
+    const task = tasks[Math.floor(Math.random() * tasks.length)];
+    return { action: "ship", task_title: task };
+  } else {
+    const msg =
+      SYNTHETIC_UPDATE_MSGS[
+        Math.floor(Math.random() * SYNTHETIC_UPDATE_MSGS.length)
+      ];
+    return { action: "update", message: msg };
   }
 }
 
@@ -355,14 +401,22 @@ export function generateTickEvents(
     const chosen = weightedRandom(allOptions);
     if (!chosen) continue;
 
+    const basePayload: Record<string, unknown> = {
+      synthetic_id: chosen.synthetic.id,
+      synthetic_handle: chosen.synthetic.handle,
+    };
+
+    // Enrich check-in events with action-specific payload
+    const payload =
+      chosen.eventType === "check_in"
+        ? { ...basePayload, ...generateCheckInPayload(chosen.synthetic) }
+        : basePayload;
+
     proposals.push({
       party_id: room.id,
       event_type: chosen.eventType,
       body: chosen.synthetic.displayName,
-      payload: {
-        synthetic_id: chosen.synthetic.id,
-        synthetic_handle: chosen.synthetic.handle,
-      },
+      payload,
       created_at: new Date().toISOString(),
     });
 
