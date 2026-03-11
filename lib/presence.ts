@@ -73,7 +73,8 @@ export const PARTICIPANT_STATUS_CONFIG: Record<
 export function eventDisplayText(
   eventType: string,
   displayName: string,
-  body?: string | null
+  body?: string | null,
+  payload?: Record<string, unknown> | null
 ): string {
   const name = displayName || "Someone";
   switch (eventType) {
@@ -99,10 +100,26 @@ export function eventDisplayText(
       return `${name} left the party`;
     case "host_prompt":
       return body ? `Host: ${body}` : "Host posted a prompt";
-    case "high_five":
-      return body ? `${name} high-fived ${body}` : `${name} sent a high five`;
+    case "high_five": {
+      const target = (payload?.target_display_name as string) ?? body;
+      return target ? `${name} high-fived ${target}` : `${name} sent a high five`;
+    }
     case "room_entered":
       return `${name} entered the room`;
+    case "check_in": {
+      const action = payload?.action as string | undefined;
+      if (action === "progress") return `${name} is making progress`;
+      if (action === "ship") {
+        const task = payload?.task_title as string | undefined;
+        return task ? `${name} shipped ${task}` : `${name} shipped something`;
+      }
+      if (action === "reset") return `${name} is taking a reset`;
+      if (action === "update") {
+        const msg = payload?.message as string | undefined;
+        return msg ? `${name}: ${msg}` : `${name} shared an update`;
+      }
+      return `${name} checked in`;
+    }
     default:
       return `${name} did something`;
   }

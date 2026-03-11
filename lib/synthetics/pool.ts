@@ -12,7 +12,8 @@ export type SyntheticEventType =
   | "sprint_completed"
   | "session_completed"
   | "participant_left"
-  | "check_in";
+  | "check_in"
+  | "high_five";
 
 export interface SyntheticParticipant {
   /** Stable identifier — stored in payload.synthetic_id, never in user_id FK. */
@@ -46,6 +47,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -62,6 +64,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.7,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -78,6 +81,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
 
@@ -96,6 +100,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.9,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -112,6 +117,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -128,6 +134,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.7,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
 
@@ -146,6 +153,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.6,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -162,6 +170,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -178,6 +187,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.7,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
 
@@ -196,6 +206,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.9,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -212,6 +223,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 1.0,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -228,6 +240,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
 
@@ -251,6 +264,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.8,
       participant_left: 0.6,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -267,6 +281,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.7,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -283,6 +298,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.9,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -299,6 +315,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -315,6 +332,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.6,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -331,6 +349,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.8,
       participant_left: 0.9,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -347,6 +366,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.7,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -363,6 +383,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
 
@@ -382,6 +403,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -398,6 +420,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.9,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -414,6 +437,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.7,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -430,6 +454,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -446,6 +471,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.2,
       participant_left: 0.9,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -462,6 +488,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.7,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -478,6 +505,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -494,6 +522,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 1.0,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
 
@@ -513,6 +542,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.8,
       participant_left: 0.5,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -529,6 +559,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.7,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -545,6 +576,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -561,6 +593,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.6,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -577,6 +610,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.7,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -593,6 +627,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -609,6 +644,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.6,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
 
@@ -628,6 +664,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 1.0,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -644,6 +681,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.9,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -660,6 +698,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -676,6 +715,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 1.0,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -692,6 +732,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.9,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -708,6 +749,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 1.0,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
   {
@@ -724,6 +766,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
+      high_five: 0.3,
     },
   },
 ];

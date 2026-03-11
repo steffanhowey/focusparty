@@ -151,6 +151,8 @@ export default function EnvironmentPage() {
       let text = "";
 
       if (event.event_type === "check_in") {
+        // Skip own check-ins — already handled optimistically in handleCheckIn
+        if (event.actor_type !== "synthetic" && event.user_id === userId) continue;
         targetId =
           event.actor_type === "synthetic"
             ? (event.payload?.synthetic_id as string) ?? null
@@ -175,9 +177,21 @@ export default function EnvironmentPage() {
       }
 
       if (event.event_type === "high_five") {
-        targetId = (event.payload?.target_user_id as string) ?? null;
+        const hfTarget = (event.payload?.target_user_id as string) ?? null;
+        // Skip synthetic return high-fives targeting us — already handled optimistically
+        if (event.actor_type === "synthetic" && hfTarget === userId) continue;
+        targetId = hfTarget;
         color = "#F59E0B";
         text = "High five!";
+      }
+
+      if (event.event_type === "sprint_completed") {
+        targetId =
+          event.actor_type === "synthetic"
+            ? (event.payload?.synthetic_id as string) ?? null
+            : event.user_id;
+        color = "#5BC682";
+        text = "Sprint complete!";
       }
 
       if (targetId) {
@@ -192,6 +206,23 @@ export default function EnvironmentPage() {
       }
     }
   }, [feedEvents.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Synthetic tick (keep bots active during sessions) ──
+  useEffect(() => {
+    if (phase !== "sprint") return;
+
+    // Fire an initial tick on sprint start, then every 45s
+    const tick = () =>
+      fetch("/api/synthetics/tick", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partyId }),
+      }).catch(() => {});
+
+    tick();
+    const id = setInterval(tick, 45_000);
+    return () => clearInterval(id);
+  }, [phase, partyId]);
 
   // ─── AI host ───────────────────────────────────────────
   const hostTriggers = useHostTriggers({
@@ -813,7 +844,35 @@ export default function EnvironmentPage() {
       if (!userId) return;
       setCheckInOpen(false);
 
+      // ── Optimistic celebration: fire avatar effect immediately ──
+      let color = "#5CC2EC";
+      let text = "";
       const taskTitle = activeTask?.title;
+
+      if (action === "progress") {
+        color = "#5BC682";
+        text = "Making progress";
+      } else if (action === "ship") {
+        color = "#F59E0B";
+        text = taskTitle ? `Shipped ${taskTitle}` : "Shipped something";
+      } else if (action === "reset") {
+        color = "#F5C54E";
+        text = "Taking a reset";
+      } else if (action === "update") {
+        color = "#5CC2EC";
+        text = message || "Shared an update";
+      }
+
+      setCelebrations((prev) => new Map(prev).set(userId, { color, text }));
+      setTimeout(() => {
+        setCelebrations((prev) => {
+          const next = new Map(prev);
+          next.delete(userId);
+          return next;
+        });
+      }, 2000);
+
+      // ── Persist to DB (also broadcasts to other participants via Realtime) ──
       logEvent({
         party_id: partyId,
         session_id: persistence.sessionRow?.id ?? null,
@@ -948,8 +1007,56 @@ export default function EnvironmentPage() {
       } catch (err) {
         console.error("[EnvironmentPage] high five failed:", err);
       }
+
+      // ── Synthetic reciprocal high-five ──
+      // When a user high-fives a synthetic, it sometimes high-fives back
+      const poolEntry = SYNTHETIC_POOL.find((s) => s.id === targetId);
+      if (!poolEntry) return; // not a synthetic
+
+      // Archetype-aware probability: gentle 90%, founders 75%, others 65%
+      const prob =
+        poolEntry.archetype === "gentle"
+          ? 0.9
+          : poolEntry.archetype === "founder"
+            ? 0.75
+            : 0.65;
+      if (Math.random() > prob) return;
+
+      // Natural delay: 2–5 seconds (feels like a human reacting)
+      const delayMs = 2000 + Math.random() * 3000;
+
+      setTimeout(() => {
+        // Optimistic celebration on user's avatar
+        setCelebrations((prev) =>
+          new Map(prev).set(userId, { color: "#F59E0B", text: "High five!" })
+        );
+        setTimeout(() => {
+          setCelebrations((prev) => {
+            const next = new Map(prev);
+            next.delete(userId);
+            return next;
+          });
+        }, 2000);
+
+        // Persist to DB so it appears in momentum feed for all participants
+        fetch("/api/synthetics/react", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            party_id: partyId,
+            event_type: "high_five",
+            body: poolEntry.displayName,
+            payload: {
+              synthetic_id: poolEntry.id,
+              synthetic_handle: poolEntry.handle,
+              target_user_id: userId,
+              target_display_name: displayName,
+            },
+          }),
+        }).catch(() => {});
+      }, delayMs);
     },
-    [userId, partyId, persistence.sessionRow?.id]
+    [userId, partyId, persistence.sessionRow?.id, displayName]
   );
 
   // ─── Render ────────────────────────────────────────────
@@ -1181,9 +1288,6 @@ export default function EnvironmentPage() {
         isOpen={phase === "review"}
         sessionDurationSec={durationSec}
         elapsedSec={reviewElapsedRef.current}
-        sprintGoalText={goal || null}
-        parentGoalTitle={activeGoalForTask?.title ?? null}
-        onResolution={handleResolution}
         onAnotherRound={handleAnotherRound}
         onDone={handleDone}
         onReflectionComplete={handleReflectionComplete}

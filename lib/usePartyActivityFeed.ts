@@ -14,7 +14,7 @@ function enrichEvent(
   const name = nameMap.get(event.user_id ?? "") ?? event.body ?? "Someone";
   return {
     ...event,
-    displayText: eventDisplayText(event.event_type, name, event.body),
+    displayText: eventDisplayText(event.event_type, name, event.body, event.payload),
   };
 }
 

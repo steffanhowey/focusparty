@@ -169,7 +169,8 @@ function buildSyntheticStates(
         break;
       case "sprint_completed":
       case "check_in":
-        // stays in_session after completing a sprint or checking in
+      case "high_five":
+        // stays in_session after completing a sprint, checking in, or high-fiving
         stateMap.set(synId, {
           state: "in_session",
           joinedAt: stateMap.get(synId)?.joinedAt ?? null,
@@ -236,6 +237,10 @@ function getValidTransitions(
         eventType: "check_in",
         weight: synthetic.activityBias.check_in,
       });
+      transitions.push({
+        eventType: "high_five",
+        weight: synthetic.activityBias.high_five,
+      });
       break;
   }
 
@@ -261,19 +266,22 @@ function getRoomStateBias(
       if (eventType === "session_started") return 1.4;
       if (eventType === "sprint_completed") return 1.2;
       if (eventType === "check_in") return 1.2;
+      if (eventType === "high_five") return 1.2;
       if (eventType === "participant_left") return 0.3;
       return 1.0;
 
     case "focused":
-      // Focused rooms: favor sprint completions and check-ins, suppress joins
+      // Focused rooms: favor sprint completions, check-ins, and high-fives
       if (eventType === "sprint_completed") return 1.5;
       if (eventType === "check_in") return 1.3;
+      if (eventType === "high_five") return 1.5;
       if (eventType === "participant_joined") return 0.5;
       if (eventType === "participant_left") return 0.3;
       return 1.0;
 
     case "flowing":
-      // Flowing rooms: minimal synthetic activity (60% skip handled above)
+      // Flowing rooms: minimal synthetic activity, but high-fives feel natural
+      if (eventType === "high_five") return 1.2;
       return 0.7;
 
     case "cooling_down":
@@ -326,6 +334,53 @@ function generateCheckInPayload(
   }
 }
 
+// ─── High-Five Target Resolution ─────────────────────────────
+
+interface RealUser {
+  userId: string;
+  displayName: string;
+  /** Did this user complete a sprint in the last 5 min? */
+  recentSprintComplete: boolean;
+}
+
+const SPRINT_COMPLETE_RECENCY_MS = 5 * 60 * 1000; // 5 min
+
+/** Extract unique real users from recent events. */
+function findRealUsersInRoom(recentEvents: ActivityEvent[]): RealUser[] {
+  const userMap = new Map<string, RealUser>();
+  const now = Date.now();
+
+  for (const event of recentEvents) {
+    if (event.actor_type === "synthetic" || !event.user_id) continue;
+    const existing = userMap.get(event.user_id);
+    const recentSprint =
+      event.event_type === "sprint_completed" &&
+      now - new Date(event.created_at).getTime() < SPRINT_COMPLETE_RECENCY_MS;
+
+    userMap.set(event.user_id, {
+      userId: event.user_id,
+      displayName: event.body ?? "Someone",
+      recentSprintComplete: existing?.recentSprintComplete || recentSprint,
+    });
+  }
+
+  return Array.from(userMap.values());
+}
+
+/** Pick a high-five target, favoring users who just completed a sprint. */
+function pickHighFiveTarget(realUsers: RealUser[]): RealUser | null {
+  if (realUsers.length === 0) return null;
+
+  // Strongly prefer someone who just completed a sprint
+  const sprintFinishers = realUsers.filter((u) => u.recentSprintComplete);
+  if (sprintFinishers.length > 0) {
+    return sprintFinishers[Math.floor(Math.random() * sprintFinishers.length)];
+  }
+
+  // Otherwise pick any real user
+  return realUsers[Math.floor(Math.random() * realUsers.length)];
+}
+
 // ─── Core Engine ─────────────────────────────────────────────
 
 /** Generate tick events for a set of rooms. Returns proposals to insert. */
@@ -371,6 +426,10 @@ export function generateTickEvents(
     const candidateIds = new Set(candidates.map((c) => c.id));
     const states = buildSyntheticStates(recentEvents, candidateIds);
 
+    // Detect real users + recent sprint completions for high-five targeting
+    const realUsers = findRealUsersInRoom(recentEvents);
+    const hasRecentSprintComplete = realUsers.some((u) => u.recentSprintComplete);
+
     // Build all valid transitions across all candidates
     const allOptions: {
       item: { synthetic: SyntheticParticipant; eventType: SyntheticEventType };
@@ -388,6 +447,14 @@ export function generateTickEvents(
         let adjustedWeight = t.weight;
         adjustedWeight *= getRoomStateBias(roomState, t.eventType);
 
+        // Boost high-five weight 3× when a real user just completed a sprint
+        if (t.eventType === "high_five" && hasRecentSprintComplete) {
+          adjustedWeight *= 3.0;
+        }
+
+        // Skip high-fives entirely if no real users in the room
+        if (t.eventType === "high_five" && realUsers.length === 0) continue;
+
         allOptions.push({
           item: { synthetic: candidate, eventType: t.eventType },
           weight: adjustedWeight,
@@ -401,16 +468,29 @@ export function generateTickEvents(
     const chosen = weightedRandom(allOptions);
     if (!chosen) continue;
 
+    // For high-fives, resolve a real user target
+    if (chosen.eventType === "high_five") {
+      const target = pickHighFiveTarget(realUsers);
+      if (!target) continue; // safety: no real users available
+    }
+
     const basePayload: Record<string, unknown> = {
       synthetic_id: chosen.synthetic.id,
       synthetic_handle: chosen.synthetic.handle,
     };
 
-    // Enrich check-in events with action-specific payload
-    const payload =
-      chosen.eventType === "check_in"
-        ? { ...basePayload, ...generateCheckInPayload(chosen.synthetic) }
-        : basePayload;
+    // Enrich events with action-specific payloads
+    let payload = basePayload;
+    if (chosen.eventType === "check_in") {
+      payload = { ...basePayload, ...generateCheckInPayload(chosen.synthetic) };
+    } else if (chosen.eventType === "high_five") {
+      const target = pickHighFiveTarget(realUsers)!;
+      payload = {
+        ...basePayload,
+        target_user_id: target.userId,
+        target_display_name: target.displayName,
+      };
+    }
 
     proposals.push({
       party_id: room.id,

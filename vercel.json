@@ -3,6 +3,10 @@
     {
       "path": "/api/backgrounds/rotate",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/synthetics/tick",
+      "schedule": "*/2 * * * *"
     }
   ]
 }

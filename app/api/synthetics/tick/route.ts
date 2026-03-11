@@ -29,3 +29,22 @@ export async function POST(request: Request) {
     );
   }
 }
+
+/**
+ * GET /api/synthetics/tick
+ *
+ * Called by Vercel Cron every 2 minutes to keep synthetic
+ * activity alive regardless of active client connections.
+ */
+export async function GET() {
+  try {
+    const result = await runTick();
+    return NextResponse.json({ ok: true, ...result });
+  } catch (err) {
+    console.error("[synthetics/tick] cron error:", err);
+    return NextResponse.json(
+      { error: "Internal error" },
+      { status: 500 }
+    );
+  }
+}
