@@ -251,7 +251,10 @@ export type ActivityEventType =
   | "commitment_declared"
   | "commitment_succeeded"
   | "commitment_failed"
-  | "goal_shipped";
+  | "goal_shipped"
+  | "break_started"
+  | "break_completed"
+  | "break_cancelled";
 
 // ─── Room State ──────────────────────────────────────────────
 
@@ -421,3 +424,78 @@ export interface CommitmentRecord {
 }
 
 export type SprintResolution = "completed" | "partial" | "continue" | "abandon";
+
+// ─── Break Content ──────────────────────────────────────────
+
+export interface BreakContentItem {
+  id: string;
+  room_world_key: string;
+  category: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  video_url: string;
+  source_name: string | null;
+  duration_seconds: number | null;
+  sort_order: number;
+  status: string;
+  created_at: string;
+  /** AI curator fields (nullable — legacy seed rows won't have these) */
+  candidate_id: string | null;
+  taste_score: number | null;
+  pinned: boolean;
+  expires_at: string | null;
+  editorial_note: string | null;
+}
+
+// ─── AI Curator — Candidates ────────────────────────────────
+
+export interface BreakContentCandidate {
+  id: string;
+  source: string;
+  external_id: string;
+  world_key: string;
+  title: string;
+  description: string | null;
+  creator: string | null;
+  video_url: string;
+  thumbnail_url: string | null;
+  duration_seconds: number | null;
+  published_at: string | null;
+  view_count: number | null;
+  like_count: number | null;
+  comment_count: number | null;
+  discovered_at: string;
+  status: "pending" | "evaluated" | "rejected" | "promoted";
+}
+
+// ─── AI Curator — Scores ────────────────────────────────────
+
+export interface BreakContentScore {
+  id: string;
+  candidate_id: string;
+  world_key: string;
+  taste_score: number;
+  relevance_score: number | null;
+  engagement_score: number | null;
+  educational_density: number | null;
+  creator_authority: number | null;
+  freshness_score: number | null;
+  novelty_score: number | null;
+  evaluation_notes: string | null;
+  editorial_note: string | null;
+  evaluated_at: string;
+}
+
+// ─── AI Curator — Engagement ────────────────────────────────
+
+export type BreakEngagementType = "started" | "completed" | "abandoned";
+
+export interface BreakEngagementEvent {
+  id: string;
+  content_item_id: string;
+  user_id: string;
+  event_type: BreakEngagementType;
+  elapsed_seconds: number | null;
+  created_at: string;
+}

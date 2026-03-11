@@ -5,6 +5,8 @@ import { useRef, useState, useEffect, useCallback } from "react";
 interface UsePointerDragOptions {
   /** Minimum px moved before treated as drag rather than click. Default: 4 */
   threshold?: number;
+  /** Also center vertically (translate -50% Y). Default: false */
+  centerY?: boolean;
 }
 
 interface UsePointerDragReturn {
@@ -22,6 +24,9 @@ export function usePointerDrag(
   opts?: UsePointerDragOptions
 ): UsePointerDragReturn {
   const threshold = opts?.threshold ?? 4;
+  const baseTranslate = opts?.centerY
+    ? "translate(-50%, -50%)"
+    : "translateX(-50%)";
 
   const dragRef = useRef<HTMLDivElement | null>(null);
   const posRef = useRef({ x: 0, y: 0 });
@@ -39,7 +44,7 @@ export function usePointerDrag(
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
       if (dragRef.current) {
-        dragRef.current.style.transform = `translateX(-50%) translate(${x}px, ${y}px)`;
+        dragRef.current.style.transform = `${baseTranslate} translate(${x}px, ${y}px)`;
       }
     });
   }, []);
@@ -132,7 +137,7 @@ export function usePointerDrag(
   }, [threshold, applyTransform]);
 
   const dragStyle: React.CSSProperties = {
-    transform: `translateX(-50%) translate(${pos.x}px, ${pos.y}px)`,
+    transform: `${baseTranslate} translate(${pos.x}px, ${pos.y}px)`,
     cursor: "grab",
     touchAction: "none",
     willChange: "transform",

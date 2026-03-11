@@ -146,7 +146,7 @@ export function FeaturedRoom({
             {world.description}
           </p>
           <div className="mt-4 flex items-center gap-3">
-            <span className="inline-flex items-center rounded-full bg-[var(--color-accent-error)] px-5 py-2 text-sm font-bold uppercase tracking-wide text-white">
+            <span className="inline-flex items-center rounded-full bg-[var(--color-accent-error)] px-5 py-2 text-sm font-bold uppercase tracking-wide text-white transition-all duration-150 group-hover/featured:brightness-110 active:scale-95">
               Join
             </span>
 
@@ -158,7 +158,7 @@ export function FeaturedRoom({
                   e.stopPropagation();
                   onTogglePreview();
                 }}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white transition-all hover:scale-105"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white transition-all hover:scale-105 active:scale-100"
                 style={{
                   background: "rgba(255,255,255,0.12)",
                   backdropFilter: "blur(16px)",
@@ -166,14 +166,16 @@ export function FeaturedRoom({
                 }}
                 aria-label={isPreviewPlaying ? "Stop vibe check" : "Vibe check"}
               >
-                {isPreviewLoading ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                ) : isPreviewPlaying ? (
-                  <Equalizer />
-                ) : (
-                  <Play size={14} fill="white" className="text-white" />
-                )}
-                <span>{isPreviewPlaying ? "Playing" : "Vibe Check"}</span>
+                <span className="flex h-4 w-4 items-center justify-center">
+                  {isPreviewLoading ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  ) : isPreviewPlaying ? (
+                    <Equalizer />
+                  ) : (
+                    <Play size={14} fill="white" className="text-white" />
+                  )}
+                </span>
+                <span>Vibe Check</span>
               </button>
             )}
 

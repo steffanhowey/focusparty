@@ -39,11 +39,15 @@ import { logEvent } from "@/lib/sessions";
 import { computeRemainingSeconds } from "@/lib/sprintTime";
 import { SYNTHETIC_POOL } from "@/lib/synthetics/pool";
 import { JoinRoomModal, type JoinConfig } from "@/components/party/JoinRoomModal";
-import type { SessionPhase, SessionReflection, SprintResolution } from "@/lib/types";
+import type { SessionPhase, SessionReflection, SprintResolution, BreakContentItem } from "@/lib/types";
 import { updateSessionGoalStatus } from "@/lib/sessions";
 import { checkGoalCompletion } from "@/lib/goalCascade";
+import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
+import { BreakSessionConfirm } from "@/components/environment/BreakSessionConfirm";
+import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
+import { BreakReEntryPrompt } from "@/components/environment/BreakReEntryPrompt";
 
-type SidePanel = "none" | "momentum" | "tasks" | "chat" | "settings";
+type SidePanel = "none" | "momentum" | "tasks" | "chat" | "settings" | "breaks";
 type CelebrationInfo = { color: string; text: string };
 const PANEL_WIDTH = 380;
 const DEFAULT_DURATION_SEC = 25 * 60;
@@ -83,6 +87,12 @@ export default function EnvironmentPage() {
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [celebrations, setCelebrations] = useState<Map<string, CelebrationInfo>>(new Map());
   const lastFeedLengthRef = useRef(0);
+
+  // ─── Break session state ────────────────────────────────
+  const [breakContent, setBreakContent] = useState<BreakContentItem | null>(null);
+  const [showBreakConfirm, setShowBreakConfirm] = useState(false);
+  const [breakActive, setBreakActive] = useState(false);
+  const [showBreakReEntry, setShowBreakReEntry] = useState(false);
 
   // ─── Side panel state (same pattern as session page) ──
   const [activePanel, setActivePanel] = useState<SidePanel>("none");
@@ -197,6 +207,12 @@ export default function EnvironmentPage() {
             : event.user_id;
         color = "#5BC682";
         text = "Sprint complete!";
+      }
+
+      if (event.event_type === "break_completed") {
+        targetId = event.user_id;
+        color = "#8C55EF";
+        text = "Back to it!";
       }
 
       if (targetId) {
@@ -856,6 +872,96 @@ export default function EnvironmentPage() {
     []
   );
   const handleCloseGoalCard = useCallback(() => setSprintGoalCardOpen(false), []);
+  const handleToggleBreaks = useCallback(
+    () => setActivePanel((prev) => (prev === "breaks" ? "none" : "breaks")),
+    []
+  );
+
+  // ─── Break flow ────────────────────────────────────────
+
+  const handleSelectBreakContent = useCallback((item: BreakContentItem) => {
+    setBreakContent(item);
+    setShowBreakConfirm(true);
+    setActivePanel("none");
+  }, []);
+
+  const handleConfirmBreak = useCallback(() => {
+    setShowBreakConfirm(false);
+    setBreakActive(true);
+    timer.pause();
+    setPhase("break");
+    persistence.updatePhase("break").catch((err) =>
+      console.error("Failed to update phase to break:", err)
+    );
+
+    if (userId && persistence.sessionRow) {
+      logEvent({
+        party_id: partyId,
+        session_id: persistence.sessionRow.id,
+        user_id: userId,
+        event_type: "break_started",
+        body: displayName,
+        payload: {
+          category: "learning",
+          content_title: breakContent?.title ?? null,
+        },
+      }).catch(() => {});
+    }
+  }, [timer, persistence, userId, partyId, displayName, breakContent]);
+
+  const handleCancelBreakConfirm = useCallback(() => {
+    setShowBreakConfirm(false);
+    setBreakContent(null);
+  }, []);
+
+  const handleBreakVideoFinish = useCallback(() => {
+    setBreakActive(false);
+    setShowBreakReEntry(true);
+  }, []);
+
+  const handleResumeFromBreak = useCallback(() => {
+    setShowBreakReEntry(false);
+    setBreakContent(null);
+    timer.start();
+    setPhase("sprint");
+    persistence.updatePhase("sprint").catch((err) =>
+      console.error("Failed to update phase to sprint:", err)
+    );
+
+    if (userId && persistence.sessionRow) {
+      logEvent({
+        party_id: partyId,
+        session_id: persistence.sessionRow.id,
+        user_id: userId,
+        event_type: "break_completed",
+        body: displayName,
+        payload: {
+          category: "learning",
+          content_title: breakContent?.title ?? null,
+        },
+      }).catch(() => {});
+    }
+  }, [timer, persistence, userId, partyId, displayName, breakContent]);
+
+  const handleSwitchTaskFromBreak = useCallback(() => {
+    setShowBreakReEntry(false);
+    setBreakContent(null);
+    timer.start();
+    setPhase("sprint");
+    persistence.updatePhase("sprint").catch(() => {});
+    setActivePanel("tasks");
+
+    if (userId && persistence.sessionRow) {
+      logEvent({
+        party_id: partyId,
+        session_id: persistence.sessionRow.id,
+        user_id: userId,
+        event_type: "break_completed",
+        body: displayName,
+        payload: { category: "learning" },
+      }).catch(() => {});
+    }
+  }, [timer, persistence, userId, partyId, displayName]);
 
   // ─── Check-in ───────────────────────────────────────────
 
@@ -1266,7 +1372,7 @@ export default function EnvironmentPage() {
             </div>
 
             {/* Action bar (identical to existing session) */}
-            {phase === "sprint" && (
+            {(phase === "sprint" || phase === "break") && (
               <ActionBar
                 micActive={micActive}
                 onToggleMic={handleToggleMic}
@@ -1307,6 +1413,8 @@ export default function EnvironmentPage() {
                 onToggleCheckIn={handleToggleCheckIn}
                 onCloseCheckIn={handleCloseCheckIn}
                 onCheckIn={handleCheckIn}
+                breaksActive={activePanel === "breaks"}
+                onOpenBreaks={handleToggleBreaks}
               />
             )}
           </>
@@ -1343,7 +1451,9 @@ export default function EnvironmentPage() {
                   ? "Tasks"
                   : activePanel === "chat"
                     ? "Chat"
-                    : "Settings"
+                    : activePanel === "breaks"
+                      ? "Breaks"
+                      : "Settings"
             }
           >
             {activePanel === "momentum" && (
@@ -1378,6 +1488,14 @@ export default function EnvironmentPage() {
                 onClose={closePanel}
                 settings={settings}
                 onUpdateSetting={updateSetting}
+              />
+            )}
+            {activePanel === "breaks" && (
+              <BreaksFlyout
+                roomWorldKey={world.worldKey}
+                worldLabel={world.label}
+                onClose={closePanel}
+                onSelectContent={handleSelectBreakContent}
               />
             )}
           </aside>
@@ -1421,6 +1539,30 @@ export default function EnvironmentPage() {
           backgrounds={modalBackgrounds}
         />
       )}
+
+      {/* Break session flow */}
+      {showBreakConfirm && breakContent && (
+        <BreakSessionConfirm
+          isOpen={showBreakConfirm}
+          content={breakContent}
+          onConfirm={handleConfirmBreak}
+          onCancel={handleCancelBreakConfirm}
+        />
+      )}
+
+      {breakActive && breakContent && (
+        <BreakVideoOverlay
+          content={breakContent}
+          onFinish={handleBreakVideoFinish}
+        />
+      )}
+
+      <BreakReEntryPrompt
+        isOpen={showBreakReEntry}
+        activeTaskTitle={activeTask?.title ?? null}
+        onResume={handleResumeFromBreak}
+        onSwitchTask={handleSwitchTaskFromBreak}
+      />
     </div>
   );
 }

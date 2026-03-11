@@ -7,6 +7,18 @@
     {
       "path": "/api/synthetics/tick",
       "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/breaks/discover",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/breaks/evaluate",
+      "schedule": "0 3,15 * * *"
+    },
+    {
+      "path": "/api/breaks/refresh-shelf",
+      "schedule": "0 4 * * *"
     }
   ]
 }

@@ -15,6 +15,7 @@ import {
   RotateCcw,
   Lock,
   XCircle,
+  Coffee,
   type LucideIcon,
 } from "lucide-react";
 import type { ActivityEvent } from "./types";
@@ -56,6 +57,9 @@ const ACTOR_IN_BODY_EVENTS = new Set([
   "commitment_declared",
   "commitment_succeeded",
   "commitment_failed",
+  "break_started",
+  "break_completed",
+  "break_cancelled",
 ]);
 
 // ─── Renderer ───────────────────────────────────────────────
@@ -280,6 +284,34 @@ export function renderActivityEvent(
         color: "#F59E0B",
       };
     }
+
+    case "break_started": {
+      const contentTitle = event.payload?.content_title as string | undefined;
+      return {
+        icon: Coffee,
+        label: contentTitle
+          ? `${name} took a learning break: ${contentTitle.length > 30 ? contentTitle.slice(0, 27) + "..." : contentTitle}`
+          : `${name} took a learning break`,
+        tone: "info",
+        color: "#8C55EF",
+      };
+    }
+
+    case "break_completed":
+      return {
+        icon: Play,
+        label: `${name} returned to sprint`,
+        tone: "success",
+        color: TONE_COLORS.success,
+      };
+
+    case "break_cancelled":
+      return {
+        icon: XCircle,
+        label: `${name} skipped break`,
+        tone: "neutral",
+        color: TONE_COLORS.neutral,
+      };
 
     default:
       return {

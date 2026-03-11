@@ -17,6 +17,7 @@ import {
   Zap,
   Pause,
   Play,
+  Coffee,
 } from "lucide-react";
 import { MusicPopover } from "@/components/session/MusicPopover";
 import { CheckInMenu } from "@/components/session/CheckInMenu";
@@ -71,6 +72,9 @@ interface ActionBarProps {
   onToggleCheckIn?: () => void;
   onCloseCheckIn?: () => void;
   onCheckIn?: (action: string, message?: string) => void;
+  /** Breaks panel state */
+  breaksActive?: boolean;
+  onOpenBreaks?: () => void;
 }
 
 const ICON = { size: 18, strokeWidth: 1.8 } as const;
@@ -114,6 +118,8 @@ export const ActionBar = memo(function ActionBar({
   onToggleCheckIn,
   onCloseCheckIn,
   onCheckIn,
+  breaksActive,
+  onOpenBreaks,
 }: ActionBarProps) {
   const musicWrapperRef = useRef<HTMLDivElement>(null);
   const checkInWrapperRef = useRef<HTMLDivElement>(null);
@@ -305,6 +311,19 @@ export const ActionBar = memo(function ActionBar({
               onCheckIn={onCheckIn}
             />
           </div>
+        )}
+
+        {onOpenBreaks && (
+          <Tip label="Breaks">
+            <button
+              type="button"
+              onClick={onOpenBreaks}
+              className={breaksActive ? activeBtn : defaultBtn}
+              aria-label="Breaks"
+            >
+              <Coffee {...ICON} />
+            </button>
+          </Tip>
         )}
 
         <Tip label="Tasks">

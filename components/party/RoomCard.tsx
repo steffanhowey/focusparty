@@ -173,7 +173,7 @@ export function RoomCard({
                 e.stopPropagation();
                 onTogglePreview();
               }}
-              className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 transition-all hover:scale-105"
+              className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 transition-all hover:scale-105 active:scale-100"
               style={{
                 background: "rgba(10,10,10,0.55)",
                 backdropFilter: "blur(16px)",
@@ -182,19 +182,16 @@ export function RoomCard({
               }}
               aria-label={isPreviewPlaying ? "Stop vibe check" : "Vibe check"}
             >
-              {isPreviewLoading ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              ) : isPreviewPlaying ? (
-                <>
+              <span className="flex h-4 w-4 items-center justify-center">
+                {isPreviewLoading ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                ) : isPreviewPlaying ? (
                   <Equalizer />
-                  <span className="text-xs font-medium text-white">Playing</span>
-                </>
-              ) : (
-                <>
+                ) : (
                   <Play size={14} fill="white" className="text-white" />
-                  <span className="text-xs font-medium text-white">Vibe Check</span>
-                </>
-              )}
+                )}
+              </span>
+              <span className="text-xs font-medium text-white">Vibe Check</span>
             </button>
           </div>
         )}

@@ -126,6 +126,16 @@ export function eventDisplayText(
       }
       return `${name} checked in`;
     }
+    case "break_started": {
+      const contentTitle = payload?.content_title as string | undefined;
+      return contentTitle
+        ? `${name} took a learning break: ${contentTitle}`
+        : `${name} took a learning break`;
+    }
+    case "break_completed":
+      return `${name} returned to sprint`;
+    case "break_cancelled":
+      return `${name} skipped break`;
     default:
       return `${name} did something`;
   }
