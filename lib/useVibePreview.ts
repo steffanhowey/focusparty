@@ -1,3 +1,4 @@
+/// <reference path="./youtube.d.ts" />
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
