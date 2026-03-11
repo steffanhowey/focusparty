@@ -5,6 +5,15 @@
 
 export type SyntheticArchetype = "coder" | "writer" | "founder" | "gentle";
 
+/**
+ * Expression mode controls how "visible" a synthetic is:
+ * - atmosphere: Quiet background presence — lifecycle events only (join, session, sprint, leave).
+ *   Never check-in, never high-five. ~80% of the pool.
+ * - expressive: Can emit check-ins, status updates, and high-fives.
+ *   These are the characters users notice and remember. ~20% of the pool.
+ */
+export type SyntheticExpressionMode = "atmosphere" | "expressive";
+
 /** Event types a synthetic participant can generate. */
 export type SyntheticEventType =
   | "participant_joined"
@@ -23,11 +32,25 @@ export interface SyntheticParticipant {
   /** AI-generated avatar URL (Supabase storage). */
   avatarUrl: string;
   archetype: SyntheticArchetype;
+  /** Controls whether this synthetic can check-in / high-five or is presence-only. */
+  expressionMode: SyntheticExpressionMode;
   /** Worlds this synthetic prefers (higher affinity for appearing). */
   preferredWorldKeys: string[];
   /** Relative weights for each event type. Higher = more likely. */
   activityBias: Record<SyntheticEventType, number>;
 }
+
+// ─── Room Regulars ──────────────────────────────────────────
+// Familiar faces per world — these synthetics get a 3× weight boost
+// when selected for their home room, creating a "same coworkers" feel.
+
+export const ROOM_REGULARS: Record<string, string[]> = {
+  "default":       ["syn-kai", "syn-sage", "syn-ava", "syn-lux", "syn-rio", "syn-noor"],
+  "vibe-coding":   ["syn-kai", "syn-nova", "syn-jax", "syn-hex", "syn-rune", "syn-quinn"],
+  "writer-room":   ["syn-sage", "syn-wren", "syn-ellis", "syn-muse", "syn-reed", "syn-fern"],
+  "yc-build":      ["syn-ava", "syn-quinn", "syn-blaze", "syn-cruz", "syn-kai", "syn-dev"],
+  "gentle-start":  ["syn-lux", "syn-fern", "syn-sol", "syn-dove", "syn-wren", "syn-haze"],
+};
 
 // ─── Pool ────────────────────────────────────────────────────
 
@@ -39,6 +62,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Kai",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/kai/thumb.png",
     archetype: "coder",
+    expressionMode: "expressive",
     preferredWorldKeys: ["vibe-coding", "default", "yc-build"],
     activityBias: {
       participant_joined: 1.0,
@@ -47,7 +71,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -56,6 +80,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Rio",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/rio/thumb.png",
     archetype: "coder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["vibe-coding", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -64,7 +89,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.7,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -73,6 +98,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Dev",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/dev/thumb.png",
     archetype: "coder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["vibe-coding", "yc-build", "default"],
     activityBias: {
       participant_joined: 0.9,
@@ -81,7 +107,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
 
@@ -92,6 +118,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Sage",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/sage/thumb.png",
     archetype: "writer",
+    expressionMode: "expressive",
     preferredWorldKeys: ["writer-room", "default", "gentle-start"],
     activityBias: {
       participant_joined: 1.0,
@@ -100,7 +127,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.9,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -109,6 +136,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Ellis",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/ellis/thumb.png",
     archetype: "writer",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["writer-room", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -117,7 +145,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -126,6 +154,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Wren",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/wren/thumb.png",
     archetype: "writer",
+    expressionMode: "expressive",
     preferredWorldKeys: ["writer-room", "gentle-start", "default"],
     activityBias: {
       participant_joined: 1.1,
@@ -134,7 +163,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.7,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
 
@@ -145,6 +174,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Ava",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/ava/thumb.png",
     archetype: "founder",
+    expressionMode: "expressive",
     preferredWorldKeys: ["yc-build", "default", "vibe-coding"],
     activityBias: {
       participant_joined: 1.0,
@@ -153,7 +183,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.6,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -162,6 +192,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Noor",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/noor/thumb.png",
     archetype: "founder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["yc-build", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -170,7 +201,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -179,6 +210,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Quinn",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/quinn/thumb.png",
     archetype: "founder",
+    expressionMode: "expressive",
     preferredWorldKeys: ["yc-build", "vibe-coding", "default"],
     activityBias: {
       participant_joined: 0.9,
@@ -187,7 +219,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.7,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
 
@@ -198,6 +230,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Lux",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/lux/thumb.png",
     archetype: "gentle",
+    expressionMode: "expressive",
     preferredWorldKeys: ["gentle-start", "default", "writer-room"],
     activityBias: {
       participant_joined: 1.1,
@@ -206,7 +239,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.9,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -215,6 +248,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Sol",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/sol/thumb.png",
     archetype: "gentle",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["gentle-start", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -223,7 +257,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 1.0,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -232,6 +266,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Fern",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/fern/thumb.png",
     archetype: "gentle",
+    expressionMode: "expressive",
     preferredWorldKeys: ["gentle-start", "writer-room", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -240,7 +275,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
 
@@ -256,6 +291,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Jax",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/jax/thumb.png",
     archetype: "coder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["vibe-coding", "default"],
     activityBias: {
       participant_joined: 0.9,
@@ -264,7 +300,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.8,
       participant_left: 0.6,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -273,6 +309,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Rune",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/rune/thumb.png",
     archetype: "coder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["vibe-coding", "yc-build"],
     activityBias: {
       participant_joined: 1.0,
@@ -281,7 +318,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.7,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -290,6 +327,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Kit",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/kit/thumb.png",
     archetype: "coder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["vibe-coding", "default", "yc-build"],
     activityBias: {
       participant_joined: 1.1,
@@ -298,7 +336,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.9,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -307,6 +345,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Nova",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/nova/thumb.png",
     archetype: "coder",
+    expressionMode: "expressive",
     preferredWorldKeys: ["vibe-coding", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -315,7 +354,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -324,6 +363,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Hex",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/hex/thumb.png",
     archetype: "coder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["vibe-coding", "yc-build", "default"],
     activityBias: {
       participant_joined: 0.8,
@@ -332,7 +372,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.6,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -341,6 +381,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Taz",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/taz/thumb.png",
     archetype: "coder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["vibe-coding", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -349,7 +390,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.8,
       participant_left: 0.9,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -358,6 +399,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Byte",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/byte/thumb.png",
     archetype: "coder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["vibe-coding", "yc-build"],
     activityBias: {
       participant_joined: 0.9,
@@ -366,7 +408,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.7,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -375,6 +417,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Pixel",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/pixel/thumb.png",
     archetype: "coder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["vibe-coding", "default", "yc-build"],
     activityBias: {
       participant_joined: 1.1,
@@ -383,7 +426,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
 
@@ -395,6 +438,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Muse",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/muse/thumb.png",
     archetype: "writer",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["writer-room", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -403,7 +447,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -412,6 +456,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Reed",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/reed/thumb.png",
     archetype: "writer",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["writer-room", "gentle-start", "default"],
     activityBias: {
       participant_joined: 1.1,
@@ -420,7 +465,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.9,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -429,6 +474,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Lyra",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/lyra/thumb.png",
     archetype: "writer",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["writer-room", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -437,7 +483,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.7,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -446,6 +492,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Poe",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/poe/thumb.png",
     archetype: "writer",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["writer-room", "default", "gentle-start"],
     activityBias: {
       participant_joined: 0.9,
@@ -454,7 +501,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -463,6 +510,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Clio",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/clio/thumb.png",
     archetype: "writer",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["writer-room", "gentle-start"],
     activityBias: {
       participant_joined: 1.0,
@@ -471,7 +519,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.2,
       participant_left: 0.9,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -480,6 +528,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Bly",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/bly/thumb.png",
     archetype: "writer",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["writer-room", "default"],
     activityBias: {
       participant_joined: 1.1,
@@ -488,7 +537,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.7,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -497,6 +546,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Ink",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/ink/thumb.png",
     archetype: "writer",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["writer-room", "default", "gentle-start"],
     activityBias: {
       participant_joined: 1.0,
@@ -505,7 +555,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -514,6 +564,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Vale",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/vale/thumb.png",
     archetype: "writer",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["writer-room", "gentle-start", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -522,7 +573,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 1.0,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
 
@@ -534,6 +585,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Blaze",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/blaze/thumb.png",
     archetype: "founder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["yc-build", "vibe-coding", "default"],
     activityBias: {
       participant_joined: 0.9,
@@ -542,7 +594,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.8,
       participant_left: 0.5,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -551,6 +603,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Zara",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/zara/thumb.png",
     archetype: "founder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["yc-build", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -559,7 +612,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.7,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -568,6 +621,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Ash",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/ash/thumb.png",
     archetype: "founder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["yc-build", "default", "vibe-coding"],
     activityBias: {
       participant_joined: 1.0,
@@ -576,7 +630,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -585,6 +639,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Cruz",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/cruz/thumb.png",
     archetype: "founder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["yc-build", "vibe-coding"],
     activityBias: {
       participant_joined: 0.8,
@@ -593,7 +648,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.6,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -602,6 +657,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Onyx",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/onyx/thumb.png",
     archetype: "founder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["yc-build", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -610,7 +666,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.7,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -619,6 +675,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Tai",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/tai/thumb.png",
     archetype: "founder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["yc-build", "default", "vibe-coding"],
     activityBias: {
       participant_joined: 1.1,
@@ -627,7 +684,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -636,6 +693,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Rox",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/rox/thumb.png",
     archetype: "founder",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["yc-build", "vibe-coding", "default"],
     activityBias: {
       participant_joined: 0.9,
@@ -644,7 +702,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 0.9,
       participant_left: 0.6,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
 
@@ -656,6 +714,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Haze",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/haze/thumb.png",
     archetype: "gentle",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["gentle-start", "default"],
     activityBias: {
       participant_joined: 1.2,
@@ -664,7 +723,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 1.0,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -673,6 +732,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Dove",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/dove/thumb.png",
     archetype: "gentle",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["gentle-start", "writer-room", "default"],
     activityBias: {
       participant_joined: 1.1,
@@ -681,7 +741,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.9,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -690,6 +750,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Elm",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/elm/thumb.png",
     archetype: "gentle",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["gentle-start", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -698,7 +759,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -707,6 +768,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Rue",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/rue/thumb.png",
     archetype: "gentle",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["gentle-start", "writer-room"],
     activityBias: {
       participant_joined: 1.0,
@@ -715,7 +777,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 1.0,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -724,6 +786,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Cove",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/cove/thumb.png",
     archetype: "gentle",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["gentle-start", "default", "writer-room"],
     activityBias: {
       participant_joined: 1.2,
@@ -732,7 +795,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.1,
       participant_left: 0.9,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -741,6 +804,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Jade",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/jade/thumb.png",
     archetype: "gentle",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["gentle-start", "default"],
     activityBias: {
       participant_joined: 1.1,
@@ -749,7 +813,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 1.0,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
   {
@@ -758,6 +822,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
     displayName: "Zeph",
     avatarUrl: "https://lipdyycqbuvibgxcckjd.supabase.co/storage/v1/object/public/avatars/synthetic/zeph/thumb.png",
     archetype: "gentle",
+    expressionMode: "atmosphere",
     preferredWorldKeys: ["gentle-start", "writer-room", "default"],
     activityBias: {
       participant_joined: 1.0,
@@ -766,7 +831,7 @@ export const SYNTHETIC_POOL: SyntheticParticipant[] = [
       session_completed: 1.0,
       participant_left: 0.8,
       check_in: 0.8,
-      high_five: 0.3,
+      high_five: 0.15,
     },
   },
 ];

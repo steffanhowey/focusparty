@@ -2,18 +2,17 @@
 
 import { useEffect, useRef, useState, useMemo } from "react";
 import Image from "next/image";
-import { Hand, Check } from "lucide-react";
+import { Hand, Check, User, Users, Lock } from "lucide-react";
 import { PARTICIPANT_STATUS_CONFIG } from "@/lib/presence";
 import type { ParticipantInfo } from "./EnvironmentParticipants";
-import type { ActivityFeedItem } from "@/lib/types";
+import type { ActivityFeedItem, CommitmentType } from "@/lib/types";
 
-// ─── Archetype display ──────────────────────────────────────
+// ─── Commitment type display ────────────────────────────────
 
-const ARCHETYPE_CONFIG: Record<string, { label: string; flavor: string }> = {
-  coder: { label: "Coder", flavor: "Shipping code alongside you" },
-  writer: { label: "Writer", flavor: "Quietly crafting words" },
-  founder: { label: "Founder", flavor: "Building something big" },
-  gentle: { label: "Mindful", flavor: "Focusing at their own pace" },
+const COMMITMENT_CONFIG: Record<CommitmentType, { icon: typeof User; label: string; color: string }> = {
+  personal: { icon: User, label: "Personal", color: "#888888" },
+  social: { icon: Users, label: "Social", color: "#5CC2EC" },
+  locked: { icon: Lock, label: "Locked In", color: "#F59E0B" },
 };
 
 // ─── Host personality descriptions ──────────────────────────
@@ -30,6 +29,61 @@ const HOST_DESCRIPTIONS: Record<string, string> = {
 
 function fallbackAvatar(seed: string): string {
   return `https://api.dicebear.com/9.x/notionists-neutral/png?seed=${encodeURIComponent(seed)}&size=80`;
+}
+
+// ─── Sprint Countdown ───────────────────────────────────────
+
+function SprintCountdown({
+  startedAt,
+  durationSec,
+}: {
+  startedAt: string;
+  durationSec: number;
+}) {
+  const [remaining, setRemaining] = useState(() => {
+    const elapsed = Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000);
+    return Math.max(0, durationSec - elapsed);
+  });
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000);
+      const r = Math.max(0, durationSec - elapsed);
+      setRemaining(r);
+      if (r <= 0) clearInterval(id);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [startedAt, durationSec]);
+
+  if (remaining <= 0) return null;
+
+  const progress = 1 - remaining / durationSec;
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  const totalMins = Math.round(durationSec / 60);
+
+  return (
+    <div className="mb-3 rounded-lg bg-white/[0.05] px-3 py-2">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+          Sprint
+        </span>
+        <span className="text-xs tabular-nums text-white/60">
+          {mins}:{secs.toString().padStart(2, "0")}
+          <span className="text-white/30"> / {totalMins}m</span>
+        </span>
+      </div>
+      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/[0.08]">
+        <div
+          className="h-full rounded-full transition-[width] duration-1000 ease-linear"
+          style={{
+            width: `${progress * 100}%`,
+            background: "rgba(91, 198, 130, 0.6)",
+          }}
+        />
+      </div>
+    </div>
+  );
 }
 
 // ─── High Five Button ───────────────────────────────────────
@@ -160,8 +214,6 @@ export function ParticipantCard({
     fallbackAvatar(participant.id || participant.displayName);
   const statusConfig =
     participant.status && PARTICIPANT_STATUS_CONFIG[participant.status];
-  const archetypeConfig =
-    participant.archetype && ARCHETYPE_CONFIG[participant.archetype];
   const showHighFive =
     !participant.isHost && !participant.isCurrentUser;
   const showStats = participant.participantType !== "host";
@@ -215,15 +267,15 @@ export function ParticipantCard({
             </span>
           )}
 
-          {/* Synthetic handle + archetype */}
+          {/* Synthetic handle + status (same format as real users) */}
           {participant.participantType === "synthetic" && (
             <span className="flex items-center gap-1.5 text-xs">
               {participant.username && (
                 <span className="text-white/40">@{participant.username}</span>
               )}
-              {archetypeConfig && (
-                <span className="text-white/50">
-                  {participant.username ? `· ${archetypeConfig.label}` : archetypeConfig.label}
+              {statusConfig && (
+                <span className="font-medium" style={{ color: statusConfig.color }}>
+                  {participant.username ? `· ${statusConfig.label}` : statusConfig.label}
                 </span>
               )}
             </span>
@@ -238,22 +290,48 @@ export function ParticipantCard({
         </div>
       </div>
 
-      {/* ── Goal / Flavor / Host Description ── */}
-      {participant.participantType === "real" && participant.goalPreview && (
-        <div className="mb-3 rounded-lg bg-white/[0.05] px-3 py-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
-            Working on
-          </span>
-          <p className="mt-0.5 text-xs leading-relaxed text-white/70">
-            {participant.goalPreview}
-          </p>
-        </div>
-      )}
+      {/* ── Goal / Working on (real + synthetic) ── */}
+      {(participant.participantType === "real" || participant.participantType === "synthetic") && (() => {
+        const goalText = participant.participantType === "real"
+          ? participant.goalPreview
+          : participant.syntheticFlavor;
+        if (!goalText && !participant.commitmentType) return null;
+        return (
+          <div className="mb-3 rounded-lg bg-white/[0.05] px-3 py-2">
+            {goalText && (
+              <>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                  Working on
+                </span>
+                <p className="mt-0.5 text-xs leading-relaxed text-white/70">
+                  {goalText}
+                </p>
+              </>
+            )}
+            {participant.commitmentType && (() => {
+              const cfg = COMMITMENT_CONFIG[participant.commitmentType];
+              const Icon = cfg.icon;
+              return (
+                <div
+                  className={`flex items-center gap-1.5${goalText ? " mt-2 border-t border-white/[0.06] pt-2" : ""}`}
+                >
+                  <Icon size={11} strokeWidth={1.5} style={{ color: cfg.color }} />
+                  <span className="text-[10px] font-medium" style={{ color: cfg.color }}>
+                    {cfg.label}
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
+        );
+      })()}
 
-      {participant.participantType === "synthetic" && archetypeConfig && (
-        <p className="mb-3 text-xs italic text-white/40">
-          {archetypeConfig.flavor}
-        </p>
+      {/* ── Sprint Timer ── */}
+      {participant.sprintStartedAt && participant.sprintDurationSec && (
+        <SprintCountdown
+          startedAt={participant.sprintStartedAt}
+          durationSec={participant.sprintDurationSec}
+        />
       )}
 
       {participant.participantType === "host" && (

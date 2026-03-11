@@ -7,6 +7,7 @@ import type {
   PresencePayload,
   SessionPhase,
   CharacterId,
+  CommitmentType,
 } from "./types";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -20,6 +21,9 @@ interface UsePartyPresenceInput {
   activeSessionId?: string | null;
   phase?: SessionPhase | null;
   goalPreview?: string | null;
+  commitmentType?: CommitmentType | null;
+  sprintStartedAt?: string | null;
+  sprintDurationSec?: number | null;
 }
 
 interface UsePartyPresenceReturn {
@@ -50,6 +54,9 @@ export function usePartyPresence(
     activeSessionId,
     phase,
     goalPreview,
+    commitmentType,
+    sprintStartedAt,
+    sprintDurationSec,
   } = input;
 
   const [participants, setParticipants] = useState<PresencePayload[]>([]);
@@ -103,6 +110,9 @@ export function usePartyPresence(
             activeSessionId,
             phase,
             goalPreview,
+            commitmentType,
+            sprintStartedAt,
+            sprintDurationSec,
           });
           await channel.track(payload);
           setIsTracking(true);
@@ -129,7 +139,7 @@ export function usePartyPresence(
     if (!channelRef.current || !userId) return;
 
     // Build a fingerprint of the trackable fields to avoid redundant re-tracks
-    const fingerprint = JSON.stringify([userId, displayName, avatarUrl, character, activeSessionId, phase, goalPreview]);
+    const fingerprint = JSON.stringify([userId, displayName, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec]);
     if (fingerprint === lastTrackedRef.current) return;
     lastTrackedRef.current = fingerprint;
 
@@ -141,9 +151,12 @@ export function usePartyPresence(
       activeSessionId,
       phase,
       goalPreview,
+      commitmentType,
+      sprintStartedAt,
+      sprintDurationSec,
     });
     channelRef.current.track(payload);
-  }, [userId, displayName, username, avatarUrl, character, activeSessionId, phase, goalPreview]);
+  }, [userId, displayName, username, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec]);
 
   const updatePresence = useCallback(
     (updates: Partial<PresencePayload>) => {

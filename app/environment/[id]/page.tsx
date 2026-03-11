@@ -122,6 +122,9 @@ export default function EnvironmentPage() {
     activeSessionId: persistence.sessionRow?.id ?? null,
     phase,
     goalPreview: goal || null,
+    commitmentType: commitmentType || null,
+    sprintStartedAt: phase === "sprint" ? (persistence.currentSprint?.started_at ?? null) : null,
+    sprintDurationSec: phase === "sprint" ? (persistence.currentSprint?.duration_sec ?? null) : null,
   });
 
   // ─── Activity feed + room state ───────────────────────
@@ -197,14 +200,19 @@ export default function EnvironmentPage() {
       }
 
       if (targetId) {
-        setCelebrations((prev) => new Map(prev).set(targetId!, { color, text }));
+        // Synthetic celebrations get a 1-3s random delay to feel less robotic
+        const delay = event.actor_type === "synthetic" ? 1000 + Math.random() * 2000 : 0;
+        const tid = targetId; // capture for closure
         setTimeout(() => {
-          setCelebrations((prev) => {
-            const next = new Map(prev);
-            next.delete(targetId!);
-            return next;
-          });
-        }, 2000);
+          setCelebrations((prev) => new Map(prev).set(tid, { color, text }));
+          setTimeout(() => {
+            setCelebrations((prev) => {
+              const next = new Map(prev);
+              next.delete(tid);
+              return next;
+            });
+          }, 2000);
+        }, delay);
       }
     }
   }, [feedEvents.length]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -937,6 +945,54 @@ export default function EnvironmentPage() {
     [activeTask, completeTask, selectTask, pendingSwitchTaskId]
   );
 
+  // ─── Unique synthetic flavor assignment ──────────────────
+  // Sorted index + epoch rotation guarantees zero collisions
+  const SYNTHETIC_FLAVOR_POOL = [
+    // short + casual
+    "fixing a bug",
+    "emails",
+    "writing",
+    "research",
+    "reading",
+    "outline for tmrw",
+    "finally cleaning up this PR",
+    "notes",
+    // medium + specific
+    "rewriting the intro section",
+    "debugging auth flow",
+    "investor update email",
+    "updating the landing page",
+    "working through feedback",
+    "cleaning up my task list",
+    "reviewing pull requests",
+    "prepping slides for Friday",
+    "sorting out the API layer",
+    "editing ch. 3 draft",
+    "organizing project notes",
+    "user interview followups",
+    "migrating to the new SDK",
+    // longer + conversational
+    "trying to finish this blog post",
+    "almost done with the redesign",
+    "deep in a refactor rn",
+    "catching up on code reviews",
+    "mapping out next week's sprint",
+    "just need to finish testing",
+    "rewriting the onboarding copy",
+    "working thru a tricky edge case",
+    // with typos (sparse — ~10%)
+    "updaing the docs",
+    "finsihing up the proposal",
+    "reviwing the metrics dashboard",
+    "wrting investor updates",
+    // minimal / vibe
+    "heads down",
+    "in the zone",
+    "deep work block",
+    "flow state",
+  ];
+  const FLAVOR_ROTATION_MS = 12 * 60 * 1000;
+
   // ─── Participants for display (real + synthetic) ────────
   const participantInfos = useMemo(() => {
     const host: ParticipantInfo = {
@@ -959,9 +1015,30 @@ export default function EnvironmentPage() {
       participantType: "real" as const,
       status: p.status,
       goalPreview: p.goalPreview,
+      commitmentType: p.commitmentType,
+      sprintStartedAt: p.sprintStartedAt,
+      sprintDurationSec: p.sprintDurationSec,
     }));
+    // Assign unique flavors: sorted index + epoch offset → no collisions
+    const epoch = Math.floor(Date.now() / FLAVOR_ROTATION_MS);
+    const sortedIds = [...syntheticParticipants].sort((a, b) => a.id.localeCompare(b.id)).map((s) => s.id);
+    // Derive sprint timing for each synthetic deterministically.
+    // Duration varies per synthetic (20-35 min). We compute a "current sprint start"
+    // by rolling forward from an anchor time so the timer is always mid-sprint.
+    const SYNTHETIC_SPRINT_DURATIONS = [20, 25, 25, 25, 30, 30, 35];
+    const now = Date.now();
     const synthetic: ParticipantInfo[] = syntheticParticipants.map((sp) => {
       const poolEntry = SYNTHETIC_POOL.find((s) => s.id === sp.id);
+      const sortedIndex = sortedIds.indexOf(sp.id);
+      const flavorIndex = (sortedIndex + epoch) % SYNTHETIC_FLAVOR_POOL.length;
+      // Deterministic sprint duration per synthetic
+      const durIdx = sp.id.charCodeAt(sp.id.length - 1) % SYNTHETIC_SPRINT_DURATIONS.length;
+      const sprintDur = SYNTHETIC_SPRINT_DURATIONS[durIdx] * 60; // seconds
+      // Roll forward: compute where they are in their current sprint cycle
+      // Use a per-synthetic offset so they don't all start at the same time
+      const offsetMs = (sp.id.charCodeAt(sp.id.length - 2) || 0) * 37_000; // stagger up to ~9 min
+      const elapsed = ((now - offsetMs) / 1000) % sprintDur;
+      const sprintStart = new Date(now - elapsed * 1000).toISOString();
       return {
         id: sp.id,
         displayName: sp.displayName,
@@ -970,7 +1047,11 @@ export default function EnvironmentPage() {
         isFocusing: true,
         isHost: false,
         participantType: "synthetic" as const,
+        status: "focused" as const,
         archetype: poolEntry?.archetype,
+        syntheticFlavor: SYNTHETIC_FLAVOR_POOL[flavorIndex],
+        sprintStartedAt: sprintStart,
+        sprintDurationSec: sprintDur,
       };
     });
     return [host, ...real, ...synthetic];

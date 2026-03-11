@@ -327,6 +327,9 @@ export interface PresencePayload {
   phase: SessionPhase | null;
   status: ParticipantStatus;
   goalPreview: string | null;
+  commitmentType: CommitmentType | null;
+  sprintStartedAt: string | null;
+  sprintDurationSec: number | null;
   updatedAt: string;
 }
 

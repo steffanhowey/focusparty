@@ -117,7 +117,7 @@ async function getActiveSyntheticPresence(
   supabase: ReturnType<typeof createClient>,
   partyIds: string[]
 ): Promise<Map<string, SyntheticPresenceInfo[]>> {
-  const cutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(); // 2 hours
+  const cutoff = new Date(Date.now() - 50 * 60 * 1000).toISOString(); // 50 min (was 2 hours — prevents ghost presences)
 
   const { data, error } = await supabase
     .from("fp_activity_events")

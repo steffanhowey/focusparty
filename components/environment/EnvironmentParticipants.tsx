@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import type { ParticipantStatus } from "@/lib/types";
+import type { ParticipantStatus, CommitmentType } from "@/lib/types";
 import type { SyntheticArchetype } from "@/lib/synthetics/pool";
 import { AvatarCelebration } from "./AvatarCelebration";
 
@@ -20,10 +20,17 @@ export interface ParticipantInfo {
   status?: ParticipantStatus;
   /** Real users: declared sprint goal */
   goalPreview?: string | null;
+  /** Real users: commitment type for current sprint */
+  commitmentType?: CommitmentType | null;
   /** Synthetics: archetype from pool */
   archetype?: SyntheticArchetype;
+  /** Synthetics: unique activity flavor assigned per-room */
+  syntheticFlavor?: string;
   /** Host: personality key */
   hostPersonality?: string;
+  /** Sprint timing — ISO start time + duration for countdown */
+  sprintStartedAt?: string | null;
+  sprintDurationSec?: number | null;
 }
 
 interface EnvironmentParticipantsProps {

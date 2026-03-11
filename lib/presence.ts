@@ -1,4 +1,4 @@
-import type { SessionPhase, ParticipantStatus, PresencePayload, CharacterId } from "./types";
+import type { SessionPhase, ParticipantStatus, PresencePayload, CharacterId, CommitmentType } from "./types";
 
 // ─── Phase → Status Mapping ──────────────────────────────────
 
@@ -32,6 +32,9 @@ export function buildPresencePayload(input: {
   activeSessionId?: string | null;
   phase?: SessionPhase | null;
   goalPreview?: string | null;
+  commitmentType?: CommitmentType | null;
+  sprintStartedAt?: string | null;
+  sprintDurationSec?: number | null;
 }): PresencePayload {
   return {
     userId: input.userId,
@@ -43,6 +46,9 @@ export function buildPresencePayload(input: {
     phase: input.phase ?? null,
     status: phaseToStatus(input.phase ?? null),
     goalPreview: input.goalPreview ?? null,
+    commitmentType: input.commitmentType ?? null,
+    sprintStartedAt: input.sprintStartedAt ?? null,
+    sprintDurationSec: input.sprintDurationSec ?? null,
     updatedAt: new Date().toISOString(),
   };
 }

@@ -6,11 +6,14 @@
 import { createClient } from "@/lib/supabase/admin";
 import {
   SYNTHETIC_POOL,
+  ROOM_REGULARS,
   type SyntheticArchetype,
   type SyntheticParticipant,
   type SyntheticEventType,
 } from "./pool";
 import { computeRoomState } from "@/lib/roomState";
+import { eventDisplayText } from "@/lib/presence";
+import { generateStatusMessage, pickFallbackMessage } from "./statusMessages";
 import type { ActivityEvent, RoomState } from "@/lib/types";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -39,15 +42,29 @@ interface ProposedEvent {
 // ─── Constants ───────────────────────────────────────────────
 
 const MAX_EVENTS_PER_ROOM = 2;
-const MAX_EVENTS_GLOBAL = 4;
-const SYNTHETIC_RATIO_CAP = 0.4;
-const RECENT_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 hours
+const MAX_EVENTS_GLOBAL = 3; // lowered from 4 — real users remain primary
+const SYNTHETIC_RATIO_CAP = 0.35; // lowered from 0.4
+const RECENT_WINDOW_MS = 50 * 60 * 1000; // 50 min (was 2 hours — prevents ghost presences)
 const RECENT_LIMIT = 20;
 const BACKFILL_WINDOW_MS = 30 * 60 * 1000; // 30 min
 const BACKFILL_MIN_AGO_MS = 5 * 60 * 1000; // 5 min
 const BACKFILL_MAX_AGO_MS = 45 * 60 * 1000; // 45 min
-const BACKFILL_MAX_EVENTS = 5;
+const BACKFILL_MAX_EVENTS = 3;
 const WORLD_AFFINITY_MISS_CHANCE = 0.15; // 15% chance to appear outside preferred worlds
+const REGULAR_BOOST = 3.0; // weight multiplier for room regulars
+const BUSY_ROOM_REAL_USER_THRESHOLD = 3; // if ≥3 real users active, suppress expressive events
+
+// ─── Cooldown Constants ──────────────────────────────────────
+// Per-synthetic cooldowns extracted from recent events each tick.
+// Ranges are randomized per synthetic via a deterministic hash.
+
+const COOLDOWN_VISIBLE_MIN_MS = 8 * 60 * 1000; // 8 min (was 4 — more natural pacing)
+const COOLDOWN_VISIBLE_MAX_MS = 15 * 60 * 1000; // 15 min (was 8)
+const COOLDOWN_UPDATE_MIN_MS = 12 * 60 * 1000; // 12 min (was 8)
+const COOLDOWN_UPDATE_MAX_MS = 20 * 60 * 1000; // 20 min (was 15)
+const COOLDOWN_HIGH_FIVE_MIN_MS = 15 * 60 * 1000; // 15 min
+const COOLDOWN_HIGH_FIVE_MAX_MS = 30 * 60 * 1000; // 30 min
+const HIGH_FIVE_ROOM_CAP_MS = 15 * 60 * 1000; // max 1 synthetic high-five per room per 15 min
 
 // ─── DB Queries (admin client) ───────────────────────────────
 
@@ -139,6 +156,101 @@ function randomBackdatedTimestamp(): string {
     BACKFILL_MIN_AGO_MS +
     Math.random() * (BACKFILL_MAX_AGO_MS - BACKFILL_MIN_AGO_MS);
   return new Date(Date.now() - agoMs).toISOString();
+}
+
+// ─── Cooldown Helpers ────────────────────────────────────────
+
+/** Simple deterministic hash for a synthetic ID → number in [0,1). */
+function syntheticHash(synId: string): number {
+  let hash = 0;
+  for (let i = 0; i < synId.length; i++) {
+    hash = ((hash << 5) - hash + synId.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) / 2147483647; // normalize to [0,1)
+}
+
+/** Pick a cooldown duration within a range, deterministic per synthetic. */
+function cooldownForSynthetic(
+  synId: string,
+  minMs: number,
+  maxMs: number
+): number {
+  return minMs + syntheticHash(synId) * (maxMs - minMs);
+}
+
+interface CooldownTimestamps {
+  /** Last visible event (check_in, sprint_completed, high_five). */
+  lastVisibleMs: number;
+  /** Last check_in with action "update". */
+  lastUpdateMs: number;
+  /** Last high_five. */
+  lastHighFiveMs: number;
+}
+
+/** Extract cooldown-relevant timestamps for a synthetic from recent events. */
+function extractCooldowns(
+  recentEvents: ActivityEvent[],
+  syntheticId: string
+): CooldownTimestamps {
+  let lastVisibleMs = 0;
+  let lastUpdateMs = 0;
+  let lastHighFiveMs = 0;
+
+  for (const e of recentEvents) {
+    if (e.actor_type !== "synthetic") continue;
+    const synId = (e.payload as Record<string, unknown> | null)?.synthetic_id as string | undefined;
+    if (synId !== syntheticId) continue;
+
+    const ts = new Date(e.created_at).getTime();
+
+    // Visible events: check_in, sprint_completed, high_five
+    if (
+      e.event_type === "check_in" ||
+      e.event_type === "sprint_completed" ||
+      e.event_type === "high_five"
+    ) {
+      lastVisibleMs = Math.max(lastVisibleMs, ts);
+    }
+
+    // Update-specific
+    if (
+      e.event_type === "check_in" &&
+      (e.payload as Record<string, unknown> | null)?.action === "update"
+    ) {
+      lastUpdateMs = Math.max(lastUpdateMs, ts);
+    }
+
+    // High-five-specific
+    if (e.event_type === "high_five") {
+      lastHighFiveMs = Math.max(lastHighFiveMs, ts);
+    }
+  }
+
+  return { lastVisibleMs, lastUpdateMs, lastHighFiveMs };
+}
+
+/** Check if a room already had a synthetic high-five in the last 15 min. */
+function roomHasRecentSyntheticHighFive(recentEvents: ActivityEvent[]): boolean {
+  const cutoff = Date.now() - HIGH_FIVE_ROOM_CAP_MS;
+  return recentEvents.some(
+    (e) =>
+      e.actor_type === "synthetic" &&
+      e.event_type === "high_five" &&
+      new Date(e.created_at).getTime() > cutoff
+  );
+}
+
+/** Count distinct real user IDs with events in the last 30 min. */
+function countRecentRealUsers(recentEvents: ActivityEvent[]): number {
+  const cutoff = Date.now() - 30 * 60 * 1000;
+  const userIds = new Set<string>();
+  for (const e of recentEvents) {
+    if (e.actor_type === "synthetic" || !e.user_id) continue;
+    if (new Date(e.created_at).getTime() > cutoff) {
+      userIds.add(e.user_id);
+    }
+  }
+  return userIds.size;
 }
 
 // ─── State Machine ───────────────────────────────────────────
@@ -233,14 +345,18 @@ function getValidTransitions(
         eventType: "session_completed",
         weight: synthetic.activityBias.session_completed,
       });
-      transitions.push({
-        eventType: "check_in",
-        weight: synthetic.activityBias.check_in,
-      });
-      transitions.push({
-        eventType: "high_five",
-        weight: synthetic.activityBias.high_five,
-      });
+      // Only expressive synthetics can check-in or high-five.
+      // Atmosphere synthetics are silent presence — lifecycle only.
+      if (synthetic.expressionMode === "expressive") {
+        transitions.push({
+          eventType: "check_in",
+          weight: synthetic.activityBias.check_in,
+        });
+        transitions.push({
+          eventType: "high_five",
+          weight: synthetic.activityBias.high_five,
+        });
+      }
       break;
   }
 
@@ -305,32 +421,30 @@ const SYNTHETIC_SHIP_TASKS: Record<SyntheticArchetype, string[]> = {
   gentle: ["a journal entry", "a study guide", "a design sketch", "a mood board", "a reading list"],
 };
 
-const SYNTHETIC_UPDATE_MSGS: string[] = [
-  "Deep in flow right now",
-  "Making steady progress",
-  "Almost done with this chunk",
-  "Hit a groove, keeping going",
-  "Wrapping up a tricky section",
-  "Feeling productive today",
-  "One more push then break",
-];
-
 function generateCheckInPayload(
-  synthetic: SyntheticParticipant
+  synthetic: SyntheticParticipant,
+  recentEvents?: ActivityEvent[]
 ): Record<string, unknown> {
   const roll = Math.random();
-  if (roll < 0.6) {
+  if (roll < 0.45) {
     return { action: "progress" };
-  } else if (roll < 0.85) {
+  } else if (roll < 0.70) {
     const tasks = SYNTHETIC_SHIP_TASKS[synthetic.archetype];
     const task = tasks[Math.floor(Math.random() * tasks.length)];
     return { action: "ship", task_title: task };
   } else {
-    const msg =
-      SYNTHETIC_UPDATE_MSGS[
-        Math.floor(Math.random() * SYNTHETIC_UPDATE_MSGS.length)
-      ];
-    return { action: "update", message: msg };
+    // "update" action — message will be enriched with AI in enrichProposalsWithAI()
+    // Respect update-specific cooldown (8-15 min). If blocked, fall back to "progress".
+    if (recentEvents) {
+      const cooldowns = extractCooldowns(recentEvents, synthetic.id);
+      if (cooldowns.lastUpdateMs > 0) {
+        const cd = cooldownForSynthetic(synthetic.id, COOLDOWN_UPDATE_MIN_MS, COOLDOWN_UPDATE_MAX_MS);
+        if (Date.now() - cooldowns.lastUpdateMs < cd) {
+          return { action: "progress" };
+        }
+      }
+    }
+    return { action: "update", message: pickFallbackMessage(synthetic.archetype) };
   }
 }
 
@@ -395,15 +509,24 @@ export function generateTickEvents(
 
     const { recentEvents } = room;
 
-    // Rate limit: synthetic events ≤ 40% of recent room events.
-    // Exception: rooms with ZERO real-user events always allow synthetic
-    // activity — otherwise persistent rooms with no visitors go cold.
-    if (recentEvents.length > 0) {
-      const syntheticCount = recentEvents.filter(
+    // Rate limit: synthetic events ≤ 40% of recent LIVE room events.
+    // Backdated (backfill) events are excluded — they're ambient "people
+    // were already here" flavor and shouldn't throttle real-time activity.
+    // We also require a minimum number of live events before applying the
+    // cap so that small rooms with 1-2 real events aren't choked.
+    {
+      const liveEvents = recentEvents.filter(
+        (e) => !(e.payload as Record<string, unknown> | null)?.backdated
+      );
+      const syntheticLive = liveEvents.filter(
         (e) => e.actor_type === "synthetic"
       ).length;
-      const realCount = recentEvents.length - syntheticCount;
-      if (realCount > 0 && syntheticCount / recentEvents.length >= SYNTHETIC_RATIO_CAP) {
+      const realLive = liveEvents.length - syntheticLive;
+      if (
+        realLive > 0 &&
+        liveEvents.length >= 8 &&
+        syntheticLive / liveEvents.length >= SYNTHETIC_RATIO_CAP
+      ) {
         continue;
       }
     }
@@ -430,30 +553,72 @@ export function generateTickEvents(
     const realUsers = findRealUsersInRoom(recentEvents);
     const hasRecentSprintComplete = realUsers.some((u) => u.recentSprintComplete);
 
+    // Busy-room check: if ≥3 real users active, only allow atmosphere lifecycle events
+    const recentRealUserCount = countRecentRealUsers(recentEvents);
+    const isBusyRoom = recentRealUserCount >= BUSY_ROOM_REAL_USER_THRESHOLD;
+
+    // Per-room high-five cap: only 1 synthetic high-five per 15 min
+    const roomHighFiveCapped = roomHasRecentSyntheticHighFive(recentEvents);
+
+    // Room regulars for weight boosting
+    const regulars = new Set(ROOM_REGULARS[room.world_key] ?? []);
+
     // Build all valid transitions across all candidates
     const allOptions: {
       item: { synthetic: SyntheticParticipant; eventType: SyntheticEventType };
       weight: number;
     }[] = [];
 
+    const now = Date.now();
+
     for (const candidate of shuffle(candidates)) {
       const stateEntry = states.get(candidate.id);
       const currentState: SyntheticState = stateEntry?.state ?? "absent";
       const joinedAt = stateEntry?.joinedAt ?? null;
 
-      const transitions = getValidTransitions(candidate, currentState, joinedAt);
+      // In busy rooms, suppress expressive transitions entirely
+      const effectiveCandidate = isBusyRoom
+        ? { ...candidate, expressionMode: "atmosphere" as const }
+        : candidate;
+
+      const transitions = getValidTransitions(effectiveCandidate, currentState, joinedAt);
+
+      // Extract cooldowns for this synthetic
+      const cooldowns = extractCooldowns(recentEvents, candidate.id);
+
       for (const t of transitions) {
+        // Per-synthetic cooldown enforcement
+        if (
+          (t.eventType === "check_in" || t.eventType === "sprint_completed" || t.eventType === "high_five") &&
+          cooldowns.lastVisibleMs > 0
+        ) {
+          const cd = cooldownForSynthetic(candidate.id, COOLDOWN_VISIBLE_MIN_MS, COOLDOWN_VISIBLE_MAX_MS);
+          if (now - cooldowns.lastVisibleMs < cd) continue;
+        }
+
+        // High-five specific cooldown (15-30 min)
+        if (t.eventType === "high_five" && cooldowns.lastHighFiveMs > 0) {
+          const cd = cooldownForSynthetic(candidate.id, COOLDOWN_HIGH_FIVE_MIN_MS, COOLDOWN_HIGH_FIVE_MAX_MS);
+          if (now - cooldowns.lastHighFiveMs < cd) continue;
+        }
+
+        // Per-room high-five cap
+        if (t.eventType === "high_five" && roomHighFiveCapped) continue;
+
         // Apply room-state-aware bias multipliers
         let adjustedWeight = t.weight;
         adjustedWeight *= getRoomStateBias(roomState, t.eventType);
 
-        // Boost high-five weight 3× when a real user just completed a sprint
-        if (t.eventType === "high_five" && hasRecentSprintComplete) {
-          adjustedWeight *= 3.0;
-        }
+        // High-fives only fire when a real user recently completed a sprint
+        if (t.eventType === "high_five" && !hasRecentSprintComplete) continue;
 
         // Skip high-fives entirely if no real users in the room
         if (t.eventType === "high_five" && realUsers.length === 0) continue;
+
+        // Boost regulars for this room
+        if (regulars.has(candidate.id)) {
+          adjustedWeight *= REGULAR_BOOST;
+        }
 
         allOptions.push({
           item: { synthetic: candidate, eventType: t.eventType },
@@ -482,7 +647,7 @@ export function generateTickEvents(
     // Enrich events with action-specific payloads
     let payload = basePayload;
     if (chosen.eventType === "check_in") {
-      payload = { ...basePayload, ...generateCheckInPayload(chosen.synthetic) };
+      payload = { ...basePayload, ...generateCheckInPayload(chosen.synthetic, recentEvents) };
     } else if (chosen.eventType === "high_five") {
       const target = pickHighFiveTarget(realUsers)!;
       payload = {
@@ -506,6 +671,72 @@ export function generateTickEvents(
   return proposals;
 }
 
+// ─── AI Enrichment ──────────────────────────────────────────
+
+/**
+ * Enrich check_in "update" proposals with AI-generated status messages.
+ * Mutates proposals in-place. Falls back to the existing static message
+ * on any error so the tick is never blocked.
+ */
+async function enrichProposalsWithAI(
+  proposals: ProposedEvent[],
+  rooms: RoomWithEvents[]
+): Promise<void> {
+  const roomMap = new Map(rooms.map((r) => [r.id, r]));
+
+  for (const proposal of proposals) {
+    if (
+      proposal.event_type !== "check_in" ||
+      (proposal.payload as Record<string, unknown>).action !== "update"
+    ) {
+      continue;
+    }
+
+    const room = roomMap.get(proposal.party_id);
+    if (!room) continue;
+
+    const synId = proposal.payload.synthetic_id as string;
+    const poolEntry = SYNTHETIC_POOL.find((s) => s.id === synId);
+    if (!poolEntry) continue;
+
+    // Build context for the AI prompt
+    const recentActivity = room.recentEvents
+      .slice(-5)
+      .map((e) => {
+        const name =
+          e.actor_type === "synthetic"
+            ? (e.body ?? "Someone")
+            : (e.body ?? "Someone");
+        return eventDisplayText(e.event_type, name, e.body, e.payload);
+      });
+
+    const recentSyntheticMessages = room.recentEvents
+      .filter(
+        (e) =>
+          e.actor_type === "synthetic" &&
+          e.event_type === "check_in" &&
+          (e.payload as Record<string, unknown> | null)?.action === "update"
+      )
+      .slice(-3)
+      .map((e) => (e.payload as Record<string, unknown>)?.message as string)
+      .filter(Boolean);
+
+    try {
+      const message = await generateStatusMessage({
+        archetype: poolEntry.archetype,
+        displayName: poolEntry.displayName,
+        worldKey: room.world_key,
+        recentActivity,
+        recentSyntheticMessages,
+      });
+      (proposal.payload as Record<string, unknown>).message = message;
+    } catch (err) {
+      // Keep the fallback message that was already set
+      console.error("[synthetic-status] enrichment failed, keeping fallback:", err);
+    }
+  }
+}
+
 // ─── Backfill ────────────────────────────────────────────────
 
 /**
@@ -520,7 +751,7 @@ function generateBackfillEvents(room: RoomContext): ProposedEvent[] {
   );
   if (candidates.length === 0) return [];
 
-  const count = 1 + Math.floor(Math.random() * BACKFILL_MAX_EVENTS); // 1–3
+  const count = 1 + Math.floor(Math.random() * BACKFILL_MAX_EVENTS); // 1–3 synthetics
   const picked = shuffle(candidates).slice(0, count);
   const events: ProposedEvent[] = [];
 
@@ -627,10 +858,22 @@ export interface TickResult {
 export async function runTick(
   targetPartyId?: string
 ): Promise<TickResult> {
-  let rooms = await getActiveRooms();
+  // Kill switch: set SYNTHETICS_ENABLED=false to disable all synthetic activity
+  if (process.env.SYNTHETICS_ENABLED === "false") {
+    console.log("[synthetics/tick] DISABLED via SYNTHETICS_ENABLED env var");
+    return { inserted: [] };
+  }
+
+  const allRooms = await getActiveRooms();
+  let rooms = allRooms;
   if (targetPartyId) {
     rooms = rooms.filter((r) => r.id === targetPartyId);
   }
+
+  console.log(
+    `[synthetics/tick] target=${targetPartyId ?? "all"} activeRooms=${allRooms.length} matched=${rooms.length}` +
+    (rooms.length > 0 ? ` room=${rooms[0].id} status=${rooms[0].status} world=${rooms[0].world_key}` : "")
+  );
 
   if (rooms.length === 0) return { inserted: [] };
 
@@ -668,6 +911,8 @@ export async function runTick(
     }
   }
 
+  console.log(`[synthetics/tick] backfill inserted=${inserted.length}`);
+
   // Standard tick: generate real-time events based on current room state
   // Re-fetch events after backfill to include newly inserted ones
   const updatedRooms: RoomWithEvents[] = await Promise.all(
@@ -679,6 +924,14 @@ export async function runTick(
 
   const proposals = generateTickEvents(updatedRooms);
 
+  // Enrich "update" check-ins with AI-generated status messages
+  await enrichProposalsWithAI(proposals, updatedRooms);
+
+  console.log(
+    `[synthetics/tick] proposals=${proposals.length}` +
+    (proposals.length > 0 ? ` types=${proposals.map((p) => p.event_type).join(",")}` : "")
+  );
+
   for (const proposal of proposals) {
     const ok = await insertSyntheticEvent(proposal);
     if (ok) {
@@ -689,5 +942,9 @@ export async function runTick(
     }
   }
 
+  console.log(
+    `[synthetics/tick] done — total inserted=${inserted.length}` +
+    (inserted.length > 0 ? ` events=${inserted.map((i) => i.eventType).join(",")}` : "")
+  );
   return { inserted };
 }
