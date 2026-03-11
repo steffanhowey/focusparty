@@ -104,7 +104,7 @@ export function GoalTaskList({
             className="shrink-0 cursor-pointer opacity-0 transition-opacity group-hover:opacity-100"
             aria-label="Delete task"
           >
-            <Trash2 size={13} className="text-red-400/70 hover:text-red-400" />
+            <Trash2 size={13} className="text-[var(--color-coral-700)]/70 hover:text-[var(--color-coral-700)]" />
           </button>
         </div>
       ))}

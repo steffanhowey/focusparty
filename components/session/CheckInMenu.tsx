@@ -2,6 +2,8 @@
 
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { TrendingUp, Rocket, RotateCcw, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { MenuItem } from "@/components/ui/MenuItem";
 
 interface CheckInMenuProps {
   isOpen: boolean;
@@ -70,9 +72,6 @@ export function CheckInMenu({
     onCheckIn("update", trimmed);
   };
 
-  const item =
-    "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.06] hover:text-white";
-
   return (
     <div
       className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl"
@@ -94,30 +93,38 @@ export function CheckInMenu({
       </p>
 
       <div className="flex flex-col gap-0.5">
-        <button type="button" onClick={() => handleQuickAction("progress")} className={item}>
-          <TrendingUp {...ICON} className="flex-shrink-0 text-[#5BC682]" />
+        <MenuItem
+          icon={<TrendingUp {...ICON} className="text-[#5BC682]" />}
+          onClick={() => handleQuickAction("progress")}
+        >
           Making progress
-        </button>
+        </MenuItem>
 
-        <button type="button" onClick={() => handleQuickAction("ship")} className={item}>
-          <Rocket {...ICON} className="flex-shrink-0 text-[#F59E0B]" />
+        <MenuItem
+          icon={<Rocket {...ICON} className="text-[#F59E0B]" />}
+          onClick={() => handleQuickAction("ship")}
+        >
           Shipped something
-        </button>
+        </MenuItem>
 
-        <button type="button" onClick={() => handleQuickAction("reset")} className={item}>
-          <RotateCcw {...ICON} className="flex-shrink-0 text-[#F5C54E]" />
+        <MenuItem
+          icon={<RotateCcw {...ICON} className="text-[#F5C54E]" />}
+          onClick={() => handleQuickAction("reset")}
+        >
           Need a reset
-        </button>
+        </MenuItem>
       </div>
 
       {/* Divider */}
       <div className="my-2 border-t border-[var(--color-border-subtle)]" />
 
       {!showInput ? (
-        <button type="button" onClick={() => setShowInput(true)} className={item}>
-          <MessageSquare {...ICON} className="flex-shrink-0 text-[#5CC2EC]" />
+        <MenuItem
+          icon={<MessageSquare {...ICON} className="text-[#5CC2EC]" />}
+          onClick={() => setShowInput(true)}
+        >
           Share update
-        </button>
+        </MenuItem>
       ) : (
         <div className="flex gap-1.5">
           <input
@@ -132,14 +139,15 @@ export function CheckInMenu({
             maxLength={120}
             className="flex-1 rounded-lg border border-[var(--color-border-default)] bg-white/[0.06] px-2.5 py-1.5 text-xs text-white placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent-primary)]/50 focus:outline-none"
           />
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="xs"
             onClick={handleSubmitUpdate}
             disabled={!message.trim()}
-            className="cursor-pointer rounded-lg bg-[var(--color-accent-primary)]/20 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--color-accent-primary)]/30 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg"
           >
             Post
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -3,6 +3,8 @@
 import { usePathname } from "next/navigation";
 import { ReactNode, useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { DoorOpen, Plus, Menu } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Sidebar } from "./Sidebar";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { CHARACTERS } from "@/lib/constants";
@@ -151,32 +153,28 @@ export function HubShell({ children }: { children: ReactNode }) {
         {effectivePath !== "/rooms" && (
           <div className="flex h-16 shrink-0 items-center justify-between gap-4 px-4 md:px-5 lg:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">
-              <button
-                type="button"
+              <IconButton
+                variant="ghost"
+                size="sm"
+                icon={<Menu size={20} strokeWidth={1.8} />}
                 onClick={toggleMobileMenu}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-active)] hover:text-[var(--color-text-primary)] md:hidden"
+                className="shrink-0 rounded-lg md:hidden"
                 aria-label="Open menu"
-              >
-                <Menu size={20} strokeWidth={1.8} />
-              </button>
+              />
               <span className="truncate text-lg font-semibold text-[var(--color-text-primary)]">
                 {title}
               </span>
             </div>
             {effectivePath === "/commitments" ? (
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<Plus size={18} strokeWidth={1.8} />}
                 onClick={() => document.dispatchEvent(new CustomEvent("fp:create-goal"))}
-                className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 sm:px-5"
-                style={{
-                  background: "var(--color-accent-primary)",
-                  color: "white",
-                }}
                 aria-label="New commitment"
               >
-                <Plus size={18} strokeWidth={1.8} className="shrink-0" />
-                <span className="hidden text-sm font-semibold sm:inline">New Commitment</span>
-              </button>
+                <span className="hidden sm:inline">New Commitment</span>
+              </Button>
             ) : (
               <a
                 href="/rooms"

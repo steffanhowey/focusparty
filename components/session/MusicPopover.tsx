@@ -2,6 +2,8 @@
 
 import { type RefObject, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { IconButton } from "@/components/ui/IconButton";
+import { MenuItem } from "@/components/ui/MenuItem";
 import { VIBES, VIBE_ICONS, type VibeId, type MusicStatus, VIBES_MAP } from "@/lib/musicConstants";
 
 interface MusicPopoverProps {
@@ -101,19 +103,14 @@ export function MusicPopover({
               const isActive = activeVibe === vibe.id;
               const Icon = VIBE_ICONS[vibe.id];
               return (
-                <button
+                <MenuItem
                   key={vibe.id}
-                  type="button"
+                  icon={<Icon size={14} strokeWidth={1.8} />}
+                  active={isActive}
                   onClick={() => onSelectVibe(vibe.id)}
-                  className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors ${
-                    isActive
-                      ? "bg-[var(--color-accent-primary)]/20 text-white ring-1 ring-[var(--color-accent-primary)]/40"
-                      : "text-[var(--color-text-secondary)] hover:bg-white/[0.06] hover:text-white"
-                  }`}
                 >
-                  <Icon size={14} strokeWidth={1.8} className="flex-shrink-0" />
-                  <span className="text-xs font-medium">{vibe.label}</span>
-                </button>
+                  {vibe.label}
+                </MenuItem>
               );
             })}
           </div>
@@ -125,30 +122,32 @@ export function MusicPopover({
 
       {/* Transport controls */}
       <div className="flex items-center gap-2">
-        <button
-          type="button"
+        <IconButton
+          variant="ghost"
+          size="sm"
+          icon={
+            isLoading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : isPlaying ? (
+              <Pause size={16} fill="currentColor" />
+            ) : (
+              <Play size={16} fill="currentColor" />
+            )
+          }
           onClick={onTogglePlayPause}
           disabled={isLoading}
-          className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+          className="shrink-0 text-white"
           aria-label={isPlaying ? "Pause" : "Play"}
-        >
-          {isLoading ? (
-            <Loader2 size={16} className="animate-spin" />
-          ) : isPlaying ? (
-            <Pause size={16} fill="currentColor" />
-          ) : (
-            <Play size={16} fill="currentColor" />
-          )}
-        </button>
+        />
 
-        <button
-          type="button"
+        <IconButton
+          variant="ghost"
+          size="xs"
+          icon={volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
           onClick={() => onSetVolume(volume === 0 ? 50 : 0)}
-          className="flex h-6 w-6 flex-shrink-0 cursor-pointer items-center justify-center text-[var(--color-text-tertiary)] transition-colors hover:text-white"
+          className="shrink-0"
           aria-label={volume === 0 ? "Unmute" : "Mute"}
-        >
-          {volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
-        </button>
+        />
 
         <input
           type="range"

@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Zap, Target, Meh, BatteryLow, CloudLightning, X, CheckCircle2, Clock, RotateCw, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
+import { ToggleCard } from "@/components/ui/ToggleCard";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 import type { SessionMood, SessionReflection, SprintResolution } from "@/lib/types";
 
@@ -158,14 +161,14 @@ export function SessionReviewModal({
         } as React.CSSProperties}
       >
         {/* Close button */}
-        <button
-          type="button"
+        <IconButton
+          variant="ghost"
+          size="sm"
+          icon={<X size={15} strokeWidth={2.5} />}
           onClick={() => handleAction(onDone)}
-          className="absolute right-3 top-3 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-white/40 transition hover:bg-white/[0.08] hover:text-white/70"
+          className="absolute right-3 top-3 z-10 text-white/40 hover:text-white/70"
           aria-label="Close"
-        >
-          <X size={15} strokeWidth={2.5} />
-        </button>
+        />
 
         {/* ── Celebration header ── */}
         <div className="mb-8 text-center">
@@ -199,15 +202,11 @@ export function SessionReviewModal({
               {RESOLUTIONS.map(({ id, icon: Icon, label, desc }) => {
                 const selected = resolution === id;
                 return (
-                  <button
+                  <ToggleCard
                     key={id}
-                    type="button"
+                    selected={selected}
                     onClick={() => setResolution(selected ? null : id)}
-                    className={`flex cursor-pointer items-start gap-2.5 rounded-[var(--radius-md)] border px-3 py-2.5 text-left transition-all duration-150 ${
-                      selected
-                        ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-primary)]/10"
-                        : "border-[var(--color-border-default)] hover:border-[var(--color-border-focus)]"
-                    }`}
+                    className="flex items-start gap-2.5"
                   >
                     <Icon
                       size={16}
@@ -220,7 +219,7 @@ export function SessionReviewModal({
                       </p>
                       <p className="text-[10px] text-[var(--color-text-tertiary)]">{desc}</p>
                     </div>
-                  </button>
+                  </ToggleCard>
                 );
               })}
             </div>
@@ -236,22 +235,20 @@ export function SessionReviewModal({
             {MOODS.map(({ id, icon: Icon, label }) => {
               const selected = mood === id;
               return (
-                <button
+                <ToggleCard
                   key={id}
-                  type="button"
+                  selected={selected}
                   role="radio"
                   aria-checked={selected}
                   aria-label={label}
                   onClick={() => setMood(selected ? null : id)}
-                  className={`flex flex-1 cursor-pointer flex-col items-center gap-1.5 rounded-[var(--radius-md)] border px-2 py-3 transition-all duration-150 ${
-                    selected
-                      ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-primary)]/10 text-white"
-                      : "border-[var(--color-border-default)] text-[var(--color-text-tertiary)] hover:border-[var(--color-border-focus)] hover:text-white"
+                  className={`flex flex-1 flex-col items-center gap-1.5 px-2 py-3 ${
+                    selected ? "text-white" : "text-[var(--color-text-tertiary)] hover:text-white"
                   }`}
                 >
                   <Icon size={20} strokeWidth={1.6} />
                   <span className="text-[11px] font-medium leading-tight">{label}</span>
-                </button>
+                </ToggleCard>
               );
             })}
           </div>
@@ -259,22 +256,21 @@ export function SessionReviewModal({
 
         {/* ── Action buttons ── */}
         <div className="flex flex-col gap-2">
-          <button
+          <Button
+            variant="cta"
+            fullWidth
             data-autofocus
-            type="button"
             onClick={() => handleAction(onAnotherRound)}
-            className="h-12 w-full cursor-pointer rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-all duration-150 hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] active:opacity-75"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             Another round
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="secondary"
+            fullWidth
             onClick={() => handleAction(onDone)}
-            className="h-12 w-full cursor-pointer rounded-full border border-[var(--color-border-default)] font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.08]"
           >
             Done for now
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -144,14 +144,14 @@ export function TaskDetailModal({
         </div>
 
         <div className="flex items-center justify-between pt-2">
-          <button
-            type="button"
+          <Button
+            variant="danger"
+            size="sm"
+            leftIcon={<Trash2 size={14} strokeWidth={1.5} />}
             onClick={handleDelete}
-            className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10"
           >
-            <Trash2 size={14} strokeWidth={1.5} />
             Delete
-          </button>
+          </Button>
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" onClick={onClose}>
               Cancel

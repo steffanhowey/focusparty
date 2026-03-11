@@ -218,22 +218,22 @@ export function GoalDetailModal({
         {/* Footer actions */}
         <div className="flex items-center justify-between pt-2">
           <div className="flex gap-1">
-            <button
-              type="button"
+            <Button
+              variant="danger"
+              size="sm"
+              leftIcon={<Trash2 size={14} strokeWidth={1.5} />}
               onClick={handleDelete}
-              className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10"
             >
-              <Trash2 size={14} strokeWidth={1.5} />
               Delete
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<Archive size={14} strokeWidth={1.5} />}
               onClick={handleArchive}
-              className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-[var(--color-text-tertiary)] transition-colors hover:bg-white/[0.06]"
             >
-              <Archive size={14} strokeWidth={1.5} />
               Archive
-            </button>
+            </Button>
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" onClick={onClose}>

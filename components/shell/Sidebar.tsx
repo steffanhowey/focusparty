@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, Sun, Moon, CreditCard, Settings, LogOut, LogIn } from "lucide-react";
 import { Logo } from "./Logo";
+import { MenuItem } from "@/components/ui/MenuItem";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -62,56 +63,50 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
 
   const profileMenuItems = (
     <>
-      <button
-        type="button"
+      <MenuItem
+        size="default"
+        icon={colorMode === "dark" ? <Sun size={18} strokeWidth={1.8} /> : <Moon size={18} strokeWidth={1.8} />}
         onClick={() => {
           setColorMode(colorMode === "dark" ? "light" : "dark");
         }}
-        className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
+        className="text-[var(--color-text-primary)]"
       >
-        {colorMode === "dark" ? <Sun size={18} strokeWidth={1.8} /> : <Moon size={18} strokeWidth={1.8} />}
-        <span>{colorMode === "dark" ? "Light mode" : "Dark mode"}</span>
-      </button>
-      <a
-        href="/settings"
-        onClick={(e) => {
+        {colorMode === "dark" ? "Light mode" : "Dark mode"}
+      </MenuItem>
+      <MenuItem
+        size="default"
+        icon={<CreditCard size={18} strokeWidth={1.8} />}
+        onClick={() => {
           setProfileMenuOpen(false);
-          if (onNavClick) {
-            e.preventDefault();
-            onNavClick("/settings");
-          }
+          if (onNavClick) onNavClick("/settings");
         }}
-        className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
+        className="text-[var(--color-text-primary)]"
       >
-        <CreditCard size={18} strokeWidth={1.8} />
-        <span>Plans & Billing</span>
-      </a>
-      <a
-        href="/settings"
-        onClick={(e) => {
+        Plans & Billing
+      </MenuItem>
+      <MenuItem
+        size="default"
+        icon={<Settings size={18} strokeWidth={1.8} />}
+        onClick={() => {
           setProfileMenuOpen(false);
-          if (onNavClick) {
-            e.preventDefault();
-            onNavClick("/settings");
-          }
+          if (onNavClick) onNavClick("/settings");
         }}
-        className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
+        className="text-[var(--color-text-primary)]"
       >
-        <Settings size={18} strokeWidth={1.8} />
-        <span>Settings</span>
-      </a>
+        Settings
+      </MenuItem>
       {isAuthenticated ? (
-        <button
-          type="button"
+        <MenuItem
+          size="default"
+          icon={<LogOut size={18} strokeWidth={1.8} />}
+          danger
           onClick={() => {
             setProfileMenuOpen(false);
             signOut();
           }}
-          className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
         >
-          <LogOut size={18} strokeWidth={1.8} />
-          <span>Sign out</span>
-        </button>
+          Sign out
+        </MenuItem>
       ) : (
         <Link
           href="/login"

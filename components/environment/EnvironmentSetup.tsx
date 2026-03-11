@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Plus, Check } from "lucide-react";
 import Image from "next/image";
+import { Button } from "@/components/ui/Button";
 import { DurationPills } from "@/components/session/DurationPills";
 import type { TaskRecord } from "@/lib/types";
 
@@ -171,15 +172,15 @@ export function EnvironmentSetup({
         </div>
 
         {/* Start button */}
-        <button
-          type="button"
+        <Button
+          variant="cta"
+          fullWidth
           onClick={handleStart}
           disabled={!canStart}
-          className="w-full cursor-pointer rounded-full py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-default disabled:opacity-40"
           style={{ background: accentColor }}
         >
           Let&apos;s focus
-        </button>
+        </Button>
       </div>
     </div>
   );

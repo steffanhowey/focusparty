@@ -87,7 +87,7 @@ function ActionButton({
       }`}
       style={{
         color: danger
-          ? "#F87171"
+          ? "var(--color-coral-700)"
           : active
             ? undefined
             : "rgba(255,255,255,0.75)",

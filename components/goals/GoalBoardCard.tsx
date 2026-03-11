@@ -10,6 +10,7 @@ import {
   Trash2,
   Archive,
 } from "lucide-react";
+import { MenuItem } from "@/components/ui/MenuItem";
 import { computeGoalProgress } from "@/lib/goals";
 import type { GoalRecord, TaskRecord } from "@/lib/types";
 
@@ -152,36 +153,31 @@ export const GoalBoardCard = memo(function GoalBoardCard({
                         border: "1px solid rgba(255,255,255,0.08)",
                       }}
                     >
-                      <button
-                        type="button"
+                      <MenuItem
+                        icon={<CheckCircle2 size={14} />}
                         onClick={(e) =>
                           handleMenuClick(e, () => onCompleteGoal(goal.id))
                         }
-                        className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-xs text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.08]"
                       >
-                        <CheckCircle2 size={14} />
                         Mark complete
-                      </button>
-                      <button
-                        type="button"
+                      </MenuItem>
+                      <MenuItem
+                        icon={<Archive size={14} />}
                         onClick={(e) =>
                           handleMenuClick(e, () => onArchiveGoal(goal.id))
                         }
-                        className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-xs text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.08]"
                       >
-                        <Archive size={14} />
                         Archive
-                      </button>
-                      <button
-                        type="button"
+                      </MenuItem>
+                      <MenuItem
+                        icon={<Trash2 size={14} />}
+                        danger
                         onClick={(e) =>
                           handleMenuClick(e, () => onDeleteGoal(goal.id))
                         }
-                        className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-xs text-red-400 transition-colors hover:bg-red-500/10"
                       >
-                        <Trash2 size={14} />
                         Delete
-                      </button>
+                      </MenuItem>
                     </div>
                   </>
                 )}

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { MusicPopover } from "@/components/session/MusicPopover";
 import { CheckInMenu } from "@/components/session/CheckInMenu";
+import { Button } from "@/components/ui/Button";
 import { DurationPills } from "./DurationPills";
 import { useTimerDisplay, type Timer } from "@/lib/useTimer";
 import type { VibeId, MusicStatus } from "@/lib/musicConstants";
@@ -201,15 +202,16 @@ export const ActionBar = memo(function ActionBar({
               <p className="mb-2 text-xs font-medium text-[var(--color-text-secondary)]">Sprint duration</p>
               <div className="flex items-center gap-2 [&>div]:flex-nowrap">
                 <DurationPills value={currentDurationMin} onChange={onChangeDuration} />
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  leftIcon={<RotateCcw size={12} strokeWidth={2} />}
                   onClick={onResetTimer}
-                  className="ml-auto flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-xs text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
+                  className="ml-auto"
                   aria-label="Reset timer"
                 >
-                  <RotateCcw size={12} strokeWidth={2} />
                   Reset
-                </button>
+                </Button>
               </div>
             </div>
           )}

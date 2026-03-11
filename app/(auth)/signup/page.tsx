@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/shell/Logo";
+import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 function friendlyError(raw: string): string {
@@ -87,16 +88,17 @@ function SignUpForm() {
             <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
               Magic link sent to <strong className="text-[var(--color-text-secondary)]">{email}</strong>
             </p>
-            <button
-              type="button"
+            <Button
+              variant="link"
+              size="sm"
               onClick={() => {
                 setSent(false);
                 setEmail("");
               }}
-              className="mt-5 cursor-pointer text-sm text-[var(--color-accent-primary)] hover:underline"
+              className="mt-5"
             >
               Use a different email
-            </button>
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
@@ -139,16 +141,17 @@ function SignUpForm() {
               required
               className="h-11 w-full rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-5 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
             />
-            {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
-            <button
+            {error && <p className="mt-2 text-xs text-[var(--color-coral-700)]">{error}</p>}
+            <Button
+              variant="primary"
+              fullWidth
+              loading={loading}
               type="submit"
-              disabled={
-                !firstName.trim() || !lastName.trim() || !email.trim() || loading
-              }
-              className="mt-4 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!firstName.trim() || !lastName.trim() || !email.trim()}
+              className="mt-4"
             >
-              {loading ? "Sending..." : "Get Focused"}
-            </button>
+              Get Focused
+            </Button>
           </form>
         )}
       </div>

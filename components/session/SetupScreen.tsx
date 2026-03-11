@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ChevronDown, Plus } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import type { TaskRecord, PresencePayload } from "@/lib/types";
 import { LiveParticipantsStrip } from "@/components/party/LiveParticipantsStrip";
 import { DurationPills } from "./DurationPills";
@@ -123,14 +124,16 @@ export function SetupScreen({
   return (
     <div className="relative z-10 flex flex-1 flex-col items-center justify-center p-4">
       {roomName && (
-        <button
-          type="button"
-          onClick={() => router.push("/rooms")}
-          className="mb-3 flex w-full max-w-[480px] cursor-pointer items-center gap-1.5 text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-white"
-        >
-          <ArrowLeft size={14} />
-          Back to rooms
-        </button>
+        <div className="mb-3 w-full max-w-[480px]">
+          <Button
+            variant="ghost"
+            size="xs"
+            leftIcon={<ArrowLeft size={14} />}
+            onClick={() => router.push("/rooms")}
+          >
+            Back to rooms
+          </Button>
+        </div>
       )}
       <div
         className="animate-fp-setup-enter w-full max-w-[480px] overflow-visible rounded-[var(--radius-lg)] border border-white/[0.08] p-8 shadow-xl"
@@ -335,15 +338,15 @@ export function SetupScreen({
           </div>
 
           {/* Start button */}
-          <button
-            type="button"
+          <Button
+            variant="cta"
+            fullWidth
             onClick={() => onStartSprint(duration)}
             disabled={!activeTask}
-            className="mt-2 h-12 w-full cursor-pointer rounded-full bg-[var(--color-accent-primary)] font-semibold text-[var(--color-text-on-accent)] transition-all duration-150 hover:bg-[var(--color-accent-secondary)] hover:shadow-[var(--shadow-glow-purple)] disabled:cursor-not-allowed disabled:opacity-40"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+            className="mt-2"
           >
             Let's focus
-          </button>
+          </Button>
         </div>
       </div>
     </div>

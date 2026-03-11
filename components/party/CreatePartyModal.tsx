@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Clock, Users, Sparkles } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
 import { useNotification } from "@/components/providers/NotificationProvider";
 import { createParty } from "@/lib/parties";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -177,14 +178,15 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
         <div>
           {/* Back + title */}
           <div className="mb-5">
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="xs"
+              leftIcon={<ArrowLeft size={14} />}
               onClick={handleBack}
-              className="mb-3 flex cursor-pointer items-center gap-1.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:text-white"
+              className="mb-3"
             >
-              <ArrowLeft size={14} />
               Change environment
-            </button>
+            </Button>
 
             {selectedWorld && (
               <div className="flex items-center gap-2">
@@ -293,19 +295,20 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
             </div>
 
             {/* Create button */}
-            <button
-              type="button"
+            <Button
+              variant="cta"
+              fullWidth
+              loading={creating}
               onClick={handleCreate}
-              disabled={!canSubmit || creating}
-              className="mt-2 h-12 w-full cursor-pointer rounded-full font-semibold text-white transition-all duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!canSubmit}
+              className="mt-2"
               style={{
                 background:
                   selectedWorld?.accentColor ?? "var(--color-accent-primary)",
-                fontFamily: "var(--font-montserrat), sans-serif",
               }}
             >
-              {creating ? "Creating..." : "Create room"}
-            </button>
+              Create room
+            </Button>
           </div>
         </div>
       )}

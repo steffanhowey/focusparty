@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
 import type { Task } from "@/lib/types";
 
 interface BottomBarProps {
@@ -32,13 +33,9 @@ export function BottomBar({ activeTask, onEndSession }: BottomBarProps) {
 
       {/* Right: end session */}
       <div className="flex shrink-0 items-center gap-3">
-        <button
-          type="button"
-          onClick={onEndSession}
-          className="px-3 py-1.5 text-xs text-[var(--color-coral-700)] transition-colors hover:text-[var(--color-coral-500)]"
-        >
+        <Button variant="danger" size="xs" onClick={onEndSession}>
           End session
-        </button>
+        </Button>
       </div>
     </footer>
   );

@@ -101,7 +101,7 @@ export function ProjectManager({
                     <button
                       type="button"
                       onClick={() => onDeleteProject(p.id)}
-                      className="rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-red-400"
+                      className="rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-coral-700)]"
                     >
                       <Trash2 size={14} strokeWidth={1.5} />
                     </button>
