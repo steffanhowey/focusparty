@@ -35,6 +35,9 @@ export function buildPresencePayload(input: {
   commitmentType?: CommitmentType | null;
   sprintStartedAt?: string | null;
   sprintDurationSec?: number | null;
+  breakContentId?: string | null;
+  breakContentTitle?: string | null;
+  breakContentThumbnail?: string | null;
 }): PresencePayload {
   return {
     userId: input.userId,
@@ -49,6 +52,9 @@ export function buildPresencePayload(input: {
     commitmentType: input.commitmentType ?? null,
     sprintStartedAt: input.sprintStartedAt ?? null,
     sprintDurationSec: input.sprintDurationSec ?? null,
+    breakContentId: input.breakContentId ?? null,
+    breakContentTitle: input.breakContentTitle ?? null,
+    breakContentThumbnail: input.breakContentThumbnail ?? null,
     updatedAt: new Date().toISOString(),
   };
 }

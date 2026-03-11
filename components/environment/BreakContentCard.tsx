@@ -1,25 +1,23 @@
 "use client";
 
-import type { BreakContentItem } from "@/lib/types";
+import type { BreakClip } from "@/lib/useBreakContent";
 import { getYouTubeThumbnail } from "@/lib/youtube";
 
 interface BreakContentCardProps {
-  item: BreakContentItem;
-  onSelect: (item: BreakContentItem) => void;
+  clip: BreakClip;
+  onSelect: (clip: BreakClip) => void;
 }
 
-export function BreakContentCard({ item, onSelect }: BreakContentCardProps) {
-  const durationLabel = item.duration_seconds
-    ? `${Math.ceil(item.duration_seconds / 60)} min`
-    : null;
+export function BreakContentCard({ clip, onSelect }: BreakContentCardProps) {
+  const { sourceItem } = clip;
 
   const thumbnailSrc =
-    item.thumbnail_url || getYouTubeThumbnail(item.video_url);
+    sourceItem.thumbnail_url || getYouTubeThumbnail(sourceItem.video_url);
 
   return (
     <button
       type="button"
-      onClick={() => onSelect(item)}
+      onClick={() => onSelect(clip)}
       className="group w-full cursor-pointer rounded-xl border border-white/[0.06] p-3 text-left transition-colors hover:bg-white/[0.06]"
       style={{ background: "rgba(255,255,255,0.03)" }}
     >
@@ -34,25 +32,22 @@ export function BreakContentCard({ item, onSelect }: BreakContentCardProps) {
         </div>
       )}
 
-      {/* Title + meta */}
-      <p className="text-sm font-medium text-white">{item.title}</p>
-      <div className="mt-1 flex items-center gap-2 text-xs text-white/40">
-        {item.source_name && <span>{item.source_name}</span>}
-        {item.source_name && durationLabel && (
+      {/* Clip label — what you'll learn */}
+      <p className="text-sm font-medium leading-snug text-white">{clip.label}</p>
+
+      {/* Source meta */}
+      <div className="mt-1.5 flex items-center gap-2 text-xs text-white/40">
+        {sourceItem.source_name && <span>{sourceItem.source_name}</span>}
+        {sourceItem.source_name && (
           <span className="text-white/20">&middot;</span>
         )}
-        {durationLabel && <span>{durationLabel}</span>}
+        <span
+          className="rounded-full px-1.5 py-0.5 text-[10px]"
+          style={{ background: "rgba(140, 85, 239, 0.15)", color: "rgba(140, 85, 239, 0.8)" }}
+        >
+          {clip.duration} min
+        </span>
       </div>
-      {item.description && (
-        <p className="mt-1.5 text-xs leading-relaxed text-white/30 line-clamp-2">
-          {item.description}
-        </p>
-      )}
-      {item.editorial_note && (
-        <p className="mt-1 text-[11px] italic leading-relaxed text-white/40">
-          {item.editorial_note}
-        </p>
-      )}
     </button>
   );
 }

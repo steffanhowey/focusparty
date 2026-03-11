@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PanelHeader } from "@/components/session/PanelHeader";
 import { BreakContentCard } from "./BreakContentCard";
 import { useBreakContent } from "@/lib/useBreakContent";
-import type { BreakContentItem } from "@/lib/types";
+import type { BreakClip } from "@/lib/useBreakContent";
+import type { BreakContentItem, BreakDuration } from "@/lib/types";
+
+const DURATION_PRESETS: BreakDuration[] = [3, 5, 10];
 
 interface BreaksFlyoutProps {
   roomWorldKey: string;
   worldLabel: string;
   onClose: () => void;
-  onSelectContent: (item: BreakContentItem) => void;
+  onSelectContent: (item: BreakContentItem, duration: BreakDuration) => void;
 }
 
 export function BreaksFlyout({
@@ -19,7 +22,18 @@ export function BreaksFlyout({
   onClose,
   onSelectContent,
 }: BreaksFlyoutProps) {
-  const { items, loading } = useBreakContent(roomWorldKey, "learning");
+  const { clips, loading } = useBreakContent(roomWorldKey, "learning");
+  const [selectedDuration, setSelectedDuration] = useState<BreakDuration>(5);
+
+  const filteredClips = useMemo(
+    () => clips.filter((c) => c.duration === selectedDuration),
+    [clips, selectedDuration]
+  );
+
+  const handleSelectClip = useCallback(
+    (clip: BreakClip) => onSelectContent(clip.sourceItem, clip.duration),
+    [onSelectContent]
+  );
 
   // Escape key closes
   useEffect(() => {
@@ -34,13 +48,31 @@ export function BreaksFlyout({
     <>
       <PanelHeader title="Breaks" onClose={onClose} />
 
-      <div className="px-5 pb-2">
-        <p className="text-xs text-white/40">Take a productive break</p>
+      {/* Duration picker */}
+      <div className="px-5 pb-3">
+        <p className="mb-2 text-xs text-white/40">How long?</p>
+        <div className="flex gap-2">
+          {DURATION_PRESETS.map((d) => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => setSelectedDuration(d)}
+              className="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium transition-all"
+              style={
+                selectedDuration === d
+                  ? { background: "rgba(140, 85, 239, 0.2)", color: "#8C55EF", border: "1px solid rgba(140, 85, 239, 0.3)" }
+                  : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.08)" }
+              }
+            >
+              {d} min
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="fp-shell-scroll flex-1 overflow-y-auto px-5 py-3">
         <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-white/25">
-          Curated learning for {worldLabel}
+          {selectedDuration}-min clips for {worldLabel}
         </p>
 
         {loading ? (
@@ -52,17 +84,17 @@ export function BreaksFlyout({
               />
             ))}
           </div>
-        ) : items.length === 0 ? (
+        ) : filteredClips.length === 0 ? (
           <p className="py-8 text-center text-xs text-white/30">
             No break content available yet
           </p>
         ) : (
           <div className="flex flex-col gap-2">
-            {items.map((item) => (
+            {filteredClips.map((clip) => (
               <BreakContentCard
-                key={item.id}
-                item={item}
-                onSelect={onSelectContent}
+                key={clip.clipId}
+                clip={clip}
+                onSelect={handleSelectClip}
               />
             ))}
           </div>

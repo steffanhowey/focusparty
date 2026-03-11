@@ -5,11 +5,12 @@ import { createPortal } from "react-dom";
 import { Coffee } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useFocusTrap } from "@/lib/useFocusTrap";
-import type { BreakContentItem } from "@/lib/types";
+import type { BreakContentItem, BreakDuration } from "@/lib/types";
 
 interface BreakSessionConfirmProps {
   isOpen: boolean;
   content: BreakContentItem;
+  durationMinutes: BreakDuration;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -17,6 +18,7 @@ interface BreakSessionConfirmProps {
 export function BreakSessionConfirm({
   isOpen,
   content,
+  durationMinutes,
   onConfirm,
   onCancel,
 }: BreakSessionConfirmProps) {
@@ -51,9 +53,9 @@ export function BreakSessionConfirm({
 
   if (!isOpen || !mounted || typeof document === "undefined") return null;
 
-  const durationLabel = content.duration_seconds
-    ? `${Math.ceil(content.duration_seconds / 60)} minutes`
-    : "Short break";
+  const durationLabel = `${durationMinutes} minute break`;
+  const segment = content.segments?.find((s) => s.duration === durationMinutes);
+  const clipLabel = segment?.label ?? null;
 
   const modal = (
     <div
@@ -93,8 +95,14 @@ export function BreakSessionConfirm({
           >
             Learning Break
           </h2>
-          <p className="mt-2 text-sm text-white/60">{content.title}</p>
-          <p className="mt-1 text-xs text-white/30">{durationLabel}</p>
+          {clipLabel ? (
+            <p className="mt-2 text-sm font-medium text-white/70">{clipLabel}</p>
+          ) : (
+            <p className="mt-2 text-sm text-white/60">{content.title}</p>
+          )}
+          <p className="mt-1.5 text-xs text-white/30">
+            {content.source_name ? `${content.source_name} · ` : ""}{durationLabel}
+          </p>
           <p className="mt-4 text-xs text-white/40">
             Your sprint will resume when this finishes.
           </p>

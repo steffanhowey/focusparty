@@ -333,6 +333,10 @@ export interface PresencePayload {
   commitmentType: CommitmentType | null;
   sprintStartedAt: string | null;
   sprintDurationSec: number | null;
+  /** Break content info — populated when phase === "break" */
+  breakContentId: string | null;
+  breakContentTitle: string | null;
+  breakContentThumbnail: string | null;
   updatedAt: string;
 }
 
@@ -425,6 +429,16 @@ export interface CommitmentRecord {
 
 export type SprintResolution = "completed" | "partial" | "continue" | "abandon";
 
+// ─── Break Segments ─────────────────────────────────────────
+
+export type BreakDuration = 3 | 5 | 10;
+
+export interface BreakSegment {
+  duration: number;      // 3, 5, or 10 (minutes)
+  start: number;         // start time in seconds
+  label: string;         // AI-generated segment description (max 60 chars)
+}
+
 // ─── Break Content ──────────────────────────────────────────
 
 export interface BreakContentItem {
@@ -446,6 +460,10 @@ export interface BreakContentItem {
   pinned: boolean;
   expires_at: string | null;
   editorial_note: string | null;
+  /** AI-identified best segments per duration (3/5/10 min) */
+  segments: BreakSegment[] | null;
+  /** AI-assigned optimal break duration for this video */
+  best_duration: 3 | 5 | 10 | null;
 }
 
 // ─── AI Curator — Candidates ────────────────────────────────
@@ -484,6 +502,8 @@ export interface BreakContentScore {
   novelty_score: number | null;
   evaluation_notes: string | null;
   editorial_note: string | null;
+  /** AI-identified best segments per duration */
+  segments: BreakSegment[] | null;
   evaluated_at: string;
 }
 

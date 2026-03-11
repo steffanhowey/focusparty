@@ -5,7 +5,7 @@
 
 import OpenAI from "openai";
 import { WORLD_CONFIGS } from "@/lib/worlds";
-import type { BreakContentCandidate } from "@/lib/types";
+import type { BreakContentCandidate, BreakSegment } from "@/lib/types";
 import { getEditorialPersona } from "./editorialPersonas";
 import { getCreatorBoost } from "./creatorAuthority";
 import {
@@ -44,6 +44,8 @@ export interface EvaluationResult {
   noveltyScore: number;
   evaluationNotes: string;
   editorialNote: string;
+  segments: BreakSegment[];
+  bestDuration: 3 | 5 | 10;
   rejected: boolean;
 }
 
@@ -57,7 +59,8 @@ export interface EvaluationResult {
 export async function evaluateCandidate(
   candidate: BreakContentCandidate,
   worldKey: string,
-  currentShelfTitles: string[]
+  currentShelfTitles: string[],
+  transcriptContext?: { transcript: string; chapters: string } | null
 ): Promise<EvaluationResult> {
   const worldConfig =
     WORLD_CONFIGS[worldKey as keyof typeof WORLD_CONFIGS] ??
@@ -78,7 +81,7 @@ export async function evaluateCandidate(
 
   const response = await getClient().chat.completions.create({
     model: "gpt-4o-mini",
-    max_tokens: 600,
+    max_tokens: 1000,
     temperature: 0.3,
     messages: [
       {
@@ -95,7 +98,13 @@ Your job is to select only content that:
 
 Reject: ${persona.rejectPatterns.join(", ")}
 
-Prefer: ${persona.preferPatterns.join(", ")}`,
+Prefer: ${persona.preferPatterns.join(", ")}${transcriptContext?.transcript ? `
+
+When a transcript is provided, use it to:
+- Assess educational_density based on actual spoken content (count distinct concepts, assess pacing, identify filler)
+- Identify segment start times using EXACT timestamps from the transcript
+- Start segments at natural topic boundaries — never mid-sentence
+- Skip: intros ("hey guys welcome back"), sponsor reads, outros, filler` : ""}`,
       },
       {
         role: "user",
@@ -110,8 +119,18 @@ Like/View ratio: ${viewLikeRatio}%
 Published: ${candidate.published_at ?? "unknown"}
 
 ${shelfContext}
+${transcriptContext?.transcript ? `
+VIDEO TRANSCRIPT (timestamped):
+${transcriptContext.transcript}
+` : ""}${transcriptContext?.chapters ? `
+VIDEO CHAPTERS:
+${transcriptContext.chapters}
+` : ""}
+Score on 5 dimensions (each 0–100). Write a short editorial note explaining why a builder would care. Set reject=true if this content does not meet your standards.
 
-Score on 5 dimensions (each 0–100). Write a short editorial note explaining why a builder would care. Set reject=true if this content does not meet your standards.`,
+Identify the best 3-minute, 5-minute, and 10-minute segments of this video. Each segment should start at the highest-value point for that duration.${transcriptContext?.transcript ? " Use EXACT timestamps from the transcript — start at natural topic boundaries where the first words hook the viewer." : ""} Skip intros, sponsor reads, and outros. Provide start times in seconds. If the video is shorter than a segment duration, use start: 0. For each segment, write a short label describing what the viewer will learn (max 60 chars).
+
+Pick ONE best_duration (3, 5, or 10) — the single duration where this video delivers the most value as a break clip. Short dense explainers → 3. Tutorials with worked examples → 5. Deep dives, talks, and long-form analysis → 10.`,
       },
     ],
     response_format: {
@@ -156,6 +175,37 @@ Score on 5 dimensions (each 0–100). Write a short editorial note explaining wh
               description:
                 "A 1-sentence editorial note starting with 'Why this matters:' explaining why a focused builder would value this content. Max 100 characters.",
             },
+            segments: {
+              type: "array",
+              description:
+                "Best 3-min, 5-min, and 10-min segments of the video",
+              items: {
+                type: "object",
+                properties: {
+                  duration: {
+                    type: "number",
+                    description: "Segment duration in minutes (3, 5, or 10)",
+                  },
+                  start: {
+                    type: "number",
+                    description:
+                      "Start time in seconds for the highest-value window",
+                  },
+                  label: {
+                    type: "string",
+                    description:
+                      "Short description of what the viewer will learn (max 60 chars)",
+                  },
+                },
+                required: ["duration", "start", "label"],
+                additionalProperties: false,
+              },
+            },
+            best_duration: {
+              type: "number",
+              description:
+                "The single best break duration for this video (3, 5, or 10 minutes). Pick based on content density, pacing, and where the strongest segment is.",
+            },
             reject: {
               type: "boolean",
               description:
@@ -170,6 +220,8 @@ Score on 5 dimensions (each 0–100). Write a short editorial note explaining wh
             "novelty_score",
             "evaluation_notes",
             "editorial_note",
+            "segments",
+            "best_duration",
             "reject",
           ],
           additionalProperties: false,
@@ -191,6 +243,8 @@ Score on 5 dimensions (each 0–100). Write a short editorial note explaining wh
     novelty_score: number;
     evaluation_notes: string;
     editorial_note: string;
+    segments: BreakSegment[];
+    best_duration: number;
     reject: boolean;
   };
 
@@ -231,6 +285,8 @@ Score on 5 dimensions (each 0–100). Write a short editorial note explaining wh
     noveltyScore: parsed.novelty_score,
     evaluationNotes: parsed.evaluation_notes,
     editorialNote: parsed.editorial_note,
+    segments: parsed.segments ?? [],
+    bestDuration: ([3, 5, 10].includes(parsed.best_duration) ? parsed.best_duration : 5) as 3 | 5 | 10,
     rejected: parsed.reject,
   };
 }

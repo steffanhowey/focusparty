@@ -10,6 +10,9 @@ declare global {
     loadVideoById(videoId: string): void;
     cueVideoById(videoId: string): void;
     getPlayerState(): number;
+    getCurrentTime(): number;
+    getDuration(): number;
+    seekTo(seconds: number, allowSeekAhead?: boolean): void;
     destroy(): void;
   }
 

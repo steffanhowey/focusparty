@@ -2,6 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { Coffee } from "lucide-react";
 import type { ParticipantStatus, CommitmentType } from "@/lib/types";
 import type { SyntheticArchetype } from "@/lib/synthetics/pool";
 import { AvatarCelebration } from "./AvatarCelebration";
@@ -31,6 +32,10 @@ export interface ParticipantInfo {
   /** Sprint timing — ISO start time + duration for countdown */
   sprintStartedAt?: string | null;
   sprintDurationSec?: number | null;
+  /** Break content — populated when on break */
+  breakContentId?: string | null;
+  breakContentTitle?: string | null;
+  breakContentThumbnail?: string | null;
 }
 
 interface EnvironmentParticipantsProps {
@@ -162,6 +167,19 @@ export const EnvironmentParticipants = memo(function EnvironmentParticipants({
                   } as React.CSSProperties),
                 }}
               />
+            )}
+            {/* Break badge */}
+            {p.status === "on_break" && (
+              <div
+                className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full"
+                style={{
+                  background: "#8C55EF",
+                  border: "2px solid rgba(10,10,10,0.9)",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                }}
+              >
+                <Coffee size={10} strokeWidth={2.5} className="text-white" />
+              </div>
             )}
             {celebrations?.has(p.id) && (
               <AvatarCelebration color={celebrations.get(p.id)!.color} />

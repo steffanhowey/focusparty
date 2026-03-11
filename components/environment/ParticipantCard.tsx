@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useMemo } from "react";
 import Image from "next/image";
-import { Hand, Check, User, Users, Lock } from "lucide-react";
+import { Hand, Check, User, Users, Lock, Coffee } from "lucide-react";
 import { PARTICIPANT_STATUS_CONFIG } from "@/lib/presence";
 import type { ParticipantInfo } from "./EnvironmentParticipants";
 import type { ActivityFeedItem, CommitmentType } from "@/lib/types";
@@ -150,6 +150,7 @@ interface ParticipantCardProps {
   highFiveCooldownUntil: number | null;
   onClose: () => void;
   anchorRect: DOMRect;
+  onJoinBreak?: (contentId: string) => void;
 }
 
 export function ParticipantCard({
@@ -159,6 +160,7 @@ export function ParticipantCard({
   highFiveCooldownUntil,
   onClose,
   anchorRect,
+  onJoinBreak,
 }: ParticipantCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -290,44 +292,87 @@ export function ParticipantCard({
         </div>
       </div>
 
-      {/* ── Goal / Working on (real + synthetic) ── */}
-      {(participant.participantType === "real" || participant.participantType === "synthetic") && (() => {
-        const goalText = participant.participantType === "real"
-          ? participant.goalPreview
-          : participant.syntheticFlavor;
-        if (!goalText && !participant.commitmentType) return null;
-        return (
-          <div className="mb-3 rounded-lg bg-white/[0.05] px-3 py-2">
-            {goalText && (
-              <>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
-                  Working on
-                </span>
-                <p className="mt-0.5 text-xs leading-relaxed text-white/70">
-                  {goalText}
-                </p>
-              </>
-            )}
-            {participant.commitmentType && (() => {
-              const cfg = COMMITMENT_CONFIG[participant.commitmentType];
-              const Icon = cfg.icon;
-              return (
-                <div
-                  className={`flex items-center gap-1.5${goalText ? " mt-2 border-t border-white/[0.06] pt-2" : ""}`}
-                >
-                  <Icon size={11} strokeWidth={1.5} style={{ color: cfg.color }} />
-                  <span className="text-[10px] font-medium" style={{ color: cfg.color }}>
-                    {cfg.label}
-                  </span>
-                </div>
-              );
-            })()}
+      {/* ── Break content (replaces Working on when on break) ── */}
+      {participant.status === "on_break" && participant.breakContentTitle ? (
+        <div className="mb-3 rounded-lg bg-white/[0.05] px-3 py-2.5">
+          <div className="mb-2 flex items-center gap-1.5">
+            <Coffee size={10} strokeWidth={2} style={{ color: "#8C55EF" }} />
+            <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#8C55EF" }}>
+              On Break
+            </span>
           </div>
-        );
-      })()}
+          <div className="flex items-start gap-2.5">
+            {participant.breakContentThumbnail && (
+              <Image
+                src={participant.breakContentThumbnail}
+                alt=""
+                width={64}
+                height={36}
+                className="mt-0.5 shrink-0 rounded object-cover"
+                style={{ width: 64, height: 36 }}
+              />
+            )}
+            <p className="text-xs leading-relaxed text-white/70">
+              {participant.breakContentTitle}
+            </p>
+          </div>
+          {onJoinBreak && participant.breakContentId && !participant.isCurrentUser && (
+            <button
+              type="button"
+              onClick={() => onJoinBreak(participant.breakContentId!)}
+              className="mt-2.5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:brightness-110"
+              style={{
+                background: "rgba(140, 85, 239, 0.15)",
+                color: "#8C55EF",
+              }}
+            >
+              <Coffee size={15} strokeWidth={2} />
+              Watch too
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* ── Goal / Working on (real + synthetic) ── */}
+          {(participant.participantType === "real" || participant.participantType === "synthetic") && (() => {
+            const goalText = participant.participantType === "real"
+              ? participant.goalPreview
+              : participant.syntheticFlavor;
+            if (!goalText && !participant.commitmentType) return null;
+            return (
+              <div className="mb-3 rounded-lg bg-white/[0.05] px-3 py-2">
+                {goalText && (
+                  <>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                      Working on
+                    </span>
+                    <p className="mt-0.5 text-xs leading-relaxed text-white/70">
+                      {goalText}
+                    </p>
+                  </>
+                )}
+                {participant.commitmentType && (() => {
+                  const cfg = COMMITMENT_CONFIG[participant.commitmentType];
+                  const Icon = cfg.icon;
+                  return (
+                    <div
+                      className={`flex items-center gap-1.5${goalText ? " mt-2 border-t border-white/[0.06] pt-2" : ""}`}
+                    >
+                      <Icon size={11} strokeWidth={1.5} style={{ color: cfg.color }} />
+                      <span className="text-[10px] font-medium" style={{ color: cfg.color }}>
+                        {cfg.label}
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
+            );
+          })()}
+        </>
+      )}
 
-      {/* ── Sprint Timer ── */}
-      {participant.sprintStartedAt && participant.sprintDurationSec && (
+      {/* ── Sprint Timer (hidden during break) ── */}
+      {participant.status !== "on_break" && participant.sprintStartedAt && participant.sprintDurationSec && (
         <SprintCountdown
           startedAt={participant.sprintStartedAt}
           durationSec={participant.sprintDurationSec}

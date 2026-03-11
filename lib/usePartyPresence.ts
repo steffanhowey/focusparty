@@ -24,6 +24,9 @@ interface UsePartyPresenceInput {
   commitmentType?: CommitmentType | null;
   sprintStartedAt?: string | null;
   sprintDurationSec?: number | null;
+  breakContentId?: string | null;
+  breakContentTitle?: string | null;
+  breakContentThumbnail?: string | null;
 }
 
 interface UsePartyPresenceReturn {
@@ -57,6 +60,9 @@ export function usePartyPresence(
     commitmentType,
     sprintStartedAt,
     sprintDurationSec,
+    breakContentId,
+    breakContentTitle,
+    breakContentThumbnail,
   } = input;
 
   const [participants, setParticipants] = useState<PresencePayload[]>([]);
@@ -113,6 +119,9 @@ export function usePartyPresence(
             commitmentType,
             sprintStartedAt,
             sprintDurationSec,
+            breakContentId,
+            breakContentTitle,
+            breakContentThumbnail,
           });
           await channel.track(payload);
           setIsTracking(true);
@@ -139,7 +148,7 @@ export function usePartyPresence(
     if (!channelRef.current || !userId) return;
 
     // Build a fingerprint of the trackable fields to avoid redundant re-tracks
-    const fingerprint = JSON.stringify([userId, displayName, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec]);
+    const fingerprint = JSON.stringify([userId, displayName, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec, breakContentId, breakContentTitle, breakContentThumbnail]);
     if (fingerprint === lastTrackedRef.current) return;
     lastTrackedRef.current = fingerprint;
 
@@ -154,9 +163,12 @@ export function usePartyPresence(
       commitmentType,
       sprintStartedAt,
       sprintDurationSec,
+      breakContentId,
+      breakContentTitle,
+      breakContentThumbnail,
     });
     channelRef.current.track(payload);
-  }, [userId, displayName, username, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec]);
+  }, [userId, displayName, username, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec, breakContentId, breakContentTitle, breakContentThumbnail]);
 
   const updatePresence = useCallback(
     (updates: Partial<PresencePayload>) => {

@@ -9,11 +9,12 @@ import { WORLD_SEARCH_PROFILES } from "./searchProfiles";
 
 // ─── Constants ──────────────────────────────────────────────
 
-const SHELF_MIN = 5;
-const SHELF_MAX = 8;
+const SHELF_PER_DURATION_MIN = 5;
+const SHELF_PER_DURATION_MAX = 8;
 const SHELF_TTL_DAYS = 7;
 const MIN_TASTE_SCORE = 70;
 const MAX_PER_CREATOR = 2;
+const DURATIONS = [3, 5, 10] as const;
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -121,135 +122,256 @@ export async function refreshShelf(
     console.log(`[breaks/shelf] ${worldKey}: expired ${expired} items`);
   }
 
-  // 2. Count remaining active items
-  const { data: currentShelf } = await supabase
-    .from("fp_break_content_items")
-    .select("id, taste_score, pinned, source_name")
-    .eq("room_world_key", worldKey)
-    .eq("status", "active")
-    .order("taste_score", { ascending: false, nullsFirst: false });
-
-  let shelfSize = currentShelf?.length ?? 0;
-
-  // 3. Promote candidates if below minimum
+  // 2. Promote + trim per duration bucket (3, 5, 10 min)
   let promoted = 0;
-  if (shelfSize < SHELF_MIN) {
-    const needed = SHELF_MAX - shelfSize;
-
-    // Build creator count map from current shelf (for diversity)
-    const creatorCounts = new Map<string, number>();
-    for (const item of currentShelf ?? []) {
-      const name = (item.source_name ?? "").toLowerCase();
-      if (name) {
-        creatorCounts.set(name, (creatorCounts.get(name) ?? 0) + 1);
-      }
-    }
-
-    // Get top-scored evaluated candidates not yet promoted
-    const { data: topCandidates } = await supabase
-      .from("fp_break_content_scores")
-      .select("*, candidate:fp_break_content_candidates(*)")
-      .eq("world_key", worldKey)
-      .order("taste_score", { ascending: false })
-      .limit(needed * 3); // Fetch extra to account for filtering
-
-    if (topCandidates) {
-      // Filter: evaluated status + minimum score + creator diversity
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const eligible = topCandidates.filter((s: any) => {
-        if (s.candidate?.status !== "evaluated") return false;
-        if (s.taste_score < MIN_TASTE_SCORE) return false;
-
-        // Creator diversity: max 2 per creator
-        const creatorName = (s.candidate?.creator ?? "").toLowerCase();
-        if (creatorName) {
-          const count = creatorCounts.get(creatorName) ?? 0;
-          if (count >= MAX_PER_CREATOR) return false;
-          creatorCounts.set(creatorName, count + 1);
-        }
-
-        return true;
-      });
-
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + SHELF_TTL_DAYS);
-
-      for (const scored of eligible.slice(0, needed)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const c = scored.candidate as any;
-        if (!c) continue;
-
-        // Fetch editorial note from score record
-        const editorialNote = scored.editorial_note ?? null;
-
-        const { error: insertErr } = await supabase
-          .from("fp_break_content_items")
-          .insert({
-            room_world_key: worldKey,
-            category: "learning",
-            title: c.title,
-            description: c.description,
-            thumbnail_url: c.thumbnail_url,
-            video_url: c.video_url,
-            source_name: c.creator,
-            duration_seconds: c.duration_seconds,
-            sort_order: 0,
-            status: "active",
-            candidate_id: c.id,
-            taste_score: scored.taste_score,
-            pinned: false,
-            expires_at: expiresAt.toISOString(),
-            editorial_note: editorialNote,
-          });
-
-        if (insertErr) {
-          console.error("[breaks/shelf] promote insert error:", insertErr);
-          continue;
-        }
-
-        // Mark candidate as promoted
-        await supabase
-          .from("fp_break_content_candidates")
-          .update({ status: "promoted" })
-          .eq("id", c.id);
-
-        promoted++;
-      }
-    }
-
-    shelfSize += promoted;
-    console.log(
-      `[breaks/shelf] ${worldKey}: promoted ${promoted} candidates`
-    );
-  }
-
-  // 4. Trim shelf if over max (remove lowest-scored non-pinned)
   let removed = 0;
-  if (shelfSize > SHELF_MAX) {
-    const { data: allActive } = await supabase
+  let shelfSize = 0;
+
+  for (const duration of DURATIONS) {
+    // Count active items in this duration bucket
+    const { data: bucketItems } = await supabase
       .from("fp_break_content_items")
-      .select("id, taste_score, pinned")
+      .select("id, taste_score, pinned, source_name")
       .eq("room_world_key", worldKey)
       .eq("status", "active")
-      .order("taste_score", { ascending: true, nullsFirst: true });
+      .eq("best_duration", duration)
+      .order("taste_score", { ascending: false, nullsFirst: false });
 
-    if (allActive) {
-      const removable = allActive.filter((i) => !i.pinned);
-      const toRemove = removable.slice(0, shelfSize - SHELF_MAX);
+    let bucketSize = bucketItems?.length ?? 0;
 
-      if (toRemove.length > 0) {
-        const ids = toRemove.map((i) => i.id);
-        await supabase
-          .from("fp_break_content_items")
-          .update({ status: "expired" })
-          .in("id", ids);
-        removed = ids.length;
-        shelfSize -= removed;
-        console.log(
-          `[breaks/shelf] ${worldKey}: removed ${removed} low-scored items`
+    // Promote if below minimum
+    if (bucketSize < SHELF_PER_DURATION_MIN) {
+      const needed = SHELF_PER_DURATION_MAX - bucketSize;
+
+      // Build creator count map for this bucket (diversity)
+      const creatorCounts = new Map<string, number>();
+      for (const item of bucketItems ?? []) {
+        const name = (item.source_name ?? "").toLowerCase();
+        if (name) {
+          creatorCounts.set(name, (creatorCounts.get(name) ?? 0) + 1);
+        }
+      }
+
+      // Get top-scored candidates for this duration
+      const { data: topCandidates } = await supabase
+        .from("fp_break_content_scores")
+        .select("*, candidate:fp_break_content_candidates(*)")
+        .eq("world_key", worldKey)
+        .eq("best_duration", duration)
+        .order("taste_score", { ascending: false })
+        .limit(needed * 3);
+
+      if (topCandidates) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const eligible = topCandidates.filter((s: any) => {
+          if (s.candidate?.status !== "evaluated") return false;
+          if (s.taste_score < MIN_TASTE_SCORE) return false;
+
+          const creatorName = (s.candidate?.creator ?? "").toLowerCase();
+          if (creatorName) {
+            const count = creatorCounts.get(creatorName) ?? 0;
+            if (count >= MAX_PER_CREATOR) return false;
+            creatorCounts.set(creatorName, count + 1);
+          }
+          return true;
+        });
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + SHELF_TTL_DAYS);
+
+        for (const scored of eligible.slice(0, needed)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const c = scored.candidate as any;
+          if (!c) continue;
+
+          const editorialNote = scored.editorial_note ?? null;
+          const segments = scored.segments ?? null;
+
+          const { error: insertErr } = await supabase
+            .from("fp_break_content_items")
+            .insert({
+              room_world_key: worldKey,
+              category: "learning",
+              title: c.title,
+              description: c.description,
+              thumbnail_url: c.thumbnail_url,
+              video_url: c.video_url,
+              source_name: c.creator,
+              duration_seconds: c.duration_seconds,
+              sort_order: 0,
+              status: "active",
+              candidate_id: c.id,
+              taste_score: scored.taste_score,
+              pinned: false,
+              expires_at: expiresAt.toISOString(),
+              editorial_note: editorialNote,
+              segments,
+              best_duration: duration,
+            });
+
+          if (insertErr) {
+            console.error("[breaks/shelf] promote insert error:", insertErr);
+            continue;
+          }
+
+          await supabase
+            .from("fp_break_content_candidates")
+            .update({ status: "promoted" })
+            .eq("id", c.id);
+
+          promoted++;
+          bucketSize++;
+        }
+      }
+
+      console.log(
+        `[breaks/shelf] ${worldKey}/${duration}min: ${bucketSize} items (promoted ${promoted})`
+      );
+    }
+
+    // Cross-duration fallback: if still below min, pull from other durations
+    // where the video is long enough to support this break duration
+    if (bucketSize < SHELF_PER_DURATION_MIN) {
+      const fallbackNeeded = SHELF_PER_DURATION_MAX - bucketSize;
+      const minVideoSeconds = duration * 60;
+
+      // Build creator counts if not already built (primary promotion was skipped)
+      const creatorCounts = new Map<string, number>();
+      for (const item of bucketItems ?? []) {
+        const name = (item.source_name ?? "").toLowerCase();
+        if (name) {
+          creatorCounts.set(name, (creatorCounts.get(name) ?? 0) + 1);
+        }
+      }
+
+      // Get existing candidate IDs already on the shelf to avoid duplicates
+      const { data: existingShelfItems } = await supabase
+        .from("fp_break_content_items")
+        .select("candidate_id")
+        .eq("room_world_key", worldKey)
+        .eq("status", "active")
+        .not("candidate_id", "is", null);
+
+      const existingCandidateIds = new Set(
+        (existingShelfItems ?? []).map((i) => i.candidate_id)
+      );
+
+      const { data: fallbackCandidates } = await supabase
+        .from("fp_break_content_scores")
+        .select("*, candidate:fp_break_content_candidates(*)")
+        .eq("world_key", worldKey)
+        .neq("best_duration", duration)
+        .gte("taste_score", MIN_TASTE_SCORE)
+        .order("taste_score", { ascending: false })
+        .limit(fallbackNeeded * 4);
+
+      if (fallbackCandidates) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const eligible = fallbackCandidates.filter((s: any) => {
+          if (s.candidate?.status !== "evaluated") return false;
+          if ((s.candidate?.duration_seconds ?? 0) < minVideoSeconds) return false;
+          if (existingCandidateIds.has(s.candidate?.id)) return false;
+
+          const creatorName = (s.candidate?.creator ?? "").toLowerCase();
+          if (creatorName) {
+            const count = creatorCounts.get(creatorName) ?? 0;
+            if (count >= MAX_PER_CREATOR) return false;
+            creatorCounts.set(creatorName, count + 1);
+          }
+          return true;
+        });
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + SHELF_TTL_DAYS);
+
+        for (const scored of eligible.slice(0, fallbackNeeded)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const c = scored.candidate as any;
+          if (!c) continue;
+
+          const segments = scored.segments ?? null;
+
+          const { error: insertErr } = await supabase
+            .from("fp_break_content_items")
+            .insert({
+              room_world_key: worldKey,
+              category: "learning",
+              title: c.title,
+              description: c.description,
+              thumbnail_url: c.thumbnail_url,
+              video_url: c.video_url,
+              source_name: c.creator,
+              duration_seconds: c.duration_seconds,
+              sort_order: 0,
+              status: "active",
+              candidate_id: c.id,
+              taste_score: scored.taste_score,
+              pinned: false,
+              expires_at: expiresAt.toISOString(),
+              editorial_note: scored.editorial_note ?? null,
+              segments,
+              best_duration: duration, // override: use TARGET duration, not scored
+            });
+
+          if (insertErr) {
+            console.error("[breaks/shelf] fallback promote error:", insertErr);
+            continue;
+          }
+
+          await supabase
+            .from("fp_break_content_candidates")
+            .update({ status: "promoted" })
+            .eq("id", c.id);
+
+          promoted++;
+          bucketSize++;
+          existingCandidateIds.add(c.id);
+        }
+
+        if (bucketSize > (bucketItems?.length ?? 0)) {
+          console.log(
+            `[breaks/shelf] ${worldKey}/${duration}min: cross-duration fallback promoted ${bucketSize - (bucketItems?.length ?? 0)} items`
+          );
+        }
+      }
+
+      if (bucketSize < SHELF_PER_DURATION_MIN) {
+        console.warn(
+          `[breaks/shelf] WARNING: ${worldKey}/${duration}min has only ${bucketSize} items (min: ${SHELF_PER_DURATION_MIN}). Need more candidates.`
         );
       }
     }
+
+    // Trim bucket if over max
+    if (bucketSize > SHELF_PER_DURATION_MAX) {
+      const { data: allInBucket } = await supabase
+        .from("fp_break_content_items")
+        .select("id, taste_score, pinned")
+        .eq("room_world_key", worldKey)
+        .eq("status", "active")
+        .eq("best_duration", duration)
+        .order("taste_score", { ascending: true, nullsFirst: true });
+
+      if (allInBucket) {
+        const removable = allInBucket.filter((i) => !i.pinned);
+        const toRemove = removable.slice(0, bucketSize - SHELF_PER_DURATION_MAX);
+
+        if (toRemove.length > 0) {
+          const ids = toRemove.map((i) => i.id);
+          await supabase
+            .from("fp_break_content_items")
+            .update({ status: "expired" })
+            .in("id", ids);
+          removed += ids.length;
+          bucketSize -= ids.length;
+          console.log(
+            `[breaks/shelf] ${worldKey}/${duration}min: removed ${ids.length} low-scored items`
+          );
+        }
+      }
+    }
+
+    shelfSize += bucketSize;
   }
 
   // 5. Update sort_order based on taste_score ranking

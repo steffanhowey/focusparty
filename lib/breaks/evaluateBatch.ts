@@ -4,6 +4,12 @@
 
 import { createClient } from "@/lib/supabase/admin";
 import { evaluateCandidate } from "./scoring";
+import {
+  fetchTranscript,
+  formatTranscriptForLLM,
+  parseChapters,
+  formatChaptersForLLM,
+} from "./transcript";
 import type { BreakContentCandidate } from "@/lib/types";
 
 interface BatchResult {
@@ -72,11 +78,43 @@ export async function evaluatePendingCandidates(
 
   for (const candidate of candidates as BreakContentCandidate[]) {
     try {
+      // ── Transcript enrichment (optional, graceful degradation) ──
+      let transcriptContext: { transcript: string; chapters: string } | null = null;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let cachedTranscript = (candidate as any).transcript;
+
+      if (!cachedTranscript && candidate.external_id) {
+        const segments = await fetchTranscript(candidate.external_id);
+        if (segments && segments.length > 0) {
+          cachedTranscript = segments;
+          // Cache on candidate row so we never refetch
+          await supabase
+            .from("fp_break_content_candidates")
+            .update({ transcript: segments })
+            .eq("id", candidate.id);
+          console.log(
+            `[breaks/evaluate] Fetched transcript for "${candidate.title}" (${segments.length} segments)`
+          );
+        }
+      }
+
+      if (cachedTranscript && Array.isArray(cachedTranscript) && cachedTranscript.length > 0) {
+        const formattedTranscript = formatTranscriptForLLM(cachedTranscript);
+        const chapters = parseChapters(candidate.description ?? null);
+        const formattedChapters = formatChaptersForLLM(chapters);
+        transcriptContext = {
+          transcript: formattedTranscript,
+          chapters: formattedChapters,
+        };
+      }
+
       const shelfTitles = shelfTitlesByWorld.get(candidate.world_key) ?? [];
       const result = await evaluateCandidate(
         candidate,
         candidate.world_key,
-        shelfTitles
+        shelfTitles,
+        transcriptContext
       );
 
       if (result.rejected) {
@@ -105,6 +143,8 @@ export async function evaluatePendingCandidates(
             novelty_score: result.noveltyScore,
             evaluation_notes: result.evaluationNotes,
             editorial_note: result.editorialNote,
+            segments: result.segments,
+            best_duration: result.bestDuration,
           });
 
         if (scoreErr) {

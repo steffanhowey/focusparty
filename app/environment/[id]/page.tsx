@@ -39,13 +39,14 @@ import { logEvent } from "@/lib/sessions";
 import { computeRemainingSeconds } from "@/lib/sprintTime";
 import { SYNTHETIC_POOL } from "@/lib/synthetics/pool";
 import { JoinRoomModal, type JoinConfig } from "@/components/party/JoinRoomModal";
-import type { SessionPhase, SessionReflection, SprintResolution, BreakContentItem } from "@/lib/types";
+import type { SessionPhase, SessionReflection, SprintResolution, BreakContentItem, BreakDuration, BreakSegment } from "@/lib/types";
 import { updateSessionGoalStatus } from "@/lib/sessions";
 import { checkGoalCompletion } from "@/lib/goalCascade";
 import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
 import { BreakSessionConfirm } from "@/components/environment/BreakSessionConfirm";
 import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
-import { BreakReEntryPrompt } from "@/components/environment/BreakReEntryPrompt";
+import { BreakReEntryCountdown } from "@/components/environment/BreakReEntryCountdown";
+import { useBreakContent, type BreakClip } from "@/lib/useBreakContent";
 
 type SidePanel = "none" | "momentum" | "tasks" | "chat" | "settings" | "breaks";
 type CelebrationInfo = { color: string; text: string };
@@ -90,9 +91,26 @@ export default function EnvironmentPage() {
 
   // ─── Break session state ────────────────────────────────
   const [breakContent, setBreakContent] = useState<BreakContentItem | null>(null);
+  const [breakDuration, setBreakDuration] = useState<BreakDuration>(5);
   const [showBreakConfirm, setShowBreakConfirm] = useState(false);
   const [breakActive, setBreakActive] = useState(false);
   const [showBreakReEntry, setShowBreakReEntry] = useState(false);
+
+  // Break content clips for channel changer
+  const { clips: allBreakClips } = useBreakContent(world.worldKey, "learning");
+  const breakClipsForDuration = useMemo(
+    () => allBreakClips.filter((c) => c.duration === breakDuration),
+    [allBreakClips, breakDuration]
+  );
+  const currentBreakClipIndex = useMemo(
+    () => breakContent ? breakClipsForDuration.findIndex((c) => c.clipId === breakContent.id) : 0,
+    [breakClipsForDuration, breakContent]
+  );
+
+  const handleChangeClip = useCallback((clip: BreakClip) => {
+    setBreakContent(clip.sourceItem);
+    setBreakDuration(clip.duration);
+  }, []);
 
   // ─── Side panel state (same pattern as session page) ──
   const [activePanel, setActivePanel] = useState<SidePanel>("none");
@@ -135,6 +153,9 @@ export default function EnvironmentPage() {
     commitmentType: commitmentType || null,
     sprintStartedAt: phase === "sprint" ? (persistence.currentSprint?.started_at ?? null) : null,
     sprintDurationSec: phase === "sprint" ? (persistence.currentSprint?.duration_sec ?? null) : null,
+    breakContentId: phase === "break" ? (breakContent?.id ?? null) : null,
+    breakContentTitle: phase === "break" ? (breakContent?.title ?? null) : null,
+    breakContentThumbnail: phase === "break" ? (breakContent?.thumbnail_url ?? null) : null,
   });
 
   // ─── Activity feed + room state ───────────────────────
@@ -879,8 +900,9 @@ export default function EnvironmentPage() {
 
   // ─── Break flow ────────────────────────────────────────
 
-  const handleSelectBreakContent = useCallback((item: BreakContentItem) => {
+  const handleSelectBreakContent = useCallback((item: BreakContentItem, duration: BreakDuration) => {
     setBreakContent(item);
+    setBreakDuration(duration);
     setShowBreakConfirm(true);
     setActivePanel("none");
   }, []);
@@ -914,6 +936,16 @@ export default function EnvironmentPage() {
     setBreakContent(null);
   }, []);
 
+  const [breakResetKey, setBreakResetKey] = useState(0);
+
+  const handleChangeBreakDuration = useCallback((minutes: number) => {
+    setBreakDuration(minutes as BreakDuration);
+  }, []);
+
+  const handleResetBreakTimer = useCallback(() => {
+    setBreakResetKey((k) => k + 1);
+  }, []);
+
   const handleBreakVideoFinish = useCallback(() => {
     setBreakActive(false);
     setShowBreakReEntry(true);
@@ -943,25 +975,28 @@ export default function EnvironmentPage() {
     }
   }, [timer, persistence, userId, partyId, displayName, breakContent]);
 
-  const handleSwitchTaskFromBreak = useCallback(() => {
-    setShowBreakReEntry(false);
-    setBreakContent(null);
-    timer.start();
-    setPhase("sprint");
-    persistence.updatePhase("sprint").catch(() => {});
-    setActivePanel("tasks");
 
-    if (userId && persistence.sessionRow) {
-      logEvent({
-        party_id: partyId,
-        session_id: persistence.sessionRow.id,
-        user_id: userId,
-        event_type: "break_completed",
-        body: displayName,
-        payload: { category: "learning" },
-      }).catch(() => {});
-    }
-  }, [timer, persistence, userId, partyId, displayName]);
+
+  // ─── Join someone else's break ──────────────────────────
+
+  const handleJoinBreak = useCallback(
+    async (contentId: string) => {
+      try {
+        const res = await fetch(`/api/breaks/content?id=${encodeURIComponent(contentId)}`);
+        if (!res.ok) return;
+        const item = await res.json();
+        if (item) {
+          setBreakContent(item);
+          setBreakDuration(5); // default for "Watch too" joins
+          setShowBreakConfirm(true);
+          setSelectedParticipant(null);
+        }
+      } catch {
+        // silently fail
+      }
+    },
+    []
+  );
 
   // ─── Check-in ───────────────────────────────────────────
 
@@ -1124,6 +1159,9 @@ export default function EnvironmentPage() {
       commitmentType: p.commitmentType,
       sprintStartedAt: p.sprintStartedAt,
       sprintDurationSec: p.sprintDurationSec,
+      breakContentId: p.breakContentId,
+      breakContentTitle: p.breakContentTitle,
+      breakContentThumbnail: p.breakContentThumbnail,
     }));
     // Assign unique flavors: sorted index + epoch offset → no collisions
     const epoch = Math.floor(Date.now() / FLAVOR_ROTATION_MS);
@@ -1132,6 +1170,17 @@ export default function EnvironmentPage() {
     // Duration varies per synthetic (20-35 min). We compute a "current sprint start"
     // by rolling forward from an anchor time so the timer is always mid-sprint.
     const SYNTHETIC_SPRINT_DURATIONS = [20, 25, 25, 25, 30, 30, 35];
+    const SYNTHETIC_BREAK_SEC = 90; // last 90s of cycle = break
+    const SYNTHETIC_BREAK_TITLES = [
+      "CSS Grid Deep Dive",
+      "React Server Components Explained",
+      "Building with the AI SDK",
+      "Mastering TypeScript Generics",
+      "The Art of Code Review",
+      "Designing for Accessibility",
+      "Postgres Performance Tips",
+      "Writing Better Commit Messages",
+    ];
     const now = Date.now();
     const synthetic: ParticipantInfo[] = syntheticParticipants.map((sp) => {
       const poolEntry = SYNTHETIC_POOL.find((s) => s.id === sp.id);
@@ -1145,19 +1194,23 @@ export default function EnvironmentPage() {
       const offsetMs = (sp.id.charCodeAt(sp.id.length - 2) || 0) * 37_000; // stagger up to ~9 min
       const elapsed = ((now - offsetMs) / 1000) % sprintDur;
       const sprintStart = new Date(now - elapsed * 1000).toISOString();
+      // ~10% of synthetics are on break (last 90s of their cycle)
+      const isOnBreak = elapsed >= sprintDur - SYNTHETIC_BREAK_SEC;
+      const breakTitleIdx = sp.id.charCodeAt(0) % SYNTHETIC_BREAK_TITLES.length;
       return {
         id: sp.id,
         displayName: sp.displayName,
         username: sp.handle,
         avatarUrl: sp.avatarUrl,
-        isFocusing: true,
+        isFocusing: !isOnBreak,
         isHost: false,
         participantType: "synthetic" as const,
-        status: "focused" as const,
+        status: isOnBreak ? ("on_break" as const) : ("focused" as const),
         archetype: poolEntry?.archetype,
         syntheticFlavor: SYNTHETIC_FLAVOR_POOL[flavorIndex],
-        sprintStartedAt: sprintStart,
-        sprintDurationSec: sprintDur,
+        sprintStartedAt: isOnBreak ? null : sprintStart,
+        sprintDurationSec: isOnBreak ? null : sprintDur,
+        breakContentTitle: isOnBreak ? SYNTHETIC_BREAK_TITLES[breakTitleIdx] : null,
       };
     });
     return [host, ...real, ...synthetic];
@@ -1319,6 +1372,7 @@ export default function EnvironmentPage() {
               }
               onClose={handleCloseCard}
               anchorRect={selectedParticipant.anchorRect}
+              onJoinBreak={handleJoinBreak}
             />
           )}
         </>
@@ -1400,6 +1454,12 @@ export default function EnvironmentPage() {
                   status: music.status,
                   roomControlled: true,
                 }}
+                phase={phase === "break" ? "break" : "sprint"}
+                breakDurationMinutes={breakDuration}
+                onChangeBreakDuration={handleChangeBreakDuration}
+                onResetBreakTimer={handleResetBreakTimer}
+                onEndBreak={handleBreakVideoFinish}
+                breakResetKey={breakResetKey}
                 timer={timer}
                 currentDurationMin={currentDurationMin}
                 onChangeDuration={handleChangeDuration}
@@ -1545,6 +1605,7 @@ export default function EnvironmentPage() {
         <BreakSessionConfirm
           isOpen={showBreakConfirm}
           content={breakContent}
+          durationMinutes={breakDuration}
           onConfirm={handleConfirmBreak}
           onCancel={handleCancelBreakConfirm}
         />
@@ -1552,16 +1613,20 @@ export default function EnvironmentPage() {
 
       {breakActive && breakContent && (
         <BreakVideoOverlay
+          key={breakContent.id}
           content={breakContent}
+          durationMinutes={breakDuration}
+          segment={breakContent.segments?.find((s) => s.duration === breakDuration) ?? null}
+          clips={breakClipsForDuration}
+          currentClipIndex={currentBreakClipIndex >= 0 ? currentBreakClipIndex : 0}
           onFinish={handleBreakVideoFinish}
+          onChangeClip={handleChangeClip}
         />
       )}
 
-      <BreakReEntryPrompt
+      <BreakReEntryCountdown
         isOpen={showBreakReEntry}
-        activeTaskTitle={activeTask?.title ?? null}
-        onResume={handleResumeFromBreak}
-        onSwitchTask={handleSwitchTaskFromBreak}
+        onComplete={handleResumeFromBreak}
       />
     </div>
   );

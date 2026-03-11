@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useRef, ReactNode } from "react";
+import { memo, useRef, useState, useEffect, useCallback, ReactNode } from "react";
 import {
   Mic,
   MicOff,
@@ -75,6 +75,15 @@ interface ActionBarProps {
   /** Breaks panel state */
   breaksActive?: boolean;
   onOpenBreaks?: () => void;
+  /** Current session phase — drives break visual state in timer pill */
+  phase?: "sprint" | "break";
+  /** Break duration in minutes — used for break countdown in timer pill */
+  breakDurationMinutes?: number;
+  onChangeBreakDuration?: (minutes: number) => void;
+  onResetBreakTimer?: () => void;
+  onEndBreak?: () => void;
+  /** Increment to force break countdown reset without changing duration */
+  breakResetKey?: number;
 }
 
 const ICON = { size: 18, strokeWidth: 1.8 } as const;
@@ -120,10 +129,32 @@ export const ActionBar = memo(function ActionBar({
   onCheckIn,
   breaksActive,
   onOpenBreaks,
+  phase,
+  breakDurationMinutes,
+  onChangeBreakDuration,
+  onResetBreakTimer,
+  onEndBreak,
+  breakResetKey,
 }: ActionBarProps) {
   const musicWrapperRef = useRef<HTMLDivElement>(null);
   const checkInWrapperRef = useRef<HTMLDivElement>(null);
   const { formatted, seconds, running } = useTimerDisplay(timer);
+  const isBreak = phase === "break";
+
+  // Break countdown — independent timer that counts down from breakDurationMinutes
+  const [breakRemaining, setBreakRemaining] = useState(0);
+  useEffect(() => {
+    if (isBreak && breakDurationMinutes) {
+      setBreakRemaining(breakDurationMinutes * 60);
+      const id = setInterval(() => setBreakRemaining((r) => Math.max(0, r - 1)), 1000);
+      return () => clearInterval(id);
+    }
+  }, [isBreak, breakDurationMinutes, breakResetKey]);
+  const formatBreakTime = useCallback((s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  }, []);
   // icon shadow removed — glass pill provides enough context
   const btn =
     "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors";
@@ -145,56 +176,74 @@ export const ActionBar = memo(function ActionBar({
       >
         <div className="relative">
           <div
-            className="flex items-center gap-1 rounded-full border border-white/[0.08]"
+            className="flex items-center gap-1 rounded-full border"
             style={{
+              borderColor: isBreak ? "rgba(140, 85, 239, 0.3)" : "rgba(255,255,255,0.08)",
               background: "rgba(10,10,10,0.55)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)",
+              boxShadow: isBreak
+                ? "0 4px 24px rgba(0,0,0,0.25), 0 0 12px 2px rgba(140,85,239,0.15), inset 0 1px 0 rgba(255,255,255,0.06)"
+                : "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
-            {/* Pause / Play */}
-            <button
-              type="button"
-              onClick={() => { running ? timer.pause() : timer.start(); }}
-              className="flex h-full cursor-pointer items-center pl-4 pr-1 text-white/40 transition-colors hover:text-white/70"
-              aria-label={running ? "Pause timer" : "Resume timer"}
-            >
-              {running ? (
-                <Pause size={16} strokeWidth={2} fill="currentColor" />
-              ) : (
-                <Play size={16} strokeWidth={2} fill="currentColor" />
-              )}
-            </button>
+            {/* Pause / Play — or Coffee icon during break */}
+            {isBreak ? (
+              <div className="flex h-full items-center pl-4 pr-1 text-[#8C55EF]">
+                <Coffee size={20} strokeWidth={2} />
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { running ? timer.pause() : timer.start(); }}
+                className="flex h-full cursor-pointer items-center pl-4 pr-1 text-white/40 transition-colors hover:text-white/70"
+                aria-label={running ? "Pause timer" : "Resume timer"}
+              >
+                {running ? (
+                  <Pause size={16} strokeWidth={2} fill="currentColor" />
+                ) : (
+                  <Play size={16} strokeWidth={2} fill="currentColor" />
+                )}
+              </button>
+            )}
 
             {/* Timer + dropdown toggle */}
             <button
               type="button"
               onClick={() => { if (!wasDraggedRef.current) onToggleGoalCard?.(); }}
-              className="flex cursor-pointer items-center gap-2 py-2 pr-5 pl-2 transition-colors hover:bg-white/10 rounded-r-full"
-              aria-label="Toggle timer options"
+              className="flex cursor-pointer items-center gap-2 py-2 pl-2 pr-5 transition-colors rounded-r-full hover:bg-white/10"
+              aria-label={isBreak ? "Break timer options" : "Toggle timer options"}
               aria-expanded={goalCardOpen}
             >
               <span
-                className="text-3xl font-extrabold tracking-tight text-white md:text-4xl"
+                className="text-3xl font-extrabold tracking-tight md:text-4xl"
                 style={{
                   fontFamily: "var(--font-montserrat), sans-serif",
                   textShadow: "0 1px 6px rgba(0,0,0,0.5)",
                   fontVariantNumeric: "tabular-nums",
+                  color: isBreak ? "#8C55EF" : "white",
                 }}
               >
-                {formatted}
+                {isBreak ? formatBreakTime(breakRemaining) : formatted}
               </span>
               <ChevronUp
                 size={18}
                 strokeWidth={2.5}
-                className={`text-[var(--color-text-tertiary)] transition-transform duration-200 ${goalCardOpen ? "" : "rotate-180"}`}
+                className={`transition-transform duration-200 ${goalCardOpen ? "" : "rotate-180"}`}
+                style={{ color: isBreak ? "rgba(140, 85, 239, 0.5)" : "var(--color-text-tertiary)" }}
               />
             </button>
           </div>
 
-          {/* Downward dropdown */}
-          {goalCardOpen && currentDurationMin != null && onChangeDuration && onResetTimer && (
+          {/* "On Break" label below pill — hidden when dropdown is open */}
+          {isBreak && !goalCardOpen && (
+            <p className="mt-1.5 text-center text-[10px] font-medium tracking-wider text-[#8C55EF]/70">
+              On Break
+            </p>
+          )}
+
+          {/* Downward dropdown — sprint or break mode */}
+          {goalCardOpen && !isBreak && currentDurationMin != null && onChangeDuration && onResetTimer && (
             <div
               className="absolute top-full left-1/2 mt-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3"
               style={{
@@ -219,6 +268,60 @@ export const ActionBar = memo(function ActionBar({
                   Reset
                 </Button>
               </div>
+            </div>
+          )}
+          {goalCardOpen && isBreak && breakDurationMinutes != null && onChangeBreakDuration && onResetBreakTimer && (
+            <div
+              className="absolute top-full left-1/2 mt-3 -translate-x-1/2 rounded-xl border p-3"
+              style={{
+                borderColor: "rgba(140, 85, 239, 0.2)",
+                background: "rgba(10,10,10,0.80)",
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+                zIndex: 40,
+              }}
+            >
+              <p className="mb-2 text-xs font-medium text-[#8C55EF]/70">Break duration</p>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  {[3, 5, 10].map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => onChangeBreakDuration(d)}
+                      className="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150"
+                      style={{
+                        background: d === breakDurationMinutes ? "#8C55EF" : "transparent",
+                        color: d === breakDurationMinutes ? "white" : "var(--color-text-tertiary)",
+                        border: d === breakDurationMinutes ? "1px solid transparent" : "1px solid var(--color-border-default)",
+                      }}
+                    >
+                      {d}m
+                    </button>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  leftIcon={<RotateCcw size={12} strokeWidth={2} />}
+                  onClick={onResetBreakTimer}
+                  className="ml-auto"
+                  aria-label="Reset break timer"
+                >
+                  Reset
+                </Button>
+              </div>
+              {onEndBreak && (
+                <button
+                  type="button"
+                  onClick={onEndBreak}
+                  className="mt-2 w-full cursor-pointer rounded-lg py-1.5 text-xs font-medium transition-colors hover:bg-white/10"
+                  style={{ color: "#8C55EF" }}
+                >
+                  End Break
+                </button>
+              )}
             </div>
           )}
         </div>
