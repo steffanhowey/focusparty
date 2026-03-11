@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { UserPlus, ChevronDown, Check } from "lucide-react";
+import { UserPlus, ChevronDown, Check, DoorOpen } from "lucide-react";
 import { InvitePopover } from "@/components/session/InvitePopover";
 import { getUserActiveParties, type Party } from "@/lib/parties";
 import { getWorldConfig } from "@/lib/worlds";
@@ -34,14 +34,37 @@ export function EnvironmentHeader({
   const switcherRef = useRef<HTMLDivElement>(null);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [parties, setParties] = useState<Party[]>([]);
-  const [partiesLoading, setPartiesLoading] = useState(false);
   const [backgrounds, setBackgrounds] = useState<Map<string, ActiveBackground>>(new Map());
+  const hasFetchedRef = useRef(false);
+  const [initialLoading, setInitialLoading] = useState(false);
 
-  // Fetch parties each time the dropdown opens
+  // Prefetch parties eagerly on mount so data is ready when user clicks
+  useEffect(() => {
+    if (!userId || hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+    const timeState = getUserTimeState();
+    Promise.all([
+      getUserActiveParties(userId),
+      getAllActiveBackgrounds(timeState),
+    ])
+      .then(([p, bg]) => {
+        setParties(p);
+        setBackgrounds(bg);
+      })
+      .catch((err) => console.error("Failed to prefetch party switcher data:", err));
+  }, [userId]);
+
+  // On open: show cached data immediately, refresh in background
   useEffect(() => {
     if (!switcherOpen || !userId) return;
     let cancelled = false;
-    setPartiesLoading(true);
+
+    // If we've never fetched yet, show loading state
+    if (!hasFetchedRef.current) {
+      setInitialLoading(true);
+      hasFetchedRef.current = true;
+    }
+
     const timeState = getUserTimeState();
     Promise.all([
       getUserActiveParties(userId),
@@ -55,11 +78,9 @@ export function EnvironmentHeader({
       })
       .catch((err) => console.error("Failed to load party switcher data:", err))
       .finally(() => {
-        if (!cancelled) setPartiesLoading(false);
+        if (!cancelled) setInitialLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [switcherOpen, userId]);
 
   // Prefetch routes + background images once parties are loaded
@@ -109,6 +130,8 @@ export function EnvironmentHeader({
     [currentPartyId, router]
   );
 
+  const showLoading = initialLoading && parties.length === 0;
+
   return (
     <header className="relative z-10 -ml-24 flex items-center gap-3 py-4 pl-4 pr-4">
       {/* Room name + party switcher */}
@@ -116,15 +139,17 @@ export function EnvironmentHeader({
         <button
           type="button"
           onClick={() => userId && setSwitcherOpen((o) => !o)}
-          className={`flex items-center gap-1.5 text-lg font-semibold text-white ${userId ? "cursor-pointer rounded-lg px-1 -ml-1 transition-colors hover:bg-white/[0.06]" : ""}`}
+          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white transition-colors ${userId ? "cursor-pointer hover:bg-white/15" : ""}`}
+          style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.08)" }}
           aria-expanded={switcherOpen}
           aria-haspopup="listbox"
           aria-label="Switch room"
         >
+          <DoorOpen size={15} strokeWidth={2} />
           {roomName}
           {userId && (
             <ChevronDown
-              size={15}
+              size={14}
               strokeWidth={2}
               className={`text-white/40 transition-transform duration-200 ${switcherOpen ? "rotate-180" : ""}`}
             />
@@ -134,13 +159,16 @@ export function EnvironmentHeader({
         {/* Party switcher dropdown */}
         {switcherOpen && (
           <div
-            className="absolute left-0 top-full mt-2 overflow-hidden rounded-lg border border-[var(--color-border-default)] shadow-2xl"
+            className="absolute left-0 top-full mt-2 overflow-hidden rounded-xl border border-white/[0.08]"
             style={{
-              background: "rgba(10,10,10,0.95)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
+              background: "rgba(10,10,10,0.90)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
               zIndex: 40,
               width: 280,
+              animation: "fp-dropdown-enter 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+              transformOrigin: "top left",
             }}
             role="listbox"
             aria-label="Switch room"
@@ -150,22 +178,30 @@ export function EnvironmentHeader({
               Available Rooms
             </p>
 
-            {/* Loading */}
-            {partiesLoading && (
-              <div className="flex items-center justify-center py-6">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-transparent" />
+            {/* Loading skeleton — matches party row layout for zero shift */}
+            {showLoading && (
+              <div className="pb-2">
+                {[0, 1].map((i) => (
+                  <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+                    <div className="h-11 w-11 shrink-0 animate-pulse rounded-md bg-white/[0.06]" />
+                    <div className="flex flex-1 flex-col gap-1.5">
+                      <div className="h-3.5 w-24 animate-pulse rounded bg-white/[0.06]" />
+                      <div className="h-2.5 w-16 animate-pulse rounded bg-white/[0.04]" />
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
             {/* Empty */}
-            {!partiesLoading && parties.length === 0 && (
+            {!showLoading && parties.length === 0 && (
               <p className="px-4 py-5 text-center text-xs text-[var(--color-text-tertiary)]">
                 No other active rooms
               </p>
             )}
 
             {/* Party list */}
-            {!partiesLoading &&
+            {!showLoading &&
               parties.map((p, i) => {
                 const isCurrent = p.id === currentPartyId;
                 const world = getWorldConfig(p.world_key);
@@ -186,21 +222,21 @@ export function EnvironmentHeader({
                           : "hover:bg-white/[0.04]"
                       }`}
                     >
-                      {/* Thumbnail */}
-                      {switcherThumb ? (
-                        <Image
-                          src={switcherThumb}
-                          alt={p.name}
-                          width={44}
-                          height={44}
-                          className="h-11 w-11 shrink-0 rounded-md object-cover"
-                        />
-                      ) : (
-                        <div
-                          className="h-11 w-11 shrink-0 rounded-md"
-                          style={{ background: world.placeholderGradient }}
-                        />
-                      )}
+                      {/* Thumbnail — gradient placeholder behind image prevents flash */}
+                      <div
+                        className="h-11 w-11 shrink-0 overflow-hidden rounded-md"
+                        style={{ background: world.placeholderGradient }}
+                      >
+                        {switcherThumb && (
+                          <Image
+                            src={switcherThumb}
+                            alt={p.name}
+                            width={44}
+                            height={44}
+                            className="h-full w-full object-cover"
+                          />
+                        )}
+                      </div>
                       {/* Text */}
                       <div className="min-w-0 flex-1 text-left">
                         <p className={`truncate text-sm font-medium ${isCurrent ? "text-white" : "text-[var(--color-text-secondary)]"}`}>

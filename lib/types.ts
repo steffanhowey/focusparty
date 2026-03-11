@@ -178,7 +178,6 @@ export type ProductivityRating = 1 | 2 | 3 | 4 | 5;
 export interface SessionReflection {
   mood: SessionMood | null;
   productivity: ProductivityRating | null;
-  completedAt: string;
   sessionDurationSec: number;
 }
 

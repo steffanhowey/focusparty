@@ -1,10 +1,18 @@
 "use client";
 
+import { Music } from "lucide-react";
+
 interface JoinCountdownScreenProps {
   countdownNumber: number;
+  musicEnabled: boolean;
+  onToggleMusic: () => void;
 }
 
-export function JoinCountdownScreen({ countdownNumber }: JoinCountdownScreenProps) {
+export function JoinCountdownScreen({
+  countdownNumber,
+  musicEnabled,
+  onToggleMusic,
+}: JoinCountdownScreenProps) {
   return (
     <div
       className="flex h-full flex-col items-center justify-center px-5"
@@ -46,6 +54,42 @@ export function JoinCountdownScreen({ countdownNumber }: JoinCountdownScreenProp
           );
         })}
       </div>
+
+      {/* Music toggle */}
+      <button
+        type="button"
+        onClick={onToggleMusic}
+        className="mt-8 flex cursor-pointer items-center gap-2.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200"
+        style={{
+          background: musicEnabled ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.04)",
+          border: musicEnabled
+            ? "1px solid rgba(255,255,255,0.15)"
+            : "1px solid rgba(255,255,255,0.08)",
+          color: musicEnabled ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.40)",
+        }}
+        aria-label={musicEnabled ? "Disable music" : "Enable music"}
+        aria-pressed={musicEnabled}
+      >
+        <Music size={15} strokeWidth={2} />
+        <span>{musicEnabled ? "Music on" : "Music off"}</span>
+
+        {/* Mini toggle indicator */}
+        <div
+          className="relative ml-1 h-4 w-7 rounded-full transition-colors duration-200"
+          style={{
+            background: musicEnabled
+              ? "var(--color-accent-primary)"
+              : "rgba(255,255,255,0.12)",
+          }}
+        >
+          <div
+            className="absolute top-0.5 h-3 w-3 rounded-full bg-white transition-transform duration-200"
+            style={{
+              transform: musicEnabled ? "translateX(12px)" : "translateX(2px)",
+            }}
+          />
+        </div>
+      </button>
     </div>
   );
 }

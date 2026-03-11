@@ -42,7 +42,7 @@ export const SettingsPanel = memo(function SettingsPanel({ onClose, settings, on
       <PanelHeader title="Settings" onClose={onClose} />
 
       {/* Accordion sections */}
-      <div className="fp-shell-scroll flex-1 overflow-y-auto" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+      <div className="fp-shell-scroll flex-1 overflow-y-auto">
         <Accordion label="Audio & video" isOpen={openSection === "audio-video"} onToggle={() => toggle("audio-video")}>
           <AudioVideoContent settings={settings} onUpdateSetting={onUpdateSetting} />
         </Accordion>

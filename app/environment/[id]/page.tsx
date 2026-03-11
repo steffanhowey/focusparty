@@ -76,6 +76,7 @@ export default function EnvironmentPage() {
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [commitmentType, setCommitmentType] = useState<import("@/lib/types").CommitmentType>("personal");
   const [sessionGoalId, setSessionGoalId] = useState<string | null>(null);
+  const resolutionHandledRef = useRef(false);
   const [micActive, setMicActive] = useState(false);
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [celebrations, setCelebrations] = useState<Map<string, CelebrationInfo>>(new Map());
@@ -212,12 +213,14 @@ export default function EnvironmentPage() {
   const music = useMusic();
   const { settings, updateSetting } = useSettings();
 
-  // Auto-play the room's vibe when entering sprint phase
+  // Auto-play the room's vibe when entering sprint phase (only if user opted in)
+  const musicAutoPlayRef = useRef(false);
   const prevPhaseRef = useRef(phase);
   useEffect(() => {
     const wasNotSprint = prevPhaseRef.current !== "sprint";
     prevPhaseRef.current = phase;
     if (phase !== "sprint" || !wasNotSprint) return;
+    if (!musicAutoPlayRef.current) return;
 
     // Only select if not already playing the room's vibe
     if (music.activeVibe !== world.vibeKey) {
@@ -329,6 +332,7 @@ export default function EnvironmentPage() {
     if (config.taskId) selectTask(config.taskId);
     setGoal(config.goalText);
     setDurationSec(config.durationSec);
+    musicAutoPlayRef.current = config.musicAutoPlay ?? false;
 
     if (config.autoStart && userId) {
       const sec = config.durationSec;
@@ -460,6 +464,7 @@ export default function EnvironmentPage() {
       if (jc.taskId) selectTask(jc.taskId);
       setGoal(jc.goalText);
       setDurationSec(jc.durationSec);
+      musicAutoPlayRef.current = jc.musicAutoPlay ?? false;
 
       if (jc.autoStart && userId) {
         // Auto-start sprint
@@ -523,11 +528,14 @@ export default function EnvironmentPage() {
   }, [persistence.isHydrating, persistence.sessionRow, userId, partyId]);
 
   // ─── Set default duration from world config ────────────
+  // Skip if a join config already provided a user-chosen duration
   const defaultDurationApplied = useRef(false);
   useEffect(() => {
     if (!party || defaultDurationApplied.current) return;
     defaultDurationApplied.current = true;
-    setDurationSec(world.defaultSprintLength * 60);
+    if (!joinConfigRef.current) {
+      setDurationSec(world.defaultSprintLength * 60);
+    }
   }, [party, world.defaultSprintLength]);
 
   // ─── Sprint lifecycle ──────────────────────────────────
@@ -561,12 +569,13 @@ export default function EnvironmentPage() {
               duration_sec: sec,
             })
           )
-          .then(() => {
-            persistence.declareGoal({
+          .then(async () => {
+            const sg = await persistence.declareGoal({
               user_id: userId,
               task_id: activeTask?.id ?? undefined,
               body: goalText,
             });
+            if (sg) setSessionGoalId(sg.id);
             hostTriggers.triggerSessionStarted();
             hostTriggers.triggerSprintStarted();
           })
@@ -590,6 +599,7 @@ export default function EnvironmentPage() {
   }, [durationSec, timer, music, persistence, hostTriggers]);
 
   const handleAnotherRound = useCallback(() => {
+    resolutionHandledRef.current = false;
     timer.reset(durationSec);
     timer.start();
     setPhase("sprint");
@@ -617,8 +627,12 @@ export default function EnvironmentPage() {
     if (partyId && !party?.persistent) {
       updatePartyStatus(partyId, "completed").catch((err) => console.error("Failed to update party status:", err));
     }
+    // Safety net: resolve any orphaned commitment that wasn't handled by handleResolution
+    if (commitments.activeCommitment && !resolutionHandledRef.current) {
+      commitments.resolveCommitment("failed").catch(() => {});
+    }
     router.push("/rooms");
-  }, [router, persistence, hostTriggers, partyId, party?.persistent]);
+  }, [router, persistence, hostTriggers, partyId, party?.persistent, commitments]);
 
   const handleReflectionComplete = useCallback(
     (reflection: SessionReflection) => {
@@ -636,10 +650,22 @@ export default function EnvironmentPage() {
   // ─── Sprint resolution handler (sequenced) ─────────────
   const handleResolution = useCallback(
     async (res: SprintResolution) => {
+      resolutionHandledRef.current = true;
       try {
         // 1. Complete task first (if applicable) — must happen before cascade
         if (res === "completed" && activeTask) {
           completeTask(activeTask.id);
+
+          // Log task_completed event (fire-and-forget)
+          if (userId && persistence.sessionRow) {
+            logEvent({
+              party_id: partyId,
+              session_id: persistence.sessionRow.id,
+              user_id: userId,
+              event_type: "task_completed",
+              body: activeTask.title ?? null,
+            }).catch(() => {});
+          }
         }
 
         // 2. Update session goal status
@@ -984,6 +1010,16 @@ export default function EnvironmentPage() {
         </>
       )}
 
+      {/* Sprint goal — ~25% above dead center */}
+      {phase === "sprint" && goal && (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center" style={{ paddingBottom: "25vh" }}>
+          <SprintGoalBanner
+            goalText={goal}
+            parentGoalTitle={activeGoalForTask?.title ?? null}
+          />
+        </div>
+      )}
+
       {/* Main content — full width, flyout overlays on top */}
       <div className="flex w-full flex-col pl-24">
         {phase === "setup" && !showJoinModal ? (
@@ -1010,8 +1046,8 @@ export default function EnvironmentPage() {
               userId={userId}
             />
 
-            {/* Spacer so action bar stays at bottom */}
-            <div className="relative flex-1">
+            {/* Center content area (spacer + click-away) */}
+            <div className="relative flex flex-1 flex-col">
               {/* Click-away to close timer dropdown */}
               {sprintGoalCardOpen && (
                 <div
@@ -1020,25 +1056,6 @@ export default function EnvironmentPage() {
                 />
               )}
             </div>
-
-            {/* Sprint goal banner */}
-            {phase === "sprint" && goal && (
-              <div className="mb-3 px-2">
-                <SprintGoalBanner
-                  goalText={goal}
-                  parentGoalTitle={activeGoalForTask?.title ?? null}
-                  commitmentType={commitmentType}
-                  taskProgress={
-                    goalTasks
-                      ? {
-                          completed: goalTasks.filter((t) => t.status === "done").length,
-                          total: goalTasks.length,
-                        }
-                      : null
-                  }
-                />
-              </div>
-            )}
 
             {/* Action bar (identical to existing session) */}
             {phase === "sprint" && (

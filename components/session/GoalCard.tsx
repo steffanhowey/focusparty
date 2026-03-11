@@ -22,7 +22,6 @@ export function GoalCard({
         background: "rgba(10,10,10,0.80)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        textShadow: "0 1px 4px rgba(0,0,0,0.5)",
         boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >

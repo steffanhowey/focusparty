@@ -3,7 +3,6 @@
 import Image from "next/image";
 import type { Party, SyntheticPresenceInfo } from "@/lib/parties";
 import type { WorldConfig } from "@/lib/worlds";
-import type { HostConfig } from "@/lib/hosts";
 
 function formatMinutes(seconds: number): string {
   const m = Math.ceil(seconds / 60);
@@ -13,7 +12,6 @@ function formatMinutes(seconds: number): string {
 interface JoinRoomHeaderProps {
   party: Party | null;
   world: WorldConfig;
-  hostConfig: HostConfig;
   coverSrc: string | null;
   focusingCount: number;
   hasActiveSprint: boolean;
@@ -21,29 +19,72 @@ interface JoinRoomHeaderProps {
   syntheticParticipants: SyntheticPresenceInfo[];
 }
 
+/* ── Avatar cluster — matches FeaturedRoom style ── */
+
+function AvatarCluster({
+  participants,
+  totalCount,
+}: {
+  participants: SyntheticPresenceInfo[];
+  totalCount: number;
+}) {
+  if (totalCount === 0) return null;
+  const visible = participants.slice(0, 4);
+  const overflow = totalCount - visible.length;
+  const size = 26;
+  const overlap = 7;
+
+  return (
+    <span className="flex items-center">
+      <span className="flex">
+        {visible.map((p, i) => (
+          <img
+            key={p.id}
+            src={p.avatarUrl}
+            alt={p.displayName}
+            title={`@${p.handle}`}
+            width={size}
+            height={size}
+            className="rounded-full object-cover"
+            style={{
+              width: size,
+              height: size,
+              marginLeft: i === 0 ? 0 : -overlap,
+              border: "2px solid rgba(0,0,0,0.3)",
+              zIndex: visible.length - i,
+              position: "relative",
+            }}
+          />
+        ))}
+      </span>
+      {overflow > 0 && (
+        <span className="ml-1.5 text-[11px] text-white/50">
+          +{overflow}
+        </span>
+      )}
+    </span>
+  );
+}
+
 export function JoinRoomHeader({
   party,
   world,
-  hostConfig,
   coverSrc,
   focusingCount,
   hasActiveSprint,
   remainingSeconds,
   syntheticParticipants,
 }: JoinRoomHeaderProps) {
-  const visibleSynthAvatars = syntheticParticipants.slice(0, 4);
-  const synthOverflow = syntheticParticipants.length - visibleSynthAvatars.length;
-
   return (
-    <div className="flex gap-4 p-5 pb-0">
+    <div className="flex gap-4 p-6 pb-0">
       {/* Cover image */}
-      <div className="relative h-[100px] w-[140px] shrink-0 overflow-hidden rounded-[var(--radius-md)]">
+      <div className="relative h-[110px] w-[150px] shrink-0 overflow-hidden rounded-[var(--radius-md)]">
         {coverSrc ? (
           <Image
             src={coverSrc}
             alt={world.label}
             fill
-            sizes="140px"
+            sizes="150px"
             className="object-cover"
           />
         ) : (
@@ -55,66 +96,38 @@ export function JoinRoomHeader({
       </div>
 
       {/* Room info */}
-      <div className="min-w-0 flex-1 pt-0.5">
+      <div className="min-w-0 flex-1 py-0.5">
         <h2
-          className="truncate text-xl font-bold text-white"
+          className="truncate text-lg font-bold text-white"
           style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
         >
           {party?.name ?? world.label}
         </h2>
 
+        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-white/40">
+          {world.description}
+        </p>
+
         {/* Meta line */}
-        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-white/50">
-          <Image
-            src={hostConfig.avatarUrl}
-            alt={hostConfig.hostName}
-            width={16}
-            height={16}
-            className="rounded-full"
-          />
-          <span>{hostConfig.hostName} hosting</span>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-white/50">
           {focusingCount > 0 && (
-            <>
-              <span className="text-white/25">&middot;</span>
-              <span>{focusingCount} focusing now</span>
-            </>
+            <span>{focusingCount} focusing</span>
+          )}
+          {focusingCount > 0 && hasActiveSprint && (
+            <span className="text-white/20">·</span>
           )}
           {hasActiveSprint && (
-            <>
-              <span className="text-white/25">&middot;</span>
-              <span>{formatMinutes(remainingSeconds)} remaining</span>
-            </>
+            <span>{formatMinutes(remainingSeconds)} left</span>
           )}
         </div>
 
         {/* Avatars */}
-        {visibleSynthAvatars.length > 0 && (
-          <div className="mt-2 flex items-center">
-            <span className="flex">
-              {visibleSynthAvatars.map((p, i) => (
-                <img
-                  key={p.id}
-                  src={p.avatarUrl}
-                  alt={p.displayName}
-                  width={22}
-                  height={22}
-                  className="rounded-full object-cover"
-                  style={{
-                    width: 22,
-                    height: 22,
-                    marginLeft: i === 0 ? 0 : -5,
-                    border: "1.5px solid rgba(10,10,10,0.9)",
-                    zIndex: visibleSynthAvatars.length - i,
-                    position: "relative",
-                  }}
-                />
-              ))}
-            </span>
-            {synthOverflow > 0 && (
-              <span className="ml-1.5 text-[11px] text-white/40">
-                +{synthOverflow}
-              </span>
-            )}
+        {syntheticParticipants.length > 0 && (
+          <div className="mt-2.5">
+            <AvatarCluster
+              participants={syntheticParticipants}
+              totalCount={syntheticParticipants.length}
+            />
           </div>
         )}
       </div>

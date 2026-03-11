@@ -6,15 +6,15 @@ import {
   useRef,
   useCallback,
   useMemo,
-  type KeyboardEvent,
 } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { RotateCw, ListTodo, X, Sparkles, Loader2 } from "lucide-react";
+import { RotateCw, ListTodo } from "lucide-react";
 import { JoinCountdownScreen } from "./JoinCountdownScreen";
 import { JoinRoomHeader } from "./JoinRoomHeader";
 import { JoinSprintOptions } from "./JoinSprintOptions";
 import { CommitmentPicker } from "./CommitmentPicker";
+import { CommitmentTaskPicker } from "./CommitmentTaskPicker";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useTasks } from "@/lib/useTasks";
 import { useGoals } from "@/lib/useGoals";
@@ -48,6 +48,7 @@ export interface JoinConfig {
   durationSec: number;
   autoStart: boolean;
   commitmentType: CommitmentType;
+  musicAutoPlay: boolean;
 }
 
 function formatMinutes(seconds: number): string {
@@ -133,15 +134,16 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
   const [goalText, setGoalText] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [commitmentType, setCommitmentType] = useState<CommitmentType>("personal");
-  const [isAISuggesting, setIsAISuggesting] = useState(false);
   const [sprintMode, setSprintMode] = useState<SprintMode>("current");
-  const [freshDuration, setFreshDuration] = useState(world.defaultSprintLength);
+  const [freshDuration, setFreshDuration] = useState(25);
   const [isJoining, setIsJoining] = useState(false);
   const [showTaskPicker, setShowTaskPicker] = useState(false);
+  const [formStep, setFormStep] = useState<1 | 2>(1);
 
   // ─── Countdown state ──────────────────────────────────────────
   const [modalPhase, setModalPhase] = useState<ModalPhase>("form");
   const [countdownNumber, setCountdownNumber] = useState(5);
+  const [musicEnabled, setMusicEnabled] = useState(false);
   const joinConfigRef = useRef<JoinConfig | null>(null);
 
   // Reset form state when modal opens
@@ -149,14 +151,16 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
     if (isOpen) {
       setGoalText("");
       setSelectedTaskId(null);
+      setSelectedGoalId(null);
       setSprintMode(roomSprint.hasActiveSprint ? "current" : "fresh");
-      setFreshDuration(world.defaultSprintLength);
+      setFreshDuration(25);
       setIsJoining(false);
       setShowTaskPicker(false);
       setCommitmentType("personal");
-      setIsAISuggesting(false);
       setModalPhase("form");
+      setFormStep(1);
       setCountdownNumber(5);
+      setMusicEnabled(false);
       setFormHeight(null);
       joinConfigRef.current = null;
     }
@@ -185,19 +189,14 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
     return sorted.slice(0, 3);
   }, [activeTasks]);
 
-  // Derive goal_id from selected task
-  const selectedGoalId = useMemo(() => {
-    if (!selectedTaskId) return null;
-    const task = activeTasks.find((t) => t.id === selectedTaskId);
-    return task?.goal_id ?? null;
-  }, [selectedTaskId, activeTasks]);
+  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
 
   const selectedTask = useMemo(
     () => activeTasks.find((t) => t.id === selectedTaskId) ?? null,
     [activeTasks, selectedTaskId]
   );
 
-  const hasGoal = goalText.trim().length > 0 || selectedTaskId !== null;
+  const hasGoal = goalText.trim().length > 0 || selectedTaskId !== null || selectedGoalId !== null;
 
   // ─── Computed sprint info ─────────────────────────────────
   const durationSec = useMemo(() => {
@@ -216,68 +215,48 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
   const handleSuggestionClick = useCallback(
     (task: (typeof taskSuggestions)[0], isContinue: boolean) => {
       setSelectedTaskId(task.id);
-      setGoalText(task.title);
+      setSelectedGoalId(task.goal_id);
+      if (task.goal_id) {
+        const goal = activeGoals.find((g) => g.id === task.goal_id);
+        setGoalText(goal ? `${goal.title}: ${task.title}` : task.title);
+      } else {
+        setGoalText(task.title);
+      }
       setShowTaskPicker(false);
     },
-    []
+    [activeGoals]
   );
-
-  const handleCustomClick = useCallback(() => {
-    setSelectedTaskId(null);
-    setGoalText("");
-    inputRef.current?.focus();
-  }, []);
 
   const handleGoalChange = useCallback((text: string) => {
     setGoalText(text);
-    // If user types something, clear task selection (it's freeform now)
     setSelectedTaskId(null);
+    setSelectedGoalId(null);
   }, []);
 
   const handleTaskPickerSelect = useCallback(
-    (taskId: string, taskTitle: string) => {
+    (taskId: string, taskTitle: string, goalId: string | null) => {
       setSelectedTaskId(taskId);
-      setGoalText(taskTitle);
+      setSelectedGoalId(goalId);
+      if (goalId) {
+        const goal = activeGoals.find((g) => g.id === goalId);
+        setGoalText(goal ? `${goal.title}: ${taskTitle}` : taskTitle);
+      } else {
+        setGoalText(taskTitle);
+      }
+      setShowTaskPicker(false);
+    },
+    [activeGoals]
+  );
+
+  const handleGoalSelect = useCallback(
+    (goalId: string, goalTitle: string) => {
+      setSelectedGoalId(goalId);
+      setSelectedTaskId(null);
+      setGoalText(goalTitle);
       setShowTaskPicker(false);
     },
     []
   );
-
-  const handleAISuggest = useCallback(async () => {
-    if (activeGoals.length === 0) return;
-    setIsAISuggesting(true);
-    try {
-      // Pick the first active goal for AI suggestion
-      const goal = activeGoals[0];
-      const goalTasks = activeTasks.filter((t) => t.goal_id === goal.id);
-      const res = await fetch("/api/goals/suggest-next", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          goalTitle: goal.title,
-          tasks: goalTasks.map((t) => ({ title: t.title, status: t.status })),
-        }),
-      });
-      if (!res.ok) throw new Error("AI suggest failed");
-      const data = await res.json();
-      if (data.suggestedTaskTitle) {
-        const existing = goalTasks.find(
-          (t) => t.title === data.suggestedTaskTitle && t.status !== "done"
-        );
-        if (existing) {
-          setSelectedTaskId(existing.id);
-          setGoalText(existing.title);
-        } else {
-          setSelectedTaskId(null);
-          setGoalText(data.suggestedTaskTitle);
-        }
-      }
-    } catch (err) {
-      console.error("AI suggest failed:", err);
-    } finally {
-      setIsAISuggesting(false);
-    }
-  }, [activeGoals, activeTasks]);
 
   const handleJoin = useCallback(async () => {
     if (!userId || !hasGoal || isJoining) return;
@@ -291,13 +270,16 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
       if (selectedTaskId) selectTask(selectedTaskId);
 
       // Store config for after countdown completes
+      // goalText stores the raw task/goal title (not the composite "Goal: Task" display)
+      // musicAutoPlay is set to current state — user can toggle during countdown
       joinConfigRef.current = {
         taskId: selectedTaskId,
         goalId: selectedGoalId,
-        goalText: goalText.trim() || selectedTask?.title || "",
+        goalText: selectedTask?.title || goalText.trim(),
         durationSec,
         autoStart: sprintMode === "current" || sprintMode === "fresh",
         commitmentType,
+        musicAutoPlay: false,
       };
 
       // Capture panel dimensions so countdown screen matches exactly
@@ -349,12 +331,6 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
   // ─── Modal plumbing ────────────────────────────────────────
   useEffect(() => { setMounted(true); }, []);
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLDivElement>) => {
-      if (e.key === "Escape") onClose();
-    },
-    [onClose]
-  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -376,19 +352,17 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
       aria-label="Join room"
       className="fixed inset-0 flex items-center justify-center p-4"
       style={{ zIndex: 40 }}
-      onKeyDown={handleKeyDown}
     >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-[var(--color-navy-700)]/60 backdrop-blur-[8px]"
         aria-hidden
-        onClick={onClose}
       />
 
       {/* Modal panel — dead center */}
       <div
         ref={panelRef}
-        className="relative w-full max-w-[520px] overflow-hidden rounded-[var(--radius-xl)]"
+        className={`relative w-full max-w-[520px] rounded-[var(--radius-xl)] ${modalPhase === "countdown" ? "overflow-hidden" : "overflow-visible"}`}
         style={{
           background: "rgba(10,10,10,0.94)",
           backdropFilter: "blur(24px)",
@@ -400,28 +374,27 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-3 top-3 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-white/40 transition hover:bg-white/[0.08] hover:text-white/70"
-          aria-label="Close"
-        >
-          <X size={15} strokeWidth={2.5} />
-        </button>
-
         {partyLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
           </div>
         ) : modalPhase === "countdown" ? (
-          <JoinCountdownScreen countdownNumber={countdownNumber} />
+          <JoinCountdownScreen
+            countdownNumber={countdownNumber}
+            musicEnabled={musicEnabled}
+            onToggleMusic={() => {
+              setMusicEnabled((prev) => {
+                const next = !prev;
+                if (joinConfigRef.current) joinConfigRef.current.musicAutoPlay = next;
+                return next;
+              });
+            }}
+          />
         ) : (
           <>
             <JoinRoomHeader
               party={party}
               world={world}
-              hostConfig={hostConfig}
               coverSrc={coverSrc}
               focusingCount={roomSprint.focusingCount}
               hasActiveSprint={roomSprint.hasActiveSprint}
@@ -432,6 +405,8 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
             {/* Divider */}
             <div className="mx-5 mt-4 border-t border-white/6" />
 
+            {formStep === 1 ? (
+            <>
             {/* ── TASK INPUT ──────────────────────────────── */}
             <div className="px-5 pt-4">
               <label className="mb-2 block text-sm font-semibold text-white">
@@ -445,8 +420,8 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                   type="text"
                   value={goalText}
                   onChange={(e) => handleGoalChange(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && hasGoal) handleJoin(); }}
-                  placeholder="Write your task or goal..."
+                  onKeyDown={(e) => { if (e.key === "Enter" && hasGoal) setFormStep(2); }}
+                  placeholder="Write your task or commitment..."
                   className="w-full rounded-full py-2.5 pl-4 pr-10 text-sm text-white placeholder-white/30 outline-none ring-0 ring-white/0 transition-all focus:ring-1 focus:ring-white/12"
                   style={{
                     background: "var(--color-bg-elevated)",
@@ -463,66 +438,18 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                 </button>
               </div>
 
-              {/* Task picker dropdown — grouped by goal */}
-              {showTaskPicker && activeTasks.length > 0 && (
-                <div
-                  className="absolute left-0 right-0 z-20 mx-5 mt-1.5 max-h-48 overflow-y-auto rounded-xl py-1 shadow-2xl"
-                  style={{
-                    background: "rgba(10,10,10,0.95)",
-                    backdropFilter: "blur(16px)",
-                    WebkitBackdropFilter: "blur(16px)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  {/* Tasks grouped by goal */}
-                  {activeGoals.map((goal) => {
-                    const goalTasks = activeTasks.filter((t) => t.goal_id === goal.id);
-                    if (goalTasks.length === 0) return null;
-                    return (
-                      <div key={goal.id}>
-                        <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/30">
-                          {goal.title}
-                        </div>
-                        {goalTasks.map((task) => (
-                          <button
-                            key={task.id}
-                            type="button"
-                            onClick={() => handleTaskPickerSelect(task.id, task.title)}
-                            className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-white/[0.08]"
-                            style={{
-                              color: selectedTaskId === task.id ? world.accentColor : "rgba(255,255,255,0.7)",
-                            }}
-                          >
-                            <span className="truncate">{task.title}</span>
-                          </button>
-                        ))}
-                      </div>
-                    );
-                  })}
-                  {/* Loose tasks (no goal) */}
-                  {activeTasks.filter((t) => !t.goal_id).length > 0 && (
-                    <div>
-                      {activeGoals.length > 0 && (
-                        <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/30">
-                          Other tasks
-                        </div>
-                      )}
-                      {activeTasks.filter((t) => !t.goal_id).map((task) => (
-                        <button
-                          key={task.id}
-                          type="button"
-                          onClick={() => handleTaskPickerSelect(task.id, task.title)}
-                          className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-white/[0.08]"
-                          style={{
-                            color: selectedTaskId === task.id ? world.accentColor : "rgba(255,255,255,0.7)",
-                          }}
-                        >
-                          <span className="truncate">{task.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+              {/* Commitment & task picker dropdown */}
+              {showTaskPicker && (activeTasks.length > 0 || activeGoals.length > 0) && (
+                <CommitmentTaskPicker
+                  goals={activeGoals}
+                  tasks={activeTasks}
+                  selectedTaskId={selectedTaskId}
+                  selectedGoalId={selectedGoalId}
+                  accentColor={world.accentColor}
+                  onSelectTask={handleTaskPickerSelect}
+                  onSelectGoal={handleGoalSelect}
+                  onClose={() => setShowTaskPicker(false)}
+                />
               )}
 
               {/* Suggestion pills — single row, truncating */}
@@ -560,44 +487,47 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                       {i === 0 ? `Continue: ${task.title}` : task.title}
                     </button>
                   ))}
-                  <button
-                    type="button"
-                    onClick={handleCustomClick}
-                    className="shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-medium text-white/35 transition-colors hover:text-white/55"
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid transparent",
-                    }}
-                  >
-                    Custom...
-                  </button>
                   {activeGoals.length > 0 && (
                     <button
                       type="button"
-                      onClick={handleAISuggest}
-                      disabled={isAISuggesting}
-                      className="shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors disabled:cursor-default disabled:opacity-50"
+                      onClick={() => handleGoalSelect(activeGoals[0].id, activeGoals[0].title)}
+                      className="min-w-0 cursor-pointer truncate rounded-full px-2.5 py-1 text-[11px] font-medium transition-all"
                       style={{
-                        background: `${world.accentColor}15`,
-                        color: world.accentColor,
-                        border: `1px solid ${world.accentColor}30`,
+                        background:
+                          selectedGoalId === activeGoals[0].id && !selectedTaskId
+                            ? `${world.accentColor}25`
+                            : "rgba(255,255,255,0.06)",
+                        color:
+                          selectedGoalId === activeGoals[0].id && !selectedTaskId
+                            ? world.accentColor
+                            : "rgba(255,255,255,0.5)",
+                        border:
+                          selectedGoalId === activeGoals[0].id && !selectedTaskId
+                            ? `1px solid ${world.accentColor}40`
+                            : "1px solid transparent",
                       }}
                     >
-                      {isAISuggesting ? (
-                        <Loader2 size={10} className="inline-block animate-spin mr-1" />
-                      ) : (
-                        <Sparkles size={10} className="inline-block mr-1" />
-                      )}
-                      {isAISuggesting ? "Thinking..." : "Suggest"}
+                      {activeGoals[0].title}
                     </button>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Divider */}
-            <div className="mx-5 mt-4 border-t border-white/6" />
-
+            {/* ── STEP 1 FOOTER ─────────────────────────── */}
+            <div className="flex items-center justify-end gap-3 px-5 pb-5 pt-5">
+              <button
+                type="button"
+                onClick={() => setFormStep(2)}
+                disabled={!hasGoal}
+                className="cursor-pointer rounded-full bg-[var(--color-accent-primary)] px-6 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] active:opacity-75 disabled:cursor-default disabled:opacity-40 disabled:hover:scale-100"
+              >
+                Next
+              </button>
+            </div>
+            </>
+            ) : (
+            <>
             <JoinSprintOptions
               hasActiveSprint={roomSprint.hasActiveSprint}
               remainingSeconds={roomSprint.remainingSeconds}
@@ -616,14 +546,14 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
               accentColor={world.accentColor}
             />
 
-            {/* ── FOOTER ──────────────────────────────────── */}
-            <div className="flex items-center justify-end gap-3 px-5 pb-5 pt-5">
+            {/* ── STEP 2 FOOTER ─────────────────────────── */}
+            <div className="flex items-center justify-between px-5 pb-5 pt-5">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={() => setFormStep(1)}
                 className="cursor-pointer rounded-full px-5 py-2.5 text-sm font-medium text-white/50 transition-colors hover:text-white/80"
               >
-                Cancel
+                Back
               </button>
               <button
                 type="button"
@@ -641,6 +571,8 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                 )}
               </button>
             </div>
+            </>
+            )}
           </>
         )}
       </div>

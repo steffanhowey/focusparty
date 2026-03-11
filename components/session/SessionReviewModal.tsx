@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Zap, Target, Meh, BatteryLow, CloudLightning, X, CheckCircle2, Clock, RotateCw, ArrowRight } from "lucide-react";
+import { Zap, Target, Meh, BatteryLow, CloudLightning, CheckCircle2, Clock, RotateCw, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
 import { ToggleCard } from "@/components/ui/ToggleCard";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 import type { SessionMood, SessionReflection, SprintResolution } from "@/lib/types";
@@ -104,8 +103,7 @@ export function SessionReviewModal({
   const buildReflection = (): SessionReflection => ({
     mood,
     productivity: null,
-    completedAt: new Date().toISOString(),
-    sessionDurationSec,
+    sessionDurationSec: elapsedSec,
   });
 
   const handleAction = (action: () => void) => {
@@ -160,16 +158,6 @@ export function SessionReviewModal({
           "--color-border-focus": "#7c5cfc",
         } as React.CSSProperties}
       >
-        {/* Close button */}
-        <IconButton
-          variant="ghost"
-          size="sm"
-          icon={<X size={15} strokeWidth={2.5} />}
-          onClick={() => handleAction(onDone)}
-          className="absolute right-3 top-3 z-10 text-white/40 hover:text-white/70"
-          aria-label="Close"
-        />
-
         {/* ── Celebration header ── */}
         <div className="mb-8 text-center">
           <h2
@@ -256,10 +244,16 @@ export function SessionReviewModal({
 
         {/* ── Action buttons ── */}
         <div className="flex flex-col gap-2">
+          {hasSprintGoal && !resolution && (
+            <p className="mb-1 text-center text-xs text-[var(--color-text-tertiary)]">
+              Select a resolution above to continue
+            </p>
+          )}
           <Button
             variant="cta"
             fullWidth
             data-autofocus
+            disabled={hasSprintGoal && !resolution}
             onClick={() => handleAction(onAnotherRound)}
           >
             Another round
@@ -267,6 +261,7 @@ export function SessionReviewModal({
           <Button
             variant="secondary"
             fullWidth
+            disabled={hasSprintGoal && !resolution}
             onClick={() => handleAction(onDone)}
           >
             Done for now

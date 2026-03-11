@@ -141,7 +141,6 @@ export const TasksPanel = memo(function TasksPanel({
     >
       <div
         className="flex flex-1 flex-col overflow-hidden px-4 py-3"
-        style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}
       >
         {/* Goal context header */}
         {activeGoal && goalTasks && (

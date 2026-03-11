@@ -15,6 +15,8 @@ import {
   RotateCcw,
   Activity,
   Zap,
+  Pause,
+  Play,
 } from "lucide-react";
 import { MusicPopover } from "@/components/session/MusicPopover";
 import { CheckInMenu } from "@/components/session/CheckInMenu";
@@ -115,8 +117,8 @@ export const ActionBar = memo(function ActionBar({
 }: ActionBarProps) {
   const musicWrapperRef = useRef<HTMLDivElement>(null);
   const checkInWrapperRef = useRef<HTMLDivElement>(null);
-  const { formatted, seconds } = useTimerDisplay(timer);
-  const iconShadow = { filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))" } as const;
+  const { formatted, seconds, running } = useTimerDisplay(timer);
+  // icon shadow removed — glass pill provides enough context
   const btn =
     "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors";
   const defaultBtn = `${btn} text-[var(--color-text-secondary)] hover:bg-white/10 hover:text-white`;
@@ -136,55 +138,54 @@ export const ActionBar = memo(function ActionBar({
         style={dragStyle}
       >
         <div className="relative">
-          <button
-            type="button"
-            onClick={() => { if (!wasDraggedRef.current) onToggleGoalCard?.(); }}
-            className="flex cursor-pointer items-center gap-2 rounded-full border border-white/[0.08] px-5 py-2 transition-colors hover:bg-white/10"
+          <div
+            className="flex items-center gap-1 rounded-full border border-white/[0.08]"
             style={{
               background: "rgba(10,10,10,0.55)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
               boxShadow: "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
-            aria-label="Toggle timer options"
-            aria-expanded={goalCardOpen}
           >
-            <span
-              className={`text-3xl font-extrabold tracking-tight md:text-4xl ${
-                timerCritical
-                  ? "text-[var(--color-coral-700)]"
-                  : timerWarning
-                    ? "text-[var(--color-gold-500)]"
-                    : "text-white"
-              }`}
-              style={{
-                fontFamily: "var(--font-montserrat), sans-serif",
-                textShadow: "0 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(0,0,0,0.3)",
-                fontVariantNumeric: "tabular-nums",
-              }}
+            {/* Pause / Play */}
+            <button
+              type="button"
+              onClick={() => { running ? timer.pause() : timer.start(); }}
+              className="flex h-full cursor-pointer items-center pl-4 pr-1 text-white/40 transition-colors hover:text-white/70"
+              aria-label={running ? "Pause timer" : "Resume timer"}
             >
-              {formatted}
-            </span>
-            <ChevronUp
-              size={18}
-              strokeWidth={2.5}
-              className={`text-[var(--color-text-tertiary)] transition-transform duration-200 ${goalCardOpen ? "" : "rotate-180"}`}
-            />
-          </button>
+              {running ? (
+                <Pause size={16} strokeWidth={2} fill="currentColor" />
+              ) : (
+                <Play size={16} strokeWidth={2} fill="currentColor" />
+              )}
+            </button>
 
-          {/* Room state label */}
-          {roomStateLabel && (
-            <p
-              className="mt-1.5 text-center text-xs font-medium transition-colors duration-500"
-              style={{
-                color: roomStateColor ?? "rgba(255,255,255,0.4)",
-                textShadow: "0 1px 6px rgba(0,0,0,0.6)",
-              }}
+            {/* Timer + dropdown toggle */}
+            <button
+              type="button"
+              onClick={() => { if (!wasDraggedRef.current) onToggleGoalCard?.(); }}
+              className="flex cursor-pointer items-center gap-2 py-2 pr-5 pl-2 transition-colors hover:bg-white/10 rounded-r-full"
+              aria-label="Toggle timer options"
+              aria-expanded={goalCardOpen}
             >
-              {roomStateIcon && <span className="mr-1">{roomStateIcon}</span>}
-              {roomStateLabel}
-            </p>
-          )}
+              <span
+                className="text-3xl font-extrabold tracking-tight text-white md:text-4xl"
+                style={{
+                  fontFamily: "var(--font-montserrat), sans-serif",
+                  textShadow: "0 1px 6px rgba(0,0,0,0.5)",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {formatted}
+              </span>
+              <ChevronUp
+                size={18}
+                strokeWidth={2.5}
+                className={`text-[var(--color-text-tertiary)] transition-transform duration-200 ${goalCardOpen ? "" : "rotate-180"}`}
+              />
+            </button>
+          </div>
 
           {/* Downward dropdown */}
           {goalCardOpen && currentDurationMin != null && onChangeDuration && onResetTimer && (
@@ -194,7 +195,6 @@ export const ActionBar = memo(function ActionBar({
                 background: "rgba(10,10,10,0.80)",
                 backdropFilter: "blur(24px)",
                 WebkitBackdropFilter: "blur(24px)",
-                textShadow: "0 1px 4px rgba(0,0,0,0.5)",
                 boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
                 zIndex: 40,
               }}
@@ -234,7 +234,7 @@ export const ActionBar = memo(function ActionBar({
             onClick={onToggleMic}
             className={micActive ? defaultBtn : `${btn} text-[var(--color-coral-700)] hover:bg-white/10`}
             aria-label={micActive ? "Mute" : "Unmute"}
-            style={iconShadow}
+
           >
             {micActive ? <Mic {...ICON} /> : <MicOff {...ICON} />}
           </button>
@@ -246,7 +246,7 @@ export const ActionBar = memo(function ActionBar({
             onClick={onToggleCamera}
             className={cameraActive ? defaultBtn : `${btn} text-[var(--color-coral-700)] hover:bg-white/10`}
             aria-label={cameraActive ? "Turn off camera" : "Turn on camera"}
-            style={iconShadow}
+
           >
             {cameraActive ? <Video {...ICON} /> : <VideoOff {...ICON} />}
           </button>
@@ -262,7 +262,7 @@ export const ActionBar = memo(function ActionBar({
               }
               aria-label="Music"
               aria-expanded={music.popoverOpen}
-              style={iconShadow}
+  
             >
               <Music {...ICON} />
             </button>
@@ -292,7 +292,7 @@ export const ActionBar = memo(function ActionBar({
                 className={checkInOpen ? activeBtn : defaultBtn}
                 aria-label="Check in"
                 aria-expanded={checkInOpen}
-                style={iconShadow}
+    
               >
                 <Zap {...ICON} />
               </button>
@@ -313,7 +313,7 @@ export const ActionBar = memo(function ActionBar({
             onClick={onOpenTasks}
             className={tasksActive ? activeBtn : defaultBtn}
             aria-label="Tasks"
-            style={iconShadow}
+
           >
             <ListTodo {...ICON} />
           </button>
@@ -325,7 +325,7 @@ export const ActionBar = memo(function ActionBar({
             onClick={onOpenChat}
             className={chatActive ? activeBtn : defaultBtn}
             aria-label="Chat"
-            style={iconShadow}
+
           >
             <MessageCircle {...ICON} />
           </button>
@@ -338,7 +338,7 @@ export const ActionBar = memo(function ActionBar({
               onClick={onOpenMomentum}
               className={momentumActive ? activeBtn : defaultBtn}
               aria-label="Momentum"
-              style={iconShadow}
+  
             >
               <Activity {...ICON} />
             </button>
@@ -351,7 +351,7 @@ export const ActionBar = memo(function ActionBar({
             onClick={onOpenSettings}
             className={settingsActive ? activeBtn : defaultBtn}
             aria-label="Settings"
-            style={iconShadow}
+
           >
             <Settings {...ICON} />
           </button>
@@ -365,7 +365,7 @@ export const ActionBar = memo(function ActionBar({
             onClick={onEndSession}
             className={`${btn} text-[var(--color-coral-700)] hover:bg-white/10`}
             aria-label="End session"
-            style={iconShadow}
+
           >
             <LogOut {...ICON} />
           </button>
