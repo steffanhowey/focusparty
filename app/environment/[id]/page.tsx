@@ -33,6 +33,7 @@ import { SprintGoalBanner } from "@/components/session/SprintGoalBanner";
 import { SideDrawer } from "@/components/session/SideDrawer";
 import { SettingsPanel } from "@/components/session/SettingsPanel";
 import { SessionReviewModal } from "@/components/session/SessionReviewModal";
+import { LeaveConfirmModal } from "@/components/session/LeaveConfirmModal";
 import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
 import { logEvent } from "@/lib/sessions";
 import { computeRemainingSeconds } from "@/lib/sprintTime";
@@ -73,6 +74,7 @@ export default function EnvironmentPage() {
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
   const reviewElapsedRef = useRef(0);
   const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [commitmentType, setCommitmentType] = useState<import("@/lib/types").CommitmentType>("personal");
   const [sessionGoalId, setSessionGoalId] = useState<string | null>(null);
@@ -629,6 +631,24 @@ export default function EnvironmentPage() {
     hostTriggers.triggerReviewEntered();
   }, [durationSec, timer, music, persistence, hostTriggers]);
 
+  // Intercept Leave button: confirm during sprint, skip otherwise
+  const handleLeaveClick = useCallback(() => {
+    if (phase === "sprint") {
+      setShowLeaveConfirm(true);
+    } else {
+      handleEndSession();
+    }
+  }, [phase, handleEndSession]);
+
+  const handleKeepGoing = useCallback(() => {
+    setShowLeaveConfirm(false);
+  }, []);
+
+  const handleConfirmLeave = useCallback(() => {
+    setShowLeaveConfirm(false);
+    handleEndSession();
+  }, [handleEndSession]);
+
   const handleAnotherRound = useCallback(() => {
     resolutionHandledRef.current = false;
     timer.reset(durationSec);
@@ -1179,7 +1199,7 @@ export default function EnvironmentPage() {
                 settingsActive={activePanel === "settings"}
                 momentumActive={activePanel === "momentum"}
                 onOpenMomentum={handleToggleMomentum}
-                onEndSession={handleEndSession}
+                onEndSession={handleLeaveClick}
                 music={{
                   popoverOpen: music.popoverOpen,
                   togglePopover: music.togglePopover,
@@ -1282,6 +1302,14 @@ export default function EnvironmentPage() {
           </aside>
         </div>
       )}
+
+      {/* Leave confirmation (mid-sprint) */}
+      <LeaveConfirmModal
+        isOpen={showLeaveConfirm}
+        remainingMin={Math.ceil(timer.getSnapshot().seconds / 60)}
+        onKeepGoing={handleKeepGoing}
+        onEndSession={handleConfirmLeave}
+      />
 
       {/* Review modal */}
       <SessionReviewModal
