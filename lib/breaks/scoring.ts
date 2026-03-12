@@ -12,6 +12,7 @@ import {
   computeFreshnessDimension,
   computeFreshnessBonus,
 } from "./freshness";
+import { SAFETY_PROMPT } from "./contentSafety";
 
 // ─── OpenAI singleton ───────────────────────────────────────
 
@@ -47,6 +48,8 @@ export interface EvaluationResult {
   segments: BreakSegment[];
   bestDuration: 3 | 5 | 10;
   rejected: boolean;
+  /** 3-5 lowercase topic tags for personalization */
+  topics: string[];
 }
 
 // ─── Evaluate a single candidate ────────────────────────────
@@ -98,7 +101,8 @@ Your job is to select only content that:
 
 Reject: ${persona.rejectPatterns.join(", ")}
 
-Prefer: ${persona.preferPatterns.join(", ")}${transcriptContext?.transcript ? `
+Prefer: ${persona.preferPatterns.join(", ")}
+${SAFETY_PROMPT}${transcriptContext?.transcript ? `
 
 When a transcript is provided, use it to:
 - Assess educational_density based on actual spoken content (count distinct concepts, assess pacing, identify filler)
@@ -130,7 +134,9 @@ Score on 5 dimensions (each 0–100). Write a short editorial note explaining wh
 
 Identify the best 3-minute, 5-minute, and 10-minute segments of this video. Each segment should start at the highest-value point for that duration.${transcriptContext?.transcript ? " Use EXACT timestamps from the transcript — start at natural topic boundaries where the first words hook the viewer." : ""} Skip intros, sponsor reads, and outros. Provide start times in seconds. If the video is shorter than a segment duration, use start: 0. For each segment, write a short label describing what the viewer will learn (max 60 chars).
 
-Pick ONE best_duration (3, 5, or 10) — the single duration where this video delivers the most value as a break clip. Short dense explainers → 3. Tutorials with worked examples → 5. Deep dives, talks, and long-form analysis → 10.`,
+Pick ONE best_duration (3, 5, or 10) — the single duration where this video delivers the most value as a break clip. Short dense explainers → 3. Tutorials with worked examples → 5. Deep dives, talks, and long-form analysis → 10.
+
+Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "system-design", "creative-coding", "typography", "rust", "api-design", "productivity", "css-animations", "machine-learning", "ux-research". Be specific — "react-hooks" is better than "javascript". Tags are used for personalization.`,
       },
     ],
     response_format: {
@@ -165,6 +171,11 @@ Pick ONE best_duration (3, 5, or 10) — the single duration where this video de
               type: "number",
               description:
                 "How different is this from current shelf items (0-100)",
+            },
+            safety_score: {
+              type: "number",
+              description:
+                "Content safety rating (0-100). 0 = harmful/inappropriate content (drugs, violence, hate, NSFW, controversy). 100 = clearly safe, educational, appropriate for all audiences. Set to 0 and reject=true for any content that violates safety rules.",
             },
             evaluation_notes: {
               type: "string",
@@ -211,6 +222,12 @@ Pick ONE best_duration (3, 5, or 10) — the single duration where this video de
               description:
                 "true if this content should be rejected (low quality, off-topic, too long, clickbait)",
             },
+            topics: {
+              type: "array",
+              description:
+                "3-5 lowercase hyphenated topic tags for personalization (e.g. 'react-hooks', 'system-design', 'creative-coding')",
+              items: { type: "string" },
+            },
           },
           required: [
             "relevance_score",
@@ -218,11 +235,13 @@ Pick ONE best_duration (3, 5, or 10) — the single duration where this video de
             "educational_density",
             "creator_authority",
             "novelty_score",
+            "safety_score",
             "evaluation_notes",
             "editorial_note",
             "segments",
             "best_duration",
             "reject",
+            "topics",
           ],
           additionalProperties: false,
         },
@@ -241,12 +260,23 @@ Pick ONE best_duration (3, 5, or 10) — the single duration where this video de
     educational_density: number;
     creator_authority: number;
     novelty_score: number;
+    safety_score: number;
     evaluation_notes: string;
     editorial_note: string;
     segments: BreakSegment[];
     best_duration: number;
     reject: boolean;
+    topics: string[];
   };
+
+  // Hard safety gate: force-reject anything the AI scores as unsafe
+  const safetyScore = parsed.safety_score ?? 100;
+  const isSafetyRejected = safetyScore < 70;
+  if (isSafetyRejected) {
+    console.warn(
+      `[breaks/scoring] SAFETY REJECT: "${candidate.title}" (safety_score=${safetyScore})`
+    );
+  }
 
   // Compute server-side freshness dimension
   const freshnessDim = computeFreshnessDimension(candidate.published_at);
@@ -287,6 +317,7 @@ Pick ONE best_duration (3, 5, or 10) — the single duration where this video de
     editorialNote: parsed.editorial_note,
     segments: parsed.segments ?? [],
     bestDuration: ([3, 5, 10].includes(parsed.best_duration) ? parsed.best_duration : 5) as 3 | 5 | 10,
-    rejected: parsed.reject,
+    rejected: parsed.reject || isSafetyRejected,
+    topics: (parsed.topics ?? []).map((t) => t.toLowerCase().trim()).slice(0, 5),
   };
 }

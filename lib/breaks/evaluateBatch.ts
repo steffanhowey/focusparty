@@ -10,6 +10,7 @@ import {
   parseChapters,
   formatChaptersForLLM,
 } from "./transcript";
+import { screenContent } from "./contentSafety";
 import type { BreakContentCandidate } from "@/lib/types";
 
 interface BatchResult {
@@ -78,6 +79,20 @@ export async function evaluatePendingCandidates(
 
   for (const candidate of candidates as BreakContentCandidate[]) {
     try {
+      // ── Pre-screen: keyword blocklist (zero API cost) ──
+      const safetyCheck = screenContent(candidate.title, candidate.description);
+      if (!safetyCheck.safe) {
+        await supabase
+          .from("fp_break_content_candidates")
+          .update({ status: "rejected" })
+          .eq("id", candidate.id);
+        rejected++;
+        console.warn(
+          `[breaks/evaluate] SAFETY PRE-SCREEN REJECTED "${candidate.title}" — ${safetyCheck.reason}`
+        );
+        continue;
+      }
+
       // ── Transcript enrichment (optional, graceful degradation) ──
       let transcriptContext: { transcript: string; chapters: string } | null = null;
 
@@ -145,6 +160,7 @@ export async function evaluatePendingCandidates(
             editorial_note: result.editorialNote,
             segments: result.segments,
             best_duration: result.bestDuration,
+            topics: result.topics,
           });
 
         if (scoreErr) {

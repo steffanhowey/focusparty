@@ -240,6 +240,7 @@ export function useTasks() {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         completed_at: status === "done" ? new Date().toISOString() : null,
+        linked_resource_id: null,
       };
       setTasks((prev) => [optimistic, ...prev]);
 

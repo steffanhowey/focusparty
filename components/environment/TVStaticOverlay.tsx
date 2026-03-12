@@ -157,9 +157,16 @@ export function TVStaticOverlay({
     const tearTable = new Float32Array(h);
     fillRandom(tearTable);
 
+    // Pre-generate noise buffer (reused per frame, reshuffled every 3 frames)
+    // Avoids 133K Math.random() calls per frame → single buffer rotation
+    const NOISE_SIZE = w * h;
+    const noiseBuffer = new Uint8Array(NOISE_SIZE);
+    for (let i = 0; i < NOISE_SIZE; i++) noiseBuffer[i] = (Math.random() * 255) | 0;
+
     let raf: number;
     let verticalOffset = 0;
     let frameCount = 0;
+    let noiseOffset = 0;
     const startTime = performance.now();
 
     function draw() {
@@ -196,7 +203,11 @@ export function TVStaticOverlay({
       }
 
       // Reshuffle tear table every 3 frames for stable tearing look
-      if (frameCount % 3 === 0) fillRandom(tearTable);
+      if (frameCount % 3 === 0) {
+        fillRandom(tearTable);
+        // Rotate noise offset to simulate fresh noise without re-generating
+        noiseOffset = (noiseOffset + 7919) % NOISE_SIZE; // prime stride
+      }
 
       // Retrace bar position (the black band that makes roll visible)
       const retraceY = Math.floor(verticalOffset % h);
@@ -222,10 +233,11 @@ export function TVStaticOverlay({
             data[idx + 2] = 0;
           } else {
             const [br, bg, bb] = SMPTE[clamp(barIdx, 0, 7)];
-            // Blend bar color with colored noise
-            data[idx] = br * (1 - noiseAlpha) + Math.random() * 255 * noiseAlpha;
-            data[idx + 1] = bg * (1 - noiseAlpha) + Math.random() * 255 * noiseAlpha;
-            data[idx + 2] = bb * (1 - noiseAlpha) + Math.random() * 255 * noiseAlpha;
+            const noise = noiseBuffer[(noiseOffset + y * w + x) % NOISE_SIZE];
+            // Blend bar color with pre-generated noise
+            data[idx] = br * (1 - noiseAlpha) + noise * noiseAlpha;
+            data[idx + 1] = bg * (1 - noiseAlpha) + noise * noiseAlpha;
+            data[idx + 2] = bb * (1 - noiseAlpha) + noise * noiseAlpha;
           }
           data[idx + 3] = 255;
         }

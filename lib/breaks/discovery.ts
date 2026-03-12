@@ -5,6 +5,7 @@
 import { createClient } from "@/lib/supabase/admin";
 import { searchVideos, getVideoDetails } from "./youtubeClient";
 import { WORLD_SEARCH_PROFILES, pickQueries, pickChannel } from "./searchProfiles";
+import { screenContent } from "./contentSafety";
 
 interface DiscoveryResult {
   worldKey: string;
@@ -111,11 +112,21 @@ export async function discoverCandidates(
   }
 
   // Filter by duration
-  const filtered = details.filter(
+  const durationFiltered = details.filter(
     (v) =>
       v.durationSeconds >= profile.minDuration &&
       v.durationSeconds <= profile.maxDuration
   );
+
+  // Safety screen — reject candidates with blocked keywords in title/description
+  const filtered = durationFiltered.filter((v) => {
+    const result = screenContent(v.title, v.description);
+    if (!result.safe) {
+      console.warn(`[breaks/discover] SAFETY BLOCKED: "${v.title}" — ${result.reason}`);
+      return false;
+    }
+    return true;
+  });
 
   // Insert candidates
   let inserted = 0;

@@ -18,7 +18,7 @@ export async function listTasks(
   let query = client
     .from("fp_tasks")
     .select(
-      "*, project:fp_projects(*), labels:fp_task_labels(label:fp_labels(*))"
+      "*, project:fp_projects(*), labels:fp_task_labels(label:fp_labels(*)), linked_resource:fp_linked_resources(provider, resource_type, external_id, title, url)"
     );
 
   if (filters?.projectId) {
@@ -59,7 +59,7 @@ export async function listTasksByGoal(goalId: string): Promise<TaskRecord[]> {
   const { data, error } = await client
     .from("fp_tasks")
     .select(
-      "*, project:fp_projects(*), labels:fp_task_labels(label:fp_labels(*))"
+      "*, project:fp_projects(*), labels:fp_task_labels(label:fp_labels(*)), linked_resource:fp_linked_resources(provider, resource_type, external_id, title, url)"
     )
     .eq("goal_id", goalId)
     .order("position", { ascending: true });
@@ -99,7 +99,7 @@ export async function createTask(input: {
       position: input.position ?? 0,
     })
     .select(
-      "*, project:fp_projects(*), labels:fp_task_labels(label:fp_labels(*))"
+      "*, project:fp_projects(*), labels:fp_task_labels(label:fp_labels(*)), linked_resource:fp_linked_resources(provider, resource_type, external_id, title, url)"
     )
     .single();
 
@@ -127,7 +127,7 @@ export async function updateTask(
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", taskId)
     .select(
-      "*, project:fp_projects(*), labels:fp_task_labels(label:fp_labels(*))"
+      "*, project:fp_projects(*), labels:fp_task_labels(label:fp_labels(*)), linked_resource:fp_linked_resources(provider, resource_type, external_id, title, url)"
     )
     .single();
 

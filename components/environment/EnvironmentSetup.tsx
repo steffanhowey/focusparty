@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Plus, Check } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Check, GitBranch, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { DurationPills } from "@/components/session/DurationPills";
 import type { TaskRecord } from "@/lib/types";
+import type { ExternalWorkItem } from "@/lib/integrations/types";
 
 interface EnvironmentSetupProps {
   roomName: string;
@@ -15,11 +16,28 @@ interface EnvironmentSetupProps {
   defaultDuration: number;
   activeTask: TaskRecord | null;
   activeTasks: TaskRecord[];
+  /** Unimported external items from connected integrations */
+  externalItems?: ExternalWorkItem[];
+  /** Import an external item as a local task, returns the new task ID */
+  onImportExternalItem?: (item: ExternalWorkItem) => Promise<string | null>;
   /** Pre-filled goal from join config (freeform, no task required) */
   initialGoal?: string;
   onSelectTask: (taskId: string) => void;
   onAddTask: (text: string) => void;
   onStartSprint: (durationMinutes: number, freeformGoal?: string) => void;
+}
+
+/** Tiny inline provider icon (14px) */
+function ProviderIcon({ provider }: { provider: string }) {
+  if (provider === "github") {
+    return (
+      <svg width={14} height={14} viewBox="0 0 16 16" fill="currentColor" className="shrink-0 opacity-40">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+      </svg>
+    );
+  }
+  // Generic fallback for future providers
+  return <GitBranch size={14} className="shrink-0 opacity-40" />;
 }
 
 export function EnvironmentSetup({
@@ -30,6 +48,8 @@ export function EnvironmentSetup({
   defaultDuration,
   activeTask,
   activeTasks,
+  externalItems,
+  onImportExternalItem,
   initialGoal,
   onSelectTask,
   onAddTask,
@@ -38,6 +58,7 @@ export function EnvironmentSetup({
   const [duration, setDuration] = useState(defaultDuration);
   const [showTasks, setShowTasks] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
+  const [importingId, setImportingId] = useState<string | null>(null);
 
   const canStart = !!(activeTask || initialGoal);
 
@@ -136,9 +157,44 @@ export function EnvironmentSetup({
                   {activeTask?.id === task.id && (
                     <Check size={12} className="shrink-0" />
                   )}
+                  {task.linked_resource && (
+                    <ProviderIcon provider={task.linked_resource.provider} />
+                  )}
                   <span className="truncate">{task.title}</span>
                 </button>
               ))}
+
+              {/* External items (not yet imported) */}
+              {externalItems && externalItems.length > 0 && (
+                <>
+                  {externalItems.map((item) => (
+                    <button
+                      key={item.externalId}
+                      type="button"
+                      disabled={importingId === item.externalId}
+                      onClick={async () => {
+                        if (!onImportExternalItem) return;
+                        setImportingId(item.externalId);
+                        const taskId = await onImportExternalItem(item);
+                        setImportingId(null);
+                        if (taskId) {
+                          onSelectTask(taskId);
+                          setShowTasks(false);
+                        }
+                      }}
+                      className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-white/5 disabled:opacity-50"
+                      style={{ color: "rgba(255,255,255,0.7)" }}
+                    >
+                      {importingId === item.externalId ? (
+                        <Loader2 size={12} className="shrink-0 animate-spin opacity-50" />
+                      ) : (
+                        <ProviderIcon provider={item.provider} />
+                      )}
+                      <span className="truncate">{item.title}</span>
+                    </button>
+                  ))}
+                </>
+              )}
 
               {/* Add task inline */}
               <div className="flex items-center gap-1.5 border-t border-white/8 px-3 py-2">

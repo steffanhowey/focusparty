@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import {
+  getUserTasteProfile,
+  personalizeContentOrder,
+} from "@/lib/breaks/tasteProfile";
 
 /**
  * GET /api/breaks/content?room_world_key=...&category=...
  * GET /api/breaks/content?id=...  (single item by ID)
  *
- * Returns active break content items for a world, sorted by sort_order.
+ * Returns active break content items for a world.
+ * When authenticated, items are re-ordered by the user's taste profile.
  * When `id` is provided, returns a single item directly (not wrapped in { items }).
  */
 export async function GET(request: Request) {
@@ -55,5 +60,23 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ items: data ?? [] });
+  let items = data ?? [];
+
+  // ── Personalize order if user is authenticated ──
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user && items.length > 0) {
+    try {
+      const profile = await getUserTasteProfile(user.id, roomWorldKey);
+      if (profile.size > 0) {
+        items = personalizeContentOrder(items, profile);
+      }
+    } catch {
+      // Graceful degradation — serve default order
+    }
+  }
+
+  return NextResponse.json({ items });
 }

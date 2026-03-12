@@ -8,6 +8,14 @@ import type { SessionReflection } from "@/lib/types";
 
 /* ─── Props ──────────────────────────────────────────────── */
 
+interface LinkedResourceInfo {
+  provider: string;
+  resourceType: string;
+  externalId: string;
+  title: string;
+  url: string | null;
+}
+
 interface SessionReviewModalProps {
   isOpen: boolean;
   sessionDurationSec: number;
@@ -15,6 +23,10 @@ interface SessionReviewModalProps {
   onAnotherRound: () => void;
   onDone: () => void;
   onReflectionComplete: (reflection: SessionReflection) => void;
+  /** If the sprint task is linked to an external resource */
+  linkedResource?: LinkedResourceInfo | null;
+  /** Session ID for writeback logging */
+  sessionId?: string | null;
 }
 
 /* ─── Component ──────────────────────────────────────────── */
@@ -26,8 +38,12 @@ export function SessionReviewModal({
   onAnotherRound,
   onDone,
   onReflectionComplete,
+  linkedResource,
+  sessionId,
 }: SessionReviewModalProps) {
   const [mounted, setMounted] = useState(false);
+  const [writebackEnabled, setWritebackEnabled] = useState(true);
+  const [writebackSending, setWritebackSending] = useState(false);
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const previousActive = useRef<HTMLElement | null>(null);
@@ -69,7 +85,30 @@ export function SessionReviewModal({
     sessionDurationSec: elapsedSec,
   });
 
-  const handleAction = (action: () => void) => {
+  const handleAction = async (action: () => void) => {
+    // Fire writeback if enabled and we have a linked resource
+    if (writebackEnabled && linkedResource && linkedResource.provider === "github") {
+      setWritebackSending(true);
+      try {
+        await fetch("/api/integrations/github/writeback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            externalId: linkedResource.externalId,
+            sessionId: sessionId ?? null,
+            payload: {
+              action: "comment",
+              body: `Focused for ${elapsedMin} min on this. Sprint completed.`,
+            },
+          }),
+        });
+      } catch {
+        // Non-blocking — don't prevent the user from continuing
+        console.warn("[SessionReviewModal] Writeback failed");
+      } finally {
+        setWritebackSending(false);
+      }
+    }
     onReflectionComplete(buildReflection());
     action();
   };
@@ -130,6 +169,27 @@ export function SessionReviewModal({
             {celebrationText}
           </h2>
         </div>
+
+        {/* ── Writeback toggle (only when linked to an external resource) ── */}
+        {linkedResource && (
+          <div className="mb-6">
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <input
+                type="checkbox"
+                checked={writebackEnabled}
+                onChange={(e) => setWritebackEnabled(e.target.checked)}
+                className="h-4 w-4 rounded accent-[var(--color-accent-primary)]"
+              />
+              <span className="flex-1 text-sm text-[#c0c0c0]">
+                Post progress note to{" "}
+                <span className="capitalize text-white">{linkedResource.provider}</span>
+              </span>
+              {writebackSending && (
+                <span className="text-xs text-[#888]">Sending...</span>
+              )}
+            </label>
+          </div>
+        )}
 
         {/* ── Action buttons ── */}
         <div className="flex flex-col gap-2">

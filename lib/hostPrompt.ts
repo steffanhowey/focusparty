@@ -38,9 +38,13 @@ RULES:
 Recent host messages in this room (avoid repeating these):
 ${input.recentHostMessages.length > 0 ? input.recentHostMessages.map((m) => `- "${m}"`).join("\n") : "(none)"}`;
 
+  const linkedLine = input.linkedResource
+    ? `Linked work item: [${input.linkedResource.provider}] "${input.linkedResource.title}" (${input.linkedResource.resourceType})`
+    : null;
+
   const userPrompt = `Trigger: ${input.triggerType}
 ${triggerHint ? `Style hint: ${triggerHint}` : ""}
-Goal: ${input.goalSummary ?? "(no goal set)"}
+Goal: ${input.goalSummary ?? "(no goal set)"}${linkedLine ? `\n${linkedLine}` : ""}
 Sprint: ${input.sprintNumber != null ? `#${input.sprintNumber}` : "n/a"}, duration: ${input.sprintDurationSec != null ? `${Math.round(input.sprintDurationSec / 60)}min` : "n/a"}, elapsed: ${input.sprintElapsedSec != null ? `${Math.round(input.sprintElapsedSec / 60)}min` : "n/a"}
 Participants: ${input.participantCount}
 Room state: ${input.roomState ?? "unknown"}

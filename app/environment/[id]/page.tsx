@@ -10,6 +10,7 @@ import { useTimer } from "@/lib/useTimer";
 import { useCamera } from "@/lib/useCamera";
 import { useSettings } from "@/lib/useSettings";
 import { useTasks } from "@/lib/useTasks";
+import { useExternalItems } from "@/lib/integrations/useExternalItems";
 import { useGoals } from "@/lib/useGoals";
 import { useCommitments } from "@/lib/useCommitments";
 import { useHostTriggers } from "@/lib/useHostTriggers";
@@ -43,7 +44,6 @@ import type { SessionPhase, SessionReflection, SprintResolution, BreakContentIte
 import { updateSessionGoalStatus } from "@/lib/sessions";
 import { checkGoalCompletion } from "@/lib/goalCascade";
 import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
-import { BreakSessionConfirm } from "@/components/environment/BreakSessionConfirm";
 import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
 import { BreakReEntryCountdown } from "@/components/environment/BreakReEntryCountdown";
 import { useBreakContent, type BreakClip } from "@/lib/useBreakContent";
@@ -92,7 +92,6 @@ export default function EnvironmentPage() {
   // ─── Break session state ────────────────────────────────
   const [breakContent, setBreakContent] = useState<BreakContentItem | null>(null);
   const [breakDuration, setBreakDuration] = useState<BreakDuration>(5);
-  const [showBreakConfirm, setShowBreakConfirm] = useState(false);
   const [breakActive, setBreakActive] = useState(false);
   const [showBreakReEntry, setShowBreakReEntry] = useState(false);
 
@@ -321,6 +320,27 @@ export default function EnvironmentPage() {
     selectTask,
     reorderTasks,
   } = useTasks();
+
+  // ─── External items (GitHub, Linear, etc.) ──────────────
+  const externalItems = useExternalItems(activeTasks);
+
+  // Derive linkedResource info from the active task for host context + writeback
+  const activeLinkedResource = useMemo(() => {
+    const lr = activeTask?.linked_resource;
+    if (!lr) return null;
+    return {
+      provider: lr.provider,
+      title: lr.title,
+      url: lr.url,
+      resourceType: lr.resource_type,
+      externalId: lr.external_id,
+    };
+  }, [activeTask?.linked_resource]);
+
+  // Feed linkedResource into host triggers (hook is called above useTasks, so late-bind via setter)
+  useEffect(() => {
+    hostTriggers.setLinkedResource(activeLinkedResource);
+  }, [activeLinkedResource, hostTriggers]);
 
   // ─── Goals (for task drawer context) ─────────────────────
   const { activeGoals } = useGoals();
@@ -903,12 +923,7 @@ export default function EnvironmentPage() {
   const handleSelectBreakContent = useCallback((item: BreakContentItem, duration: BreakDuration) => {
     setBreakContent(item);
     setBreakDuration(duration);
-    setShowBreakConfirm(true);
     setActivePanel("none");
-  }, []);
-
-  const handleConfirmBreak = useCallback(() => {
-    setShowBreakConfirm(false);
     setBreakActive(true);
     timer.pause();
     setPhase("break");
@@ -925,16 +940,11 @@ export default function EnvironmentPage() {
         body: displayName,
         payload: {
           category: "learning",
-          content_title: breakContent?.title ?? null,
+          content_title: item.title ?? null,
         },
       }).catch(() => {});
     }
-  }, [timer, persistence, userId, partyId, displayName, breakContent]);
-
-  const handleCancelBreakConfirm = useCallback(() => {
-    setShowBreakConfirm(false);
-    setBreakContent(null);
-  }, []);
+  }, [timer, persistence, userId, partyId, displayName]);
 
   const [breakResetKey, setBreakResetKey] = useState(0);
 
@@ -986,16 +996,14 @@ export default function EnvironmentPage() {
         if (!res.ok) return;
         const item = await res.json();
         if (item) {
-          setBreakContent(item);
-          setBreakDuration(5); // default for "Watch too" joins
-          setShowBreakConfirm(true);
           setSelectedParticipant(null);
+          handleSelectBreakContent(item, 5);
         }
       } catch {
         // silently fail
       }
     },
-    []
+    [handleSelectBreakContent]
   );
 
   // ─── Check-in ───────────────────────────────────────────
@@ -1399,6 +1407,8 @@ export default function EnvironmentPage() {
             defaultDuration={world.defaultSprintLength}
             activeTask={activeTask}
             activeTasks={activeTasks}
+            externalItems={externalItems.items}
+            onImportExternalItem={externalItems.importItem}
             initialGoal={!activeTask && goal ? goal : undefined}
             onSelectTask={handleStartTask}
             onAddTask={addTask}
@@ -1578,6 +1588,8 @@ export default function EnvironmentPage() {
         onAnotherRound={handleAnotherRound}
         onDone={handleDone}
         onReflectionComplete={handleReflectionComplete}
+        linkedResource={activeLinkedResource}
+        sessionId={persistence.sessionRow?.id ?? null}
       />
 
       {/* Task switch confirmation */}
@@ -1601,16 +1613,6 @@ export default function EnvironmentPage() {
       )}
 
       {/* Break session flow */}
-      {showBreakConfirm && breakContent && (
-        <BreakSessionConfirm
-          isOpen={showBreakConfirm}
-          content={breakContent}
-          durationMinutes={breakDuration}
-          onConfirm={handleConfirmBreak}
-          onCancel={handleCancelBreakConfirm}
-        />
-      )}
-
       {breakActive && breakContent && (
         <BreakVideoOverlay
           key={breakContent.id}

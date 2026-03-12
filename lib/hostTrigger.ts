@@ -16,6 +16,12 @@ interface TriggerInput {
     sprintNumber?: number | null;
     sprintDurationSec?: number | null;
     sprintElapsedSec?: number | null;
+    linkedResource?: {
+      provider: string;
+      title: string;
+      url: string | null;
+      resourceType: string;
+    } | null;
   };
 }
 
@@ -76,6 +82,7 @@ export async function buildHostContext(
     sprintDurationSec: ctx.sprintDurationSec ?? null,
     sprintElapsedSec: ctx.sprintElapsedSec ?? null,
     roomState,
+    linkedResource: ctx.linkedResource ?? null,
   };
 }
 

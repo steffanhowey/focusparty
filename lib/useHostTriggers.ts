@@ -4,6 +4,13 @@ import { useRef, useCallback, useEffect } from "react";
 import { useTimerDisplay, type Timer } from "./useTimer";
 import type { HostTriggerType } from "./types";
 
+interface LinkedResourceContext {
+  provider: string;
+  title: string;
+  url: string | null;
+  resourceType: string;
+}
+
 interface UseHostTriggersInput {
   partyId: string | null;
   sessionId: string | null;
@@ -16,6 +23,8 @@ interface UseHostTriggersInput {
   timer: Timer;
   /** Only fire triggers during the sprint phase. */
   phase: string;
+  /** Linked external resource for the active task (set after useTasks resolves). */
+  linkedResource?: LinkedResourceContext | null;
 }
 
 /**
@@ -34,7 +43,12 @@ export function useHostTriggers(input: UseHostTriggersInput) {
     sprintDurationSec,
     timer,
     phase,
+    linkedResource,
   } = input;
+
+  // Use a ref so fireOnce always reads the latest value without recomputing
+  const linkedResourceRef = useRef(linkedResource ?? null);
+  linkedResourceRef.current = linkedResource ?? null;
 
   // Track which triggers have fired this sprint to avoid duplicates
   const firedRef = useRef(new Set<HostTriggerType>());
@@ -69,6 +83,7 @@ export function useHostTriggers(input: UseHostTriggersInput) {
             sprintNumber,
             sprintDurationSec,
             sprintElapsedSec: elapsedSec ?? null,
+            linkedResource: linkedResourceRef.current,
           },
         }),
       }).catch((err) =>
@@ -119,10 +134,16 @@ export function useHostTriggers(input: UseHostTriggersInput) {
     fireOnce("session_completed");
   }, [fireOnce]);
 
+  // Allow late-binding of linkedResource (set after useTasks resolves)
+  const setLinkedResource = useCallback((lr: LinkedResourceContext | null) => {
+    linkedResourceRef.current = lr;
+  }, []);
+
   return {
     triggerSessionStarted,
     triggerSprintStarted,
     triggerReviewEntered,
     triggerSessionCompleted,
+    setLinkedResource,
   };
 }

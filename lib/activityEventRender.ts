@@ -16,6 +16,7 @@ import {
   Lock,
   XCircle,
   Coffee,
+  GitBranch,
   type LucideIcon,
 } from "lucide-react";
 import type { ActivityEvent } from "./types";
@@ -60,6 +61,8 @@ const ACTOR_IN_BODY_EVENTS = new Set([
   "break_started",
   "break_completed",
   "break_cancelled",
+  "integration_linked",
+  "integration_writeback",
 ]);
 
 // ─── Renderer ───────────────────────────────────────────────
@@ -312,6 +315,29 @@ export function renderActivityEvent(
         tone: "neutral",
         color: TONE_COLORS.neutral,
       };
+
+    case "integration_linked": {
+      const provider = event.payload?.provider as string | undefined;
+      const resourceTitle = event.payload?.resource_title as string | undefined;
+      return {
+        icon: GitBranch,
+        label: resourceTitle
+          ? `${name} linked ${provider ?? "external"} item: ${resourceTitle.length > 30 ? resourceTitle.slice(0, 27) + "..." : resourceTitle}`
+          : `${name} linked an external item`,
+        tone: "info",
+        color: TONE_COLORS.info,
+      };
+    }
+
+    case "integration_writeback": {
+      const wbProvider = event.payload?.provider as string | undefined;
+      return {
+        icon: GitBranch,
+        label: `${name} posted progress to ${wbProvider ?? "external service"}`,
+        tone: "info",
+        color: TONE_COLORS.info,
+      };
+    }
 
     default:
       return {

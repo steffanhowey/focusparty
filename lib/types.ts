@@ -151,8 +151,18 @@ export interface TaskRecord {
   created_at: string;
   updated_at: string;
   completed_at: string | null;
+  /** FK to fp_linked_resources — set when this task was imported from an integration */
+  linked_resource_id: string | null;
   labels?: Label[];
   project?: Project | null;
+  /** Joined from fp_linked_resources when present */
+  linked_resource?: {
+    provider: string;
+    resource_type: string;
+    external_id: string;
+    title: string;
+    url: string | null;
+  } | null;
 }
 
 export interface TaskFilters {
@@ -254,7 +264,9 @@ export type ActivityEventType =
   | "goal_shipped"
   | "break_started"
   | "break_completed"
-  | "break_cancelled";
+  | "break_cancelled"
+  | "integration_linked"
+  | "integration_writeback";
 
 // ─── Room State ──────────────────────────────────────────────
 
@@ -290,6 +302,13 @@ export interface HostGenerationInput {
   sprintDurationSec: number | null;
   sprintElapsedSec: number | null;
   roomState: RoomState | null;
+  /** Linked external work item (GitHub issue, Linear issue, etc.) */
+  linkedResource?: {
+    provider: string;
+    title: string;
+    url: string | null;
+    resourceType: string;
+  } | null;
 }
 
 export interface HostGenerationResult {
@@ -464,6 +483,8 @@ export interface BreakContentItem {
   segments: BreakSegment[] | null;
   /** AI-assigned optimal break duration for this video */
   best_duration: 3 | 5 | 10 | null;
+  /** AI-assigned topic tags for personalization (e.g. ["react", "system-design"]) */
+  topics: string[] | null;
 }
 
 // ─── AI Curator — Candidates ────────────────────────────────
@@ -504,6 +525,8 @@ export interface BreakContentScore {
   editorial_note: string | null;
   /** AI-identified best segments per duration */
   segments: BreakSegment[] | null;
+  /** AI-assigned topic tags for personalization */
+  topics: string[] | null;
   evaluated_at: string;
 }
 

@@ -59,6 +59,7 @@ export async function searchVideos(
     maxResults: String(options.maxResults ?? 10),
     order: options.order ?? "relevance",
     videoEmbeddable: "true",
+    safeSearch: "strict",
     key: getApiKey(),
   });
 

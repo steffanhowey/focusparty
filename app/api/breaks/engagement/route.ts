@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { updateTasteProfile } from "@/lib/breaks/tasteProfile";
 
 /**
  * POST /api/breaks/engagement
  * Track user engagement with break content.
- * Body: { content_item_id, event_type, elapsed_seconds? }
+ * Body: { content_item_id, event_type, elapsed_seconds?, world_key? }
  */
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
     content_item_id?: string;
     event_type?: string;
     elapsed_seconds?: number;
+    world_key?: string;
   };
 
   try {
@@ -30,7 +32,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { content_item_id, event_type, elapsed_seconds } = body;
+  const { content_item_id, event_type, elapsed_seconds, world_key } = body;
 
   if (!content_item_id || !event_type) {
     return NextResponse.json(
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const validTypes = ["started", "completed", "abandoned"];
+  const validTypes = ["started", "completed", "abandoned", "extended"];
   if (!validTypes.includes(event_type)) {
     return NextResponse.json(
       { error: `event_type must be one of: ${validTypes.join(", ")}` },
@@ -57,6 +59,16 @@ export async function POST(request: Request) {
   if (error) {
     console.error("[breaks/engagement] insert error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Update taste profile on terminal events (non-blocking)
+  if (
+    world_key &&
+    (event_type === "completed" || event_type === "abandoned" || event_type === "extended")
+  ) {
+    updateTasteProfile(user.id, world_key).catch((err) =>
+      console.error("[breaks/engagement] taste profile update error:", err)
+    );
   }
 
   return NextResponse.json({ ok: true });

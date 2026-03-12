@@ -38,6 +38,10 @@ const LazyProfileSettings = lazy(() =>
   import("@/components/settings/ProfileSettings").then((m) => ({ default: m.ProfileSettings }))
 );
 
+const LazyIntegrationSettings = lazy(() =>
+  import("@/components/settings/IntegrationSettings").then((m) => ({ default: m.IntegrationSettings }))
+);
+
 function renderTabContent(tab: string): ReactNode {
   switch (tab) {
     case "/rooms":
@@ -69,6 +73,7 @@ function renderTabContent(tab: string): ReactNode {
         <main className="flex-1">
           <Suspense fallback={null}>
             <LazyProfileSettings />
+            <LazyIntegrationSettings />
           </Suspense>
         </main>
       );

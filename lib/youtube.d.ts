@@ -19,7 +19,7 @@ declare global {
   interface Window {
     YT: {
       Player: new (
-        elementId: string,
+        elementId: string | HTMLElement,
         config: {
           height?: string;
           width?: string;

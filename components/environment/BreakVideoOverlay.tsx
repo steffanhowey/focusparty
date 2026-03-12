@@ -24,6 +24,7 @@ function trackEngagement(
   contentItemId: string,
   eventType: "started" | "completed" | "abandoned" | "extended",
   elapsedSeconds?: number,
+  worldKey?: string,
 ) {
   fetch("/api/breaks/engagement", {
     method: "POST",
@@ -32,6 +33,7 @@ function trackEngagement(
       content_item_id: contentItemId,
       event_type: eventType,
       elapsed_seconds: elapsedSeconds ?? null,
+      world_key: worldKey ?? null,
     }),
   }).catch(() => {});
 }
@@ -64,6 +66,7 @@ export function BreakVideoOverlay({
   const [isChangingChannel, setIsChangingChannel] = useState(false);
   const [nextClipLabel, setNextClipLabel] = useState("");
   const [shieldVisible, setShieldVisible] = useState(true);
+  const [paused, setPaused] = useState(false);
 
   // Derived
   const isOvertime = elapsed >= totalSeconds;
@@ -72,14 +75,14 @@ export function BreakVideoOverlay({
   useEffect(() => {
     if (!trackedStartRef.current) {
       trackedStartRef.current = true;
-      trackEngagement(content.id, "started");
+      trackEngagement(content.id, "started", undefined, content.room_world_key);
     }
   }, [content.id]);
 
   useEffect(() => {
     if (isOvertime && !trackedExtendedRef.current) {
       trackedExtendedRef.current = true;
-      trackEngagement(content.id, "extended", elapsed);
+      trackEngagement(content.id, "extended", elapsed, content.room_world_key);
     }
   }, [isOvertime, content.id, elapsed]);
 
@@ -92,7 +95,7 @@ export function BreakVideoOverlay({
   // ─── Handlers ──────────────────────────────────────────
   const handleClose = useCallback(() => {
     const watchRatio = totalSeconds > 0 ? elapsed / totalSeconds : 0;
-    trackEngagement(content.id, watchRatio >= 0.8 ? "completed" : "abandoned", elapsed);
+    trackEngagement(content.id, watchRatio >= 0.8 ? "completed" : "abandoned", elapsed, content.room_world_key);
     onFinish();
   }, [content.id, totalSeconds, elapsed, onFinish]);
 
@@ -102,7 +105,7 @@ export function BreakVideoOverlay({
     // Kill audio immediately — don't wait for effect cleanup
     try { playerRef.current?.destroy(); } catch { /* ok */ }
     playerRef.current = null;
-    trackEngagement(content.id, "abandoned", elapsed);
+    trackEngagement(content.id, "abandoned", elapsed, content.room_world_key);
     const nextIndex = (currentClipIndex + 1) % clips.length;
     setNextClipLabel(clips[nextIndex].label);
     setIsChangingChannel(true);
@@ -127,6 +130,29 @@ export function BreakVideoOverlay({
     }
   }, [ytId]);
 
+  const handleTogglePlayPause = useCallback(() => {
+    if (ytId && playerRef.current) {
+      try {
+        const state = playerRef.current.getPlayerState();
+        if (state === 1) { // PLAYING
+          playerRef.current.pauseVideo();
+          setPaused(true);
+        } else {
+          playerRef.current.playVideo();
+          setPaused(false);
+        }
+      } catch { /* player not ready */ }
+    } else if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play();
+        setPaused(false);
+      } else {
+        videoRef.current.pause();
+        setPaused(true);
+      }
+    }
+  }, [ytId]);
+
   // ─── Escape key ────────────────────────────────────────
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -135,6 +161,12 @@ export function BreakVideoOverlay({
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
   }, [handleClose]);
+
+  // Stable refs for error fallback (avoids dep-array churn)
+  const clipsRef = useRef(clips);
+  clipsRef.current = clips;
+  const changeChannelRef = useRef(handleChangeChannel);
+  changeChannelRef.current = handleChangeChannel;
 
   // ─── YouTube Player (imperative DOM) ───────────────────
   // YT.Player replaces its target element with an iframe, so we manage
@@ -151,6 +183,11 @@ export function BreakVideoOverlay({
     wrapper.innerHTML = "";
     wrapper.appendChild(target);
 
+    // Fallback: force shield away after 4s even if PLAYING event never fires
+    const shieldTimeout = setTimeout(() => {
+      if (!destroyed) setShieldVisible(false);
+    }, 4000);
+
     loadYouTubeAPI().then(() => {
       if (destroyed) return;
       new window.YT.Player(target, {
@@ -166,8 +203,21 @@ export function BreakVideoOverlay({
         events: {
           onReady: (e) => { if (!destroyed) playerRef.current = e.target; },
           onStateChange: (e) => {
+            if (destroyed) return;
             // Fade shield the instant video starts playing (PLAYING = 1)
-            if (!destroyed && e.data === 1) setShieldVisible(false);
+            if (e.data === 1) {
+              clearTimeout(shieldTimeout);
+              setShieldVisible(false);
+            }
+          },
+          onError: () => {
+            // Video unavailable / restricted — skip to next clip or close
+            if (destroyed) return;
+            clearTimeout(shieldTimeout);
+            setShieldVisible(false);
+            if (clipsRef.current.length > 1) {
+              changeChannelRef.current();
+            }
           },
         },
       });
@@ -175,6 +225,7 @@ export function BreakVideoOverlay({
 
     return () => {
       destroyed = true;
+      clearTimeout(shieldTimeout);
       try { playerRef.current?.destroy(); } catch { /* already gone */ }
       playerRef.current = null;
       wrapper.innerHTML = "";
@@ -244,6 +295,7 @@ export function BreakVideoOverlay({
               background: "radial-gradient(circle at 40% 35%, rgba(60,60,60,1), rgba(25,25,25,1))",
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.6)",
               transform: `rotate(${currentClipIndex * (360 / clips.length)}deg)`,
+              transition: "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
             }}
           >
             <div
@@ -290,6 +342,38 @@ export function BreakVideoOverlay({
             className="absolute inset-0 z-[5] transition-[background-color] duration-500 ease-out"
             style={{ backgroundColor: shieldVisible ? "black" : "transparent" }}
           />
+        )}
+
+        {/* Play/pause click target — sits above shield */}
+        {!isChangingChannel && !shieldVisible && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!wasDraggedRef.current) handleTogglePlayPause();
+            }}
+            className="absolute inset-0 z-[6] flex cursor-pointer items-center justify-center bg-transparent"
+            aria-label={paused ? "Play video" : "Pause video"}
+          >
+            {/* Icon: always visible when paused, hover-revealed when playing */}
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-full transition-opacity duration-200 ${
+                paused ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              }`}
+              style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
+            >
+              {paused ? (
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 4L16 10L6 16V4Z" fill="white" fillOpacity="0.9" />
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <rect x="5" y="4" width="3.5" height="12" rx="0.5" fill="white" fillOpacity="0.9" />
+                  <rect x="11.5" y="4" width="3.5" height="12" rx="0.5" fill="white" fillOpacity="0.9" />
+                </svg>
+              )}
+            </div>
+          </button>
         )}
 
         {/* Video info — hover-revealed top bar */}
