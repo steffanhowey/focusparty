@@ -45,7 +45,7 @@ import { checkGoalCompletion } from "@/lib/goalCascade";
 import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
 import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
 import { BreakReEntryCountdown } from "@/components/environment/BreakReEntryCountdown";
-import { useBreakContent, type BreakClip } from "@/lib/useBreakContent";
+import type { BreakClip } from "@/lib/useBreakContent";
 
 type SidePanel = "none" | "momentum" | "commitments" | "chat" | "settings" | "breaks";
 type CelebrationInfo = { color: string; text: string };
@@ -263,15 +263,11 @@ export default function EnvironmentPage() {
   const [breakActive, setBreakActive] = useState(false);
   const [showBreakReEntry, setShowBreakReEntry] = useState(false);
 
-  // Break content clips for channel changer
-  const { clips: allBreakClips } = useBreakContent(world.worldKey, "learning");
-  const breakClipsForDuration = useMemo(
-    () => allBreakClips.filter((c) => c.duration === breakDuration),
-    [allBreakClips, breakDuration]
-  );
+  // Break clips for channel changer — set when user picks from flyout
+  const [breakClips, setBreakClips] = useState<BreakClip[]>([]);
   const currentBreakClipIndex = useMemo(
-    () => breakContent ? breakClipsForDuration.findIndex((c) => c.clipId === breakContent.id) : 0,
-    [breakClipsForDuration, breakContent]
+    () => breakContent ? breakClips.findIndex((c) => c.clipId === breakContent.id) : 0,
+    [breakClips, breakContent]
   );
 
   const handleChangeClip = useCallback((clip: BreakClip) => {
@@ -1125,9 +1121,10 @@ export default function EnvironmentPage() {
 
   // ─── Break flow ────────────────────────────────────────
 
-  const handleSelectBreakContent = useCallback((item: BreakContentItem, duration: BreakDuration) => {
+  const handleSelectBreakContent = useCallback((item: BreakContentItem, duration: BreakDuration, clips: BreakClip[]) => {
     setBreakContent(item);
     setBreakDuration(duration);
+    setBreakClips(clips);
     setActivePanel("none");
     setBreakActive(true);
     timer.pause();
@@ -1206,7 +1203,7 @@ export default function EnvironmentPage() {
           const duration: BreakDuration = ([3, 5, 10] as const).includes(item.best_duration)
             ? item.best_duration
             : 5;
-          handleSelectBreakContent(item, duration);
+          handleSelectBreakContent(item, duration, []);
         }
       } catch {
         // silently fail
@@ -1795,7 +1792,7 @@ export default function EnvironmentPage() {
           content={breakContent}
           durationMinutes={breakDuration}
           segment={breakContent.segments?.find((s) => s.duration === breakDuration) ?? null}
-          clips={breakClipsForDuration}
+          clips={breakClips}
           currentClipIndex={currentBreakClipIndex >= 0 ? currentBreakClipIndex : 0}
           onFinish={handleBreakVideoFinish}
           onChangeClip={handleChangeClip}

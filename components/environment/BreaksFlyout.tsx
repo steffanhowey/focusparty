@@ -13,7 +13,7 @@ interface BreaksFlyoutProps {
   roomWorldKey: string;
   worldLabel: string;
   onClose: () => void;
-  onSelectContent: (item: BreakContentItem, duration: BreakDuration) => void;
+  onSelectContent: (item: BreakContentItem, duration: BreakDuration, clips: BreakClip[]) => void;
 }
 
 export function BreaksFlyout({
@@ -31,8 +31,8 @@ export function BreaksFlyout({
   );
 
   const handleSelectClip = useCallback(
-    (clip: BreakClip) => onSelectContent(clip.sourceItem, clip.duration),
-    [onSelectContent]
+    (clip: BreakClip) => onSelectContent(clip.sourceItem, clip.duration, filteredClips),
+    [onSelectContent, filteredClips]
   );
 
   // Escape key closes
