@@ -39,6 +39,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       setAuthState(user ? "authenticated" : "anonymous");
+    }).catch(() => {
+      // Auth check failed (network issue, corrupted session, etc.)
+      // Fall through to anonymous so the page doesn't stay stuck on loading
+      setAuthState("anonymous");
     });
 
     const {

@@ -1793,8 +1793,9 @@ export default function EnvironmentPage() {
         onCancel={handleSwitchCancel}
       />
 
-      {/* Join room modal — shown on first visit before joining */}
-      {showJoinModal && (
+      {/* Join room modal — shown on first visit before joining.
+          Gated on hydration so it never flashes during session restore. */}
+      {showJoinModal && !persistence.isHydrating && !persistence.wasRestored && (
         <JoinRoomModal
           partyId={partyId}
           isOpen={showJoinModal}
