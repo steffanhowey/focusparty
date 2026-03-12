@@ -40,7 +40,7 @@ import { computeRemainingSeconds } from "@/lib/sprintTime";
 import { SYNTHETIC_POOL } from "@/lib/synthetics/pool";
 import { getSyntheticsForRoom } from "@/lib/synthetics/assignment";
 import { JoinRoomModal, type JoinConfig } from "@/components/party/JoinRoomModal";
-import type { SessionPhase, SessionReflection, SprintResolution, BreakContentItem, BreakDuration, BreakSegment } from "@/lib/types";
+import type { SessionPhase, SessionReflection, SprintResolution, BreakContentItem, BreakDuration, BreakSegment, BreakCategory } from "@/lib/types";
 import { updateSessionGoalStatus } from "@/lib/sessions";
 import { checkGoalCompletion } from "@/lib/goalCascade";
 import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
@@ -263,6 +263,8 @@ export default function EnvironmentPage() {
   const [breakDuration, setBreakDuration] = useState<BreakDuration>(5);
   const [breakActive, setBreakActive] = useState(false);
   const [showBreakReEntry, setShowBreakReEntry] = useState(false);
+  const [breakCategory, setBreakCategory] = useState<BreakCategory>("learning");
+  const [breakPopoverOpen, setBreakPopoverOpen] = useState(false);
 
   // Break content shelf — used to give synthetics real content IDs
   const { items: breakShelfItems } = useBreakContent(world.worldKey, "learning");
@@ -1118,10 +1120,21 @@ export default function EnvironmentPage() {
     []
   );
   const handleCloseGoalCard = useCallback(() => setSprintGoalCardOpen(false), []);
-  const handleToggleBreaks = useCallback(
-    () => setActivePanel((prev) => (prev === "breaks" ? "none" : "breaks")),
-    []
-  );
+  const handleToggleBreakPopover = useCallback(() => {
+    setBreakPopoverOpen((prev) => !prev);
+    // Close the flyout if it's open when toggling the popover
+    setActivePanel((prev) => (prev === "breaks" ? "none" : prev));
+  }, []);
+
+  const handleCloseBreakPopover = useCallback(() => {
+    setBreakPopoverOpen(false);
+  }, []);
+
+  const handleSelectBreakCategory = useCallback((category: BreakCategory) => {
+    setBreakCategory(category);
+    setBreakPopoverOpen(false);
+    setActivePanel("breaks");
+  }, []);
 
   // ─── Break flow ────────────────────────────────────────
 
@@ -1145,12 +1158,12 @@ export default function EnvironmentPage() {
         event_type: "break_started",
         body: displayName,
         payload: {
-          category: "learning",
+          category: breakCategory,
           content_title: item.title ?? null,
         },
       }).catch(() => {});
     }
-  }, [timer, persistence, userId, partyId, displayName]);
+  }, [timer, persistence, userId, partyId, displayName, breakCategory]);
 
   const [breakResetKey, setBreakResetKey] = useState(0);
 
@@ -1184,12 +1197,12 @@ export default function EnvironmentPage() {
         event_type: "break_completed",
         body: displayName,
         payload: {
-          category: "learning",
+          category: breakCategory,
           content_title: breakContent?.title ?? null,
         },
       }).catch(() => {});
     }
-  }, [timer, persistence, userId, partyId, displayName, breakContent]);
+  }, [timer, persistence, userId, partyId, displayName, breakContent, breakCategory]);
 
 
 
@@ -1203,6 +1216,8 @@ export default function EnvironmentPage() {
         const item = await res.json();
         if (item) {
           setSelectedParticipant(null);
+          // Set category from the joined content item
+          if (item.category) setBreakCategory(item.category);
           // Use the item's best_duration (or fallback to 5) instead of hardcoding
           const duration: BreakDuration = ([3, 5, 10] as const).includes(item.best_duration)
             ? item.best_duration
@@ -1695,8 +1710,11 @@ export default function EnvironmentPage() {
                 onToggleCheckIn={handleToggleCheckIn}
                 onCloseCheckIn={handleCloseCheckIn}
                 onCheckIn={handleCheckIn}
-                breaksActive={activePanel === "breaks"}
-                onOpenBreaks={handleToggleBreaks}
+                breaksActive={breakPopoverOpen || activePanel === "breaks"}
+                breakPopoverOpen={breakPopoverOpen}
+                onToggleBreakPopover={handleToggleBreakPopover}
+                onCloseBreakPopover={handleCloseBreakPopover}
+                onSelectBreakCategory={handleSelectBreakCategory}
               />
             )}
       </div>
@@ -1777,6 +1795,7 @@ export default function EnvironmentPage() {
               <BreaksFlyout
                 roomWorldKey={world.worldKey}
                 worldLabel={world.label}
+                category={breakCategory}
                 onClose={closePanel}
                 onSelectContent={handleSelectBreakContent}
               />

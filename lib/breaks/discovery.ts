@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/admin";
 import { searchVideos, getVideoDetails } from "./youtubeClient";
 import {
   WORLD_BREAK_PROFILES,
+  ALL_CATEGORIES,
   getBreakProfile,
   pickQueries,
   pickChannel,
@@ -18,14 +19,15 @@ import { refreshShelf, type ShelfRefreshResult } from "./shelf";
 
 interface DiscoveryResult {
   worldKey: string;
+  category: string;
   queriesRun: string[];
   candidatesFound: number;
   candidatesInserted: number;
 }
 
 /**
- * Discover new break content candidates for a specific world.
- * 1. Picks 1–2 search queries from the world's profile
+ * Discover new break content candidates for a specific world + category.
+ * 1. Picks 1–2 search queries from the world/category profile
  * 2. Searches YouTube
  * 3. Fetches video details (duration, stats)
  * 4. Filters by duration constraints
@@ -33,10 +35,11 @@ interface DiscoveryResult {
  * 6. Inserts new candidates with status 'pending'
  */
 export async function discoverCandidates(
-  worldKey: string
+  worldKey: string,
+  category = "learning",
 ): Promise<DiscoveryResult> {
   const profile = getBreakProfile(worldKey);
-  const queries = pickQueries(profile, 2);
+  const queries = pickQueries(profile, 2, category);
   const supabase = createClient();
 
   // Compute published-after date
@@ -65,8 +68,8 @@ export async function discoverCandidates(
     }
   }
 
-  // 2. Channel-targeted search (1 random channel from profile)
-  const channel = pickChannel(profile);
+  // 2. Channel-targeted search (1 random channel from profile/category)
+  const channel = pickChannel(profile, category);
   if (channel) {
     try {
       const results = await searchVideos(channel.query ?? "", {
@@ -89,17 +92,18 @@ export async function discoverCandidates(
   }
 
   if (allSearchResults.length === 0) {
-    return { worldKey, queriesRun: queries, candidatesFound: 0, candidatesInserted: 0 };
+    return { worldKey, category, queriesRun: queries, candidatesFound: 0, candidatesInserted: 0 };
   }
 
   // Deduplicate by video ID within this batch
   const uniqueIds = [...new Set(allSearchResults.map((r) => r.videoId))];
 
-  // Check which IDs already exist as candidates for this world
+  // Check which IDs already exist as candidates for this world+category
   const { data: existing } = await supabase
     .from("fp_break_content_candidates")
     .select("external_id")
     .eq("world_key", worldKey)
+    .eq("category", category)
     .eq("source", "youtube")
     .in("external_id", uniqueIds);
 
@@ -107,8 +111,8 @@ export async function discoverCandidates(
   const newIds = uniqueIds.filter((id) => !existingSet.has(id));
 
   if (newIds.length === 0) {
-    console.log(`[breaks/discover] No new candidates for ${worldKey}`);
-    return { worldKey, queriesRun: queries, candidatesFound: uniqueIds.length, candidatesInserted: 0 };
+    console.log(`[breaks/discover] No new candidates for ${worldKey}/${category}`);
+    return { worldKey, category, queriesRun: queries, candidatesFound: uniqueIds.length, candidatesInserted: 0 };
   }
 
   // Fetch full details for new videos
@@ -117,7 +121,7 @@ export async function discoverCandidates(
     details = await getVideoDetails(newIds);
   } catch (err) {
     console.error("[breaks/discover] getVideoDetails error:", err);
-    return { worldKey, queriesRun: queries, candidatesFound: uniqueIds.length, candidatesInserted: 0 };
+    return { worldKey, category, queriesRun: queries, candidatesFound: uniqueIds.length, candidatesInserted: 0 };
   }
 
   // Filter by duration
@@ -146,6 +150,7 @@ export async function discoverCandidates(
         source: "youtube",
         external_id: video.videoId,
         world_key: worldKey,
+        category,
         title: video.title,
         description: video.description,
         creator: video.channelTitle,
@@ -170,11 +175,12 @@ export async function discoverCandidates(
   }
 
   console.log(
-    `[breaks/discover] ${worldKey}: ${inserted} new candidates (${filtered.length} passed filters)`
+    `[breaks/discover] ${worldKey}/${category}: ${inserted} new candidates (${filtered.length} passed filters)`
   );
 
   return {
     worldKey,
+    category,
     queriesRun: queries,
     candidatesFound: uniqueIds.length,
     candidatesInserted: inserted,
@@ -193,32 +199,35 @@ interface PipelineResult {
 }
 
 /**
- * Full pipeline for a single world: discover → evaluate → shelf refresh.
+ * Full pipeline for a single world + category: discover → evaluate → shelf refresh.
  * Use this for manual triggers and POST requests so content appears
  * immediately instead of waiting for separate cron jobs.
  */
 export async function discoverAndPromote(
   worldKey: string,
+  category = "learning",
 ): Promise<PipelineResult> {
-  const discovery = await discoverCandidates(worldKey);
+  const discovery = await discoverCandidates(worldKey, category);
   const evaluation = await evaluatePendingCandidates(worldKey, 30);
-  const shelf = await refreshShelf(worldKey);
+  const shelf = await refreshShelf(worldKey, category);
   return { discovery, evaluation, shelf };
 }
 
 /**
- * Run the full pipeline for ALL worlds sequentially.
+ * Run the full pipeline for ALL worlds × ALL categories sequentially.
  * Used by bootstrap-all and manual "nuke and rebuild" workflows.
  */
 export async function discoverAndPromoteAll(): Promise<PipelineResult[]> {
   const worldKeys = Object.keys(WORLD_BREAK_PROFILES);
   const results: PipelineResult[] = [];
   for (const worldKey of worldKeys) {
-    try {
-      const result = await discoverAndPromote(worldKey);
-      results.push(result);
-    } catch (err) {
-      console.error(`[breaks/discover] pipeline error for ${worldKey}:`, err);
+    for (const category of ALL_CATEGORIES) {
+      try {
+        const result = await discoverAndPromote(worldKey, category);
+        results.push(result);
+      } catch (err) {
+        console.error(`[breaks/discover] pipeline error for ${worldKey}/${category}:`, err);
+      }
     }
   }
   return results;

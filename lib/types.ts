@@ -1,5 +1,8 @@
 // FocusParty core types — aligned with FOCUSPARTY_SHELL_CAPABILITIES.md
 
+import type { BreakCategory } from "./breakConstants";
+export type { BreakCategory };
+
 export type CharacterId = "ember" | "moss" | "byte";
 
 export type SessionPhase = "setup" | "breathing" | "sprint" | "review" | "break";
@@ -463,7 +466,7 @@ export interface BreakSegment {
 export interface BreakContentItem {
   id: string;
   room_world_key: string;
-  category: string;
+  category: BreakCategory;
   title: string;
   description: string | null;
   thumbnail_url: string | null;
@@ -494,6 +497,7 @@ export interface BreakContentCandidate {
   source: string;
   external_id: string;
   world_key: string;
+  category: BreakCategory;
   title: string;
   description: string | null;
   creator: string | null;
@@ -517,7 +521,7 @@ export interface BreakContentScore {
   taste_score: number;
   relevance_score: number | null;
   engagement_score: number | null;
-  educational_density: number | null;
+  content_density: number | null;
   creator_authority: number | null;
   freshness_score: number | null;
   novelty_score: number | null;
@@ -525,6 +529,8 @@ export interface BreakContentScore {
   editorial_note: string | null;
   /** AI-identified best segments per duration */
   segments: BreakSegment[] | null;
+  /** AI-recommended duration for this content */
+  best_duration: 3 | 5 | 10 | null;
   /** AI-assigned topic tags for personalization */
   topics: string[] | null;
   evaluated_at: string;

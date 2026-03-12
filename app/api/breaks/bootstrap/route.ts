@@ -3,28 +3,29 @@ import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
 import { discoverCandidates } from "@/lib/breaks/discovery";
 import { evaluatePendingCandidates } from "@/lib/breaks/evaluateBatch";
 import { refreshShelf } from "@/lib/breaks/shelf";
-import { WORLD_BREAK_PROFILES } from "@/lib/breaks/worldBreakProfiles";
+import { WORLD_BREAK_PROFILES, ALL_CATEGORIES } from "@/lib/breaks/worldBreakProfiles";
 
-async function bootstrapWorld(worldKey: string, discoveryRounds: number) {
+async function bootstrapWorld(worldKey: string, discoveryRounds: number, categories: readonly string[] = ALL_CATEGORIES) {
   console.log(
-    `[breaks/bootstrap] Starting "${worldKey}" (${discoveryRounds} rounds)`,
+    `[breaks/bootstrap] Starting "${worldKey}" (${discoveryRounds} rounds, ${categories.length} categories)`,
   );
 
-  // Phase 1: Discovery
-  const discoveryResults = [];
-  for (let i = 0; i < discoveryRounds; i++) {
-    const result = await discoverCandidates(worldKey);
-    discoveryResults.push(result);
-    console.log(
-      `[breaks/bootstrap] ${worldKey} discovery ${i + 1}/${discoveryRounds}: ${result.candidatesInserted} new`,
-    );
+  const allDiscoveryResults = [];
+  let totalDiscovered = 0;
+
+  // Phase 1: Discovery — run for each category
+  for (const category of categories) {
+    for (let i = 0; i < discoveryRounds; i++) {
+      const result = await discoverCandidates(worldKey, category);
+      allDiscoveryResults.push(result);
+      totalDiscovered += result.candidatesInserted;
+      console.log(
+        `[breaks/bootstrap] ${worldKey}/${category} discovery ${i + 1}/${discoveryRounds}: ${result.candidatesInserted} new`,
+      );
+    }
   }
-  const totalDiscovered = discoveryResults.reduce(
-    (sum, r) => sum + r.candidatesInserted,
-    0,
-  );
 
-  // Phase 2: Evaluation — loop until no pending remain
+  // Phase 2: Evaluation — loop until no pending remain (evaluates all categories)
   let totalEvaluated = 0;
   let totalRejected = 0;
   let evalPass = 0;
@@ -40,17 +41,22 @@ async function bootstrapWorld(worldKey: string, discoveryRounds: number) {
     if (evalPass >= 10) break;
   }
 
-  // Phase 3: Shelf refresh
-  const shelfResult = await refreshShelf(worldKey);
+  // Phase 3: Shelf refresh — for each category
+  const shelfResults = [];
+  for (const category of categories) {
+    const shelfResult = await refreshShelf(worldKey, category);
+    shelfResults.push(shelfResult);
+  }
+  const totalShelf = shelfResults.reduce((sum, r) => sum + r.shelfSize, 0);
   console.log(
-    `[breaks/bootstrap] ${worldKey} complete: ${totalDiscovered} discovered, ${totalEvaluated} evaluated, shelf=${shelfResult.shelfSize}`,
+    `[breaks/bootstrap] ${worldKey} complete: ${totalDiscovered} discovered, ${totalEvaluated} evaluated, shelf=${totalShelf}`,
   );
 
   return {
     worldKey,
     discovery: { rounds: discoveryRounds, totalCandidates: totalDiscovered },
     evaluation: { passes: evalPass, evaluated: totalEvaluated, rejected: totalRejected },
-    shelf: shelfResult,
+    shelves: shelfResults,
   };
 }
 

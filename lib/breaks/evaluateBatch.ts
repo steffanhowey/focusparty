@@ -26,7 +26,8 @@ interface BatchResult {
  */
 export async function evaluatePendingCandidates(
   worldKey?: string,
-  limit = 10
+  limit = 10,
+  category?: string
 ): Promise<BatchResult> {
   const supabase = createClient();
 
@@ -40,6 +41,9 @@ export async function evaluatePendingCandidates(
 
   if (worldKey) {
     query = query.eq("world_key", worldKey);
+  }
+  if (category) {
+    query = query.eq("category", category);
   }
 
   const { data: candidates, error: fetchErr } = await query;
@@ -57,18 +61,24 @@ export async function evaluatePendingCandidates(
     `[breaks/evaluate] Processing ${candidates.length} candidates`
   );
 
-  // Fetch current shelf titles per world for novelty context
-  const worldKeys = [...new Set(candidates.map((c) => c.world_key))];
-  const shelfTitlesByWorld = new Map<string, string[]>();
+  // Fetch current shelf titles per (world, category) for novelty context.
+  // Novelty must be scoped to category — a move video should be compared
+  // against other move shelf items, not learning titles.
+  const worldCategoryKeys = [
+    ...new Set(candidates.map((c) => `${c.world_key}:${c.category ?? "learning"}`)),
+  ];
+  const shelfTitlesByWorldCategory = new Map<string, string[]>();
 
-  for (const wk of worldKeys) {
+  for (const key of worldCategoryKeys) {
+    const [wk, cat] = key.split(":");
     const { data: shelfItems } = await supabase
       .from("fp_break_content_items")
       .select("title")
       .eq("room_world_key", wk)
+      .eq("category", cat)
       .eq("status", "active");
-    shelfTitlesByWorld.set(
-      wk,
+    shelfTitlesByWorldCategory.set(
+      key,
       (shelfItems ?? []).map((i) => i.title)
     );
   }
@@ -124,7 +134,8 @@ export async function evaluatePendingCandidates(
         };
       }
 
-      const shelfTitles = shelfTitlesByWorld.get(candidate.world_key) ?? [];
+      const shelfKey = `${candidate.world_key}:${candidate.category ?? "learning"}`;
+      const shelfTitles = shelfTitlesByWorldCategory.get(shelfKey) ?? [];
       const result = await evaluateCandidate(
         candidate,
         candidate.world_key,
@@ -152,7 +163,7 @@ export async function evaluatePendingCandidates(
             taste_score: result.tasteScore,
             relevance_score: result.relevanceScore,
             engagement_score: result.engagementScore,
-            educational_density: result.educationalDensity,
+            content_density: result.contentDensity,
             creator_authority: result.creatorAuthority,
             freshness_score: result.freshnessScore,
             novelty_score: result.noveltyScore,

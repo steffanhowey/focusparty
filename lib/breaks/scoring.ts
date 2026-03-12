@@ -6,7 +6,7 @@
 import OpenAI from "openai";
 import { WORLD_CONFIGS } from "@/lib/worlds";
 import type { BreakContentCandidate, BreakSegment } from "@/lib/types";
-import { getEditorialPersona, getCreatorBoost } from "./worldBreakProfiles";
+import { getEditorialPersona, getCreatorBoost, getCategoryContentGoal } from "./worldBreakProfiles";
 import {
   computeFreshnessDimension,
   computeFreshnessBonus,
@@ -26,7 +26,7 @@ function getClient(): OpenAI {
 const WEIGHTS = {
   relevance: 0.3,
   engagement: 0.2,
-  educational_density: 0.2,
+  content_density: 0.2,
   creator_authority: 0.1,
   freshness: 0.1,
   novelty: 0.1,
@@ -38,7 +38,7 @@ export interface EvaluationResult {
   tasteScore: number;
   relevanceScore: number;
   engagementScore: number;
-  educationalDensity: number;
+  contentDensity: number;
   creatorAuthority: number;
   freshnessScore: number;
   noveltyScore: number;
@@ -68,7 +68,9 @@ export async function evaluateCandidate(
     WORLD_CONFIGS[worldKey as keyof typeof WORLD_CONFIGS] ??
     WORLD_CONFIGS.default;
 
-  const persona = getEditorialPersona(worldKey);
+  const category = candidate.category ?? "learning";
+  const persona = getEditorialPersona(worldKey, category);
+  const contentGoal = getCategoryContentGoal(category);
 
   const shelfContext =
     currentShelfTitles.length > 0
@@ -81,6 +83,11 @@ export async function evaluateCandidate(
       ? ((candidate.like_count / candidate.view_count) * 100).toFixed(2)
       : "unknown";
 
+  // Build the content criteria based on category
+  const contentCriteria = contentGoal
+    ? `Your job: ${contentGoal}\n\nSelect only content that:\n- delivers genuine value for this category in a short time\n- respects the user's time (no fluff, no clickbait, no padded intros)\n- has high signal-to-noise ratio\n- actively engages the viewer (guided exercises, demonstrations, not just talking)`
+    : `Your job is to select only content that:\n- teaches something valuable in a short time\n- respects the user's time (no fluff, no clickbait, no padded intros)\n- has high signal-to-noise ratio\n- matches the specific energy and purpose of this room`;
+
   const response = await getClient().chat.completions.create({
     model: "gpt-4o-mini",
     max_tokens: 1000,
@@ -90,13 +97,9 @@ export async function evaluateCandidate(
         role: "system",
         content: `${persona.voicePrompt}
 
-You are curating content for the "${worldConfig.label}" room.
+You are curating ${category} content for the "${worldConfig.label}" room.
 
-Your job is to select only content that:
-- teaches something valuable in a short time
-- respects the user's time (no fluff, no clickbait, no padded intros)
-- has high signal-to-noise ratio
-- matches the specific energy and purpose of this room
+${contentCriteria}
 
 Reject: ${persona.rejectPatterns.join(", ")}
 
@@ -104,7 +107,7 @@ Prefer: ${persona.preferPatterns.join(", ")}
 ${SAFETY_PROMPT}${transcriptContext?.transcript ? `
 
 When a transcript is provided, use it to:
-- Assess educational_density based on actual spoken content (count distinct concepts, assess pacing, identify filler)
+- Assess content_density based on actual spoken content (count distinct concepts, assess pacing, identify filler)
 - Identify segment start times using EXACT timestamps from the transcript
 - Start segments at natural topic boundaries — never mid-sentence
 - Skip: intros ("hey guys welcome back"), sponsor reads, outros, filler` : ""}`,
@@ -156,10 +159,10 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
               description:
                 "Quality signals from view/like metrics and title quality (0-100)",
             },
-            educational_density: {
+            content_density: {
               type: "number",
               description:
-                "Likely information density based on title/description/creator (0-100)",
+                "Content value density — how much useful material is packed into the runtime (0-100)",
             },
             creator_authority: {
               type: "number",
@@ -231,7 +234,7 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
           required: [
             "relevance_score",
             "engagement_score",
-            "educational_density",
+            "content_density",
             "creator_authority",
             "novelty_score",
             "safety_score",
@@ -256,7 +259,7 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
   const parsed = JSON.parse(text) as {
     relevance_score: number;
     engagement_score: number;
-    educational_density: number;
+    content_density: number;
     creator_authority: number;
     novelty_score: number;
     safety_score: number;
@@ -297,7 +300,7 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
   const weightedScore =
     parsed.relevance_score * WEIGHTS.relevance +
     parsed.engagement_score * WEIGHTS.engagement +
-    parsed.educational_density * WEIGHTS.educational_density +
+    parsed.content_density * WEIGHTS.content_density +
     parsed.creator_authority * WEIGHTS.creator_authority +
     freshnessDim * WEIGHTS.freshness +
     parsed.novelty_score * WEIGHTS.novelty;
@@ -309,7 +312,7 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
   );
 
   // Additive creator authority boost (from authority graph)
-  const creatorBoost = getCreatorBoost(worldKey, candidate.creator ?? "");
+  const creatorBoost = getCreatorBoost(worldKey, candidate.creator ?? "", category);
 
   // Final taste score (clamped 0–100)
   const tasteScore = Math.min(
@@ -321,7 +324,7 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
     tasteScore: Math.round(tasteScore * 100) / 100,
     relevanceScore: parsed.relevance_score,
     engagementScore: parsed.engagement_score,
-    educationalDensity: parsed.educational_density,
+    contentDensity: parsed.content_density,
     creatorAuthority: parsed.creator_authority,
     freshnessScore: freshnessDim,
     noveltyScore: parsed.novelty_score,

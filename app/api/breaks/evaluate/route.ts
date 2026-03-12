@@ -40,12 +40,13 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const { worldKey, limit } = body as {
+    const { worldKey, category, limit } = body as {
       worldKey?: string;
+      category?: string;
       limit?: number;
     };
 
-    const result = await evaluatePendingCandidates(worldKey, limit ?? 30);
+    const result = await evaluatePendingCandidates(worldKey, limit ?? 30, category);
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     console.error("[breaks/evaluate] error:", err);

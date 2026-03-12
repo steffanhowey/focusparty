@@ -722,6 +722,24 @@ const SYNTHETIC_BREAK_TITLES_BY_WORLD: Record<string, string[]> = {
   ],
 };
 
+/** Title pools for non-learning break categories */
+const SYNTHETIC_BREAK_TITLES_BY_CATEGORY: Record<string, string[]> = {
+  reset: [
+    "Guided Breathing Session", "2-Minute Calm Reset",
+    "Quick Mindfulness Break", "Box Breathing for Focus",
+  ],
+  reflect: [
+    "Goal Realignment Check", "Mid-Session Reflection",
+    "Purpose Reset", "What Matters Next",
+  ],
+  move: [
+    "Quick Desk Stretches", "Posture Reset Routine",
+    "Stand & Move Break", "Shoulder & Neck Release",
+  ],
+};
+
+const NON_LEARNING_CATEGORIES = ["reset", "reflect", "move"] as const;
+
 function deriveBreakEvents(
   proposals: ProposedEvent[],
   rooms: RoomWithEvents[],
@@ -735,8 +753,21 @@ function deriveBreakEvents(
 
     const room = roomMap.get(proposal.party_id);
     const worldKey = room?.world_key ?? "default";
-    const titles = SYNTHETIC_BREAK_TITLES_BY_WORLD[worldKey] ?? SYNTHETIC_BREAK_TITLES_BY_WORLD.default;
-    const title = titles[Math.floor(Math.random() * titles.length)];
+
+    // 75% chance learning (existing behavior), 25% chance non-learning category
+    const useNonLearning = Math.random() < 0.25;
+    let category: string;
+    let title: string;
+
+    if (useNonLearning) {
+      category = NON_LEARNING_CATEGORIES[Math.floor(Math.random() * NON_LEARNING_CATEGORIES.length)];
+      const titles = SYNTHETIC_BREAK_TITLES_BY_CATEGORY[category];
+      title = titles[Math.floor(Math.random() * titles.length)];
+    } else {
+      category = "learning";
+      const titles = SYNTHETIC_BREAK_TITLES_BY_WORLD[worldKey] ?? SYNTHETIC_BREAK_TITLES_BY_WORLD.default;
+      title = titles[Math.floor(Math.random() * titles.length)];
+    }
 
     breakEvents.push({
       party_id: proposal.party_id,
@@ -744,7 +775,7 @@ function deriveBreakEvents(
       body: proposal.body,
       payload: {
         ...proposal.payload,
-        category: "learning",
+        category,
         content_title: title,
       },
       // Offset 2s after sprint completion so feed order is correct

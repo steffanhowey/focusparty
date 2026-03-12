@@ -5,7 +5,7 @@
 // content, enforces diversity, and learns from engagement.
 
 import { createClient } from "@/lib/supabase/admin";
-import { WORLD_BREAK_PROFILES } from "./worldBreakProfiles";
+import { WORLD_BREAK_PROFILES, ALL_CATEGORIES } from "./worldBreakProfiles";
 
 // ─── Constants ──────────────────────────────────────────────
 
@@ -22,6 +22,7 @@ const DURATIONS = [3, 5, 10] as const;
 
 export interface ShelfRefreshResult {
   worldKey: string;
+  category: string;
   expired: number;
   promoted: number;
   removed: number;
@@ -34,13 +35,14 @@ export interface ShelfRefreshResult {
 
 // ─── Engagement-based score adjustments ─────────────────────
 
-async function applyEngagementAdjustments(worldKey: string): Promise<void> {
+async function applyEngagementAdjustments(worldKey: string, category: string): Promise<void> {
   const supabase = createClient();
 
   const { data: shelfItems } = await supabase
     .from("fp_break_content_items")
     .select("id, taste_score")
     .eq("room_world_key", worldKey)
+    .eq("category", category)
     .eq("status", "active");
 
   if (!shelfItems || shelfItems.length === 0) return;
@@ -95,18 +97,20 @@ async function applyEngagementAdjustments(worldKey: string): Promise<void> {
 
 export async function refreshShelf(
   worldKey: string,
+  category: string = "learning",
 ): Promise<ShelfRefreshResult> {
   const supabase = createClient();
   const now = new Date().toISOString();
 
   // 0. Apply engagement-based score adjustments
-  await applyEngagementAdjustments(worldKey);
+  await applyEngagementAdjustments(worldKey, category);
 
   // 1. Remove expired non-pinned items
   const { data: expiredItems } = await supabase
     .from("fp_break_content_items")
     .select("id")
     .eq("room_world_key", worldKey)
+    .eq("category", category)
     .eq("status", "active")
     .or("pinned.is.null,pinned.eq.false")
     .not("expires_at", "is", null)
@@ -135,6 +139,7 @@ export async function refreshShelf(
     .from("fp_break_content_items")
     .select("candidate_id, best_duration")
     .eq("room_world_key", worldKey)
+    .eq("category", category)
     .eq("status", "active")
     .not("candidate_id", "is", null);
 
@@ -151,6 +156,7 @@ export async function refreshShelf(
       .from("fp_break_content_items")
       .select("id, taste_score, pinned, source_name")
       .eq("room_world_key", worldKey)
+      .eq("category", category)
       .eq("status", "active")
       .eq("best_duration", duration)
       .order("taste_score", { ascending: false, nullsFirst: false });
@@ -189,6 +195,8 @@ export async function refreshShelf(
         const eligible = topCandidates.filter((s: any) => {
           const c = s.candidate;
           if (!c || c.status === "rejected") return false;
+          // Only promote candidates from the same category
+          if ((c.category ?? "learning") !== category) return false;
           // Video must be long enough for this duration
           if ((c.duration_seconds ?? 0) < minVideoSeconds) return false;
           // Don't duplicate same candidate+duration on shelf
@@ -217,7 +225,7 @@ export async function refreshShelf(
             .from("fp_break_content_items")
             .insert({
               room_world_key: worldKey,
-              category: "learning",
+              category,
               title: c.title,
               description: c.description,
               thumbnail_url: c.thumbnail_url,
@@ -281,6 +289,7 @@ export async function refreshShelf(
         .from("fp_break_content_items")
         .select("id, taste_score, pinned")
         .eq("room_world_key", worldKey)
+        .eq("category", category)
         .eq("status", "active")
         .eq("best_duration", duration)
         .order("taste_score", { ascending: true, nullsFirst: true });
@@ -316,6 +325,7 @@ export async function refreshShelf(
     .from("fp_break_content_items")
     .select("id, taste_score")
     .eq("room_world_key", worldKey)
+    .eq("category", category)
     .eq("status", "active")
     .order("taste_score", { ascending: false, nullsFirst: false });
 
@@ -342,7 +352,7 @@ export async function refreshShelf(
     );
   }
 
-  return { worldKey, expired, promoted, removed, shelfSize, health, buckets };
+  return { worldKey, category, expired, promoted, removed, shelfSize, health, buckets };
 }
 
 // ─── Refresh all worlds ─────────────────────────────────────
@@ -352,20 +362,23 @@ export async function refreshAllShelves(): Promise<ShelfRefreshResult[]> {
   const results: ShelfRefreshResult[] = [];
 
   for (const worldKey of worldKeys) {
-    try {
-      const result = await refreshShelf(worldKey);
-      results.push(result);
-    } catch (err) {
-      console.error(`[breaks/shelf] error refreshing ${worldKey}:`, err);
-      results.push({
-        worldKey,
-        expired: 0,
-        promoted: 0,
-        removed: 0,
-        shelfSize: -1,
-        health: "empty",
-        buckets: { 3: 0, 5: 0, 10: 0 },
-      });
+    for (const category of ALL_CATEGORIES) {
+      try {
+        const result = await refreshShelf(worldKey, category);
+        results.push(result);
+      } catch (err) {
+        console.error(`[breaks/shelf] error refreshing ${worldKey}/${category}:`, err);
+        results.push({
+          worldKey,
+          category,
+          expired: 0,
+          promoted: 0,
+          removed: 0,
+          shelfSize: -1,
+          health: "empty",
+          buckets: { 3: 0, 5: 0, 10: 0 },
+        });
+      }
     }
   }
 

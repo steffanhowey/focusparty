@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import type { BreakContentItem, BreakDuration } from "./types";
+import type { BreakContentItem, BreakDuration, BreakCategory } from "./types";
 
 // ─── Clip type ──────────────────────────────────────────────
 
@@ -60,7 +60,7 @@ interface UseBreakContentReturn {
  */
 export function useBreakContent(
   roomWorldKey: string | null,
-  category?: string
+  category?: BreakCategory
 ): UseBreakContentReturn {
   const [items, setItems] = useState<BreakContentItem[]>([]);
   const [loading, setLoading] = useState(false);

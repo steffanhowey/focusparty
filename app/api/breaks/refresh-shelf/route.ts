@@ -43,12 +43,10 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const worldKey = (body as Record<string, unknown>).worldKey as
-      | string
-      | undefined;
+    const { worldKey, category } = body as { worldKey?: string; category?: string };
 
     if (worldKey) {
-      const result = await refreshShelf(worldKey);
+      const result = await refreshShelf(worldKey, category ?? "learning");
       return NextResponse.json({ ok: true, result });
     }
 

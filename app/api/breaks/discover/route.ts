@@ -6,12 +6,14 @@ import {
   discoverAndPromoteAll,
   pickNextWorldKey,
 } from "@/lib/breaks/discovery";
-import { WORLD_BREAK_PROFILES } from "@/lib/breaks/worldBreakProfiles";
+import { WORLD_BREAK_PROFILES, ALL_CATEGORIES } from "@/lib/breaks/worldBreakProfiles";
 
 /**
  * GET /api/breaks/discover
  * Called by Vercel Cron every 6 hours.
- * Discovers content for ALL worlds (lightweight — discovery only, no eval).
+ * Discovers content for ALL worlds × ALL categories.
+ * At 5 worlds × 4 categories × 3 searches = 60 YouTube API calls per run,
+ * well under the 10,000/day quota.
  */
 export async function GET(request: Request) {
   if (!(await verifyAdminAuth(request))) {
@@ -23,18 +25,17 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Discover for ALL worlds instead of just one.
-    // At 5 worlds × 3 searches/world = 15 YouTube API calls per run,
-    // well under the 10,000/day quota.
     const worldKeys = Object.keys(WORLD_BREAK_PROFILES);
     const results = [];
     for (const worldKey of worldKeys) {
-      try {
-        const result = await discoverCandidates(worldKey);
-        results.push(result);
-      } catch (err) {
-        console.error(`[breaks/discover] cron error for ${worldKey}:`, err);
-        results.push({ worldKey, error: true });
+      for (const category of ALL_CATEGORIES) {
+        try {
+          const result = await discoverCandidates(worldKey, category);
+          results.push(result);
+        } catch (err) {
+          console.error(`[breaks/discover] cron error for ${worldKey}/${category}:`, err);
+          results.push({ worldKey, category, error: true });
+        }
       }
     }
     return NextResponse.json({ ok: true, results });
@@ -47,9 +48,9 @@ export async function GET(request: Request) {
 /**
  * POST /api/breaks/discover
  * Manual trigger with full pipeline: discover → evaluate → promote.
- * Body: { worldKey?: string }
- *   - If worldKey provided: runs full pipeline for that world
- *   - If worldKey is "all": runs full pipeline for ALL worlds
+ * Body: { worldKey?: string, category?: string }
+ *   - If worldKey is "all": runs full pipeline for ALL worlds × ALL categories
+ *   - If worldKey provided: runs for that world (all categories, or specific if category given)
  *   - If omitted: picks the least-recently-discovered world
  */
 export async function POST(request: Request) {
@@ -63,8 +64,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const worldKey =
-      (body as Record<string, unknown>).worldKey as string | undefined;
+    const { worldKey, category } = body as { worldKey?: string; category?: string };
 
     if (worldKey === "all") {
       const results = await discoverAndPromoteAll();
@@ -72,7 +72,8 @@ export async function POST(request: Request) {
     }
 
     const targetWorld = worldKey || (await pickNextWorldKey());
-    const result = await discoverAndPromote(targetWorld);
+    const targetCategory = category ?? "learning";
+    const result = await discoverAndPromote(targetWorld, targetCategory);
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     console.error("[breaks/discover] error:", err);

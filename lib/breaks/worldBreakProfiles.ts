@@ -54,6 +54,193 @@ export interface WorldBreakProfile {
   creatorBoosts: Record<string, number>;
 }
 
+// ─── Category-Specific Profiles ─────────────────────────────
+// For non-learning categories, these provide the discovery queries,
+// channel sources, and persona overlays. Learning content uses the
+// world profiles directly (no category overlay needed).
+
+export interface CategoryProfile {
+  /** YouTube search terms for this category — discovery picks 1-2 per run. */
+  queries: string[];
+  /** Targeted channel sources for this category. */
+  channels: ChannelSource[];
+  /** Content goal description — injected into the scoring prompt. */
+  contentGoal: string;
+  /** Category-specific persona overlay for evaluation. */
+  personaOverlay: {
+    voicePrompt: string;
+    rejectPatterns: string[];
+    preferPatterns: string[];
+  };
+  /** Creator authority boosts specific to this category. */
+  creatorBoosts: Record<string, number>;
+}
+
+export const CATEGORY_PROFILES: Record<string, CategoryProfile> = {
+  reset: {
+    queries: [
+      "guided breathing exercise short",
+      "quick mindfulness reset technique",
+      "calming decompression break video",
+      "2 minute meditation for focus",
+      "box breathing technique guided",
+      "nature sounds with timer short",
+      "progressive muscle relaxation quick",
+      "calm down anxiety technique fast",
+    ],
+    channels: [
+      { channelId: "UC3JhfsgFPLSLNEROQCdj-GQ", label: "Headspace" },
+      { channelId: "UCzBibyEtmPMiM2Q8MR2FJSA", label: "Therapy in a Nutshell" },
+      { channelId: "UCFKE7WVJfvaHW5q283SxchA", label: "Calm" },
+      { channelId: "UCLQBPUbCk4AHf4drmk_FQ0A", label: "Great Meditation" },
+    ],
+    contentGoal:
+      "Find short guided breathing, mindfulness, or calming decompression content that helps a focused person reset their mental state during a work break.",
+    personaOverlay: {
+      voicePrompt:
+        "You are curating reset/decompression content for people in the middle of a focused work session. You value guided breathing exercises, short meditations, calming nature visuals, and progressive relaxation techniques. The content should actively calm the viewer — not just talk about calmness.",
+      rejectPatterns: [
+        "content that only talks about meditation without guiding it",
+        "ASMR or mukbang content",
+        "sleep-focused content (too long, wrong energy)",
+        "spiritual or religious meditation",
+        "hypnosis or subliminal content",
+        "music-only videos without guidance",
+      ],
+      preferPatterns: [
+        "guided breathing with clear instructions",
+        "short mindfulness exercises with a timer",
+        "progressive muscle relaxation",
+        "calming nature visuals with gentle narration",
+        "box breathing or 4-7-8 breathing technique",
+        "body scan meditations under 10 minutes",
+      ],
+    },
+    creatorBoosts: {
+      headspace: 20,
+      calm: 15,
+      "therapy in a nutshell": 15,
+      "great meditation": 10,
+      "goodful": 10,
+      "the honest guys": 10,
+      "michael sealey": 10,
+    },
+  },
+
+  reflect: {
+    queries: [
+      "daily reflection prompts for productivity",
+      "mid-day goal check exercise",
+      "journaling prompts for builders",
+      "purpose and meaning reconnection exercise",
+      "gratitude practice short guided",
+      "stoic reflection exercise modern",
+      "weekly review technique short",
+      "values alignment check exercise",
+    ],
+    channels: [
+      { channelId: "UCG-KntY7aVnIGXYEBQvmBAQ", label: "Thomas Frank" },
+      { channelId: "UC-9-kyTW8ZkZNDHQJ6FgpwQ", label: "Ali Abdaal", query: "reflection journaling" },
+      { channelId: "UCMcRH2PRAMaY9P-4eUmwGpQ", label: "Daily Stoic" },
+      { channelId: "UCIaH-gZIVC432YRjNVvnyCA", label: "Cal Newport", query: "deep life reflection" },
+    ],
+    contentGoal:
+      "Find content that prompts genuine introspection — reflection exercises, journaling prompts, goal-alignment checks, gratitude practices, and values reconnection for people in the middle of a work session.",
+    personaOverlay: {
+      voicePrompt:
+        "You are curating reflection content for focused builders taking a mid-session break. You value content that prompts genuine introspection: guided journaling, goal-alignment exercises, gratitude practices, stoic reflections, and purpose reconnection. The content should make the viewer think, not just passively watch.",
+      rejectPatterns: [
+        "passive motivational content without interactive prompts",
+        "generic self-help without actionable exercises",
+        "religious or spiritual content",
+        "therapy or mental health diagnosis content",
+        "long philosophical lectures without practical takeaways",
+        "productivity system overviews (that's learning, not reflection)",
+      ],
+      preferPatterns: [
+        "guided journaling prompts with pauses for writing",
+        "goal-alignment and values check exercises",
+        "gratitude practice with clear structure",
+        "stoic reflection exercises (modern, practical)",
+        "mid-day purpose reconnection prompts",
+        "weekly/daily review frameworks as guided exercises",
+      ],
+    },
+    creatorBoosts: {
+      "thomas frank": 15,
+      "daily stoic": 15,
+      "ali abdaal": 10,
+      "cal newport": 15,
+      "the school of life": 10,
+      struthless: 10,
+      "matt d'avella": 10,
+    },
+  },
+
+  move: {
+    queries: [
+      "desk stretches for programmers",
+      "quick posture reset exercise office",
+      "5 minute standing desk workout",
+      "wrist and hand stretches computer",
+      "neck and shoulder stretch office worker",
+      "energizing movement break short",
+      "yoga for desk workers short",
+      "eye strain relief exercises computer",
+    ],
+    channels: [
+      { channelId: "UCFKE7WVJfvaHW5q283SxchA", label: "Yoga With Adriene" },
+      { channelId: "UCVGwPMfQPC3s4ECtfSTSIhA", label: "FitnessBlender" },
+      { channelId: "UCU0DZYlrTBRN4K8cr0tsFBA", label: "Tom Merrick", query: "mobility stretches" },
+      { channelId: "UCpQ34afVgk8cRQBjSJ1xuJQ", label: "MadFit", query: "desk workout" },
+    ],
+    contentGoal:
+      "Find short guided physical movement content — desk stretches, posture resets, wrist exercises, quick yoga flows, or standing movement breaks designed for people who've been sitting and working.",
+    personaOverlay: {
+      voicePrompt:
+        "You are curating movement content for people who've been sitting at a desk working. You value guided physical exercises: desk stretches, posture corrections, wrist/hand stretches, quick yoga flows, and energizing movement breaks. The content must show and guide actual movement — not just talk about exercise.",
+      rejectPatterns: [
+        "content that only discusses exercise without demonstrating it",
+        "high-intensity workouts (HIIT, crossfit) — too much for a work break",
+        "gym-focused content requiring equipment",
+        "weight loss or body image focused content",
+        "dance routines or choreography",
+        "sports-specific training",
+      ],
+      preferPatterns: [
+        "guided desk stretches with clear follow-along instructions",
+        "posture correction exercises for computer workers",
+        "wrist, hand, and forearm stretches for typing",
+        "neck and shoulder tension relief",
+        "quick standing movement breaks (no equipment)",
+        "yoga flows designed for office/desk workers",
+        "eye strain relief exercises",
+      ],
+    },
+    creatorBoosts: {
+      "yoga with adriene": 20,
+      "tom merrick": 15,
+      fitnessblender: 15,
+      madfit: 10,
+      "antranik": 10,
+      "bob and brad": 10,
+      "hybrid calisthenics": 10,
+    },
+  },
+};
+
+/** All pipeline categories — single source of truth. */
+export const ALL_CATEGORIES = ["learning", ...Object.keys(CATEGORY_PROFILES)] as const;
+
+/**
+ * Get the category profile for a non-learning category.
+ * Returns null for "learning" (use world profile directly).
+ */
+export function getCategoryProfile(category: string): CategoryProfile | null {
+  if (category === "learning") return null;
+  return CATEGORY_PROFILES[category] ?? null;
+}
+
 // ─── Per-World Profiles ─────────────────────────────────────
 
 export const WORLD_BREAK_PROFILES: Record<WorldKey, WorldBreakProfile> = {
@@ -322,20 +509,32 @@ export function getBreakProfile(worldKey: string): WorldBreakProfile {
 
 /**
  * Get the editorial persona for a world (convenience wrapper).
+ * For non-learning categories, merges the category overlay with the world persona.
  */
-export function getEditorialPersona(worldKey: string): EditorialPersona {
-  return getBreakProfile(worldKey).persona;
+export function getEditorialPersona(worldKey: string, category = "learning"): EditorialPersona {
+  const worldPersona = getBreakProfile(worldKey).persona;
+  const catProfile = getCategoryProfile(category);
+  if (!catProfile) return worldPersona;
+
+  // Merge: category overlay takes priority, but world persona name is preserved
+  return {
+    name: worldPersona.name,
+    voicePrompt: `${catProfile.personaOverlay.voicePrompt}\n\nYou are also the ${worldPersona.name} curator for this room. ${worldPersona.voicePrompt.split(". ").slice(1, 3).join(". ")}.`,
+    rejectPatterns: catProfile.personaOverlay.rejectPatterns,
+    preferPatterns: catProfile.personaOverlay.preferPatterns,
+  };
 }
 
 /**
- * Look up the authority boost for a creator in a given world.
+ * Look up the authority boost for a creator in a given world + category.
  * Uses case-insensitive substring matching.
- * Also checks the default boosts (universal authorities).
+ * For non-learning categories, merges category boosts with world boosts.
  * Returns 0 if no match found.
  */
 export function getCreatorBoost(
   worldKey: string,
   creatorName: string,
+  category = "learning",
 ): number {
   const profile = getBreakProfile(worldKey);
   const normalised = creatorName.toLowerCase().trim();
@@ -344,7 +543,12 @@ export function getCreatorBoost(
   // Merge default boosts for non-default worlds
   const defaultBoosts =
     worldKey === "default" ? {} : WORLD_BREAK_PROFILES.default.creatorBoosts;
-  const allBoosts = { ...defaultBoosts, ...profile.creatorBoosts };
+
+  // For non-learning categories, also merge category-specific boosts
+  const catProfile = getCategoryProfile(category);
+  const catBoosts = catProfile?.creatorBoosts ?? {};
+
+  const allBoosts = { ...defaultBoosts, ...profile.creatorBoosts, ...catBoosts };
 
   for (const [key, boost] of Object.entries(allBoosts)) {
     if (normalised.includes(key) || key.includes(normalised)) {
@@ -356,25 +560,42 @@ export function getCreatorBoost(
 }
 
 /**
- * Pick `count` random queries from a profile (no repeats).
+ * Pick `count` random queries. For non-learning categories, uses the
+ * category profile queries instead of the world profile.
  */
 export function pickQueries(
   profile: WorldBreakProfile,
   count = 2,
+  category = "learning",
 ): string[] {
-  const shuffled = [...profile.queries].sort(() => Math.random() - 0.5);
+  const catProfile = getCategoryProfile(category);
+  const source = catProfile ? catProfile.queries : profile.queries;
+  const shuffled = [...source].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(count, shuffled.length));
 }
 
 /**
- * Pick one random channel source from a profile (if any exist).
+ * Pick one random channel source. For non-learning categories, uses the
+ * category profile channels instead of the world profile.
  */
 export function pickChannel(
   profile: WorldBreakProfile,
+  category = "learning",
 ): ChannelSource | null {
-  if (profile.channels.length === 0) return null;
-  const idx = Math.floor(Math.random() * profile.channels.length);
-  return profile.channels[idx];
+  const catProfile = getCategoryProfile(category);
+  const source = catProfile ? catProfile.channels : profile.channels;
+  if (source.length === 0) return null;
+  const idx = Math.floor(Math.random() * source.length);
+  return source[idx];
+}
+
+/**
+ * Get the content goal for a category (used in scoring prompt).
+ * Returns null for learning (the world persona already describes the goal).
+ */
+export function getCategoryContentGoal(category: string): string | null {
+  const catProfile = getCategoryProfile(category);
+  return catProfile?.contentGoal ?? null;
 }
 
 // ─── Validation (dev only) ──────────────────────────────────

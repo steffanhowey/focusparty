@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { MusicPopover } from "@/components/session/MusicPopover";
 import { CheckInMenu } from "@/components/session/CheckInMenu";
+import { BreakCategoryPopover } from "@/components/session/BreakCategoryPopover";
+import type { BreakCategory } from "@/lib/breakConstants";
 import { Button } from "@/components/ui/Button";
 import { DurationPills } from "./DurationPills";
 import { useTimerDisplay, type Timer } from "@/lib/useTimer";
@@ -74,7 +76,11 @@ interface ActionBarProps {
   onCheckIn?: (action: string, message?: string) => void;
   /** Breaks panel state */
   breaksActive?: boolean;
-  onOpenBreaks?: () => void;
+  /** Break category popover */
+  breakPopoverOpen?: boolean;
+  onToggleBreakPopover?: () => void;
+  onCloseBreakPopover?: () => void;
+  onSelectBreakCategory?: (category: BreakCategory) => void;
   /** Current session phase — drives break visual state in timer pill */
   phase?: "sprint" | "break";
   /** Break duration in minutes — used for break countdown in timer pill */
@@ -128,7 +134,10 @@ export const ActionBar = memo(function ActionBar({
   onCloseCheckIn,
   onCheckIn,
   breaksActive,
-  onOpenBreaks,
+  breakPopoverOpen,
+  onToggleBreakPopover,
+  onCloseBreakPopover,
+  onSelectBreakCategory,
   phase,
   breakDurationMinutes,
   onChangeBreakDuration,
@@ -138,6 +147,7 @@ export const ActionBar = memo(function ActionBar({
 }: ActionBarProps) {
   const musicWrapperRef = useRef<HTMLDivElement>(null);
   const checkInWrapperRef = useRef<HTMLDivElement>(null);
+  const breakWrapperRef = useRef<HTMLDivElement>(null);
   const { formatted, seconds, running } = useTimerDisplay(timer);
   const isBreak = phase === "break";
 
@@ -416,17 +426,27 @@ export const ActionBar = memo(function ActionBar({
           </div>
         )}
 
-        {onOpenBreaks && (
-          <Tip label="Breaks">
-            <button
-              type="button"
-              onClick={onOpenBreaks}
-              className={breaksActive ? activeBtn : defaultBtn}
-              aria-label="Breaks"
-            >
-              <Coffee {...ICON} />
-            </button>
-          </Tip>
+        {onToggleBreakPopover && onSelectBreakCategory && (
+          <div ref={breakWrapperRef} className="relative">
+            <Tip label="Breaks">
+              <button
+                type="button"
+                onClick={onToggleBreakPopover}
+                className={breaksActive || breakPopoverOpen ? activeBtn : defaultBtn}
+                aria-label="Breaks"
+                aria-expanded={breakPopoverOpen}
+              >
+                <Coffee {...ICON} />
+              </button>
+            </Tip>
+
+            <BreakCategoryPopover
+              isOpen={breakPopoverOpen ?? false}
+              onClose={onCloseBreakPopover ?? onToggleBreakPopover}
+              wrapperRef={breakWrapperRef}
+              onSelectCategory={onSelectBreakCategory}
+            />
+          </div>
         )}
 
         <Tip label="Commitments">

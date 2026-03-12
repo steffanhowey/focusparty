@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ActivityEvent } from "./types";
+import { CATEGORY_FEED_LABEL } from "./breakConstants";
 
 // ─── Tone System ────────────────────────────────────────────
 
@@ -296,11 +297,12 @@ export function renderActivityEvent(
 
     case "break_started": {
       const contentTitle = event.payload?.content_title as string | undefined;
+      const categoryLabel = CATEGORY_FEED_LABEL[event.payload?.category as string] ?? "learning";
       return {
         icon: Coffee,
         label: contentTitle
-          ? `${name} took a learning break: ${contentTitle.length > 30 ? contentTitle.slice(0, 27) + "..." : contentTitle}`
-          : `${name} took a learning break`,
+          ? `${name} took a ${categoryLabel} break: ${contentTitle.length > 30 ? contentTitle.slice(0, 27) + "..." : contentTitle}`
+          : `${name} took a ${categoryLabel} break`,
         tone: "info",
         color: "#8C55EF",
       };

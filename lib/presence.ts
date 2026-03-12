@@ -1,4 +1,5 @@
 import type { SessionPhase, ParticipantStatus, PresencePayload, CharacterId, CommitmentType } from "./types";
+import { CATEGORY_FEED_LABEL } from "./breakConstants";
 
 // ─── Phase → Status Mapping ──────────────────────────────────
 
@@ -134,9 +135,10 @@ export function eventDisplayText(
     }
     case "break_started": {
       const contentTitle = payload?.content_title as string | undefined;
+      const categoryLabel = CATEGORY_FEED_LABEL[payload?.category as string] ?? "learning";
       return contentTitle
-        ? `${name} took a learning break: ${contentTitle}`
-        : `${name} took a learning break`;
+        ? `${name} took a ${categoryLabel} break: ${contentTitle}`
+        : `${name} took a ${categoryLabel} break`;
     }
     case "break_completed":
       return `${name} returned to sprint`;
