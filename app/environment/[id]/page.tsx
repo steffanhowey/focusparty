@@ -1389,6 +1389,13 @@ export default function EnvironmentPage() {
       syntheticParticipants.map((sp) => [sp.id, sp.lastSprintEventAt])
     );
 
+    // Filter shelf to 5-min items only for synthetic assignment.
+    // This ensures synthetics always show content the user would see
+    // in the default flyout view (5 min), not items from other buckets.
+    const syntheticShelf = breakShelfItems.filter(
+      (item) => (item.best_duration ?? 5) === 5
+    );
+
     const synthetic: ParticipantInfo[] = roomSynthetics.map((sp) => {
       const durIdx = (sp.id.charCodeAt(sp.id.length - 1) + roomSeed) % SYNTHETIC_SPRINT_DURATIONS.length;
       const sprintDur = SYNTHETIC_SPRINT_DURATIONS[durIdx] * 60; // seconds
@@ -1408,8 +1415,8 @@ export default function EnvironmentPage() {
       }
 
       const isOnBreak = elapsed >= sprintDur - SYNTHETIC_BREAK_SEC;
-      const shelfIdx = (sp.id.charCodeAt(0) + roomSeed) % Math.max(breakShelfItems.length, 1);
-      const shelfItem = isOnBreak && breakShelfItems.length > 0 ? breakShelfItems[shelfIdx] : null;
+      const shelfIdx = (sp.id.charCodeAt(0) + roomSeed) % Math.max(syntheticShelf.length, 1);
+      const shelfItem = isOnBreak && syntheticShelf.length > 0 ? syntheticShelf[shelfIdx] : null;
 
       return {
         id: sp.id,
