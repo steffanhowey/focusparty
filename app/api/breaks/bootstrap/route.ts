@@ -3,7 +3,7 @@ import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
 import { discoverCandidates } from "@/lib/breaks/discovery";
 import { evaluatePendingCandidates } from "@/lib/breaks/evaluateBatch";
 import { refreshShelf } from "@/lib/breaks/shelf";
-import { WORLD_SEARCH_PROFILES } from "@/lib/breaks/searchProfiles";
+import { WORLD_BREAK_PROFILES } from "@/lib/breaks/worldBreakProfiles";
 
 /**
  * POST /api/breaks/bootstrap
@@ -36,8 +36,8 @@ export async function POST(request: Request) {
       10,
     );
 
-    if (!worldKey || !WORLD_SEARCH_PROFILES[worldKey]) {
-      const validKeys = Object.keys(WORLD_SEARCH_PROFILES);
+    if (!worldKey || !(worldKey in WORLD_BREAK_PROFILES)) {
+      const validKeys = Object.keys(WORLD_BREAK_PROFILES);
       return NextResponse.json(
         {
           error: `Invalid worldKey. Valid keys: ${validKeys.join(", ")}`,

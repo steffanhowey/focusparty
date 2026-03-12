@@ -67,9 +67,20 @@ export function BreakVideoOverlay({
   const [nextClipLabel, setNextClipLabel] = useState("");
   const [shieldVisible, setShieldVisible] = useState(true);
   const [paused, setPaused] = useState(false);
+  const pendingNextIndexRef = useRef<number | null>(null);
 
   // Derived
   const isOvertime = elapsed >= totalSeconds;
+
+  // ─── Reset state on content change (no more key-remount) ─
+  useEffect(() => {
+    trackedStartRef.current = false;
+    trackedExtendedRef.current = false;
+    setElapsed(0);
+    setProgress(0);
+    setPaused(false);
+    setShieldVisible(true);
+  }, [content.id]);
 
   // ─── Engagement tracking ───────────────────────────────
   useEffect(() => {
@@ -86,11 +97,12 @@ export function BreakVideoOverlay({
     }
   }, [isOvertime, content.id, elapsed]);
 
-  // ─── Elapsed timer (counts up) ────────────────────────
+  // ─── Elapsed timer (counts up — pauses during transitions & pause) ─
   useEffect(() => {
+    if (paused || isChangingChannel) return;
     const id = setInterval(() => setElapsed((e) => e + 1), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [paused, isChangingChannel]);
 
   // ─── Handlers ──────────────────────────────────────────
   const handleClose = useCallback(() => {
@@ -106,15 +118,27 @@ export function BreakVideoOverlay({
     try { playerRef.current?.destroy(); } catch { /* ok */ }
     playerRef.current = null;
     trackEngagement(content.id, "abandoned", elapsed, content.room_world_key);
-    const nextIndex = (currentClipIndex + 1) % clips.length;
+    // Compute next index ONCE and lock it for the transition
+    // Clamp currentClipIndex to valid range in case the clips array shifted
+    const safeIndex = Math.min(Math.max(currentClipIndex, 0), clips.length - 1);
+    const nextIndex = (safeIndex + 1) % clips.length;
+    pendingNextIndexRef.current = nextIndex;
     setNextClipLabel(clips[nextIndex].label);
     setIsChangingChannel(true);
     setShieldVisible(true);
   }, [clips, currentClipIndex, content.id, elapsed]);
 
   const handleStaticComplete = useCallback(() => {
-    const nextIndex = (currentClipIndex + 1) % clips.length;
-    onChangeClip(clips[nextIndex]);
+    // Use the index locked at channel-change time, not a potentially stale re-derivation
+    const nextIndex = pendingNextIndexRef.current ?? (currentClipIndex + 1) % clips.length;
+    pendingNextIndexRef.current = null;
+    const nextClip = clips[nextIndex];
+    if (!nextClip) {
+      // Clips array shifted during transition — bail out gracefully
+      setIsChangingChannel(false);
+      return;
+    }
+    onChangeClip(nextClip);
     setIsChangingChannel(false);
   }, [clips, currentClipIndex, onChangeClip]);
 

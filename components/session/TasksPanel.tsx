@@ -36,6 +36,9 @@ interface TasksPanelProps {
   onSetSprintGoal?: (taskId: string) => void;
   onAISuggest?: () => void;
   isAISuggesting?: boolean;
+  // Active commitment
+  activeTaskId?: string | null;
+  onActivateTask?: (taskId: string) => void;
 }
 
 export const TasksPanel = memo(function TasksPanel({
@@ -52,6 +55,8 @@ export const TasksPanel = memo(function TasksPanel({
   onSetSprintGoal,
   onAISuggest,
   isAISuggesting,
+  activeTaskId,
+  onActivateTask,
 }: TasksPanelProps) {
   const [newTaskText, setNewTaskText] = useState("");
   const [showCompleted, setShowCompleted] = useState(false);
@@ -211,14 +216,16 @@ export const TasksPanel = memo(function TasksPanel({
               <SortableTaskRow
                 key={task.id}
                 task={task}
+                isActive={task.id === activeTaskId}
                 onComplete={onCompleteTask}
                 onEdit={onEditTask}
+                onActivate={onActivateTask}
               />
             ))}
 
           {!hasTasks && !showAddInput && (
             <p className="px-4 py-6 text-center text-xs text-[var(--color-text-tertiary)]">
-              No tasks yet
+              No commitments yet
             </p>
           )}
 
@@ -246,7 +253,7 @@ export const TasksPanel = memo(function TasksPanel({
                     setShowAddInput(false);
                   }
                 }}
-                placeholder="New task..."
+                placeholder="What will you commit to?"
                 className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
               />
               {newTaskText.trim() && (
@@ -262,7 +269,7 @@ export const TasksPanel = memo(function TasksPanel({
               className="flex items-center gap-2 px-2 py-3 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
             >
               <Plus size={14} strokeWidth={1.5} />
-              <span className="text-sm">Add task</span>
+              <span className="text-sm">Add commitment</span>
             </button>
           )}
 
@@ -274,7 +281,7 @@ export const TasksPanel = memo(function TasksPanel({
                 onClick={() => setShowCompleted((s) => !s)}
                 className="flex items-center gap-2 px-2 py-3 text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
               >
-                Completed ({completedTasks.length})
+                Done ({completedTasks.length})
                 <ChevronRight
                   size={14}
                   strokeWidth={1.5}

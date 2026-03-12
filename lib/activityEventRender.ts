@@ -113,13 +113,15 @@ export function renderActivityEvent(
       };
     }
 
-    case "sprint_completed":
+    case "sprint_completed": {
+      const sprintN = event.payload?.sprint_number;
       return {
-        icon: CheckCircle2,
-        label: `${name} completed a sprint`,
+        icon: Zap,
+        label: sprintN ? `${name} completed sprint #${sprintN}` : `${name} completed a sprint`,
         tone: "success",
         color: TONE_COLORS.success,
       };
+    }
 
     case "goal_declared": {
       const goalText = event.body;
@@ -142,13 +144,17 @@ export function renderActivityEvent(
         color: TONE_COLORS.success,
       };
 
-    case "task_completed":
+    case "task_completed": {
+      const taskTitle = event.body;
       return {
         icon: CheckCircle2,
-        label: `${name} finished a task`,
+        label: taskTitle
+          ? `${name} finished: ${taskTitle.length > 35 ? taskTitle.slice(0, 32) + "..." : taskTitle}`
+          : `${name} finished a task`,
         tone: "success",
         color: TONE_COLORS.success,
       };
+    }
 
     case "reflection_submitted":
       return {

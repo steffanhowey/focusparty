@@ -22,7 +22,8 @@ export type SyntheticEventType =
   | "session_completed"
   | "participant_left"
   | "check_in"
-  | "high_five";
+  | "high_five"
+  | "break_started";
 
 export interface SyntheticParticipant {
   /** Stable identifier — stored in payload.synthetic_id, never in user_id FK. */
@@ -36,8 +37,9 @@ export interface SyntheticParticipant {
   expressionMode: SyntheticExpressionMode;
   /** Worlds this synthetic prefers (higher affinity for appearing). */
   preferredWorldKeys: string[];
-  /** Relative weights for each event type. Higher = more likely. */
-  activityBias: Record<SyntheticEventType, number>;
+  /** Relative weights for each event type. Higher = more likely.
+   *  break_started is derived from sprint_completed, not weighted directly. */
+  activityBias: Record<string, number>;
 }
 
 // ─── Room Regulars ──────────────────────────────────────────

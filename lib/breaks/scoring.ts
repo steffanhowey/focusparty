@@ -6,8 +6,7 @@
 import OpenAI from "openai";
 import { WORLD_CONFIGS } from "@/lib/worlds";
 import type { BreakContentCandidate, BreakSegment } from "@/lib/types";
-import { getEditorialPersona } from "./editorialPersonas";
-import { getCreatorBoost } from "./creatorAuthority";
+import { getEditorialPersona, getCreatorBoost } from "./worldBreakProfiles";
 import {
   computeFreshnessDimension,
   computeFreshnessBonus,

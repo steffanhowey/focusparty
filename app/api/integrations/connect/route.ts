@@ -2,11 +2,15 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { PROVIDERS } from "@/lib/integrations/providers";
 import type { IntegrationProviderId } from "@/lib/integrations/types";
+import crypto from "crypto";
 
 /**
  * POST /api/integrations/connect
- * Initiates OAuth linking for a provider.
- * Returns the OAuth URL for the client to redirect to.
+ * Builds a direct OAuth authorize URL for the requested provider.
+ * Returns { url } for the client to redirect to.
+ *
+ * This bypasses Supabase auth's linkIdentity — we only need an access token
+ * for API calls, not an identity link.
  */
 export async function POST(request: Request) {
   try {
@@ -22,9 +26,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
-
     // Verify user is authenticated
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -32,44 +35,42 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Map our provider IDs to Supabase OAuth provider names
-    const supabaseProviderMap: Record<string, string> = {
-      github: "github",
-      google: "google",
-      linear: "linear",
-      slack: "slack_oidc",
-      discord: "discord",
-    };
-
-    const supabaseProvider = supabaseProviderMap[provider];
-    if (!supabaseProvider) {
-      return NextResponse.json(
-        { error: `OAuth not configured for ${provider}` },
-        { status: 400 }
-      );
-    }
-
-    // Build the redirect URL for the callback
     const origin = new URL(request.url).origin;
-    const redirectTo = `${origin}/api/integrations/callback?provider=${provider}`;
 
-    const { data, error } = await supabase.auth.linkIdentity({
-      provider: supabaseProvider as "github" | "google" | "discord",
-      options: {
-        redirectTo,
-        scopes: providerDef.defaultScopes.join(" "),
-      },
-    });
+    if (provider === "github") {
+      const clientId = process.env.GITHUB_CLIENT_ID;
+      if (!clientId) {
+        return NextResponse.json(
+          { error: "GitHub OAuth not configured (missing GITHUB_CLIENT_ID)" },
+          { status: 500 }
+        );
+      }
 
-    if (error) {
-      console.error(`[integrations/connect] OAuth error for ${provider}:`, error.message);
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+      // Generate a random state parameter for CSRF protection
+      // Encode the provider + user ID so the callback can verify
+      const statePayload = JSON.stringify({
+        provider,
+        userId: user.id,
+        nonce: crypto.randomBytes(16).toString("hex"),
+      });
+      const state = Buffer.from(statePayload).toString("base64url");
+
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: `${origin}/api/integrations/callback`,
+        scope: providerDef.defaultScopes.join(" "),
+        state,
+      });
+
+      const url = `https://github.com/login/oauth/authorize?${params.toString()}`;
+      return NextResponse.json({ url });
     }
 
-    return NextResponse.json({ url: data.url });
+    // Future: handle other providers (Google, Linear, Slack, Discord)
+    return NextResponse.json(
+      { error: `Direct OAuth not yet implemented for ${provider}` },
+      { status: 400 }
+    );
   } catch (err) {
     console.error("[integrations/connect] Error:", err);
     return NextResponse.json(

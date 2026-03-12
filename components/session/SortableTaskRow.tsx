@@ -3,21 +3,25 @@
 import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Grip, Check } from "lucide-react";
+import { Grip, Check, Play } from "lucide-react";
 import type { TaskRecord } from "@/lib/types";
 
 interface SortableTaskRowProps {
   task: TaskRecord;
   completed?: boolean;
+  isActive?: boolean;
   onComplete: (taskId: string) => void;
   onEdit: (taskId: string, newText: string) => void;
+  onActivate?: (taskId: string) => void;
 }
 
 export const SortableTaskRow = memo(function SortableTaskRow({
   task,
   completed = false,
+  isActive = false,
   onComplete,
   onEdit,
+  onActivate,
 }: SortableTaskRowProps) {
   const {
     attributes,
@@ -81,8 +85,32 @@ export const SortableTaskRow = memo(function SortableTaskRow({
     <div
       ref={setNodeRef}
       style={style}
-      className="group flex items-start gap-3 border-b border-[var(--color-border-subtle)] px-2 py-3 last:border-b-0"
+      className={`group flex items-start gap-2.5 px-2 py-3 last:border-b-0 ${
+        isActive
+          ? "border-l-2 border-l-[var(--color-accent-primary)] border-b border-b-[var(--color-border-subtle)] bg-white/[0.04]"
+          : "border-l-2 border-l-transparent border-b border-b-[var(--color-border-subtle)]"
+      }`}
     >
+      {/* Play / active indicator */}
+      {onActivate && !completed && (
+        <button
+          type="button"
+          onClick={() => onActivate(task.id)}
+          className={`flex h-5 shrink-0 items-center justify-center transition-colors ${
+            isActive
+              ? "text-[var(--color-accent-primary)]"
+              : "text-[var(--color-text-tertiary)] opacity-0 group-hover:opacity-100 hover:text-white"
+          }`}
+          aria-label={isActive ? `Active: ${task.title}` : `Focus on ${task.title}`}
+        >
+          <Play
+            size={12}
+            strokeWidth={2}
+            className={isActive ? "fill-current" : ""}
+          />
+        </button>
+      )}
+
       {/* Drag handle */}
       <button
         type="button"
@@ -119,7 +147,9 @@ export const SortableTaskRow = memo(function SortableTaskRow({
           className={`min-w-0 flex-1 cursor-text break-words text-sm leading-snug ${
             completed
               ? "text-[var(--color-text-tertiary)] line-through"
-              : "text-[var(--color-text-secondary)]"
+              : isActive
+                ? "text-white"
+                : "text-[var(--color-text-secondary)]"
           }`}
           onClick={startEditing}
         >

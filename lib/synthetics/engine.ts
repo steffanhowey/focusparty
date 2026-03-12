@@ -282,7 +282,8 @@ function buildSyntheticStates(
       case "sprint_completed":
       case "check_in":
       case "high_five":
-        // stays in_session after completing a sprint, checking in, or high-fiving
+      case "break_started":
+        // stays in_session after completing a sprint, checking in, high-fiving, or starting a break
         stateMap.set(synId, {
           state: "in_session",
           joinedAt: stateMap.get(synId)?.joinedAt ?? null,
@@ -455,6 +456,8 @@ interface RealUser {
   displayName: string;
   /** Did this user complete a sprint in the last 5 min? */
   recentSprintComplete: boolean;
+  /** Did this user complete a task in the last 5 min? */
+  recentTaskComplete: boolean;
 }
 
 const SPRINT_COMPLETE_RECENCY_MS = 5 * 60 * 1000; // 5 min
@@ -470,11 +473,15 @@ function findRealUsersInRoom(recentEvents: ActivityEvent[]): RealUser[] {
     const recentSprint =
       event.event_type === "sprint_completed" &&
       now - new Date(event.created_at).getTime() < SPRINT_COMPLETE_RECENCY_MS;
+    const recentTask =
+      event.event_type === "task_completed" &&
+      now - new Date(event.created_at).getTime() < SPRINT_COMPLETE_RECENCY_MS;
 
     userMap.set(event.user_id, {
       userId: event.user_id,
       displayName: event.body ?? "Someone",
       recentSprintComplete: existing?.recentSprintComplete || recentSprint,
+      recentTaskComplete: existing?.recentTaskComplete || recentTask,
     });
   }
 
@@ -489,6 +496,12 @@ function pickHighFiveTarget(realUsers: RealUser[]): RealUser | null {
   const sprintFinishers = realUsers.filter((u) => u.recentSprintComplete);
   if (sprintFinishers.length > 0) {
     return sprintFinishers[Math.floor(Math.random() * sprintFinishers.length)];
+  }
+
+  // Next prefer someone who just completed a task
+  const taskFinishers = realUsers.filter((u) => u.recentTaskComplete);
+  if (taskFinishers.length > 0) {
+    return taskFinishers[Math.floor(Math.random() * taskFinishers.length)];
   }
 
   // Otherwise pick any real user
@@ -549,9 +562,10 @@ export function generateTickEvents(
     const candidateIds = new Set(candidates.map((c) => c.id));
     const states = buildSyntheticStates(recentEvents, candidateIds);
 
-    // Detect real users + recent sprint completions for high-five targeting
+    // Detect real users + recent sprint/task completions for high-five targeting
     const realUsers = findRealUsersInRoom(recentEvents);
     const hasRecentSprintComplete = realUsers.some((u) => u.recentSprintComplete);
+    const hasRecentTaskComplete = realUsers.some((u) => u.recentTaskComplete);
 
     // Busy-room check: if ≥3 real users active, only allow atmosphere lifecycle events
     const recentRealUserCount = countRecentRealUsers(recentEvents);
@@ -609,8 +623,13 @@ export function generateTickEvents(
         let adjustedWeight = t.weight;
         adjustedWeight *= getRoomStateBias(roomState, t.eventType);
 
-        // High-fives only fire when a real user recently completed a sprint
-        if (t.eventType === "high_five" && !hasRecentSprintComplete) continue;
+        // High-fives only fire when a real user recently completed a sprint or task
+        if (t.eventType === "high_five" && !hasRecentSprintComplete && !hasRecentTaskComplete) continue;
+
+        // Lower probability for task-completion-only high-fives (30% pass rate)
+        if (t.eventType === "high_five" && !hasRecentSprintComplete && hasRecentTaskComplete) {
+          if (Math.random() > 0.30) continue;
+        }
 
         // Skip high-fives entirely if no real users in the room
         if (t.eventType === "high_five" && realUsers.length === 0) continue;
@@ -669,6 +688,71 @@ export function generateTickEvents(
   }
 
   return proposals;
+}
+
+// ─── Break Derivation ────────────────────────────────────────
+
+/**
+ * After a sprint_completed, there's a ~20% chance the synthetic takes
+ * a short learning break. This creates a paired break_started event
+ * with a world-themed content_title in the payload.
+ */
+const BREAK_CHANCE = 0.20;
+
+const SYNTHETIC_BREAK_TITLES_BY_WORLD: Record<string, string[]> = {
+  default: [
+    "How Experts Learn New Skills", "The Science of Flow States",
+    "Creative Process Deep Dive", "Learning How to Learn",
+  ],
+  "vibe-coding": [
+    "Fireship: 100 Seconds of Bun", "System Design Fundamentals",
+    "Building with Server Components", "The Primeagen on Dev Tooling",
+  ],
+  "writer-room": [
+    "Brandon Sanderson on Revision", "Story Structure Masterclass",
+    "Nerdwriter: Close Reading", "The Discipline of Showing Up",
+  ],
+  "yc-build": [
+    "YC: How to Talk to Users", "Garry Tan on Founder Mistakes",
+    "Metrics That Actually Matter", "Customer Development Fundamentals",
+  ],
+  "gentle-start": [
+    "Building Focus Without Pressure", "The Power of Small Steps",
+    "Cal Newport on Deep Work", "Overcoming Creative Resistance",
+  ],
+};
+
+function deriveBreakEvents(
+  proposals: ProposedEvent[],
+  rooms: RoomWithEvents[],
+): ProposedEvent[] {
+  const roomMap = new Map(rooms.map((r) => [r.id, r]));
+  const breakEvents: ProposedEvent[] = [];
+
+  for (const proposal of proposals) {
+    if (proposal.event_type !== "sprint_completed") continue;
+    if (Math.random() >= BREAK_CHANCE) continue;
+
+    const room = roomMap.get(proposal.party_id);
+    const worldKey = room?.world_key ?? "default";
+    const titles = SYNTHETIC_BREAK_TITLES_BY_WORLD[worldKey] ?? SYNTHETIC_BREAK_TITLES_BY_WORLD.default;
+    const title = titles[Math.floor(Math.random() * titles.length)];
+
+    breakEvents.push({
+      party_id: proposal.party_id,
+      event_type: "break_started",
+      body: proposal.body,
+      payload: {
+        ...proposal.payload,
+        category: "learning",
+        content_title: title,
+      },
+      // Offset 2s after sprint completion so feed order is correct
+      created_at: new Date(new Date(proposal.created_at).getTime() + 2000).toISOString(),
+    });
+  }
+
+  return breakEvents;
 }
 
 // ─── AI Enrichment ──────────────────────────────────────────
@@ -923,6 +1007,10 @@ export async function runTick(
   );
 
   const proposals = generateTickEvents(updatedRooms);
+
+  // Derive break_started events from sprint completions (~20% chance)
+  const breakEvents = deriveBreakEvents(proposals, updatedRooms);
+  proposals.push(...breakEvents);
 
   // Enrich "update" check-ins with AI-generated status messages
   await enrichProposalsWithAI(proposals, updatedRooms);

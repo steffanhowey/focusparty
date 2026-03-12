@@ -9,7 +9,7 @@ import { ChatContent } from "./ChatFlyout";
 
 interface SideDrawerProps {
   onClose: () => void;
-  panel: "tasks" | "chat";
+  panel: "commitments" | "chat";
   // Tasks
   activeTasks: TaskRecord[];
   completedTasks: TaskRecord[];
@@ -25,6 +25,9 @@ interface SideDrawerProps {
   onSetSprintGoal?: (taskId: string) => void;
   onAISuggest?: () => void;
   isAISuggesting?: boolean;
+  // Active commitment
+  activeTaskId?: string | null;
+  onActivateTask?: (taskId: string) => void;
   // Chat
   messages: ChatMessage[];
   onSendMessage: (text: string) => void;
@@ -46,6 +49,8 @@ export const SideDrawer = memo(function SideDrawer({
   onSetSprintGoal,
   onAISuggest,
   isAISuggesting,
+  activeTaskId,
+  onActivateTask,
   messages,
   onSendMessage,
 }: SideDrawerProps) {
@@ -61,9 +66,9 @@ export const SideDrawer = memo(function SideDrawer({
 
   return (
     <>
-      <PanelHeader title={panel === "tasks" ? "Tasks" : "Chat"} onClose={onClose} />
+      <PanelHeader title={panel === "commitments" ? "Commitments" : "Chat"} onClose={onClose} />
 
-      {panel === "tasks" && (
+      {panel === "commitments" && (
         <div className="flex min-h-0 flex-1 flex-col">
           <TasksPanel
             activeTasks={activeTasks}
@@ -79,6 +84,8 @@ export const SideDrawer = memo(function SideDrawer({
             onSetSprintGoal={onSetSprintGoal}
             onAISuggest={onAISuggest}
             isAISuggesting={isAISuggesting}
+            activeTaskId={activeTaskId}
+            onActivateTask={onActivateTask}
           />
         </div>
       )}

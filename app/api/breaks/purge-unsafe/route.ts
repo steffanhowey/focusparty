@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
 import { createClient } from "@/lib/supabase/admin";
 import { screenContent } from "@/lib/breaks/contentSafety";
 
@@ -9,7 +10,11 @@ import { screenContent } from "@/lib/breaks/contentSafety";
  * Run this once to clean up existing content, then rely on the
  * pipeline's built-in screening for new content.
  */
-export async function POST() {
+export async function POST(request: Request) {
+  if (!(await verifyAdminAuth(request))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const supabase = createClient();
 
   // 1. Scan active shelf items

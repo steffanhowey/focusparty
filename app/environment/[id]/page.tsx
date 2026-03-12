@@ -48,10 +48,178 @@ import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
 import { BreakReEntryCountdown } from "@/components/environment/BreakReEntryCountdown";
 import { useBreakContent, type BreakClip } from "@/lib/useBreakContent";
 
-type SidePanel = "none" | "momentum" | "tasks" | "chat" | "settings" | "breaks";
+type SidePanel = "none" | "momentum" | "commitments" | "chat" | "settings" | "breaks";
 type CelebrationInfo = { color: string; text: string };
 const PANEL_WIDTH = 380;
 const DEFAULT_DURATION_SEC = 25 * 60;
+
+// ─── Synthetic flavor pools (archetype × sprint phase) ────
+// Flavors shift naturally as the synthetic progresses through their sprint.
+// "starting" = first 20%, "deep" = middle 60%, "wrapping" = last 20%.
+// Each phase has ~6 entries per archetype. The visible flavor changes
+// every ~4 min within a 25-min sprint (5 transitions per sprint).
+type SprintPhase = "starting" | "deep" | "wrapping";
+
+const SYNTHETIC_FLAVORS: Record<string, Record<SprintPhase, string[]>> = {
+  coder: {
+    starting: [
+      "pulling latest and reading the diff", "scanning my open issues", "picking up where I left off",
+      "reading through the PR comments", "setting up the dev server", "reviewing the ticket",
+    ],
+    deep: [
+      "debugging auth flow", "deep in a refactor rn", "working thru a tricky edge case",
+      "wiring up the new endpoint", "fixing a flaky test", "sorting out the API layer",
+      "type errors", "in the zone", "heads down", "catching up on code reviews",
+    ],
+    wrapping: [
+      "almost done w/ this PR", "cleaning up before I push", "running the test suite one more time",
+      "writing the commit message", "just need to finish testing", "final review pass",
+    ],
+  },
+  writer: {
+    starting: [
+      "reading back yesterday's edits", "reviewing my outline", "finding where I left off",
+      "scanning my notes from last session", "opening the draft", "re-reading the last section",
+    ],
+    deep: [
+      "rewriting the intro section", "editing ch. 3 draft", "cutting fluff from the second draft",
+      "tightening the conclusion", "flow state", "heads down",
+      "trying to finish this blog post", "research", "writing",
+    ],
+    wrapping: [
+      "almost done with this section", "one more paragraph to tighten", "saving and backing up",
+      "making a note of where to pick up next", "quick spell check pass", "wrapping up the draft",
+    ],
+  },
+  founder: {
+    starting: [
+      "checking metrics from overnight", "scanning customer support tickets", "reviewing the task board",
+      "reading through investor email thread", "pulling up the dashboard", "prioritizing today's list",
+    ],
+    deep: [
+      "updating the landing page", "investor update email", "user interview followups",
+      "scoping down the MVP", "going through NPS feedback", "metrics review",
+      "sketching the new dashboard", "heads down", "deep work block",
+    ],
+    wrapping: [
+      "almost done w/ the feature spec", "sending the investor update", "wrapping up the analysis",
+      "scheduling follow-ups for tomorrow", "finsihing up the proposal", "noting next steps",
+    ],
+  },
+  gentle: {
+    starting: [
+      "settling in", "reviewing my planner", "deciding what to focus on first",
+      "getting organized", "opening my notes", "taking a breath before diving in",
+    ],
+    deep: [
+      "organizing project notes", "working through feedback", "journaling",
+      "filling in the weekly planner", "annotating yesterday's readings",
+      "sorting through reference photos", "reading", "flow state",
+    ],
+    wrapping: [
+      "winding down gently", "saving progress", "jotting a note for next time",
+      "tidying up before I stop", "almost done for now", "reflecting on what I got done",
+    ],
+  },
+};
+
+/**
+ * Get the sprint-phase-aware flavor for a synthetic.
+ * @param archetype - coder/writer/founder/gentle
+ * @param sprintProgress - 0.0 to 1.0 (elapsed / duration)
+ * @param synId - synthetic ID for deterministic selection within a phase
+ */
+function getSyntheticFlavor(
+  archetype: string | undefined,
+  sprintProgress: number,
+  synId: string,
+): string {
+  const archetypeFlavors = SYNTHETIC_FLAVORS[archetype ?? "gentle"] ?? SYNTHETIC_FLAVORS.gentle;
+  // Determine phase from sprint progress
+  let phase: SprintPhase;
+  if (sprintProgress < 0.20) phase = "starting";
+  else if (sprintProgress < 0.80) phase = "deep";
+  else phase = "wrapping";
+
+  const pool = archetypeFlavors[phase];
+  // Use synId hash + a slow-rotating time bucket (4 min) for variety within a phase
+  const timeBucket = Math.floor(Date.now() / (4 * 60 * 1000));
+  const hash = synId.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return pool[(hash + timeBucket) % pool.length];
+}
+
+// ─── Synthetic break titles (world-themed) ────────────────
+// Each world gets break titles that match its content persona.
+const SYNTHETIC_BREAK_TITLES_BY_WORLD: Record<string, string[]> = {
+  default: [
+    "How Experts Learn New Skills", "The Science of Flow States",
+    "Creative Process Deep Dive", "Learning How to Learn",
+    "The Surprising Science of Focus", "How Memory Actually Works",
+    "Why Curiosity Matters More Than Talent", "Building Better Mental Models",
+  ],
+  "vibe-coding": [
+    "Fireship: 100 Seconds of Bun", "System Design Fundamentals",
+    "Building with Server Components", "The Primeagen on Dev Tooling",
+    "Theo: Why TypeScript Won", "Live Coding a CLI Tool",
+    "Web Dev Simplified: React Hooks", "Andrej Karpathy: Neural Nets",
+  ],
+  "writer-room": [
+    "Brandon Sanderson on Revision", "Story Structure Masterclass",
+    "Nerdwriter: Close Reading", "The Discipline of Showing Up",
+    "Finding Your Voice as a Writer", "Editing Like a Pro",
+    "The Art of the Opening Line", "Why Great Stories Break Rules",
+  ],
+  "yc-build": [
+    "YC: How to Talk to Users", "Garry Tan on Founder Mistakes",
+    "Metrics That Actually Matter", "Paul Graham: Do Things That Don't Scale",
+    "Michael Seibel on MVP Scope", "Customer Development Fundamentals",
+    "How to Find Product-Market Fit", "Fundraising: What VCs Look For",
+  ],
+  "gentle-start": [
+    "Building Focus Without Pressure", "The Power of Small Steps",
+    "Cal Newport on Deep Work", "Overcoming Creative Resistance",
+    "Matt D'Avella: Intentional Living", "Self-Compassion in Creative Work",
+    "Why Rest is Productive", "Finding Your Natural Rhythm",
+  ],
+};
+const SYNTHETIC_BREAK_TITLES_DEFAULT = SYNTHETIC_BREAK_TITLES_BY_WORLD.default;
+
+function getSyntheticBreakTitle(worldKey: string, index: number): string {
+  const pool = SYNTHETIC_BREAK_TITLES_BY_WORLD[worldKey] ?? SYNTHETIC_BREAK_TITLES_DEFAULT;
+  return pool[index % pool.length];
+}
+
+// ─── Synthetic goal templates (archetype-aware) ───────────
+// Shown in participant cards as the synthetic's declared goal.
+const SYNTHETIC_GOALS_BY_ARCHETYPE: Record<string, string[]> = {
+  coder: [
+    "Finish the auth refactor", "Ship the new API endpoint", "Clear the PR review queue",
+    "Fix the flaky test suite", "Migrate to the new SDK", "Build the settings page",
+    "Wire up webhook handling", "Debug the state management issue",
+  ],
+  writer: [
+    "Finish chapter 3 draft", "Edit the feature article", "Write the newsletter intro",
+    "Complete the content brief", "Revise the opening section", "Outline the next chapter",
+    "Polish the blog post", "Tighten the conclusion",
+  ],
+  founder: [
+    "Update the pitch deck", "Finish the feature spec", "Review customer interview notes",
+    "Ship the landing page update", "Analyze the onboarding funnel", "Write investor update",
+    "Scope the MVP down", "Map out the growth experiment",
+  ],
+  gentle: [
+    "Organize project notes", "Work through the study guide", "Fill in the weekly planner",
+    "Sort through reference materials", "Annotate the reading list", "Tidy up project folders",
+    "Catch up on highlights", "Map out the week ahead",
+  ],
+};
+
+function getSyntheticGoal(archetype: string | undefined, synId: string): string {
+  const pool = SYNTHETIC_GOALS_BY_ARCHETYPE[archetype ?? "gentle"] ?? SYNTHETIC_GOALS_BY_ARCHETYPE.gentle;
+  // Deterministic per synthetic so their goal is stable across re-renders
+  const hash = synId.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return pool[hash % pool.length];
+}
 
 export default function EnvironmentPage() {
   const params = useParams();
@@ -84,6 +252,7 @@ export default function EnvironmentPage() {
   const [commitmentType, setCommitmentType] = useState<import("@/lib/types").CommitmentType>("personal");
   const [sessionGoalId, setSessionGoalId] = useState<string | null>(null);
   const resolutionHandledRef = useRef(false);
+  const [committedTaskIds, setCommittedTaskIds] = useState<Set<string>>(new Set());
   const [micActive, setMicActive] = useState(false);
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [celebrations, setCelebrations] = useState<Map<string, CelebrationInfo>>(new Map());
@@ -235,6 +404,16 @@ export default function EnvironmentPage() {
         text = "Back to it!";
       }
 
+      if (event.event_type === "task_completed") {
+        // Skip own task completions — already handled optimistically in handleCompleteTask
+        if (event.user_id === userId) continue;
+        targetId = event.actor_type === "synthetic"
+          ? (event.payload?.synthetic_id as string) ?? null
+          : event.user_id;
+        color = "#5BC682";
+        text = "Task done!";
+      }
+
       if (targetId) {
         // Synthetic celebrations get a 1-3s random delay to feel less robotic
         const delay = event.actor_type === "synthetic" ? 1000 + Math.random() * 2000 : 0;
@@ -321,6 +500,34 @@ export default function EnvironmentPage() {
     reorderTasks,
   } = useTasks();
 
+  // ─── Session-scoped commitments (filter for flyout) ─────
+  const commitTask = useCallback((taskId: string) => {
+    setCommittedTaskIds((prev) => {
+      if (prev.has(taskId)) return prev;
+      const next = new Set(prev);
+      next.add(taskId);
+      return next;
+    });
+  }, []);
+
+  const committedActiveTasks = useMemo(
+    () => activeTasks.filter((t) => committedTaskIds.has(t.id)),
+    [activeTasks, committedTaskIds]
+  );
+
+  const committedCompletedTasks = useMemo(
+    () => completedTasks.filter((t) => committedTaskIds.has(t.id)),
+    [completedTasks, committedTaskIds]
+  );
+
+  const addAndCommitTask = useCallback(
+    async (text: string) => {
+      const newId = await addTask(text);
+      if (newId) commitTask(newId);
+    },
+    [addTask, commitTask]
+  );
+
   // ─── External items (GitHub, Linear, etc.) ──────────────
   const externalItems = useExternalItems(activeTasks);
 
@@ -365,9 +572,10 @@ export default function EnvironmentPage() {
       if (task) {
         setGoal(task.title);
         selectTask(taskId);
+        commitTask(taskId);
       }
     },
-    [activeTasks, completedTasks, selectTask]
+    [activeTasks, completedTasks, selectTask, commitTask]
   );
 
   const handleAISuggest = useCallback(async () => {
@@ -427,7 +635,10 @@ export default function EnvironmentPage() {
     setShowJoinModal(false);
 
     // Apply the config directly (same as Priority 2 hydration)
-    if (config.taskId) selectTask(config.taskId);
+    if (config.taskId) {
+      selectTask(config.taskId);
+      commitTask(config.taskId);
+    }
     setGoal(config.goalText);
     setDurationSec(config.durationSec);
     musicAutoPlayRef.current = config.musicAutoPlay ?? false;
@@ -463,6 +674,7 @@ export default function EnvironmentPage() {
             if (createdId) {
               taskId = createdId;
               selectTask(createdId);
+              commitTask(createdId);
             }
           }
 
@@ -534,23 +746,43 @@ export default function EnvironmentPage() {
     // Priority 1: Restore active session from DB
     if (persistence.wasRestored && persistence.sessionRow) {
       const s = persistence.sessionRow;
-      setPhase(s.phase);
       setGoal(s.goal_text ?? "");
       setDurationSec(s.planned_duration_sec);
 
       // Restore task selection if session has a task
-      if (s.task_id) selectTask(s.task_id);
+      if (s.task_id) {
+        selectTask(s.task_id);
+        commitTask(s.task_id);
+      }
 
-      // Resume timer if sprint is still active
-      if (s.phase === "sprint" && persistence.currentSprint && !persistence.currentSprint.completed) {
-        const remaining = computeRemainingSeconds(persistence.currentSprint);
+      // Only an active sprint with remaining time is resumable.
+      // Break/review/breathing/setup are ephemeral client states that
+      // can't be reconstructed after a page reload.
+      const hasActiveSprint =
+        persistence.currentSprint && !persistence.currentSprint.completed;
+      const isSprintOrBreak = s.phase === "sprint" || s.phase === "break";
+
+      if (isSprintOrBreak && hasActiveSprint) {
+        const remaining = computeRemainingSeconds(persistence.currentSprint!);
         if (remaining > 0) {
+          // Resume into sprint (even if on break — break state is client-only)
+          setPhase("sprint");
           timer.reset(remaining);
           timer.start();
+          if (s.phase !== "sprint") {
+            persistence.updatePhase("sprint").catch(() => {});
+          }
         } else {
-          // Sprint expired while away — go directly to review
-          handleTimerComplete();
+          // Sprint expired while away — silently end stale session, start fresh
+          persistence.endSession("completed").catch(() => {});
+          setPhase("setup");
         }
+      } else {
+        // No active sprint, or non-resumable phase — end stale session, start fresh
+        if (s.status === "active") {
+          persistence.endSession("abandoned").catch(() => {});
+        }
+        setPhase("setup");
       }
       return;
     }
@@ -843,9 +1075,30 @@ export default function EnvironmentPage() {
     async (taskId: string) => {
       completeTask(taskId);
 
-      // Check goal cascade: if completed task belongs to a goal, see if all siblings are now done
       if (!userId) return;
       const task = [...activeTasks, ...completedTasks].find((t) => t.id === taskId);
+
+      // ── Emit activity event + optimistic celebration ──
+      logEvent({
+        party_id: partyId,
+        session_id: persistence.sessionRow?.id ?? null,
+        user_id: userId,
+        event_type: "task_completed",
+        body: task?.title ?? null,
+      }).catch((err) =>
+        console.error("[EnvironmentPage] task_completed event failed:", err?.message ?? err?.code ?? JSON.stringify(err))
+      );
+
+      setCelebrations((prev) => new Map(prev).set(userId, { color: "#5BC682", text: "Task done!" }));
+      setTimeout(() => {
+        setCelebrations((prev) => {
+          const next = new Map(prev);
+          next.delete(userId);
+          return next;
+        });
+      }, 2000);
+
+      // Check goal cascade: if completed task belongs to a goal, see if all siblings are now done
       if (task?.goal_id) {
         const goal = activeGoals.find((g) => g.id === task.goal_id);
         if (goal) {
@@ -895,8 +1148,8 @@ export default function EnvironmentPage() {
     () => setActivePanel((prev) => (prev === "momentum" ? "none" : "momentum")),
     []
   );
-  const handleToggleTasks = useCallback(
-    () => setActivePanel((prev) => (prev === "tasks" ? "none" : "tasks")),
+  const handleToggleCommitments = useCallback(
+    () => setActivePanel((prev) => (prev === "commitments" ? "none" : "commitments")),
     []
   );
   const handleToggleChat = useCallback(
@@ -997,7 +1250,11 @@ export default function EnvironmentPage() {
         const item = await res.json();
         if (item) {
           setSelectedParticipant(null);
-          handleSelectBreakContent(item, 5);
+          // Use the item's best_duration (or fallback to 5) instead of hardcoding
+          const duration: BreakDuration = ([3, 5, 10] as const).includes(item.best_duration)
+            ? item.best_duration
+            : 5;
+          handleSelectBreakContent(item, duration);
         }
       } catch {
         // silently fail
@@ -1068,79 +1325,68 @@ export default function EnvironmentPage() {
     [userId, partyId, persistence.sessionRow?.id, displayName, activeTask?.title]
   );
 
+  // ─── Clear goal when active task is removed mid-sprint ──
+  const prevActiveTaskIdRef = useRef<string | null>(activeTask?.id ?? null);
+  useEffect(() => {
+    const prevId = prevActiveTaskIdRef.current;
+    const currId = activeTask?.id ?? null;
+    prevActiveTaskIdRef.current = currId;
+    // Only clear goal when we had a task and it went away during sprint
+    if (prevId && !currId && phase === "sprint") {
+      setGoal("");
+    }
+  }, [activeTask?.id, phase]);
+
   // ─── Task switching ────────────────────────────────────
 
   const handleStartTask = useCallback(
     (taskId: string) => {
       if (!activeTask || activeTask.id === taskId) {
         selectTask(taskId);
+        commitTask(taskId);
       } else {
         setPendingSwitchTaskId(taskId);
       }
     },
-    [activeTask, selectTask]
+    [activeTask, selectTask, commitTask]
   );
 
   const handleSwitchConfirm = useCallback(
     (action: "complete" | "switch") => {
       if (action === "complete" && activeTask) {
-        completeTask(activeTask.id);
+        handleCompleteTask(activeTask.id);
       }
       if (pendingSwitchTaskId) {
         selectTask(pendingSwitchTaskId);
+        commitTask(pendingSwitchTaskId);
+        const newTask = [...activeTasks, ...completedTasks].find(
+          (t) => t.id === pendingSwitchTaskId
+        );
+        if (newTask) setGoal(newTask.title);
       }
       setPendingSwitchTaskId(null);
     },
-    [activeTask, completeTask, selectTask, pendingSwitchTaskId]
+    [activeTask, handleCompleteTask, selectTask, pendingSwitchTaskId, commitTask, activeTasks, completedTasks]
   );
 
-  // ─── Unique synthetic flavor assignment ──────────────────
-  // Sorted index + epoch rotation guarantees zero collisions
-  const SYNTHETIC_FLAVOR_POOL = [
-    // short + casual
-    "fixing a bug",
-    "emails",
-    "writing",
-    "research",
-    "reading",
-    "outline for tmrw",
-    "finally cleaning up this PR",
-    "notes",
-    // medium + specific
-    "rewriting the intro section",
-    "debugging auth flow",
-    "investor update email",
-    "updating the landing page",
-    "working through feedback",
-    "cleaning up my task list",
-    "reviewing pull requests",
-    "prepping slides for Friday",
-    "sorting out the API layer",
-    "editing ch. 3 draft",
-    "organizing project notes",
-    "user interview followups",
-    "migrating to the new SDK",
-    // longer + conversational
-    "trying to finish this blog post",
-    "almost done with the redesign",
-    "deep in a refactor rn",
-    "catching up on code reviews",
-    "mapping out next week's sprint",
-    "just need to finish testing",
-    "rewriting the onboarding copy",
-    "working thru a tricky edge case",
-    // with typos (sparse — ~10%)
-    "updaing the docs",
-    "finsihing up the proposal",
-    "reviwing the metrics dashboard",
-    "wrting investor updates",
-    // minimal / vibe
-    "heads down",
-    "in the zone",
-    "deep work block",
-    "flow state",
-  ];
-  const FLAVOR_ROTATION_MS = 12 * 60 * 1000;
+  const handleActivateCommitment = useCallback(
+    (taskId: string) => {
+      if (activeTask?.id === taskId) return;
+      if (activeTask) {
+        setPendingSwitchTaskId(taskId);
+      } else {
+        selectTask(taskId);
+        commitTask(taskId);
+        const task = [...activeTasks, ...completedTasks].find((t) => t.id === taskId);
+        if (task) setGoal(task.title);
+      }
+    },
+    [activeTask, selectTask, commitTask, activeTasks, completedTasks]
+  );
+
+  const handleSwitchComplete = useCallback(() => handleSwitchConfirm("complete"), [handleSwitchConfirm]);
+  const handleSwitchSwitch = useCallback(() => handleSwitchConfirm("switch"), [handleSwitchConfirm]);
+  const handleSwitchCancel = useCallback(() => setPendingSwitchTaskId(null), []);
 
   // ─── Participants for display (real + synthetic) ────────
   const participantInfos = useMemo(() => {
@@ -1171,40 +1417,35 @@ export default function EnvironmentPage() {
       breakContentTitle: p.breakContentTitle,
       breakContentThumbnail: p.breakContentThumbnail,
     }));
-    // Assign unique flavors: sorted index + epoch offset → no collisions
-    const epoch = Math.floor(Date.now() / FLAVOR_ROTATION_MS);
-    const sortedIds = [...syntheticParticipants].sort((a, b) => a.id.localeCompare(b.id)).map((s) => s.id);
     // Derive sprint timing for each synthetic deterministically.
     // Duration varies per synthetic (20-35 min). We compute a "current sprint start"
     // by rolling forward from an anchor time so the timer is always mid-sprint.
     const SYNTHETIC_SPRINT_DURATIONS = [20, 25, 25, 25, 30, 30, 35];
     const SYNTHETIC_BREAK_SEC = 90; // last 90s of cycle = break
-    const SYNTHETIC_BREAK_TITLES = [
-      "CSS Grid Deep Dive",
-      "React Server Components Explained",
-      "Building with the AI SDK",
-      "Mastering TypeScript Generics",
-      "The Art of Code Review",
-      "Designing for Accessibility",
-      "Postgres Performance Tips",
-      "Writing Better Commit Messages",
-    ];
     const now = Date.now();
+    const currentWorldKey = world.worldKey;
     const synthetic: ParticipantInfo[] = syntheticParticipants.map((sp) => {
       const poolEntry = SYNTHETIC_POOL.find((s) => s.id === sp.id);
-      const sortedIndex = sortedIds.indexOf(sp.id);
-      const flavorIndex = (sortedIndex + epoch) % SYNTHETIC_FLAVOR_POOL.length;
       // Deterministic sprint duration per synthetic
       const durIdx = sp.id.charCodeAt(sp.id.length - 1) % SYNTHETIC_SPRINT_DURATIONS.length;
       const sprintDur = SYNTHETIC_SPRINT_DURATIONS[durIdx] * 60; // seconds
-      // Roll forward: compute where they are in their current sprint cycle
-      // Use a per-synthetic offset so they don't all start at the same time
-      const offsetMs = (sp.id.charCodeAt(sp.id.length - 2) || 0) * 37_000; // stagger up to ~9 min
-      const elapsed = ((now - offsetMs) / 1000) % sprintDur;
-      const sprintStart = new Date(now - elapsed * 1000).toISOString();
+      // Anchor timer to server events when available, else fall back to deterministic math
+      let elapsed: number;
+      let sprintStart: string;
+      if (sp.lastSprintEventAt) {
+        // Server-anchored: time since last sprint event, clamped to sprint duration
+        const sinceLast = (now - new Date(sp.lastSprintEventAt).getTime()) / 1000;
+        elapsed = Math.min(sinceLast, sprintDur);
+        sprintStart = sp.lastSprintEventAt;
+      } else {
+        // Fallback: deterministic client-side calculation
+        const offsetMs = (sp.id.charCodeAt(sp.id.length - 2) || 0) * 37_000;
+        elapsed = ((now - offsetMs) / 1000) % sprintDur;
+        sprintStart = new Date(now - elapsed * 1000).toISOString();
+      }
       // ~10% of synthetics are on break (last 90s of their cycle)
       const isOnBreak = elapsed >= sprintDur - SYNTHETIC_BREAK_SEC;
-      const breakTitleIdx = sp.id.charCodeAt(0) % SYNTHETIC_BREAK_TITLES.length;
+      const breakTitleIdx = sp.id.charCodeAt(0);
       return {
         id: sp.id,
         displayName: sp.displayName,
@@ -1215,14 +1456,15 @@ export default function EnvironmentPage() {
         participantType: "synthetic" as const,
         status: isOnBreak ? ("on_break" as const) : ("focused" as const),
         archetype: poolEntry?.archetype,
-        syntheticFlavor: SYNTHETIC_FLAVOR_POOL[flavorIndex],
+        syntheticFlavor: getSyntheticFlavor(poolEntry?.archetype, sprintDur > 0 ? elapsed / sprintDur : 0.5, sp.id),
+        goalPreview: getSyntheticGoal(poolEntry?.archetype, sp.id),
         sprintStartedAt: isOnBreak ? null : sprintStart,
         sprintDurationSec: isOnBreak ? null : sprintDur,
-        breakContentTitle: isOnBreak ? SYNTHETIC_BREAK_TITLES[breakTitleIdx] : null,
+        breakContentTitle: isOnBreak ? getSyntheticBreakTitle(currentWorldKey, breakTitleIdx) : null,
       };
     });
     return [host, ...real, ...synthetic];
-  }, [presence.participants, userId, syntheticParticipants, hostConfig]);
+  }, [presence.participants, userId, syntheticParticipants, hostConfig, world.worldKey]);
 
   // ─── Participant card + high-five ─────────────────────
   const [selectedParticipant, setSelectedParticipant] = useState<{
@@ -1443,10 +1685,10 @@ export default function EnvironmentPage() {
                 cameraActive={camera.isActive}
                 onToggleCamera={camera.toggle}
                 onOpenChat={handleToggleChat}
-                onOpenTasks={handleToggleTasks}
+                onOpenCommitments={handleToggleCommitments}
                 onOpenSettings={handleToggleSettings}
                 chatActive={activePanel === "chat"}
-                tasksActive={activePanel === "tasks"}
+                commitmentsActive={activePanel === "commitments"}
                 settingsActive={activePanel === "settings"}
                 momentumActive={activePanel === "momentum"}
                 onOpenMomentum={handleToggleMomentum}
@@ -1517,8 +1759,8 @@ export default function EnvironmentPage() {
             aria-label={
               activePanel === "momentum"
                 ? "Momentum"
-                : activePanel === "tasks"
-                  ? "Tasks"
+                : activePanel === "commitments"
+                  ? "Commitments"
                   : activePanel === "chat"
                     ? "Chat"
                     : activePanel === "breaks"
@@ -1529,18 +1771,19 @@ export default function EnvironmentPage() {
             {activePanel === "momentum" && (
               <EnvironmentRail
                 activityEvents={feedEvents}
+                displayNameMap={feedDisplayNameMap}
                 onClose={closePanel}
               />
             )}
-            {(activePanel === "tasks" || activePanel === "chat") && (
+            {(activePanel === "commitments" || activePanel === "chat") && (
               <SideDrawer
                 onClose={closePanel}
-                panel={activePanel as "tasks" | "chat"}
-                activeTasks={activeTasks}
-                completedTasks={completedTasks}
+                panel={activePanel as "commitments" | "chat"}
+                activeTasks={committedActiveTasks}
+                completedTasks={committedCompletedTasks}
                 onCompleteTask={handleCompleteTask}
                 onUncompleteTask={uncompleteTask}
-                onAddTask={addTask}
+                onAddTask={addAndCommitTask}
                 onDeleteTask={deleteTask}
                 onEditTask={editTask}
                 onReorderTasks={reorderTasks}
@@ -1549,6 +1792,8 @@ export default function EnvironmentPage() {
                 onSetSprintGoal={handleSetSprintGoal}
                 onAISuggest={activeGoalForTask ? handleAISuggest : undefined}
                 isAISuggesting={isAISuggesting}
+                activeTaskId={activeTask?.id ?? null}
+                onActivateTask={handleActivateCommitment}
                 messages={chat.messages}
                 onSendMessage={chat.sendMessage}
               />
@@ -1596,9 +1841,9 @@ export default function EnvironmentPage() {
       <SwitchTaskModal
         isOpen={pendingSwitchTaskId !== null}
         currentTaskText={activeTask?.title ?? ""}
-        onComplete={() => handleSwitchConfirm("complete")}
-        onSwitch={() => handleSwitchConfirm("switch")}
-        onCancel={() => setPendingSwitchTaskId(null)}
+        onComplete={handleSwitchComplete}
+        onSwitch={handleSwitchSwitch}
+        onCancel={handleSwitchCancel}
       />
 
       {/* Join room modal — shown on first visit before joining */}
@@ -1615,7 +1860,6 @@ export default function EnvironmentPage() {
       {/* Break session flow */}
       {breakActive && breakContent && (
         <BreakVideoOverlay
-          key={breakContent.id}
           content={breakContent}
           durationMinutes={breakDuration}
           segment={breakContent.segments?.find((s) => s.duration === breakDuration) ?? null}

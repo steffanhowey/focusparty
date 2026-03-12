@@ -48,10 +48,10 @@ interface ActionBarProps {
   cameraActive: boolean;
   onToggleCamera: () => void;
   onOpenChat: () => void;
-  onOpenTasks: () => void;
+  onOpenCommitments: () => void;
   onOpenSettings: () => void;
   chatActive: boolean;
-  tasksActive: boolean;
+  commitmentsActive: boolean;
   settingsActive: boolean;
   momentumActive?: boolean;
   onOpenMomentum?: () => void;
@@ -105,10 +105,10 @@ export const ActionBar = memo(function ActionBar({
   cameraActive,
   onToggleCamera,
   onOpenChat,
-  onOpenTasks,
+  onOpenCommitments,
   onOpenSettings,
   chatActive,
-  tasksActive,
+  commitmentsActive,
   settingsActive,
   momentumActive,
   onOpenMomentum,
@@ -429,12 +429,12 @@ export const ActionBar = memo(function ActionBar({
           </Tip>
         )}
 
-        <Tip label="Tasks">
+        <Tip label="Commitments">
           <button
             type="button"
-            onClick={onOpenTasks}
-            className={tasksActive ? activeBtn : defaultBtn}
-            aria-label="Tasks"
+            onClick={onOpenCommitments}
+            className={commitmentsActive ? activeBtn : defaultBtn}
+            aria-label="Commitments"
 
           >
             <ListTodo {...ICON} />

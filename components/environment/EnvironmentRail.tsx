@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { X } from "lucide-react";
 import {
   renderActivityEvent,
@@ -8,13 +8,36 @@ import {
 } from "@/lib/activityEventRender";
 import type { ActivityEvent } from "@/lib/types";
 
+// Momentum only shows wins — accomplishments that create energy.
+// Everything else (joins, starts, breaks, commits) is noise.
+const MOMENTUM_EVENTS = new Set([
+  "task_completed",
+  "sprint_completed",
+  "high_five",
+  "goal_completed",
+  "goal_shipped",
+]);
+
+function isMomentumEvent(e: ActivityEvent): boolean {
+  if (MOMENTUM_EVENTS.has(e.event_type)) return true;
+  if (
+    e.event_type === "check_in" &&
+    (e.payload as Record<string, unknown> | null)?.action === "ship"
+  )
+    return true;
+  return false;
+}
+
 interface EnvironmentRailProps {
   activityEvents: ActivityEvent[];
+  /** userId → displayName for resolving actor names. */
+  displayNameMap: Map<string, string>;
   onClose: () => void;
 }
 
 export function EnvironmentRail({
   activityEvents,
+  displayNameMap,
   onClose,
 }: EnvironmentRailProps) {
   // Close on Escape
@@ -26,8 +49,10 @@ export function EnvironmentRail({
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
-  // Show latest events first (reversed for display)
-  const recentEvents = activityEvents.slice(-15).reverse();
+  // Filter to wins, show latest first
+  const recentEvents = useMemo(() => {
+    return activityEvents.filter(isMomentumEvent).slice(-15).reverse();
+  }, [activityEvents]);
 
   return (
     <>
@@ -50,12 +75,13 @@ export function EnvironmentRail({
       <div className="fp-shell-scroll flex-1 overflow-y-auto px-5 py-3">
         {recentEvents.length === 0 ? (
           <p className="py-4 text-center text-xs text-white/30">
-            No activity yet
+            No wins yet — they&apos;ll show up here
           </p>
         ) : (
           <div className="space-y-2.5">
             {recentEvents.map((event) => {
-              const rendered = renderActivityEvent(event);
+              const actorName = displayNameMap.get(event.user_id ?? "");
+              const rendered = renderActivityEvent(event, actorName);
               const Icon = rendered.icon;
               return (
                 <div

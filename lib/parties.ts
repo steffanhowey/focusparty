@@ -37,6 +37,9 @@ export interface SyntheticPresenceInfo {
   displayName: string;
   avatarUrl: string;
   handle: string;
+  /** ISO timestamp of the synthetic's last session_started or sprint_completed event.
+   *  Used by the client to anchor sprint timer calculation to server events. */
+  lastSprintEventAt: string | null;
 }
 
 export interface PartyWithCount extends Party {
@@ -121,7 +124,7 @@ async function getActiveSyntheticPresence(
 
   const { data, error } = await supabase
     .from("fp_activity_events")
-    .select("party_id, event_type, payload")
+    .select("party_id, event_type, payload, created_at")
     .eq("actor_type", "synthetic")
     .in("party_id", partyIds)
     .gte("created_at", cutoff)
@@ -148,6 +151,7 @@ async function getActiveSyntheticPresence(
 
   for (const [partyId, events] of byParty) {
     const stateMap = new Map<string, string>();
+    const lastSprintEventMap = new Map<string, string>(); // synId → ISO timestamp
     for (const e of events) {
       const synId = (e.payload as Record<string, unknown>)?.synthetic_id as string | undefined;
       if (!synId) continue;
@@ -157,7 +161,12 @@ async function getActiveSyntheticPresence(
           break;
         case "session_started":
         case "sprint_completed":
+        case "break_started":
           stateMap.set(synId, "in_session");
+          // Track the timestamp of sprint-relevant events for timer anchoring
+          if (e.event_type === "session_started" || e.event_type === "sprint_completed") {
+            lastSprintEventMap.set(synId, e.created_at as string);
+          }
           break;
         case "session_completed":
           stateMap.set(synId, "joined");
@@ -178,6 +187,7 @@ async function getActiveSyntheticPresence(
             displayName: poolEntry.displayName,
             avatarUrl: poolEntry.avatarUrl,
             handle: poolEntry.handle,
+            lastSprintEventAt: lastSprintEventMap.get(synId) ?? null,
           });
         }
       }

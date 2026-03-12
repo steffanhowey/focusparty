@@ -4,7 +4,14 @@
 
 import { createClient } from "@/lib/supabase/admin";
 import { searchVideos, getVideoDetails } from "./youtubeClient";
-import { WORLD_SEARCH_PROFILES, pickQueries, pickChannel } from "./searchProfiles";
+import {
+  WORLD_BREAK_PROFILES,
+  getBreakProfile,
+  pickQueries,
+  pickChannel,
+  MIN_DURATION,
+  MAX_DURATION,
+} from "./worldBreakProfiles";
 import { screenContent } from "./contentSafety";
 
 interface DiscoveryResult {
@@ -26,7 +33,7 @@ interface DiscoveryResult {
 export async function discoverCandidates(
   worldKey: string
 ): Promise<DiscoveryResult> {
-  const profile = WORLD_SEARCH_PROFILES[worldKey] ?? WORLD_SEARCH_PROFILES.default;
+  const profile = getBreakProfile(worldKey);
   const queries = pickQueries(profile, 2);
   const supabase = createClient();
 
@@ -114,8 +121,8 @@ export async function discoverCandidates(
   // Filter by duration
   const durationFiltered = details.filter(
     (v) =>
-      v.durationSeconds >= profile.minDuration &&
-      v.durationSeconds <= profile.maxDuration
+      v.durationSeconds >= MIN_DURATION &&
+      v.durationSeconds <= MAX_DURATION
   );
 
   // Safety screen — reject candidates with blocked keywords in title/description
@@ -178,7 +185,7 @@ export async function discoverCandidates(
  */
 export async function pickNextWorldKey(): Promise<string> {
   const supabase = createClient();
-  const worldKeys = Object.keys(WORLD_SEARCH_PROFILES);
+  const worldKeys = Object.keys(WORLD_BREAK_PROFILES);
 
   // Get latest discovered_at per world
   const { data } = await supabase

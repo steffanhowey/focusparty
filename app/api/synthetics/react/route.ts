@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/admin";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 
 /**
  * POST /api/synthetics/react
  *
  * Insert a synthetic reaction event (e.g. reciprocal high-five).
- * Uses the admin client to bypass RLS since synthetic events
- * have user_id = null and actor_type = "synthetic".
+ * Requires an authenticated user session. Uses the admin client
+ * to bypass RLS since synthetic events have user_id = null and
+ * actor_type = "synthetic".
  */
 export async function POST(request: Request) {
   try {
+    // Verify the caller is an authenticated user
+    const serverSupabase = await createServerClient();
+    const { data: { user } } = await serverSupabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = (await request.json().catch(() => ({}))) as Record<
       string,
       unknown

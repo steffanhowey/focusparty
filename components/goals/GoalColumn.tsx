@@ -61,7 +61,7 @@ export const GoalColumn = memo(function GoalColumn({
   const goalIds = goals.map((g) => g.id);
 
   return (
-    <div className="flex min-w-0 flex-1 basis-0 flex-col rounded-[var(--radius-md)] bg-[var(--color-bg-secondary)] p-3">
+    <div className="flex min-w-0 flex-1 basis-0 flex-col rounded-[var(--radius-md)] bg-[rgba(255,255,255,0.035)] p-3">
       {/* Column header */}
       <div className="mb-3 flex items-center gap-2">
         <span className="text-sm font-medium" style={{ color: cfg.color }}>

@@ -34,8 +34,11 @@ import { useHostTriggers } from "@/lib/useHostTriggers";
 import { computeRemainingSeconds } from "@/lib/sprintTime";
 import type { SessionPhase, SessionReflection } from "@/lib/types";
 import type { VibeId } from "@/lib/musicConstants";
+import { useGoals } from "@/lib/useGoals";
+import { checkGoalCompletion } from "@/lib/goalCascade";
+import { logEvent } from "@/lib/sessions";
 
-type SidePanel = "none" | "tasks" | "chat" | "settings";
+type SidePanel = "none" | "commitments" | "chat" | "settings";
 const PANEL_WIDTH = 380;
 const DEFAULT_DURATION_SEC = 25 * 60;
 
@@ -47,7 +50,7 @@ export default function SessionPage() {
   const [phase, setPhase] = useState<SessionPhase>("setup");
   const [goal, setGoal] = useState("");
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
-  const [activePanel, setActivePanel] = useState<SidePanel>("tasks");
+  const [activePanel, setActivePanel] = useState<SidePanel>("commitments");
   const prevPanelRef = useRef<SidePanel>(activePanel);
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [micActive, setMicActive] = useState(false);
@@ -167,6 +170,75 @@ export default function SessionPage() {
     reorderTasks,
   } = useTasks();
 
+  const { activeGoals } = useGoals();
+
+  // ─── Task completion with goal cascade ─────────────────
+  const handleCompleteTask = useCallback(
+    async (taskId: string) => {
+      completeTask(taskId);
+      if (!userId) return;
+      const task = [...activeTasks, ...completedTasks].find((t) => t.id === taskId);
+
+      // Emit activity event so it appears in the momentum board
+      logEvent({
+        party_id: partyId ?? null,
+        session_id: persistence.sessionRow?.id ?? null,
+        user_id: userId,
+        event_type: "task_completed",
+        body: task?.title ?? null,
+      }).catch((err) =>
+        console.error("[SessionPage] task_completed event failed:", err?.message ?? err?.code ?? JSON.stringify(err))
+      );
+
+      if (task?.goal_id) {
+        const goal = activeGoals.find((g) => g.id === task.goal_id);
+        if (goal) {
+          const allTasks = [...activeTasks, ...completedTasks].filter(
+            (t) => t.goal_id === task.goal_id
+          );
+          const updated = allTasks.map((t) =>
+            t.id === taskId ? { ...t, status: "done" as const } : t
+          );
+          checkGoalCompletion(goal.id, goal.title, updated, {
+            userId,
+            partyId: partyId ?? "",
+            sessionId: persistence.sessionRow?.id ?? null,
+          }).catch((err) => console.error("Goal cascade check failed:", err));
+        }
+      }
+    },
+    [completeTask, activeTasks, completedTasks, activeGoals, userId, partyId, persistence.sessionRow?.id]
+  );
+
+  // ─── Session-scoped commitments (filter for flyout) ─────
+  const [committedTaskIds, setCommittedTaskIds] = useState<Set<string>>(new Set());
+  const commitTask = useCallback((taskId: string) => {
+    setCommittedTaskIds((prev) => {
+      if (prev.has(taskId)) return prev;
+      const next = new Set(prev);
+      next.add(taskId);
+      return next;
+    });
+  }, []);
+
+  const committedActiveTasks = useMemo(
+    () => activeTasks.filter((t) => committedTaskIds.has(t.id)),
+    [activeTasks, committedTaskIds]
+  );
+
+  const committedCompletedTasks = useMemo(
+    () => completedTasks.filter((t) => committedTaskIds.has(t.id)),
+    [completedTasks, committedTaskIds]
+  );
+
+  const addAndCommitTask = useCallback(
+    async (text: string) => {
+      const newId = await addTask(text);
+      if (newId) commitTask(newId);
+    },
+    [addTask, commitTask]
+  );
+
   // Start fresh — no pre-selected task on setup (skip if restoring active sprint)
   const taskClearRef = useRef(false);
   useEffect(() => {
@@ -187,30 +259,49 @@ export default function SessionPage() {
 
     if (persistence.wasRestored && persistence.sessionRow) {
       const s = persistence.sessionRow;
-      setPhase(s.phase);
       setGoal(s.goal_text ?? "");
       setDurationSec(s.planned_duration_sec);
 
       // Restore task selection if session has a task
-      if (s.task_id) selectTask(s.task_id);
+      if (s.task_id) {
+        selectTask(s.task_id);
+        commitTask(s.task_id);
+      }
 
-      // Resume timer if sprint is still active
-      if (s.phase === "sprint" && persistence.currentSprint && !persistence.currentSprint.completed) {
-        const remaining = computeRemainingSeconds(persistence.currentSprint);
+      // Only an active sprint with remaining time is resumable.
+      // Break/review/breathing/setup are ephemeral client states that
+      // can't be reconstructed after a page reload.
+      const hasActiveSprint =
+        persistence.currentSprint && !persistence.currentSprint.completed;
+      const isSprintOrBreak = s.phase === "sprint" || s.phase === "break";
+
+      if (isSprintOrBreak && hasActiveSprint) {
+        const remaining = computeRemainingSeconds(persistence.currentSprint!);
         if (remaining > 0) {
+          setPhase("sprint");
           timer.reset(remaining);
           timer.start();
+          if (s.phase !== "sprint") {
+            persistence.updatePhase("sprint").catch(() => {});
+          }
         } else {
-          // Sprint expired while away — go directly to review
-          handleTimerComplete();
+          // Sprint expired while away — silently end stale session, start fresh
+          persistence.endSession("completed").catch(() => {});
+          setPhase("setup");
         }
+      } else {
+        // No active sprint, or non-resumable phase — end stale session, start fresh
+        if (s.status === "active") {
+          persistence.endSession("abandoned").catch(() => {});
+        }
+        setPhase("setup");
       }
     }
   }, [persistence.isHydrating, persistence.wasRestored, persistence.sessionRow]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const closePanel = useCallback(() => setActivePanel("none"), []);
-  const handleToggleTasks = useCallback(
-    () => setActivePanel((prev) => (prev === "tasks" ? "none" : "tasks")),
+  const handleToggleCommitments = useCallback(
+    () => setActivePanel((prev) => (prev === "commitments" ? "none" : "commitments")),
     []
   );
 
@@ -351,28 +442,60 @@ export default function SessionPage() {
     [persistence]
   );
 
+  // ─── Clear goal when active task is removed mid-sprint ──
+  const prevActiveTaskIdRef = useRef<string | null>(activeTask?.id ?? null);
+  useEffect(() => {
+    const prevId = prevActiveTaskIdRef.current;
+    const currId = activeTask?.id ?? null;
+    prevActiveTaskIdRef.current = currId;
+    if (prevId && !currId && phase === "sprint") {
+      setGoal("");
+    }
+  }, [activeTask?.id, phase]);
+
   const handleStartTask = useCallback(
     (taskId: string) => {
       if (!activeTask || activeTask.id === taskId) {
         selectTask(taskId);
+        commitTask(taskId);
       } else {
         setPendingSwitchTaskId(taskId);
       }
     },
-    [activeTask, selectTask]
+    [activeTask, selectTask, commitTask]
   );
 
   const handleSwitchConfirm = useCallback(
     (action: "complete" | "switch") => {
       if (action === "complete" && activeTask) {
-        completeTask(activeTask.id);
+        handleCompleteTask(activeTask.id);
       }
       if (pendingSwitchTaskId) {
         selectTask(pendingSwitchTaskId);
+        commitTask(pendingSwitchTaskId);
+        const newTask = [...activeTasks, ...completedTasks].find(
+          (t) => t.id === pendingSwitchTaskId
+        );
+        if (newTask) setGoal(newTask.title);
       }
       setPendingSwitchTaskId(null);
     },
-    [activeTask, completeTask, selectTask, pendingSwitchTaskId]
+    [activeTask, handleCompleteTask, selectTask, commitTask, pendingSwitchTaskId, activeTasks, completedTasks]
+  );
+
+  const handleActivateCommitment = useCallback(
+    (taskId: string) => {
+      if (activeTask?.id === taskId) return;
+      if (activeTask) {
+        setPendingSwitchTaskId(taskId);
+      } else {
+        selectTask(taskId);
+        commitTask(taskId);
+        const task = [...activeTasks, ...completedTasks].find((t) => t.id === taskId);
+        if (task) setGoal(task.title);
+      }
+    },
+    [activeTask, selectTask, commitTask, activeTasks, completedTasks]
   );
 
   const handleSwitchCancel = useCallback(() => {
@@ -452,8 +575,8 @@ export default function SessionPage() {
           activeTask={activeTask}
           activeTasks={activeTasks}
           completedTasks={completedTasks}
-          onStartTask={selectTask}
-          onCompleteTask={completeTask}
+          onStartTask={handleStartTask}
+          onCompleteTask={handleCompleteTask}
           onAddTask={addTask}
           onDeleteTask={deleteTask}
           onStartSprint={handleStartSprint}
@@ -483,8 +606,8 @@ export default function SessionPage() {
             {phase !== "sprint" && phase !== "review" && (
               <TopBar
                 phase={phase}
-                drawerOpen={activePanel === "tasks"}
-                onToggleDrawer={handleToggleTasks}
+                drawerOpen={activePanel === "commitments"}
+                onToggleDrawer={handleToggleCommitments}
                 settingsOpen={activePanel === "settings"}
                 onToggleSettings={handleToggleSettings}
                 onEndSession={handleEndSession}
@@ -513,10 +636,10 @@ export default function SessionPage() {
                   cameraActive={camera.isActive}
                   onToggleCamera={camera.toggle}
                   onOpenChat={handleToggleChat}
-                  onOpenTasks={handleToggleTasks}
+                  onOpenCommitments={handleToggleCommitments}
                   onOpenSettings={handleToggleSettings}
                   chatActive={activePanel === "chat"}
-                  tasksActive={activePanel === "tasks"}
+                  commitmentsActive={activePanel === "commitments"}
                   settingsActive={activePanel === "settings"}
                   onEndSession={handleEndSession}
                   music={{
@@ -561,20 +684,22 @@ export default function SessionPage() {
                 boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
               role="complementary"
-              aria-label={activePanel === "tasks" ? "Tasks" : activePanel === "chat" ? "Chat" : "Settings"}
+              aria-label={activePanel === "commitments" ? "Commitments" : activePanel === "chat" ? "Chat" : "Settings"}
             >
-              {(activePanel === "tasks" || activePanel === "chat") && (
+              {(activePanel === "commitments" || activePanel === "chat") && (
                 <SideDrawer
                   onClose={closePanel}
-                  panel={activePanel as "tasks" | "chat"}
-                  activeTasks={activeTasks}
-                  completedTasks={completedTasks}
-                  onCompleteTask={completeTask}
+                  panel={activePanel as "commitments" | "chat"}
+                  activeTasks={committedActiveTasks}
+                  completedTasks={committedCompletedTasks}
+                  onCompleteTask={handleCompleteTask}
                   onUncompleteTask={uncompleteTask}
-                  onAddTask={addTask}
+                  onAddTask={addAndCommitTask}
                   onDeleteTask={deleteTask}
                   onEditTask={editTask}
                   onReorderTasks={reorderTasks}
+                  activeTaskId={activeTask?.id ?? null}
+                  onActivateTask={phase === "sprint" || phase === "break" ? handleActivateCommitment : undefined}
                   messages={chat.messages}
                   onSendMessage={chat.sendMessage}
                 />

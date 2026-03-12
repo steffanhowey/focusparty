@@ -5,7 +5,7 @@
 // content, enforces diversity, and learns from engagement.
 
 import { createClient } from "@/lib/supabase/admin";
-import { WORLD_SEARCH_PROFILES } from "./searchProfiles";
+import { WORLD_BREAK_PROFILES } from "./worldBreakProfiles";
 
 // ─── Constants ──────────────────────────────────────────────
 
@@ -402,7 +402,7 @@ export async function refreshShelf(
 // ─── Refresh all worlds ─────────────────────────────────────
 
 export async function refreshAllShelves(): Promise<ShelfRefreshResult[]> {
-  const worldKeys = Object.keys(WORLD_SEARCH_PROFILES);
+  const worldKeys = Object.keys(WORLD_BREAK_PROFILES);
   const results: ShelfRefreshResult[] = [];
 
   for (const worldKey of worldKeys) {

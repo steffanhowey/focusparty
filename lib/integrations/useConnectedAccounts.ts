@@ -104,6 +104,7 @@ export function useConnectedAccounts() {
     async (provider: IntegrationProviderId) => {
       setConnecting(provider);
       try {
+        // Ask server for the direct OAuth authorize URL
         const res = await fetch("/api/integrations/connect", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -112,10 +113,9 @@ export function useConnectedAccounts() {
         const data = await res.json();
 
         if (data.url) {
-          // Redirect to OAuth provider
           window.location.href = data.url;
         } else {
-          console.error("No OAuth URL returned:", data.error);
+          console.error("[connect] No OAuth URL returned:", data.error);
           setConnecting(null);
         }
       } catch (err) {
