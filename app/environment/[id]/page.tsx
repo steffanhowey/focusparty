@@ -45,7 +45,7 @@ import { checkGoalCompletion } from "@/lib/goalCascade";
 import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
 import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
 import { BreakReEntryCountdown } from "@/components/environment/BreakReEntryCountdown";
-import type { BreakClip } from "@/lib/useBreakContent";
+import { useBreakContent, type BreakClip } from "@/lib/useBreakContent";
 
 type SidePanel = "none" | "momentum" | "commitments" | "chat" | "settings" | "breaks";
 type CelebrationInfo = { color: string; text: string };
@@ -262,6 +262,9 @@ export default function EnvironmentPage() {
   const [breakDuration, setBreakDuration] = useState<BreakDuration>(5);
   const [breakActive, setBreakActive] = useState(false);
   const [showBreakReEntry, setShowBreakReEntry] = useState(false);
+
+  // Break content shelf — used to give synthetics real content IDs
+  const { items: breakShelfItems } = useBreakContent(world.worldKey, "learning");
 
   // Break clips for channel changer — set when user picks from flyout
   const [breakClips, setBreakClips] = useState<BreakClip[]>([]);
@@ -1394,7 +1397,9 @@ export default function EnvironmentPage() {
       }
       // ~10% of synthetics are on break (last 90s of their cycle)
       const isOnBreak = elapsed >= sprintDur - SYNTHETIC_BREAK_SEC;
-      const breakTitleIdx = sp.id.charCodeAt(0);
+      // Assign a real shelf item so "Watch too" works on synthetic cards
+      const shelfIdx = sp.id.charCodeAt(0) % Math.max(breakShelfItems.length, 1);
+      const shelfItem = isOnBreak && breakShelfItems.length > 0 ? breakShelfItems[shelfIdx] : null;
       return {
         id: sp.id,
         displayName: sp.displayName,
@@ -1409,11 +1414,13 @@ export default function EnvironmentPage() {
         goalPreview: getSyntheticGoal(poolEntry?.archetype, sp.id),
         sprintStartedAt: isOnBreak ? null : sprintStart,
         sprintDurationSec: isOnBreak ? null : sprintDur,
-        breakContentTitle: isOnBreak ? getSyntheticBreakTitle(currentWorldKey, breakTitleIdx) : null,
+        breakContentId: shelfItem?.id ?? null,
+        breakContentTitle: shelfItem?.title ?? (isOnBreak ? getSyntheticBreakTitle(currentWorldKey, sp.id.charCodeAt(0)) : null),
+        breakContentThumbnail: shelfItem?.thumbnail_url ?? null,
       };
     });
     return [host, ...real, ...synthetic];
-  }, [presence.participants, userId, syntheticParticipants, hostConfig, world.worldKey]);
+  }, [presence.participants, userId, syntheticParticipants, hostConfig, world.worldKey, breakShelfItems]);
 
   // ─── Participant card + high-five ─────────────────────
   const [selectedParticipant, setSelectedParticipant] = useState<{
