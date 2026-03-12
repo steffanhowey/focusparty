@@ -38,6 +38,7 @@ import { SwitchTaskModal } from "@/components/session/SwitchTaskModal";
 import { logEvent } from "@/lib/sessions";
 import { computeRemainingSeconds } from "@/lib/sprintTime";
 import { SYNTHETIC_POOL } from "@/lib/synthetics/pool";
+import { getSyntheticsForRoom } from "@/lib/synthetics/assignment";
 import { JoinRoomModal, type JoinConfig } from "@/components/party/JoinRoomModal";
 import type { SessionPhase, SessionReflection, SprintResolution, BreakContentItem, BreakDuration, BreakSegment } from "@/lib/types";
 import { updateSessionGoalStatus } from "@/lib/sessions";
@@ -1369,39 +1370,47 @@ export default function EnvironmentPage() {
       breakContentTitle: p.breakContentTitle,
       breakContentThumbnail: p.breakContentThumbnail,
     }));
-    // Derive sprint timing for each synthetic deterministically.
-    // Duration varies per synthetic (20-35 min). We compute a "current sprint start"
-    // by rolling forward from an anchor time so the timer is always mid-sprint.
+    // ── Deterministic synthetic assignment ──────────────────
+    // Each world gets an exclusive subset of synthetics so the same
+    // coworker never appears in two rooms when the user switches.
+    // Event-derived data (syntheticParticipants) overlays timing
+    // when available; otherwise we fall back to client-side math.
     const SYNTHETIC_SPRINT_DURATIONS = [20, 25, 25, 25, 30, 30, 35];
     const SYNTHETIC_BREAK_SEC = 90; // last 90s of cycle = break
     const now = Date.now();
     const currentWorldKey = world.worldKey;
-    // Room-specific seed so synthetics have different phases/content per room
     const roomSeed = partyId.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-    const synthetic: ParticipantInfo[] = syntheticParticipants.map((sp) => {
-      const poolEntry = SYNTHETIC_POOL.find((s) => s.id === sp.id);
-      // Deterministic sprint duration per synthetic + room
+
+    // Deterministic baseline: exclusive synthetics for this room
+    const roomSynthetics = getSyntheticsForRoom(currentWorldKey, roomSeed);
+
+    // Build a lookup for event-derived timing data
+    const eventTimingMap = new Map(
+      syntheticParticipants.map((sp) => [sp.id, sp.lastSprintEventAt])
+    );
+
+    const synthetic: ParticipantInfo[] = roomSynthetics.map((sp) => {
       const durIdx = (sp.id.charCodeAt(sp.id.length - 1) + roomSeed) % SYNTHETIC_SPRINT_DURATIONS.length;
       const sprintDur = SYNTHETIC_SPRINT_DURATIONS[durIdx] * 60; // seconds
-      // Anchor timer to server events when available, else fall back to deterministic math
+
+      // Overlay server timing when available
+      const lastSprintEventAt = eventTimingMap.get(sp.id) ?? null;
       let elapsed: number;
       let sprintStart: string;
-      if (sp.lastSprintEventAt) {
-        // Server-anchored: time since last sprint event, clamped to sprint duration
-        const sinceLast = (now - new Date(sp.lastSprintEventAt).getTime()) / 1000;
+      if (lastSprintEventAt) {
+        const sinceLast = (now - new Date(lastSprintEventAt).getTime()) / 1000;
         elapsed = Math.min(sinceLast, sprintDur);
-        sprintStart = sp.lastSprintEventAt;
+        sprintStart = lastSprintEventAt;
       } else {
-        // Fallback: deterministic client-side calculation with room-specific offset
         const offsetMs = ((sp.id.charCodeAt(sp.id.length - 2) || 0) * 37_000) + (roomSeed * 17_000);
         elapsed = ((now - offsetMs) / 1000) % sprintDur;
         sprintStart = new Date(now - elapsed * 1000).toISOString();
       }
-      // ~10% of synthetics are on break (last 90s of their cycle)
+
       const isOnBreak = elapsed >= sprintDur - SYNTHETIC_BREAK_SEC;
-      // Assign a real shelf item so "Watch too" works — room seed varies the pick
       const shelfIdx = (sp.id.charCodeAt(0) + roomSeed) % Math.max(breakShelfItems.length, 1);
       const shelfItem = isOnBreak && breakShelfItems.length > 0 ? breakShelfItems[shelfIdx] : null;
+
       return {
         id: sp.id,
         displayName: sp.displayName,
@@ -1411,9 +1420,9 @@ export default function EnvironmentPage() {
         isHost: false,
         participantType: "synthetic" as const,
         status: isOnBreak ? ("on_break" as const) : ("focused" as const),
-        archetype: poolEntry?.archetype,
-        syntheticFlavor: getSyntheticFlavor(poolEntry?.archetype, sprintDur > 0 ? elapsed / sprintDur : 0.5, sp.id),
-        goalPreview: getSyntheticGoal(poolEntry?.archetype, sp.id),
+        archetype: sp.archetype,
+        syntheticFlavor: getSyntheticFlavor(sp.archetype, sprintDur > 0 ? elapsed / sprintDur : 0.5, sp.id),
+        goalPreview: getSyntheticGoal(sp.archetype, sp.id),
         sprintStartedAt: isOnBreak ? null : sprintStart,
         sprintDurationSec: isOnBreak ? null : sprintDur,
         breakContentId: shelfItem?.id ?? null,
@@ -1422,7 +1431,7 @@ export default function EnvironmentPage() {
       };
     });
     return [host, ...real, ...synthetic];
-  }, [presence.participants, userId, syntheticParticipants, hostConfig, world.worldKey, breakShelfItems]);
+  }, [presence.participants, userId, syntheticParticipants, hostConfig, world.worldKey, breakShelfItems, partyId]);
 
   // ─── Participant card + high-five ─────────────────────
   const [selectedParticipant, setSelectedParticipant] = useState<{

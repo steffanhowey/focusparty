@@ -2,6 +2,7 @@ import { createClient } from "./supabase/client";
 import { generateInviteCode } from "./inviteCode";
 import { logEvent } from "./sessions";
 import { SYNTHETIC_POOL } from "./synthetics/pool";
+import { getSyntheticsForRoom } from "./synthetics/assignment";
 import type { CharacterId } from "./types";
 
 // ---------- Types ----------
@@ -95,7 +96,26 @@ export async function listDiscoverableParties(): Promise<PartyWithCount[]> {
   return parties
     .map((p: Party) => {
       const realCount = countMap.get(p.id) ?? 0;
-      const synParticipants = syntheticCounts.get(p.id) ?? [];
+      const eventSynParticipants = syntheticCounts.get(p.id) ?? [];
+
+      // For persistent rooms, use deterministic baseline so lobbies always look populated.
+      // Event-derived timing overlays when available.
+      let synParticipants: SyntheticPresenceInfo[];
+      if (p.persistent) {
+        const roomSeed = p.id.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+        const baseline = getSyntheticsForRoom(p.world_key, roomSeed);
+        const eventMap = new Map(eventSynParticipants.map((s) => [s.id, s.lastSprintEventAt]));
+        synParticipants = baseline.map((sp) => ({
+          id: sp.id,
+          displayName: sp.displayName,
+          avatarUrl: sp.avatarUrl,
+          handle: sp.handle,
+          lastSprintEventAt: eventMap.get(sp.id) ?? null,
+        }));
+      } else {
+        synParticipants = eventSynParticipants;
+      }
+
       return {
         ...p,
         participant_count: realCount + synParticipants.length,
