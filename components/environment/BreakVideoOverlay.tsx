@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { usePointerDrag } from "@/lib/usePointerDrag";
 import { extractYouTubeId } from "@/lib/youtube";
 import { loadYouTubeAPI } from "@/lib/youtubeApi";
+import { StickyNote } from "lucide-react";
 import { TVStaticOverlay, playChannelChangeSound } from "./TVStaticOverlay";
 import type { BreakContentItem, BreakDuration, BreakSegment } from "@/lib/types";
 import type { BreakClip } from "@/lib/useBreakContent";
@@ -17,6 +18,9 @@ interface BreakVideoOverlayProps {
   currentClipIndex: number;
   onFinish: () => void;
   onChangeClip: (clip: BreakClip) => void;
+  onToggleNotes?: () => void;
+  /** When true, player shifts left to make room for notes panel */
+  notesOpen?: boolean;
 }
 
 /** Fire-and-forget engagement tracking. */
@@ -47,6 +51,8 @@ export function BreakVideoOverlay({
   currentClipIndex,
   onFinish,
   onChangeClip,
+  onToggleNotes,
+  notesOpen,
 }: BreakVideoOverlayProps) {
   const totalSeconds = durationMinutes * 60;
   const ytId = extractYouTubeId(content.video_url);
@@ -286,9 +292,11 @@ export function BreakVideoOverlay({
   return (
     <div
       ref={dragRef}
-      className="group absolute left-1/2 top-1/2 z-30 w-[560px] overflow-hidden rounded-xl border border-white/[0.08]"
+      className="group absolute top-1/2 z-30 w-[560px] overflow-hidden rounded-xl border border-white/[0.08]"
       style={{
+        left: notesOpen ? "calc(50% - 168px)" : "50%",
         ...dragStyle,
+        transition: "left 0.3s ease",
         background: "rgba(10,10,10,0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
@@ -415,17 +423,32 @@ export function BreakVideoOverlay({
                   <p className="mt-0.5 text-[11px] text-white/50">{content.source_name}</p>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!wasDraggedRef.current) handleClose();
-                }}
-                className="shrink-0 cursor-pointer rounded-full px-3 py-1 text-[11px] font-medium text-white/60 transition-colors duration-150 hover:bg-white/10 hover:text-white/90"
-                style={{ border: "1px solid rgba(255,255,255,0.15)" }}
-              >
-                End Break
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                {onToggleNotes && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!wasDraggedRef.current) onToggleNotes();
+                    }}
+                    className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-white/50 transition-colors duration-150 hover:bg-white/10 hover:text-white/90"
+                    aria-label="Notes"
+                  >
+                    <StickyNote size={14} strokeWidth={1.8} />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!wasDraggedRef.current) handleClose();
+                  }}
+                  className="shrink-0 cursor-pointer rounded-full px-3 py-1 text-[11px] font-medium text-white/60 transition-colors duration-150 hover:bg-white/10 hover:text-white/90"
+                  style={{ border: "1px solid rgba(255,255,255,0.15)" }}
+                >
+                  End Break
+                </button>
+              </div>
             </div>
           </div>
         )}

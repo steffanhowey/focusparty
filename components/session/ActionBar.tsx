@@ -18,6 +18,7 @@ import {
   Pause,
   Play,
   Coffee,
+  StickyNote,
 } from "lucide-react";
 import { MusicPopover } from "@/components/session/MusicPopover";
 import { CheckInMenu } from "@/components/session/CheckInMenu";
@@ -90,6 +91,9 @@ interface ActionBarProps {
   onEndBreak?: () => void;
   /** Increment to force break countdown reset without changing duration */
   breakResetKey?: number;
+  /** Notes panel state */
+  notesActive?: boolean;
+  onToggleNotes?: () => void;
 }
 
 const ICON = { size: 18, strokeWidth: 1.8 } as const;
@@ -144,6 +148,8 @@ export const ActionBar = memo(function ActionBar({
   onResetBreakTimer,
   onEndBreak,
   breakResetKey,
+  notesActive,
+  onToggleNotes,
 }: ActionBarProps) {
   const musicWrapperRef = useRef<HTMLDivElement>(null);
   const checkInWrapperRef = useRef<HTMLDivElement>(null);
@@ -447,6 +453,19 @@ export const ActionBar = memo(function ActionBar({
               onSelectCategory={onSelectBreakCategory}
             />
           </div>
+        )}
+
+        {onToggleNotes && (
+          <Tip label="Notes">
+            <button
+              type="button"
+              onClick={onToggleNotes}
+              className={notesActive ? activeBtn : defaultBtn}
+              aria-label="Notes"
+            >
+              <StickyNote {...ICON} />
+            </button>
+          </Tip>
         )}
 
         <Tip label="Commitments">

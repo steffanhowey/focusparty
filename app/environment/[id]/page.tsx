@@ -16,6 +16,7 @@ import { useCommitments } from "@/lib/useCommitments";
 import { useHostTriggers } from "@/lib/useHostTriggers";
 import { useMusic } from "@/lib/useMusic";
 import { useChat } from "@/lib/useChat";
+import { useNotes } from "@/lib/useNotes";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { updatePartyStatus, type Party } from "@/lib/parties";
 import { useEnvironmentParty } from "@/lib/useEnvironmentParty";
@@ -46,6 +47,7 @@ import { checkGoalCompletion } from "@/lib/goalCascade";
 import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
 import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
 import { BreakReEntryCountdown } from "@/components/environment/BreakReEntryCountdown";
+import { FloatingNotes } from "@/components/environment/FloatingNotes";
 import { useBreakContent, type BreakClip } from "@/lib/useBreakContent";
 
 type SidePanel = "none" | "momentum" | "commitments" | "chat" | "settings" | "breaks";
@@ -265,6 +267,16 @@ export default function EnvironmentPage() {
   const [showBreakReEntry, setShowBreakReEntry] = useState(false);
   const [breakCategory, setBreakCategory] = useState<BreakCategory>("learning");
   const [breakPopoverOpen, setBreakPopoverOpen] = useState(false);
+
+  // ─── Notes state ───────────────────────────────────────────
+  const [notesOpen, setNotesOpen] = useState(false);
+  const sessionId = persistence.sessionRow?.id ?? null;
+  const breakContext = useMemo(() => ({
+    category: breakActive ? breakCategory : null,
+    contentItemId: breakActive ? (breakContent?.id ?? null) : null,
+  }), [breakActive, breakCategory, breakContent?.id]);
+  const notes = useNotes(partyId, sessionId, breakContext);
+  const handleToggleNotes = useCallback(() => setNotesOpen((prev) => !prev), []);
 
   // Break content shelf — used to give synthetics real content IDs
   const { items: breakShelfItems } = useBreakContent(world.worldKey, "learning");
@@ -1715,6 +1727,8 @@ export default function EnvironmentPage() {
                 onToggleBreakPopover={handleToggleBreakPopover}
                 onCloseBreakPopover={handleCloseBreakPopover}
                 onSelectBreakCategory={handleSelectBreakCategory}
+                notesActive={notesOpen}
+                onToggleNotes={sessionId ? handleToggleNotes : undefined}
               />
             )}
       </div>
@@ -1855,6 +1869,20 @@ export default function EnvironmentPage() {
           currentClipIndex={currentBreakClipIndex >= 0 ? currentBreakClipIndex : 0}
           onFinish={handleBreakVideoFinish}
           onChangeClip={handleChangeClip}
+          onToggleNotes={handleToggleNotes}
+          notesOpen={notesOpen}
+        />
+      )}
+
+      {/* Floating notes window */}
+      {notesOpen && sessionId && (
+        <FloatingNotes
+          text={notes.text}
+          setText={notes.setText}
+          isSaving={notes.isSaving}
+          onBlur={notes.onBlur}
+          onClose={() => setNotesOpen(false)}
+          breakActive={breakActive}
         />
       )}
 
