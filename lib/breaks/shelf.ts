@@ -13,7 +13,8 @@ const SHELF_PER_DURATION_MIN = 5;
 const SHELF_PER_DURATION_MAX = 8;
 const SHELF_TTL_DAYS = 7;
 const MIN_TASTE_SCORE = 70;
-const MIN_TASTE_SCORE_RELAXED = 55; // used when bucket is still below min
+// NOTE: Relaxed pass removed — showing nothing is better than showing irrelevant content.
+// If a bucket can't fill at the strict threshold, it stays small.
 const MAX_PER_CREATOR = 2;
 const DURATIONS = [3, 5, 10] as const;
 
@@ -254,82 +255,6 @@ export async function refreshShelf(
 
           promoted++;
           bucketSize++;
-        }
-      }
-
-      // Relaxed pass: if still below min, lower the taste threshold
-      if (bucketSize < SHELF_PER_DURATION_MIN) {
-        const relaxedNeeded = SHELF_PER_DURATION_MIN - bucketSize;
-        const minVideoSeconds = duration * 60;
-
-        const { data: relaxedCandidates } = await supabase
-          .from("fp_break_content_scores")
-          .select("*, candidate:fp_break_content_candidates(*)")
-          .eq("world_key", worldKey)
-          .gte("taste_score", MIN_TASTE_SCORE_RELAXED)
-          .lt("taste_score", MIN_TASTE_SCORE)
-          .order("taste_score", { ascending: false })
-          .limit(relaxedNeeded * 4);
-
-        if (relaxedCandidates) {
-          const expiresAt = new Date();
-          expiresAt.setDate(expiresAt.getDate() + SHELF_TTL_DAYS);
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          for (const scored of relaxedCandidates as any[]) {
-            if (bucketSize >= SHELF_PER_DURATION_MIN) break;
-            const c = scored.candidate;
-            if (!c || c.status === "rejected") continue;
-            if ((c.duration_seconds ?? 0) < minVideoSeconds) continue;
-            if (onShelf.has(`${c.id}:${duration}`)) continue;
-
-            const creatorName = (c.creator ?? "").toLowerCase();
-            if (creatorName) {
-              const count = creatorCounts.get(creatorName) ?? 0;
-              if (count >= MAX_PER_CREATOR) continue;
-              creatorCounts.set(creatorName, count + 1);
-            }
-
-            const { error: insertErr } = await supabase
-              .from("fp_break_content_items")
-              .insert({
-                room_world_key: worldKey,
-                category: "learning",
-                title: c.title,
-                description: c.description,
-                thumbnail_url: c.thumbnail_url,
-                video_url: c.video_url,
-                source_name: c.creator,
-                duration_seconds: c.duration_seconds,
-                sort_order: 0,
-                status: "active",
-                candidate_id: c.id,
-                taste_score: scored.taste_score,
-                pinned: false,
-                expires_at: expiresAt.toISOString(),
-                editorial_note: scored.editorial_note ?? null,
-                segments: scored.segments ?? null,
-                best_duration: duration,
-                topics: scored.topics ?? null,
-              });
-
-            if (insertErr) continue;
-            onShelf.add(`${c.id}:${duration}`);
-            if (c.status !== "promoted") {
-              await supabase
-                .from("fp_break_content_candidates")
-                .update({ status: "promoted" })
-                .eq("id", c.id);
-            }
-            promoted++;
-            bucketSize++;
-          }
-
-          if (bucketSize >= SHELF_PER_DURATION_MIN) {
-            console.log(
-              `[breaks/shelf] ${worldKey}/${duration}min: relaxed threshold filled bucket to ${bucketSize}`,
-            );
-          }
         }
       }
 

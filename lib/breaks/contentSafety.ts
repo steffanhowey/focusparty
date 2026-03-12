@@ -137,14 +137,20 @@ export function screenContent(
 export const SAFETY_PROMPT = `
 CONTENT SAFETY — MANDATORY RULES (override all other guidance):
 You MUST set reject=true AND safety_score=0 for ANY content that:
-- Promotes or discusses recreational drug use, nootropics, or substance abuse
+- Promotes recreational drug use or substance abuse
 - Contains hate speech, discrimination, or extremist ideology
 - Features graphic violence, weapons, or self-harm
 - Pushes conspiracy theories or medical misinformation
-- Covers divisive geopolitical conflicts or political hot-takes
 - Is sexually explicit or NSFW in any way
 - Promotes gambling, scams, or get-rich-quick schemes
-- Is primarily clickbait drama, controversy, or "cancel culture" content
 
-This is a safe focus environment for working professionals. When in doubt, reject.
-Score safety_score=100 only for content that is clearly educational, constructive, and appropriate for all audiences.`;
+IMPORTANT — these are NOT reasons to reject:
+- Casual profanity or strong opinions (founders/engineers swear — that's fine)
+- Edgy humor or irreverent tone (ThePrimeagen, Fireship, etc.)
+- Controversial technical opinions (language wars, framework debates)
+- Political commentary within startup/business context (regulation, policy)
+
+This is a focus environment for working professionals who are adults.
+Score safety_score=0 only for genuinely harmful content listed above.
+Score safety_score=100 for content that is safe regardless of tone or language.
+A video with F-bombs about system design should score safety_score=100.`;

@@ -268,12 +268,25 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
     topics: string[];
   };
 
-  // Hard safety gate: force-reject anything the AI scores as unsafe
+  // Hard safety gate: force-reject anything the AI scores as unsafe.
+  // Threshold is 50 (not 70) — we want to allow edgy/opinionated content
+  // with casual profanity, just not genuinely harmful material.
   const safetyScore = parsed.safety_score ?? 100;
-  const isSafetyRejected = safetyScore < 70;
+  const isSafetyRejected = safetyScore < 50;
   if (isSafetyRejected) {
     console.warn(
       `[breaks/scoring] SAFETY REJECT: "${candidate.title}" (safety_score=${safetyScore})`
+    );
+  }
+
+  // Hard relevance gate: force-reject content that doesn't belong in this world.
+  // A well-produced video about autoimmune disease has no place in Vibe Coding.
+  // This catches high-quality-but-wrong-topic content that inflates on other dimensions.
+  const relevanceScore = parsed.relevance_score ?? 0;
+  const isRelevanceRejected = relevanceScore < 40;
+  if (isRelevanceRejected) {
+    console.warn(
+      `[breaks/scoring] RELEVANCE REJECT: "${candidate.title}" for ${worldKey} (relevance=${relevanceScore})`
     );
   }
 
@@ -316,7 +329,7 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
     editorialNote: parsed.editorial_note,
     segments: parsed.segments ?? [],
     bestDuration: ([3, 5, 10].includes(parsed.best_duration) ? parsed.best_duration : 5) as 3 | 5 | 10,
-    rejected: parsed.reject || isSafetyRejected,
+    rejected: parsed.reject || isSafetyRejected || isRelevanceRejected,
     topics: (parsed.topics ?? []).map((t) => t.toLowerCase().trim()).slice(0, 5),
   };
 }
