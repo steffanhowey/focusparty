@@ -5,7 +5,7 @@ import { evaluatePendingCandidates } from "@/lib/breaks/evaluateBatch";
 /**
  * GET /api/breaks/evaluate
  * Called by Vercel Cron twice daily.
- * Evaluates up to 10 pending candidates across all worlds.
+ * Evaluates up to 30 pending candidates across all worlds.
  */
 export async function GET(request: Request) {
   if (!(await verifyAdminAuth(request))) {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await evaluatePendingCandidates(undefined, 10);
+    const result = await evaluatePendingCandidates(undefined, 30);
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     console.error("[breaks/evaluate] cron error:", err);
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       limit?: number;
     };
 
-    const result = await evaluatePendingCandidates(worldKey, limit ?? 10);
+    const result = await evaluatePendingCandidates(worldKey, limit ?? 30);
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     console.error("[breaks/evaluate] error:", err);

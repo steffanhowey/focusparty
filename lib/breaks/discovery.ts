@@ -13,6 +13,8 @@ import {
   MAX_DURATION,
 } from "./worldBreakProfiles";
 import { screenContent } from "./contentSafety";
+import { evaluatePendingCandidates } from "./evaluateBatch";
+import { refreshShelf, type ShelfRefreshResult } from "./shelf";
 
 interface DiscoveryResult {
   worldKey: string;
@@ -177,6 +179,49 @@ export async function discoverCandidates(
     candidatesFound: uniqueIds.length,
     candidatesInserted: inserted,
   };
+}
+
+// ─── Chained Pipeline ────────────────────────────────────────
+// One call: discover → evaluate → promote. Eliminates the 3-step
+// manual process and the 12-24 hour delay between discovery and
+// content appearing on the shelf.
+
+interface PipelineResult {
+  discovery: DiscoveryResult;
+  evaluation: { evaluated: number; rejected: number; errors: number };
+  shelf: ShelfRefreshResult;
+}
+
+/**
+ * Full pipeline for a single world: discover → evaluate → shelf refresh.
+ * Use this for manual triggers and POST requests so content appears
+ * immediately instead of waiting for separate cron jobs.
+ */
+export async function discoverAndPromote(
+  worldKey: string,
+): Promise<PipelineResult> {
+  const discovery = await discoverCandidates(worldKey);
+  const evaluation = await evaluatePendingCandidates(worldKey, 30);
+  const shelf = await refreshShelf(worldKey);
+  return { discovery, evaluation, shelf };
+}
+
+/**
+ * Run the full pipeline for ALL worlds sequentially.
+ * Used by bootstrap-all and manual "nuke and rebuild" workflows.
+ */
+export async function discoverAndPromoteAll(): Promise<PipelineResult[]> {
+  const worldKeys = Object.keys(WORLD_BREAK_PROFILES);
+  const results: PipelineResult[] = [];
+  for (const worldKey of worldKeys) {
+    try {
+      const result = await discoverAndPromote(worldKey);
+      results.push(result);
+    } catch (err) {
+      console.error(`[breaks/discover] pipeline error for ${worldKey}:`, err);
+    }
+  }
+  return results;
 }
 
 /**

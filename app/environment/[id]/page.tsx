@@ -1376,7 +1376,7 @@ export default function EnvironmentPage() {
     // Event-derived data (syntheticParticipants) overlays timing
     // when available; otherwise we fall back to client-side math.
     const SYNTHETIC_SPRINT_DURATIONS = [20, 25, 25, 25, 30, 30, 35];
-    const SYNTHETIC_BREAK_SEC = 90; // last 90s of cycle = break
+    const SYNTHETIC_BREAK_SEC = 180; // last 3 min of cycle = break
     const now = Date.now();
     const currentWorldKey = world.worldKey;
     const roomSeed = partyId.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
@@ -1389,11 +1389,22 @@ export default function EnvironmentPage() {
       syntheticParticipants.map((sp) => [sp.id, sp.lastSprintEventAt])
     );
 
+    // Compute effective duration the same way the flyout does
+    // (mirrors durationFromLength in useBreakContent.ts).
+    function itemEffectiveDuration(item: { best_duration?: number | null; duration_seconds?: number | null }): number {
+      if (item.best_duration) return item.best_duration;
+      const secs = item.duration_seconds;
+      if (!secs) return 5;
+      if (secs < 480) return 3;
+      if (secs < 720) return 5;
+      return 10;
+    }
+
     // Filter shelf to 5-min items only for synthetic assignment.
-    // This ensures synthetics always show content the user would see
-    // in the default flyout view (5 min), not items from other buckets.
+    // Uses the same duration logic as the flyout so synthetics
+    // never show a video the user can't find in their 5-min tab.
     const syntheticShelf = breakShelfItems.filter(
-      (item) => (item.best_duration ?? 5) === 5
+      (item) => itemEffectiveDuration(item) === 5
     );
 
     const synthetic: ParticipantInfo[] = roomSynthetics.map((sp) => {
@@ -1415,7 +1426,10 @@ export default function EnvironmentPage() {
       }
 
       const isOnBreak = elapsed >= sprintDur - SYNTHETIC_BREAK_SEC;
-      const shelfIdx = (sp.id.charCodeAt(0) + roomSeed) % Math.max(syntheticShelf.length, 1);
+      // Hash the FULL id so each synthetic gets a different video.
+      // charCodeAt(0) was always "s" (from "syn-*") → identical index for all.
+      const idHash = sp.id.split("").reduce((h, c) => h * 31 + c.charCodeAt(0), 0);
+      const shelfIdx = Math.abs(idHash + roomSeed) % Math.max(syntheticShelf.length, 1);
       const shelfItem = isOnBreak && syntheticShelf.length > 0 ? syntheticShelf[shelfIdx] : null;
 
       return {

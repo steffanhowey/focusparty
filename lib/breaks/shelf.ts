@@ -20,12 +20,16 @@ const DURATIONS = [3, 5, 10] as const;
 
 // ─── Types ──────────────────────────────────────────────────
 
-interface ShelfRefreshResult {
+export interface ShelfRefreshResult {
   worldKey: string;
   expired: number;
   promoted: number;
   removed: number;
   shelfSize: number;
+  /** "ok" = all buckets ≥ 3 items, "thin" = some < 3, "empty" = some at 0 */
+  health: "ok" | "thin" | "empty";
+  /** Per-duration bucket sizes for diagnostics */
+  buckets: Record<number, number>;
 }
 
 // ─── Engagement-based score adjustments ─────────────────────
@@ -123,6 +127,7 @@ export async function refreshShelf(
   let promoted = 0;
   let removed = 0;
   let shelfSize = 0;
+  const buckets: Record<number, number> = {};
 
   // Collect all candidate_ids already on the active shelf (any duration)
   // to prevent duplicate items from the same candidate in the same bucket.
@@ -175,6 +180,7 @@ export async function refreshShelf(
         .select("*, candidate:fp_break_content_candidates(*)")
         .eq("world_key", worldKey)
         .gte("taste_score", MIN_TASTE_SCORE)
+        .gte("relevance_score", 40)
         .order("taste_score", { ascending: false })
         .limit(needed * 4);
 
@@ -301,6 +307,7 @@ export async function refreshShelf(
       }
     }
 
+    buckets[duration] = bucketSize;
     shelfSize += bucketSize;
   }
 
@@ -321,7 +328,21 @@ export async function refreshShelf(
     }
   }
 
-  return { worldKey, expired, promoted, removed, shelfSize };
+  // Compute health status
+  const bucketSizes = Object.values(buckets);
+  const health = bucketSizes.some((s) => s === 0)
+    ? "empty" as const
+    : bucketSizes.some((s) => s < 3)
+      ? "thin" as const
+      : "ok" as const;
+
+  if (health !== "ok") {
+    console.warn(
+      `[breaks/shelf] ⚠️ ${worldKey} health=${health} — buckets: 3min=${buckets[3] ?? 0}, 5min=${buckets[5] ?? 0}, 10min=${buckets[10] ?? 0}`,
+    );
+  }
+
+  return { worldKey, expired, promoted, removed, shelfSize, health, buckets };
 }
 
 // ─── Refresh all worlds ─────────────────────────────────────
@@ -342,6 +363,8 @@ export async function refreshAllShelves(): Promise<ShelfRefreshResult[]> {
         promoted: 0,
         removed: 0,
         shelfSize: -1,
+        health: "empty",
+        buckets: { 3: 0, 5: 0, 10: 0 },
       });
     }
   }

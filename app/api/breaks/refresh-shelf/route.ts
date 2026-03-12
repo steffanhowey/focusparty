@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
 import { refreshShelf, refreshAllShelves } from "@/lib/breaks/shelf";
+import { evaluatePendingCandidates } from "@/lib/breaks/evaluateBatch";
 
 /**
  * GET /api/breaks/refresh-shelf
- * Called by Vercel Cron weekly (Monday 4 AM UTC).
- * Refreshes all world shelves.
+ * Called by Vercel Cron daily (4 AM UTC).
+ * Evaluates any pending stragglers, then refreshes all world shelves.
  */
 export async function GET(request: Request) {
   if (!(await verifyAdminAuth(request))) {
@@ -17,8 +18,10 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Catch any unevaluated candidates before promoting
+    const evalResult = await evaluatePendingCandidates(undefined, 30);
     const results = await refreshAllShelves();
-    return NextResponse.json({ ok: true, results });
+    return NextResponse.json({ ok: true, evalResult, results });
   } catch (err) {
     console.error("[breaks/refresh-shelf] cron error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

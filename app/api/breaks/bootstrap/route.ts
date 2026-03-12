@@ -5,6 +5,55 @@ import { evaluatePendingCandidates } from "@/lib/breaks/evaluateBatch";
 import { refreshShelf } from "@/lib/breaks/shelf";
 import { WORLD_BREAK_PROFILES } from "@/lib/breaks/worldBreakProfiles";
 
+async function bootstrapWorld(worldKey: string, discoveryRounds: number) {
+  console.log(
+    `[breaks/bootstrap] Starting "${worldKey}" (${discoveryRounds} rounds)`,
+  );
+
+  // Phase 1: Discovery
+  const discoveryResults = [];
+  for (let i = 0; i < discoveryRounds; i++) {
+    const result = await discoverCandidates(worldKey);
+    discoveryResults.push(result);
+    console.log(
+      `[breaks/bootstrap] ${worldKey} discovery ${i + 1}/${discoveryRounds}: ${result.candidatesInserted} new`,
+    );
+  }
+  const totalDiscovered = discoveryResults.reduce(
+    (sum, r) => sum + r.candidatesInserted,
+    0,
+  );
+
+  // Phase 2: Evaluation — loop until no pending remain
+  let totalEvaluated = 0;
+  let totalRejected = 0;
+  let evalPass = 0;
+  while (true) {
+    evalPass++;
+    const result = await evaluatePendingCandidates(worldKey, 20);
+    totalEvaluated += result.evaluated;
+    totalRejected += result.rejected;
+    console.log(
+      `[breaks/bootstrap] ${worldKey} eval pass ${evalPass}: ${result.evaluated} eval, ${result.rejected} reject`,
+    );
+    if (result.evaluated + result.rejected === 0) break;
+    if (evalPass >= 10) break;
+  }
+
+  // Phase 3: Shelf refresh
+  const shelfResult = await refreshShelf(worldKey);
+  console.log(
+    `[breaks/bootstrap] ${worldKey} complete: ${totalDiscovered} discovered, ${totalEvaluated} evaluated, shelf=${shelfResult.shelfSize}`,
+  );
+
+  return {
+    worldKey,
+    discovery: { rounds: discoveryRounds, totalCandidates: totalDiscovered },
+    evaluation: { passes: evalPass, evaluated: totalEvaluated, rejected: totalRejected },
+    shelf: shelfResult,
+  };
+}
+
 /**
  * POST /api/breaks/bootstrap
  *
@@ -36,78 +85,37 @@ export async function POST(request: Request) {
       10,
     );
 
+    // ─── Bootstrap "all" worlds ──────────────────────────
+    if (worldKey === "all") {
+      console.log(
+        `[breaks/bootstrap] Starting bootstrap for ALL worlds (${discoveryRounds} rounds each)`,
+      );
+      const allResults = [];
+      for (const wk of Object.keys(WORLD_BREAK_PROFILES)) {
+        try {
+          const result = await bootstrapWorld(wk, discoveryRounds);
+          allResults.push(result);
+        } catch (err) {
+          console.error(`[breaks/bootstrap] error for ${wk}:`, err);
+          allResults.push({ worldKey: wk, error: true });
+        }
+      }
+      return NextResponse.json({ ok: true, results: allResults });
+    }
+
+    // ─── Bootstrap single world ────────────────────────
     if (!worldKey || !(worldKey in WORLD_BREAK_PROFILES)) {
       const validKeys = Object.keys(WORLD_BREAK_PROFILES);
       return NextResponse.json(
         {
-          error: `Invalid worldKey. Valid keys: ${validKeys.join(", ")}`,
+          error: `Invalid worldKey. Valid keys: ${validKeys.join(", ")}, or "all"`,
         },
         { status: 400 },
       );
     }
 
-    console.log(
-      `[breaks/bootstrap] Starting bootstrap for "${worldKey}" (${discoveryRounds} discovery rounds)`,
-    );
-
-    // ─── Phase 1: Discovery ─────────────────────────────
-    const discoveryResults = [];
-    for (let i = 0; i < discoveryRounds; i++) {
-      const result = await discoverCandidates(worldKey);
-      discoveryResults.push(result);
-      console.log(
-        `[breaks/bootstrap] Discovery round ${i + 1}/${discoveryRounds}: ${result.candidatesInserted} new candidates`,
-      );
-    }
-
-    const totalDiscovered = discoveryResults.reduce(
-      (sum, r) => sum + r.candidatesInserted,
-      0,
-    );
-
-    // ─── Phase 2: Evaluation ────────────────────────────
-    // Loop until all pending candidates are evaluated
-    let totalEvaluated = 0;
-    let totalRejected = 0;
-    let evalPass = 0;
-
-    while (true) {
-      evalPass++;
-      const result = await evaluatePendingCandidates(worldKey, 20);
-      totalEvaluated += result.evaluated;
-      totalRejected += result.rejected;
-
-      console.log(
-        `[breaks/bootstrap] Eval pass ${evalPass}: ${result.evaluated} evaluated, ${result.rejected} rejected`,
-      );
-
-      // Stop when no more pending candidates
-      if (result.evaluated + result.rejected === 0) break;
-      // Safety: cap at 10 passes to prevent runaway loops
-      if (evalPass >= 10) break;
-    }
-
-    // ─── Phase 3: Shelf Refresh ─────────────────────────
-    const shelfResult = await refreshShelf(worldKey);
-
-    console.log(
-      `[breaks/bootstrap] Complete: ${totalDiscovered} discovered, ${totalEvaluated} evaluated, ${totalRejected} rejected, shelf=${shelfResult.shelfSize} items`,
-    );
-
-    return NextResponse.json({
-      ok: true,
-      worldKey,
-      discovery: {
-        rounds: discoveryRounds,
-        totalCandidates: totalDiscovered,
-      },
-      evaluation: {
-        passes: evalPass,
-        evaluated: totalEvaluated,
-        rejected: totalRejected,
-      },
-      shelf: shelfResult,
-    });
+    const result = await bootstrapWorld(worldKey, discoveryRounds);
+    return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     console.error("[breaks/bootstrap] error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
