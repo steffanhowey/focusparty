@@ -1376,10 +1376,12 @@ export default function EnvironmentPage() {
     const SYNTHETIC_BREAK_SEC = 90; // last 90s of cycle = break
     const now = Date.now();
     const currentWorldKey = world.worldKey;
+    // Room-specific seed so synthetics have different phases/content per room
+    const roomSeed = partyId.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
     const synthetic: ParticipantInfo[] = syntheticParticipants.map((sp) => {
       const poolEntry = SYNTHETIC_POOL.find((s) => s.id === sp.id);
-      // Deterministic sprint duration per synthetic
-      const durIdx = sp.id.charCodeAt(sp.id.length - 1) % SYNTHETIC_SPRINT_DURATIONS.length;
+      // Deterministic sprint duration per synthetic + room
+      const durIdx = (sp.id.charCodeAt(sp.id.length - 1) + roomSeed) % SYNTHETIC_SPRINT_DURATIONS.length;
       const sprintDur = SYNTHETIC_SPRINT_DURATIONS[durIdx] * 60; // seconds
       // Anchor timer to server events when available, else fall back to deterministic math
       let elapsed: number;
@@ -1390,15 +1392,15 @@ export default function EnvironmentPage() {
         elapsed = Math.min(sinceLast, sprintDur);
         sprintStart = sp.lastSprintEventAt;
       } else {
-        // Fallback: deterministic client-side calculation
-        const offsetMs = (sp.id.charCodeAt(sp.id.length - 2) || 0) * 37_000;
+        // Fallback: deterministic client-side calculation with room-specific offset
+        const offsetMs = ((sp.id.charCodeAt(sp.id.length - 2) || 0) * 37_000) + (roomSeed * 17_000);
         elapsed = ((now - offsetMs) / 1000) % sprintDur;
         sprintStart = new Date(now - elapsed * 1000).toISOString();
       }
       // ~10% of synthetics are on break (last 90s of their cycle)
       const isOnBreak = elapsed >= sprintDur - SYNTHETIC_BREAK_SEC;
-      // Assign a real shelf item so "Watch too" works on synthetic cards
-      const shelfIdx = sp.id.charCodeAt(0) % Math.max(breakShelfItems.length, 1);
+      // Assign a real shelf item so "Watch too" works — room seed varies the pick
+      const shelfIdx = (sp.id.charCodeAt(0) + roomSeed) % Math.max(breakShelfItems.length, 1);
       const shelfItem = isOnBreak && breakShelfItems.length > 0 ? breakShelfItems[shelfIdx] : null;
       return {
         id: sp.id,
