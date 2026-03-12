@@ -28,7 +28,6 @@ import {
 } from "@/components/environment/EnvironmentParticipants";
 import { ParticipantCard } from "@/components/environment/ParticipantCard";
 import { EnvironmentRail } from "@/components/environment/EnvironmentRail";
-import { EnvironmentSetup } from "@/components/environment/EnvironmentSetup";
 import { ActionBar } from "@/components/session/ActionBar";
 import { SprintGoalBanner } from "@/components/session/SprintGoalBanner";
 import { SideDrawer } from "@/components/session/SideDrawer";
@@ -870,53 +869,6 @@ export default function EnvironmentPage() {
 
   // ─── Sprint lifecycle ──────────────────────────────────
 
-  const handleStartSprint = useCallback(
-    (durationMinutes: number, freeformGoal?: string) => {
-      const goalText = activeTask?.title || freeformGoal || goal;
-      if (!goalText) return;
-      setGoal(goalText);
-      const sec = durationMinutes * 60;
-      setDurationSec(sec);
-      timer.reset(sec);
-      timer.start();
-      setPhase("sprint");
-      setSprintGoalCardOpen(false);
-
-      if (userId) {
-        persistence
-          .startSession({
-            user_id: userId,
-            party_id: partyId,
-            task_id: activeTask?.id ?? undefined,
-            character: characterAccent,
-            goal_text: goalText,
-            planned_duration_sec: sec,
-          })
-          .then((session) =>
-            persistence.startSprint({
-              session_id: session.id,
-              sprint_number: 1,
-              duration_sec: sec,
-            })
-          )
-          .then(async () => {
-            const sg = await persistence.declareGoal({
-              user_id: userId,
-              task_id: activeTask?.id ?? undefined,
-              body: goalText,
-            });
-            if (sg) setSessionGoalId(sg.id);
-            hostTriggers.triggerSessionStarted();
-            hostTriggers.triggerSprintStarted();
-          })
-          .catch((err) =>
-            console.error("[EnvironmentPage] persist startSprint failed:", err)
-          );
-      }
-    },
-    [activeTask, goal, timer, userId, partyId, characterAccent, persistence, hostTriggers]
-  );
-
   const handleEndSession = useCallback(() => {
     reviewElapsedRef.current = durationSec - timer.getSnapshot().seconds;
     timer.pause();
@@ -1640,24 +1592,6 @@ export default function EnvironmentPage() {
 
       {/* Main content — full width, flyout overlays on top */}
       <div className="flex w-full flex-col pl-24">
-        {phase === "setup" && !showJoinModal ? (
-          <EnvironmentSetup
-            roomName={party?.name ?? world.label}
-            hostName={hostConfig.hostName}
-            hostAvatarUrl={hostConfig.avatarUrl}
-            accentColor={world.accentColor}
-            defaultDuration={world.defaultSprintLength}
-            activeTask={activeTask}
-            activeTasks={activeTasks}
-            externalItems={externalItems.items}
-            onImportExternalItem={externalItems.importItem}
-            initialGoal={!activeTask && goal ? goal : undefined}
-            onSelectTask={handleStartTask}
-            onAddTask={addTask}
-            onStartSprint={handleStartSprint}
-          />
-        ) : (
-          <>
             {/* Room header */}
             <EnvironmentHeader
               roomName={party?.name ?? world.label}
@@ -1729,8 +1663,6 @@ export default function EnvironmentPage() {
                 onOpenBreaks={handleToggleBreaks}
               />
             )}
-          </>
-        )}
       </div>
 
       {/* Right flyout panel — absolutely positioned overlay */}
