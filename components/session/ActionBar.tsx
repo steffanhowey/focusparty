@@ -24,7 +24,6 @@ import {
 import { MusicPopover } from "@/components/session/MusicPopover";
 import { CheckInMenu } from "@/components/session/CheckInMenu";
 import { BreakCategoryPopover } from "@/components/session/BreakCategoryPopover";
-// import { FocusPopover } from "@/components/session/FocusPopover";
 import { FocusDropdown } from "@/components/session/FocusDropdown";
 import { NotesPopover } from "@/components/session/NotesPopover";
 import type { BreakCategory } from "@/lib/breakConstants";
@@ -112,8 +111,12 @@ interface ActionBarProps {
   onToggleBreakPopover?: () => void;
   onCloseBreakPopover?: () => void;
   onSelectBreakCategory?: (category: BreakCategory) => void;
-  /** Current session phase — drives break visual state in timer pill */
-  phase?: "sprint" | "break";
+  /** Current session phase — drives visual state in timer pill */
+  phase?: "sprint" | "break" | "joining" | "resuming";
+  /** Countdown number (5→1) shown in the timer pill during the joining phase */
+  joiningCountdown?: number;
+  /** Countdown number (3→1) shown in the timer pill when resuming from break */
+  resumingCountdown?: number;
   /** Break duration in minutes — used for break countdown in timer pill */
   breakDurationMinutes?: number;
   onChangeBreakDuration?: (minutes: number) => void;
@@ -183,6 +186,8 @@ export const ActionBar = memo(function ActionBar({
   onCloseBreakPopover,
   onSelectBreakCategory,
   phase,
+  joiningCountdown,
+  resumingCountdown,
   breakDurationMinutes,
   onChangeBreakDuration,
   onResetBreakTimer,
@@ -195,6 +200,8 @@ export const ActionBar = memo(function ActionBar({
   const breakWrapperRef = useRef<HTMLDivElement>(null);
   const { formatted, seconds, running } = useTimerDisplay(timer);
   const isBreak = phase === "break";
+  const isJoining = phase === "joining";
+  const isResuming = phase === "resuming";
 
   // Break countdown — independent timer that counts down from breakDurationMinutes
   const [breakRemaining, setBreakRemaining] = useState(0);
@@ -233,17 +240,23 @@ export const ActionBar = memo(function ActionBar({
           <div
             className="flex items-center gap-1 rounded-full border"
             style={{
-              borderColor: isBreak ? "rgba(140, 85, 239, 0.3)" : "rgba(255,255,255,0.08)",
+              borderColor: isJoining
+                ? "rgba(255,255,255,0.15)"
+                : (isBreak || isResuming) ? "rgba(140, 85, 239, 0.3)" : "rgba(255,255,255,0.08)",
               background: "rgba(10,10,10,0.55)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
-              boxShadow: isBreak
+              boxShadow: (isBreak || isResuming)
                 ? "0 4px 24px rgba(0,0,0,0.25), 0 0 12px 2px rgba(140,85,239,0.15), inset 0 1px 0 rgba(255,255,255,0.06)"
                 : "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
-            {/* Pause / Play — or Coffee icon during break */}
-            {isBreak ? (
+            {/* Left icon — phase-dependent */}
+            {isJoining ? (
+              <div className="flex h-full items-center pl-4 pr-1 text-white/50">
+                <Zap size={18} strokeWidth={2} />
+              </div>
+            ) : (isBreak || isResuming) ? (
               <div className="flex h-full items-center pl-4 pr-1 text-[#8C55EF]">
                 <Coffee size={20} strokeWidth={2} />
               </div>
@@ -262,35 +275,62 @@ export const ActionBar = memo(function ActionBar({
               </button>
             )}
 
-            {/* Timer + dropdown toggle */}
-            <button
-              type="button"
-              onClick={() => { if (!wasDraggedRef.current) onToggleGoalCard?.(); }}
-              className="flex cursor-pointer items-center gap-2 py-2 pl-2 pr-5 transition-colors rounded-r-full hover:bg-white/10"
-              aria-label={isBreak ? "Break timer options" : "Toggle timer options"}
-              aria-expanded={goalCardOpen}
-            >
-              <span
-                className="text-3xl font-extrabold tracking-tight md:text-4xl"
-                style={{
-                  fontFamily: "var(--font-montserrat), sans-serif",
-                  textShadow: "0 1px 6px rgba(0,0,0,0.5)",
-                  fontVariantNumeric: "tabular-nums",
-                  color: isBreak ? "#8C55EF" : "white",
-                }}
+            {/* Timer display / countdown — phase-dependent */}
+            {(isJoining || isResuming) ? (
+              <div className="flex items-center py-2 pl-2 pr-5">
+                <span
+                  key={isResuming ? `r${resumingCountdown}` : `j${joiningCountdown}`}
+                  className="animate-countdown-pop inline-block text-center text-3xl font-extrabold tracking-tight md:text-4xl"
+                  style={{
+                    fontFamily: "var(--font-montserrat), sans-serif",
+                    fontVariantNumeric: "tabular-nums",
+                    minWidth: "1.2em",
+                    color: isResuming ? "#8C55EF" : "white",
+                  }}
+                >
+                  {isResuming ? (resumingCountdown ?? 0) : (joiningCountdown ?? 0)}
+                </span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { if (!wasDraggedRef.current) onToggleGoalCard?.(); }}
+                className="flex cursor-pointer items-center gap-2 py-2 pl-2 pr-5 transition-colors rounded-r-full hover:bg-white/10"
+                aria-label={isBreak ? "Break timer options" : "Toggle timer options"}
+                aria-expanded={goalCardOpen}
               >
-                {isBreak ? formatBreakTime(breakRemaining) : formatted}
-              </span>
-              <ChevronUp
-                size={18}
-                strokeWidth={2.5}
-                className={`transition-transform duration-200 ${goalCardOpen ? "" : "rotate-180"}`}
-                style={{ color: isBreak ? "rgba(140, 85, 239, 0.5)" : "var(--color-text-tertiary)" }}
-              />
-            </button>
+                <span
+                  className="text-3xl font-extrabold tracking-tight md:text-4xl"
+                  style={{
+                    fontFamily: "var(--font-montserrat), sans-serif",
+                    textShadow: "0 1px 6px rgba(0,0,0,0.5)",
+                    fontVariantNumeric: "tabular-nums",
+                    color: isBreak ? "#8C55EF" : "white",
+                  }}
+                >
+                  {isBreak ? formatBreakTime(breakRemaining) : formatted}
+                </span>
+                <ChevronUp
+                  size={18}
+                  strokeWidth={2.5}
+                  className={`transition-transform duration-200 ${goalCardOpen ? "" : "rotate-180"}`}
+                  style={{ color: isBreak ? "rgba(140, 85, 239, 0.5)" : "var(--color-text-tertiary)" }}
+                />
+              </button>
+            )}
           </div>
 
-          {/* "On Break" label below pill — hidden when dropdown is open */}
+          {/* Phase subtitle below pill */}
+          {isJoining && (
+            <p className="mt-1.5 text-center text-[10px] font-medium tracking-wider text-white/50">
+              Starting in…
+            </p>
+          )}
+          {isResuming && (
+            <p className="mt-1.5 text-center text-[10px] font-medium tracking-wider text-[#8C55EF]/70">
+              Resuming…
+            </p>
+          )}
           {isBreak && !goalCardOpen && (
             <p className="mt-1.5 text-center text-[10px] font-medium tracking-wider text-[#8C55EF]/70">
               On Break
@@ -298,7 +338,7 @@ export const ActionBar = memo(function ActionBar({
           )}
 
           {/* Downward dropdown — sprint or break mode */}
-          {goalCardOpen && !isBreak && currentDurationMin != null && onChangeDuration && onResetTimer && (
+          {goalCardOpen && !isBreak && !isJoining && !isResuming && currentDurationMin != null && onChangeDuration && onResetTimer && (
             <div
               className="absolute top-full left-1/2 mt-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3"
               style={{
@@ -307,17 +347,17 @@ export const ActionBar = memo(function ActionBar({
                 WebkitBackdropFilter: "blur(24px)",
                 boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
                 zIndex: 40,
+                minWidth: 280,
               }}
             >
               <p className="mb-2 text-xs font-medium text-[var(--color-text-secondary)]">Sprint duration</p>
-              <div className="flex items-center gap-2 [&>div]:flex-nowrap">
-                <DurationPills value={currentDurationMin} onChange={onChangeDuration} />
+              <DurationPills value={currentDurationMin} onChange={onChangeDuration} />
+              <div className="mt-2 flex justify-end">
                 <Button
                   variant="ghost"
                   size="xs"
                   leftIcon={<RotateCcw size={12} strokeWidth={2} />}
                   onClick={onResetTimer}
-                  className="ml-auto"
                   aria-label="Reset timer"
                 >
                   Reset

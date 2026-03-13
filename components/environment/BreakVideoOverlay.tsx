@@ -132,6 +132,8 @@ export function BreakVideoOverlay({
     setNextClipLabel(clips[nextIndex].label);
     setIsChangingChannel(true);
     setShieldVisible(true);
+    // Safety: if static animation never fires onComplete, auto-recover after 3s
+    setTimeout(() => setIsChangingChannel((v) => v ? false : v), 3000);
   }, [clips, currentClipIndex, content.id, elapsed]);
 
   const handleStaticComplete = useCallback(() => {
@@ -362,6 +364,14 @@ export function BreakVideoOverlay({
               ref={(el) => {
                 videoRef.current = el;
                 if (el && startTime > 0) el.currentTime = startTime;
+              }}
+              onError={() => {
+                // Video failed to load — skip to next clip or end break
+                if (clips.length > 1) {
+                  handleChangeChannel();
+                } else {
+                  onFinish();
+                }
               }}
             />
           )

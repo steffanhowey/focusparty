@@ -62,7 +62,7 @@ export default function JoinPartyPage({
     setJoining(true);
     try {
       await joinParty(id, userId!, displayName);
-      router.push(party?.status === "active" ? "/session" : `/rooms/${id}`);
+      router.push(party?.status === "active" ? `/environment/${id}` : `/rooms/${id}`);
     } catch {
       setJoining(false);
     }

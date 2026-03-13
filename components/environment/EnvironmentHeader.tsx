@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { UserPlus, ChevronDown, Check, DoorOpen } from "lucide-react";
 import { InvitePopover } from "@/components/session/InvitePopover";
-import { getUserActiveParties, type Party } from "@/lib/parties";
+import { listDiscoverableParties, joinParty, type PartyWithCount } from "@/lib/parties";
+import type { JoinConfig } from "@/components/party/JoinRoomModal";
 import { getWorldConfig } from "@/lib/worlds";
 import {
   getAllActiveBackgrounds,
@@ -18,6 +19,7 @@ interface EnvironmentHeaderProps {
   inviteCode: string | null;
   currentPartyId: string;
   userId: string | null;
+  displayName: string;
 }
 
 export function EnvironmentHeader({
@@ -25,6 +27,7 @@ export function EnvironmentHeader({
   inviteCode,
   currentPartyId,
   userId,
+  displayName,
 }: EnvironmentHeaderProps) {
   const router = useRouter();
   const inviteWrapperRef = useRef<HTMLDivElement>(null);
@@ -33,18 +36,18 @@ export function EnvironmentHeader({
   // ─── Party switcher state ─────────────────────────────
   const switcherRef = useRef<HTMLDivElement>(null);
   const [switcherOpen, setSwitcherOpen] = useState(false);
-  const [parties, setParties] = useState<Party[]>([]);
+  const [parties, setParties] = useState<PartyWithCount[]>([]);
   const [backgrounds, setBackgrounds] = useState<Map<string, ActiveBackground>>(new Map());
   const hasFetchedRef = useRef(false);
   const [initialLoading, setInitialLoading] = useState(false);
 
   // Prefetch parties eagerly on mount so data is ready when user clicks
   useEffect(() => {
-    if (!userId || hasFetchedRef.current) return;
+    if (hasFetchedRef.current) return;
     hasFetchedRef.current = true;
     const timeState = getUserTimeState();
     Promise.all([
-      getUserActiveParties(userId),
+      listDiscoverableParties(),
       getAllActiveBackgrounds(timeState),
     ])
       .then(([p, bg]) => {
@@ -52,11 +55,11 @@ export function EnvironmentHeader({
         setBackgrounds(bg);
       })
       .catch((err) => console.error("Failed to prefetch party switcher data:", err));
-  }, [userId]);
+  }, []);
 
   // On open: show cached data immediately, refresh in background
   useEffect(() => {
-    if (!switcherOpen || !userId) return;
+    if (!switcherOpen) return;
     let cancelled = false;
 
     // If we've never fetched yet, show loading state
@@ -67,7 +70,7 @@ export function EnvironmentHeader({
 
     const timeState = getUserTimeState();
     Promise.all([
-      getUserActiveParties(userId),
+      listDiscoverableParties(),
       getAllActiveBackgrounds(timeState),
     ])
       .then(([p, bg]) => {
@@ -81,7 +84,7 @@ export function EnvironmentHeader({
         if (!cancelled) setInitialLoading(false);
       });
     return () => { cancelled = true; };
-  }, [switcherOpen, userId]);
+  }, [switcherOpen]);
 
   // Prefetch routes + background images once parties are loaded
   useEffect(() => {
@@ -121,13 +124,36 @@ export function EnvironmentHeader({
   }, [switcherOpen]);
 
   const handleSelectParty = useCallback(
-    (partyId: string) => {
-      if (partyId !== currentPartyId) {
-        router.push(`/environment/${partyId}`);
-      }
+    async (partyId: string) => {
       setSwitcherOpen(false);
+      if (partyId === currentPartyId) return;
+
+      // Ensure participant record exists so the room page
+      // doesn't show the join modal as if we're a new visitor.
+      if (userId) {
+        try {
+          await joinParty(partyId, userId, displayName);
+        } catch (err) {
+          console.error("Failed to pre-join room:", err);
+        }
+
+        // Store a minimal join config so the environment page
+        // skips the join modal and enters the countdown directly.
+        const config: JoinConfig = {
+          taskId: null,
+          goalId: null,
+          goalText: "",
+          durationSec: 25 * 60,
+          autoStart: false,
+          commitmentType: "personal",
+          musicAutoPlay: false,
+        };
+        sessionStorage.setItem("fp_join_config", JSON.stringify(config));
+      }
+
+      router.push(`/environment/${partyId}`);
     },
-    [currentPartyId, router]
+    [currentPartyId, userId, displayName, router]
   );
 
   const showLoading = initialLoading && parties.length === 0;
@@ -159,7 +185,7 @@ export function EnvironmentHeader({
         {/* Party switcher dropdown */}
         {switcherOpen && (
           <div
-            className="absolute left-0 top-full mt-2 overflow-hidden rounded-xl border border-white/[0.08]"
+            className="absolute left-0 top-full mt-2 overflow-y-auto rounded-xl border border-white/[0.08]"
             style={{
               background: "rgba(10,10,10,0.90)",
               backdropFilter: "blur(24px)",
@@ -167,6 +193,7 @@ export function EnvironmentHeader({
               boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
               zIndex: 40,
               width: 280,
+              maxHeight: "min(420px, calc(100vh - 100px))",
               animation: "fp-dropdown-enter 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards",
               transformOrigin: "top left",
             }}

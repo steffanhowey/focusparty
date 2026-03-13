@@ -67,7 +67,6 @@ export function useUsernameValidation(initialValue = "") {
   const [status, setStatus] = useState<UsernameStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
 
   const handleChange = useCallback((raw: string) => {
     // Strip @ prefix if typed, auto-lowercase, no spaces
@@ -76,7 +75,6 @@ export function useUsernameValidation(initialValue = "") {
 
     // Cancel pending checks
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (abortRef.current) abortRef.current.abort();
 
     if (cleaned.length === 0) {
       setStatus("idle");
@@ -129,7 +127,6 @@ export function useUsernameValidation(initialValue = "") {
   useEffect(() => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (abortRef.current) abortRef.current.abort();
     };
   }, []);
 

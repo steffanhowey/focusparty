@@ -101,18 +101,21 @@ export function useNotes(
 
   const onBlur = useCallback(() => flush(), [flush]);
 
+  // Ref ensures unmount + beforeunload always call the latest flush
+  const flushRef = useRef(flush);
+  flushRef.current = flush;
+
   // Flush on unmount
   useEffect(() => {
-    return () => flush();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => flushRef.current();
   }, []);
 
   // Flush on tab close
   useEffect(() => {
-    const handleBeforeUnload = () => flush();
+    const handleBeforeUnload = () => flushRef.current();
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [flush]);
+  }, []);
 
   return { text, setText, isSaving, isLoaded, onBlur };
 }

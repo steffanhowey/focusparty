@@ -52,7 +52,14 @@ export function useExternalItems(tasks?: TaskRecord[]) {
     }
   }, [userId]);
 
-  // Fetch once on mount
+  // Reset fetch flag when userId changes (e.g., logout → login)
+  const prevUserIdRef = useRef(userId);
+  if (userId !== prevUserIdRef.current) {
+    prevUserIdRef.current = userId;
+    fetched.current = false;
+  }
+
+  // Fetch once per userId
   useEffect(() => {
     if (!userId || fetched.current) return;
     fetched.current = true;

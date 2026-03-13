@@ -18,7 +18,7 @@ import { useMusic } from "@/lib/useMusic";
 import { useChat } from "@/lib/useChat";
 import { useNotes } from "@/lib/useNotes";
 import { useTheme } from "@/components/providers/ThemeProvider";
-import { updatePartyStatus, type Party } from "@/lib/parties";
+import { updatePartyStatus, leaveParty, type Party } from "@/lib/parties";
 import { useEnvironmentParty } from "@/lib/useEnvironmentParty";
 import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
 import { EnvironmentBackground } from "@/components/environment/EnvironmentBackground";
@@ -46,7 +46,6 @@ import { updateSessionGoalStatus } from "@/lib/sessions";
 import { checkGoalCompletion } from "@/lib/goalCascade";
 import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
 import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
-import { BreakReEntryCountdown } from "@/components/environment/BreakReEntryCountdown";
 import { FloatingNotes } from "@/components/environment/FloatingNotes";
 import { FloatingFocus } from "@/components/session/FloatingFocus";
 import { useBreakContent, type BreakClip } from "@/lib/useBreakContent";
@@ -255,6 +254,8 @@ export default function EnvironmentPage() {
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [commitmentType, setCommitmentType] = useState<import("@/lib/types").CommitmentType>("personal");
   const [sessionGoalId, setSessionGoalId] = useState<string | null>(null);
+  const [joiningCountdown, setJoiningCountdown] = useState(0);
+  const [resumingCountdown, setResumingCountdown] = useState(0);
   const resolutionHandledRef = useRef(false);
   const [committedTaskIds, setCommittedTaskIds] = useState<Set<string>>(new Set());
   const [micActive, setMicActive] = useState(false);
@@ -264,12 +265,12 @@ export default function EnvironmentPage() {
   const focusButtonRef = useRef<HTMLButtonElement>(null);
   const [celebrations, setCelebrations] = useState<Map<string, CelebrationInfo>>(new Map());
   const lastFeedLengthRef = useRef(0);
+  const feedInitializedRef = useRef(false);
 
   // ─── Break session state ────────────────────────────────
   const [breakContent, setBreakContent] = useState<BreakContentItem | null>(null);
   const [breakDuration, setBreakDuration] = useState<BreakDuration>(5);
   const [breakActive, setBreakActive] = useState(false);
-  const [showBreakReEntry, setShowBreakReEntry] = useState(false);
   const [breakCategory, setBreakCategory] = useState<BreakCategory>("learning");
   const [breakPopoverOpen, setBreakPopoverOpen] = useState(false);
 
@@ -356,7 +357,7 @@ export default function EnvironmentPage() {
     return map;
   }, [presence.participants]);
 
-  const { events: feedEvents } = usePartyActivityFeed(partyId, feedDisplayNameMap);
+  const { events: feedEvents, isLoading: feedLoading } = usePartyActivityFeed(partyId, feedDisplayNameMap);
   const roomState = useMemo(
     () => computeRoomState(feedEvents, presence.participants.length),
     [feedEvents, presence.participants.length]
@@ -365,6 +366,17 @@ export default function EnvironmentPage() {
 
   // ─── Avatar celebration bursts (check-in + high-five) ──
   useEffect(() => {
+    // Wait until the feed has finished its initial DB fetch.
+    // Once loading completes, snapshot the current length so we only
+    // celebrate events that arrive via realtime AFTER the initial load.
+    if (feedLoading) return;
+
+    if (!feedInitializedRef.current) {
+      feedInitializedRef.current = true;
+      lastFeedLengthRef.current = feedEvents.length;
+      return;
+    }
+
     if (feedEvents.length <= lastFeedLengthRef.current) {
       lastFeedLengthRef.current = feedEvents.length;
       return;
@@ -437,6 +449,14 @@ export default function EnvironmentPage() {
         text = "Task done!";
       }
 
+      if (event.event_type === "goal_completed") {
+        // Skip own goal completions — already handled optimistically in handleCompleteGoal
+        if (event.user_id === userId) continue;
+        targetId = event.user_id;
+        color = "#5BC682";
+        text = "Goal done!";
+      }
+
       if (targetId) {
         // Synthetic celebrations get a 1-3s random delay to feel less robotic
         const delay = event.actor_type === "synthetic" ? 1000 + Math.random() * 2000 : 0;
@@ -453,7 +473,7 @@ export default function EnvironmentPage() {
         }, delay);
       }
     }
-  }, [feedEvents.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [feedEvents.length, feedLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Synthetic tick (keep bots active during sessions) ──
   useEffect(() => {
@@ -669,85 +689,162 @@ export default function EnvironmentPage() {
     musicAutoPlayRef.current = config.musicAutoPlay ?? false;
 
     if (config.autoStart && userId) {
-      const sec = config.durationSec;
-      timer.reset(sec);
-      timer.start();
-      setPhase("sprint");
+      // Enter the joining countdown phase (5→1 in the timer pill)
+      setJoiningCountdown(5);
+      setPhase("joining");
       setSprintGoalCardOpen(false);
-
-      persistence
-        .startSession({
-          user_id: userId,
-          party_id: partyId,
-          task_id: config.taskId ?? undefined,
-          character: characterAccent,
-          goal_text: config.goalText,
-          planned_duration_sec: sec,
-        })
-        .then((session) =>
-          persistence.startSprint({
-            session_id: session.id,
-            sprint_number: 1,
-            duration_sec: sec,
-          })
-        )
-        .then(async () => {
-          // Auto-create task from freeform text if no task was selected
-          let taskId = config.taskId;
-          if (!taskId && config.goalText) {
-            const createdId = await addTask({ title: config.goalText });
-            if (createdId) {
-              taskId = createdId;
-              selectTask(createdId);
-              commitTask(createdId);
-            }
-          }
-
-          let sgId: string | null = null;
-          if (config.goalText) {
-            const sg = await persistence.declareGoal({
-              user_id: userId,
-              task_id: taskId ?? undefined,
-              goal_id: config.goalId ?? undefined,
-              body: config.goalText,
-            });
-            if (sg) {
-              sgId = sg.id;
-              setSessionGoalId(sg.id);
-            }
-          }
-          const ct = config.commitmentType || "personal";
-          setCommitmentType(ct);
-
-          // Create commitment
-          commitments.createCommitment({
-            user_id: userId,
-            session_goal_id: sgId,
-            session_id: persistence.sessionRow?.id ?? null,
-            goal_id: config.goalId ?? null,
-            type: ct,
-          });
-
-          // Log commitment event for social/locked
-          if (ct !== "personal" && persistence.sessionRow) {
-            logEvent({
-              party_id: partyId,
-              session_id: persistence.sessionRow.id,
-              user_id: userId,
-              event_type: "commitment_declared",
-              body: config.goalText,
-              payload: { commitment_type: ct },
-            }).catch(() => {});
-          }
-
-          hostTriggers.triggerSessionStarted();
-          hostTriggers.triggerSprintStarted();
-        })
-        .catch((err) =>
-          console.error("[EnvironmentPage] join from modal failed:", err)
-        );
     }
-  }, [userId, partyId, characterAccent, timer, persistence, hostTriggers, selectTask]);
+  }, [userId, selectTask]);
+
+  // ─── Joining countdown → sprint transition ─────────────────
+  useEffect(() => {
+    if (phase !== "joining") return;
+
+    const id = setInterval(() => {
+      setJoiningCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(id);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, [phase]);
+
+  // When countdown reaches 0, transition to sprint
+  useEffect(() => {
+    if (phase !== "joining" || joiningCountdown !== 0) return;
+
+    const config = joinConfigRef.current;
+    if (!config || !userId) return;
+
+    const sec = config.durationSec;
+    timer.reset(sec);
+    timer.start();
+    setPhase("sprint");
+
+    persistence
+      .startSession({
+        user_id: userId,
+        party_id: partyId,
+        task_id: config.taskId ?? undefined,
+        character: characterAccent,
+        goal_text: config.goalText,
+        planned_duration_sec: sec,
+      })
+      .then((session) =>
+        persistence.startSprint({
+          session_id: session.id,
+          sprint_number: 1,
+          duration_sec: sec,
+        })
+      )
+      .then(async () => {
+        // Auto-create task from freeform text if no task was selected
+        let taskId = config.taskId;
+        if (!taskId && config.goalText) {
+          const createdId = await addTask({ title: config.goalText });
+          if (createdId) {
+            taskId = createdId;
+            selectTask(createdId);
+            commitTask(createdId);
+          }
+        }
+
+        let sgId: string | null = null;
+        if (config.goalText) {
+          const sg = await persistence.declareGoal({
+            user_id: userId,
+            task_id: taskId ?? undefined,
+            goal_id: config.goalId ?? undefined,
+            body: config.goalText,
+          });
+          if (sg) {
+            sgId = sg.id;
+            setSessionGoalId(sg.id);
+          }
+        }
+        const ct = config.commitmentType || "personal";
+        setCommitmentType(ct);
+
+        // Create commitment
+        commitments.createCommitment({
+          user_id: userId,
+          session_goal_id: sgId,
+          session_id: persistence.sessionRow?.id ?? null,
+          goal_id: config.goalId ?? null,
+          type: ct,
+        });
+
+        // Log commitment event for social/locked
+        if (ct !== "personal" && persistence.sessionRow) {
+          logEvent({
+            party_id: partyId,
+            session_id: persistence.sessionRow.id,
+            user_id: userId,
+            event_type: "commitment_declared",
+            body: config.goalText,
+            payload: { commitment_type: ct },
+          }).catch(() => {});
+        }
+
+        hostTriggers.triggerSessionStarted();
+        hostTriggers.triggerSprintStarted();
+      })
+      .catch((err) =>
+        console.error("[EnvironmentPage] join from modal failed:", err)
+      );
+  }, [phase, joiningCountdown]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Resuming countdown → sprint transition (after break) ──
+  // Capture break info in a ref so it's available after clearing breakContent
+  const breakInfoRef = useRef({ category: breakCategory, title: breakContent?.title ?? null });
+  breakInfoRef.current = { category: breakCategory, title: breakContent?.title ?? null };
+
+  useEffect(() => {
+    if (phase !== "resuming") return;
+
+    const id = setInterval(() => {
+      setResumingCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(id);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, [phase]);
+
+  // When resuming countdown reaches 0, transition back to sprint
+  useEffect(() => {
+    if (phase !== "resuming" || resumingCountdown !== 0) return;
+
+    setBreakContent(null);
+    timer.start();
+    setPhase("sprint");
+    persistence.updatePhase("sprint").catch((err) =>
+      console.error("Failed to update phase to sprint:", err)
+    );
+
+    if (userId && persistence.sessionRow) {
+      const info = breakInfoRef.current;
+      logEvent({
+        party_id: partyId,
+        session_id: persistence.sessionRow.id,
+        user_id: userId,
+        event_type: "break_completed",
+        body: displayName,
+        payload: {
+          category: info.category,
+          content_title: info.title,
+        },
+      }).catch(() => {});
+    }
+  }, [phase, resumingCountdown]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clear task selection on mount (skip if restoring active sprint or join config present)
   const taskClearRef = useRef(false);
@@ -800,12 +897,19 @@ export default function EnvironmentPage() {
         } else {
           // Sprint expired while away — silently end stale session, start fresh
           persistence.endSession("completed").catch(() => {});
+          // Only leave the party if the user isn't actively switching to this room
+          if (s.party_id && userId && !joinConfigRef.current) {
+            leaveParty(s.party_id, userId).catch(() => {});
+          }
           setPhase("setup");
         }
       } else {
         // No active sprint, or non-resumable phase — end stale session, start fresh
         if (s.status === "active") {
           persistence.endSession("abandoned").catch(() => {});
+          if (s.party_id && userId && !joinConfigRef.current) {
+            leaveParty(s.party_id, userId).catch(() => {});
+          }
         }
         setPhase("setup");
       }
@@ -899,11 +1003,16 @@ export default function EnvironmentPage() {
     reviewElapsedRef.current = durationSec - timer.getSnapshot().seconds;
     timer.pause();
     music.pause();
-    // fire-and-forget: non-critical persistence
-    persistence.completeSprint().catch((err) => console.error("Failed to complete sprint:", err));
+    // Only complete the sprint if it hasn't already been completed by the timer
+    if (persistence.currentSprint && !persistence.currentSprint.completed) {
+      persistence.completeSprint().catch((err) => console.error("Failed to complete sprint:", err));
+    }
     hostTriggers.triggerSessionCompleted();
     persistence.endSession("completed").catch((err) => console.error("Failed to end session:", err));
-    if (partyId && !party?.persistent) {
+    // For persistent rooms, only end the session — don't leave the room or
+    // mark it completed so the user can return later without re-joining.
+    if (partyId && !party?.persistent && userId) {
+      leaveParty(partyId, userId).catch((err) => console.error("Failed to leave party:", err));
       updatePartyStatus(partyId, "completed").catch((err) => console.error("Failed to update party status:", err));
     }
     // Resolve any orphaned commitment
@@ -911,7 +1020,7 @@ export default function EnvironmentPage() {
       commitments.resolveCommitment("failed").catch(() => {});
     }
     router.push("/rooms");
-  }, [durationSec, timer, music, persistence, hostTriggers, partyId, party?.persistent, commitments, router]);
+  }, [durationSec, timer, music, persistence, hostTriggers, partyId, userId, party?.persistent, commitments, router]);
 
   // Intercept Leave button: confirm during sprint, skip otherwise
   const handleLeaveClick = useCallback(() => {
@@ -956,8 +1065,9 @@ export default function EnvironmentPage() {
     hostTriggers.triggerSessionCompleted();
     // fire-and-forget: non-critical persistence
     persistence.endSession("completed").catch((err) => console.error("Failed to end session:", err));
-    // fire-and-forget: non-critical persistence
-    if (partyId && !party?.persistent) {
+    // For persistent rooms, only end the session — don't leave the room
+    if (partyId && !party?.persistent && userId) {
+      leaveParty(partyId, userId).catch((err) => console.error("Failed to leave party:", err));
       updatePartyStatus(partyId, "completed").catch((err) => console.error("Failed to update party status:", err));
     }
     // Safety net: resolve any orphaned commitment that wasn't handled by handleResolution
@@ -965,7 +1075,7 @@ export default function EnvironmentPage() {
       commitments.resolveCommitment("failed").catch(() => {});
     }
     router.push("/rooms");
-  }, [router, persistence, hostTriggers, partyId, party?.persistent, commitments]);
+  }, [router, persistence, hostTriggers, partyId, userId, party?.persistent, commitments]);
 
   const handleReflectionComplete = useCallback(
     (reflection: SessionReflection) => {
@@ -1117,7 +1227,7 @@ export default function EnvironmentPage() {
         party_id: partyId,
         session_id: persistence.sessionRow?.id ?? null,
         user_id: userId,
-        event_type: "task_completed",
+        event_type: "goal_completed",
         body: goalRecord?.title ?? null,
       }).catch((err) =>
         console.error("[EnvironmentPage] goal_completed event failed:", err?.message ?? err?.code ?? JSON.stringify(err))
@@ -1242,34 +1352,9 @@ export default function EnvironmentPage() {
 
   const handleBreakVideoFinish = useCallback(() => {
     setBreakActive(false);
-    setShowBreakReEntry(true);
+    setResumingCountdown(3);
+    setPhase("resuming");
   }, []);
-
-  const handleResumeFromBreak = useCallback(() => {
-    setShowBreakReEntry(false);
-    setBreakContent(null);
-    timer.start();
-    setPhase("sprint");
-    persistence.updatePhase("sprint").catch((err) =>
-      console.error("Failed to update phase to sprint:", err)
-    );
-
-    if (userId && persistence.sessionRow) {
-      logEvent({
-        party_id: partyId,
-        session_id: persistence.sessionRow.id,
-        user_id: userId,
-        event_type: "break_completed",
-        body: displayName,
-        payload: {
-          category: breakCategory,
-          content_title: breakContent?.title ?? null,
-        },
-      }).catch(() => {});
-    }
-  }, [timer, persistence, userId, partyId, displayName, breakContent, breakCategory]);
-
-
 
   // ─── Join someone else's break ──────────────────────────
 
@@ -1515,8 +1600,9 @@ export default function EnvironmentPage() {
       let sprintStart: string;
       if (lastSprintEventAt) {
         const sinceLast = (now - new Date(lastSprintEventAt).getTime()) / 1000;
-        elapsed = Math.min(sinceLast, sprintDur);
-        sprintStart = lastSprintEventAt;
+        // Cycle through sprints so synthetics don't get stuck at max elapsed
+        elapsed = sprintDur > 0 ? sinceLast % sprintDur : 0;
+        sprintStart = new Date(now - elapsed * 1000).toISOString();
       } else {
         const offsetMs = ((sp.id.charCodeAt(sp.id.length - 2) || 0) * 37_000) + (roomSeed * 17_000);
         elapsed = ((now - offsetMs) / 1000) % sprintDur;
@@ -1728,6 +1814,7 @@ export default function EnvironmentPage() {
               inviteCode={party?.invite_code ?? null}
               currentPartyId={partyId}
               userId={userId}
+              displayName={displayName}
             />
 
             {/* Center content area (spacer + click-away) */}
@@ -1742,7 +1829,7 @@ export default function EnvironmentPage() {
             </div>
 
             {/* Action bar (identical to existing session) */}
-            {(phase === "sprint" || phase === "break") && (
+            {(phase === "sprint" || phase === "break" || phase === "joining" || phase === "resuming") && (
               <ActionBar
                 micActive={micActive}
                 onToggleMic={handleToggleMic}
@@ -1815,7 +1902,9 @@ export default function EnvironmentPage() {
                   status: music.status,
                   roomControlled: true,
                 }}
-                phase={phase === "break" ? "break" : "sprint"}
+                phase={phase === "break" ? "break" : phase === "joining" ? "joining" : phase === "resuming" ? "resuming" : "sprint"}
+                joiningCountdown={joiningCountdown}
+                resumingCountdown={resumingCountdown}
                 breakDurationMinutes={breakDuration}
                 onChangeBreakDuration={handleChangeBreakDuration}
                 onResetBreakTimer={handleResetBreakTimer}
@@ -2007,10 +2096,6 @@ export default function EnvironmentPage() {
         />
       )}
 
-      <BreakReEntryCountdown
-        isOpen={showBreakReEntry}
-        onComplete={handleResumeFromBreak}
-      />
     </div>
   );
 }

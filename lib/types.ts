@@ -5,7 +5,7 @@ export type { BreakCategory };
 
 export type CharacterId = "ember" | "moss" | "byte";
 
-export type SessionPhase = "setup" | "breathing" | "sprint" | "review" | "break";
+export type SessionPhase = "setup" | "breathing" | "joining" | "sprint" | "review" | "break" | "resuming";
 
 export type AuthState = "loading" | "anonymous" | "authenticated";
 

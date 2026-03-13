@@ -136,7 +136,11 @@ export function useTasks() {
         (payload) => {
           const updated = payload.new as TaskRecord;
           setTasks((prev) =>
-            prev.map((t) => (t.id === updated.id ? { ...t, ...updated } : t))
+            prev.map((t) => {
+              if (t.id !== updated.id) return t;
+              // Realtime payload has no joined relations — preserve existing linked_resource
+              return { ...t, ...updated, linked_resource: t.linked_resource };
+            })
           );
         }
       )

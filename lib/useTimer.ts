@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useSyncExternalStore } from "react";
+import { useRef, useCallback, useEffect, useSyncExternalStore } from "react";
 
 function formatTime(s: number): string {
   return `${Math.floor(s / 60)
@@ -91,6 +91,9 @@ export function useTimer(initialSeconds: number, onComplete?: () => void) {
   }, []);
 
   const getSnapshot = useCallback(() => snapshotRef.current, []);
+
+  // Clean up interval on unmount to prevent leaked timers
+  useEffect(() => () => clearTick(), [clearTick]);
 
   return { subscribe, getSnapshot, start, pause, reset };
 }

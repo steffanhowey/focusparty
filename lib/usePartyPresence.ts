@@ -170,10 +170,14 @@ export function usePartyPresence(
     channelRef.current.track(payload);
   }, [userId, displayName, username, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec, breakContentId, breakContentTitle, breakContentThumbnail]);
 
+  // Ref avoids stale closure — participants changes on every sync event
+  const participantsRef = useRef(participants);
+  participantsRef.current = participants;
+
   const updatePresence = useCallback(
     (updates: Partial<PresencePayload>) => {
       if (!channelRef.current || !userId) return;
-      const current = participants.find((p) => p.userId === userId);
+      const current = participantsRef.current.find((p) => p.userId === userId);
       const merged = {
         ...(current ?? {}),
         ...updates,
@@ -181,7 +185,7 @@ export function usePartyPresence(
       } as PresencePayload;
       channelRef.current.track(merged);
     },
-    [userId, participants]
+    [userId]
   );
 
   return {

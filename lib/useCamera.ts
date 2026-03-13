@@ -11,6 +11,7 @@ export function useCamera(initiallyActive = false) {
   const streamRef = useRef<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const isRequestingRef = useRef(false);
+  const mountedRef = useRef(true);
 
   const updateStatus = useCallback((s: CameraStatus) => {
     statusRef.current = s;
@@ -49,6 +50,12 @@ export function useCamera(initiallyActive = false) {
         audio: false,
       });
 
+      // Component may have unmounted during getUserMedia — stop tracks immediately
+      if (!mountedRef.current) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
       streamRef.current = mediaStream;
       setStream(mediaStream);
 
@@ -58,6 +65,7 @@ export function useCamera(initiallyActive = false) {
 
       updateStatus("active");
     } catch (err) {
+      if (!mountedRef.current) return;
       if (err instanceof DOMException && err.name === "NotAllowedError") {
         updateStatus("denied");
       } else {
@@ -88,6 +96,7 @@ export function useCamera(initiallyActive = false) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      mountedRef.current = false;
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
         streamRef.current = null;

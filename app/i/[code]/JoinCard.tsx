@@ -43,7 +43,7 @@ export function JoinCard({
     setJoining(true);
     try {
       await joinParty(party.id, userId!, displayName);
-      router.push(party.status === "active" ? "/session" : `/rooms/${party.id}`);
+      router.push(party.status === "active" ? `/environment/${party.id}` : `/rooms/${party.id}`);
     } catch {
       setJoining(false);
     }

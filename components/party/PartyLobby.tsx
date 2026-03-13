@@ -60,6 +60,11 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   const isParticipant = participants.some((p) => p.user_id === userId);
   const [activeSession, setActiveSession] = useState<SessionRow | null>(null);
   const initialStatusRef = useRef<string | null>(null);
+  const prevPartyIdRef = useRef(partyId);
+  if (partyId !== prevPartyIdRef.current) {
+    prevPartyIdRef.current = partyId;
+    initialStatusRef.current = null;
+  }
 
   // Presence tracking
   const presence = usePartyPresence({

@@ -27,7 +27,7 @@ export function useProfile() {
 
   const userId = user?.id ?? null;
 
-  const fetchProfile = useCallback(async () => {
+  const fetchProfile = useCallback(async (signal?: { cancelled: boolean }) => {
     if (!userId) {
       setProfile(null);
       setLoading(false);
@@ -41,6 +41,8 @@ export function useProfile() {
       .eq("id", userId)
       .maybeSingle();
 
+    if (signal?.cancelled) return;
+
     if (error) {
       console.error("[useProfile] Fetch failed:", error);
     }
@@ -51,7 +53,9 @@ export function useProfile() {
 
   // Initial fetch
   useEffect(() => {
-    fetchProfile();
+    const signal = { cancelled: false };
+    fetchProfile(signal);
+    return () => { signal.cancelled = true; };
   }, [fetchProfile]);
 
   // Realtime subscription for profile changes

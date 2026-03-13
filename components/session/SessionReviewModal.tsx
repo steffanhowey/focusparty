@@ -79,6 +79,9 @@ export function SessionReviewModal({
 
   /* ── Helpers ── */
 
+  const elapsedMin = Math.round(elapsedSec / 60);
+  const plannedMin = Math.round(sessionDurationSec / 60);
+
   const buildReflection = (): SessionReflection => ({
     mood: null,
     productivity: null,
@@ -112,9 +115,6 @@ export function SessionReviewModal({
     onReflectionComplete(buildReflection());
     action();
   };
-
-  const elapsedMin = Math.round(elapsedSec / 60);
-  const plannedMin = Math.round(sessionDurationSec / 60);
 
   const celebrationText =
     elapsedMin >= plannedMin

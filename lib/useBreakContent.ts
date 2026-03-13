@@ -97,6 +97,7 @@ export function useBreakContent(
 
   useEffect(() => {
     if (!roomWorldKey) return;
+    let cancelled = false;
     setLoading(true);
     setError(null);
 
@@ -108,9 +109,17 @@ export function useBreakContent(
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data) => setItems(data.items ?? []))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+      .then((data) => {
+        if (!cancelled) setItems(data.items ?? []);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
   }, [roomWorldKey, category]);
 
   const clips = useMemo(() => itemsToClips(items), [items]);

@@ -10,7 +10,7 @@ import { useSettings } from "@/lib/useSettings";
 import { useTasks } from "@/lib/useTasks";
 import { useMusic } from "@/lib/useMusic";
 import { useActiveParty } from "@/lib/useActiveParty";
-import { updatePartyStatus } from "@/lib/parties";
+import { updatePartyStatus, leaveParty } from "@/lib/parties";
 import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
 import { getHostConfig } from "@/lib/hosts";
 import { TopBar } from "@/components/session/TopBar";
@@ -292,12 +292,18 @@ export default function SessionPage() {
         } else {
           // Sprint expired while away — silently end stale session, start fresh
           persistence.endSession("completed").catch(() => {});
+          if (s.party_id && userId) {
+            leaveParty(s.party_id, userId).catch(() => {});
+          }
           setPhase("setup");
         }
       } else {
         // No active sprint, or non-resumable phase — end stale session, start fresh
         if (s.status === "active") {
           persistence.endSession("abandoned").catch(() => {});
+          if (s.party_id && userId) {
+            leaveParty(s.party_id, userId).catch(() => {});
+          }
         }
         setPhase("setup");
       }
@@ -389,7 +395,7 @@ export default function SessionPage() {
   }, [durationSec, timer.reset, timer.start]);
 
   const handleEndSession = useCallback(() => {
-    reviewElapsedRef.current = durationSec - timer.getSnapshot().seconds;
+    reviewElapsedRef.current = Math.max(0, durationSec - timer.getSnapshot().seconds);
     timer.pause();
     camera.stop();
     screenShare.stop();
@@ -428,6 +434,9 @@ export default function SessionPage() {
     hostTriggers.triggerSessionCompleted();
     // fire-and-forget: non-critical persistence
     persistence.endSession("completed").catch((err) => console.error("Failed to end session:", err));
+    if (partyId && userId) {
+      leaveParty(partyId, userId).catch((err) => console.error("Failed to leave party:", err));
+    }
     // Mark non-persistent parties as completed so they stop appearing in discovery
     // Persistent rooms stay active permanently.
     // fire-and-forget: non-critical persistence
@@ -435,7 +444,7 @@ export default function SessionPage() {
       updatePartyStatus(partyId, "completed").catch((err) => console.error("Failed to update party status:", err));
     }
     router.push("/rooms");
-  }, [router, persistence, hostTriggers, partyId, party?.persistent]);
+  }, [router, persistence, hostTriggers, partyId, userId, party?.persistent]);
 
   const handleReflectionComplete = useCallback(
     (reflection: SessionReflection) => {

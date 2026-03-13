@@ -9,6 +9,8 @@ export function phaseToStatus(phase: SessionPhase | null): ParticipantStatus {
   switch (phase) {
     case "setup":
     case "breathing":
+    case "joining":
+    case "resuming":
       return "starting";
     case "sprint":
       return "focused";

@@ -188,7 +188,10 @@ function OnboardContent() {
     supabase
       .from("fp_profiles")
       .update({ onboarding_completed: true })
-      .eq("id", user.id);
+      .eq("id", user.id)
+      .then(({ error }) => {
+        if (error) console.error("[onboard] Failed to mark onboarding complete:", error);
+      });
 
     createParty(
       {
@@ -200,7 +203,7 @@ function OnboardContent() {
         status: "active",
       },
       displayName
-    );
+    ).catch((err) => console.error("[onboard] Failed to create party:", err));
   };
 
   // Username status indicator

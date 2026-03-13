@@ -27,10 +27,12 @@ export function usePartySummaryStats(
   useEffect(() => {
     if (!partyId) {
       setLoading(false);
+      setError(null);
       return;
     }
 
     let cancelled = false;
+    setError(null);
 
     async function load() {
       try {

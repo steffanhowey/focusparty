@@ -116,6 +116,8 @@ export function useSessionPersistence(
 
     async function hydrate() {
       try {
+        // Always restore the user's most recent active session regardless of
+        // which room it was started in. The sprint follows the user across rooms.
         const active = await getActiveSession(userId!);
         if (cancelled) return;
 
@@ -349,9 +351,6 @@ export function useSessionPersistence(
           status: outcome,
           ended_at: endedAt,
         });
-        setSessionRow((prev) =>
-          prev ? { ...prev, status: outcome, ended_at: endedAt } : null
-        );
         safeLog("session_completed", undefined, { outcome });
 
         // Clear local state after ending
