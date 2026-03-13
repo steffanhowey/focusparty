@@ -16,7 +16,7 @@ export function SprintGoalBanner({
       <span
         className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/30"
       >
-        Commitment
+        Goal
       </span>
 
       {parentGoalTitle ? (

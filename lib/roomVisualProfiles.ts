@@ -387,9 +387,13 @@ export const ROOM_VISUAL_PROFILES: Record<WorldKey, RoomVisualProfile> = {
   },
 };
 
-/** Get a visual profile by world key, falling back to default. */
+/** Get a visual profile by world key, falling back to dynamic → default. */
 export function getRoomVisualProfile(worldKey: string): RoomVisualProfile {
-  return (
-    ROOM_VISUAL_PROFILES[worldKey as WorldKey] ?? ROOM_VISUAL_PROFILES.default
-  );
+  if (worldKey in ROOM_VISUAL_PROFILES)
+    return ROOM_VISUAL_PROFILES[worldKey as WorldKey];
+  // Dynamic lookup for factory-created rooms
+  const { getDynamicVisualProfile } = require("./roomDna");
+  const dynamic = getDynamicVisualProfile(worldKey);
+  if (dynamic) return dynamic;
+  return ROOM_VISUAL_PROFILES.default;
 }

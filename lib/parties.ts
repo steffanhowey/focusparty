@@ -126,7 +126,14 @@ export async function listDiscoverableParties(): Promise<PartyWithCount[]> {
       if (a.persistent && !b.persistent) return -1;
       if (!a.persistent && b.persistent) return 1;
       if (a.persistent && b.persistent) {
-        return WORLD_ORDER.indexOf(a.world_key) - WORLD_ORDER.indexOf(b.world_key);
+        const aIdx = WORLD_ORDER.indexOf(a.world_key);
+        const bIdx = WORLD_ORDER.indexOf(b.world_key);
+        // Hardcoded worlds come first (in WORLD_ORDER order),
+        // factory rooms (not in WORLD_ORDER) come after, sorted by created_at
+        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+        if (aIdx !== -1) return -1;
+        if (bIdx !== -1) return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });

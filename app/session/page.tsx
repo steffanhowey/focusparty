@@ -37,8 +37,9 @@ import type { VibeId } from "@/lib/musicConstants";
 import { useGoals } from "@/lib/useGoals";
 import { checkGoalCompletion } from "@/lib/goalCascade";
 import { logEvent } from "@/lib/sessions";
+import { FloatingFocus } from "@/components/session/FloatingFocus";
 
-type SidePanel = "none" | "commitments" | "chat" | "settings";
+type SidePanel = "none" | "chat" | "settings";
 const PANEL_WIDTH = 380;
 const DEFAULT_DURATION_SEC = 25 * 60;
 
@@ -49,8 +50,12 @@ export default function SessionPage() {
   const persistence = useSessionPersistence(userId);
   const [phase, setPhase] = useState<SessionPhase>("setup");
   const [goal, setGoal] = useState("");
+  const [activeGoalId, setActiveGoalId] = useState<string | null>(null);
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
-  const [activePanel, setActivePanel] = useState<SidePanel>("commitments");
+  const [activePanel, setActivePanel] = useState<SidePanel>("none");
+  const [focusPopoverOpen, setFocusPopoverOpen] = useState(false);
+  const [floatingFocusOpen, setFloatingFocusOpen] = useState(false);
+  const focusButtonRef = useRef<HTMLButtonElement>(null);
   const prevPanelRef = useRef<SidePanel>(activePanel);
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [micActive, setMicActive] = useState(false);
@@ -170,7 +175,7 @@ export default function SessionPage() {
     reorderTasks,
   } = useTasks();
 
-  const { activeGoals } = useGoals();
+  const { activeGoals, createGoal, completeGoal, deleteGoal: deleteGoalApi, updateGoal } = useGoals();
 
   // ─── Task completion with goal cascade ─────────────────
   const handleCompleteTask = useCallback(
@@ -300,8 +305,12 @@ export default function SessionPage() {
   }, [persistence.isHydrating, persistence.wasRestored, persistence.sessionRow]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const closePanel = useCallback(() => setActivePanel("none"), []);
-  const handleToggleCommitments = useCallback(
-    () => setActivePanel((prev) => (prev === "commitments" ? "none" : "commitments")),
+  const handleToggleFocusPopover = useCallback(
+    () => setFocusPopoverOpen((prev) => !prev),
+    []
+  );
+  const handleCloseFocusPopover = useCallback(
+    () => setFocusPopoverOpen(false),
     []
   );
 
@@ -483,7 +492,7 @@ export default function SessionPage() {
     [activeTask, handleCompleteTask, selectTask, commitTask, pendingSwitchTaskId, activeTasks, completedTasks]
   );
 
-  const handleActivateCommitment = useCallback(
+  const handleActivateFocus = useCallback(
     (taskId: string) => {
       if (activeTask?.id === taskId) return;
       if (activeTask) {
@@ -503,6 +512,24 @@ export default function SessionPage() {
   }, []);
   const handleSwitchComplete = useCallback(() => handleSwitchConfirm("complete"), [handleSwitchConfirm]);
   const handleSwitchSwitch = useCallback(() => handleSwitchConfirm("switch"), [handleSwitchConfirm]);
+
+  // ─── Focus popover handlers ──────────────────────
+  const handlePopoverSelectTask = useCallback(
+    (taskId: string, _taskTitle: string, _goalId: string | null) => {
+      setActiveGoalId(null);
+      handleActivateFocus(taskId);
+    },
+    [handleActivateFocus],
+  );
+
+  const handlePopoverSelectGoal = useCallback(
+    (goalId: string, goalTitle: string) => {
+      setActiveGoalId(goalId);
+      selectTask(null);
+      setGoal(goalTitle);
+    },
+    [selectTask],
+  );
 
   const handleToggleMic = useCallback(() => setMicActive((m) => !m), []);
   const handleToggleChat = useCallback(
@@ -606,8 +633,8 @@ export default function SessionPage() {
             {phase !== "sprint" && phase !== "review" && (
               <TopBar
                 phase={phase}
-                drawerOpen={activePanel === "commitments"}
-                onToggleDrawer={handleToggleCommitments}
+                drawerOpen={false}
+                onToggleDrawer={handleToggleFocusPopover}
                 settingsOpen={activePanel === "settings"}
                 onToggleSettings={handleToggleSettings}
                 onEndSession={handleEndSession}
@@ -636,10 +663,51 @@ export default function SessionPage() {
                   cameraActive={camera.isActive}
                   onToggleCamera={camera.toggle}
                   onOpenChat={handleToggleChat}
-                  onOpenCommitments={handleToggleCommitments}
                   onOpenSettings={handleToggleSettings}
                   chatActive={activePanel === "chat"}
-                  commitmentsActive={activePanel === "commitments"}
+                  focusPopover={{
+                    open: focusPopoverOpen,
+                    onToggle: handleToggleFocusPopover,
+                    onClose: handleCloseFocusPopover,
+                    goalText: goal,
+                    onGoalTextChange: setGoal,
+                    activeTaskId: activeTask?.id ?? null,
+                    activeGoalId,
+                    goals: activeGoals,
+                    tasks: activeTasks,
+                    accentColor: characterAccent,
+                    onSelectTask: handlePopoverSelectTask,
+                    onSelectGoal: handlePopoverSelectGoal,
+                    onCompleteTask: handleCompleteTask,
+                    onDeleteTask: deleteTask,
+                    onCompleteGoal: completeGoal,
+                    onDeleteGoal: deleteGoalApi,
+                    onAddTask: (title: string, goalId: string | null) => addTask({ title, goal_id: goalId }),
+                    onAddGoal: (title: string) => createGoal({ title }),
+                    onEditTask: editTask,
+                    onEditGoal: (goalId: string, newTitle: string) => updateGoal(goalId, { title: newTitle }),
+                    onComplete: () => {
+                      if (activeTask) {
+                        handleCompleteTask(activeTask.id);
+                      } else if (activeGoalId) {
+                        completeGoal(activeGoalId);
+                      } else if (goal.trim()) {
+                        // Freeform text — log and clear
+                        if (userId) {
+                          logEvent({
+                            party_id: partyId ?? null,
+                            session_id: persistence.sessionRow?.id ?? null,
+                            user_id: userId,
+                            event_type: "task_completed",
+                            body: goal,
+                          }).catch(() => {});
+                        }
+                        setGoal("");
+                      }
+                      handleCloseFocusPopover();
+                    },
+                    focusButtonRef,
+                  }}
                   settingsActive={activePanel === "settings"}
                   onEndSession={handleEndSession}
                   music={{
@@ -684,22 +752,12 @@ export default function SessionPage() {
                 boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
               role="complementary"
-              aria-label={activePanel === "commitments" ? "Commitments" : activePanel === "chat" ? "Chat" : "Settings"}
+              aria-label={activePanel === "chat" ? "Chat" : "Settings"}
             >
-              {(activePanel === "commitments" || activePanel === "chat") && (
+              {activePanel === "chat" && (
                 <SideDrawer
                   onClose={closePanel}
-                  panel={activePanel as "commitments" | "chat"}
-                  activeTasks={committedActiveTasks}
-                  completedTasks={committedCompletedTasks}
-                  onCompleteTask={handleCompleteTask}
-                  onUncompleteTask={uncompleteTask}
-                  onAddTask={addAndCommitTask}
-                  onDeleteTask={deleteTask}
-                  onEditTask={editTask}
-                  onReorderTasks={reorderTasks}
-                  activeTaskId={activeTask?.id ?? null}
-                  onActivateTask={phase === "sprint" || phase === "break" ? handleActivateCommitment : undefined}
+                  panel="chat"
                   messages={chat.messages}
                   onSendMessage={chat.sendMessage}
                 />
@@ -738,6 +796,29 @@ export default function SessionPage() {
         onSwitch={handleSwitchSwitch}
         onCancel={handleSwitchCancel}
       />
+
+      {/* Floating commitment panel */}
+      {floatingFocusOpen && (
+        <FloatingFocus
+          activeTaskId={activeTask?.id ?? null}
+          activeGoalId={activeGoalId}
+          goals={activeGoals}
+          tasks={activeTasks}
+          accentColor={characterAccent}
+          onSelectTask={handlePopoverSelectTask}
+          onSelectGoal={handlePopoverSelectGoal}
+          onCompleteTask={handleCompleteTask}
+          onDeleteTask={deleteTask}
+          onCompleteGoal={completeGoal}
+          onDeleteGoal={deleteGoalApi}
+          onAddTask={(title, goalId) => addTask({ title, goal_id: goalId })}
+          onAddGoal={(title) => createGoal({ title })}
+          onEditTask={editTask}
+          onEditGoal={(goalId: string, newTitle: string) => updateGoal(goalId, { title: newTitle })}
+          onClose={() => setFloatingFocusOpen(false)}
+          focusButtonRef={focusButtonRef}
+        />
+      )}
     </div>
   );
 }

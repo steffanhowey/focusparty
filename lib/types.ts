@@ -451,6 +451,19 @@ export interface CommitmentRecord {
 
 export type SprintResolution = "completed" | "partial" | "continue" | "abandon";
 
+// ─── Session Tasks ──────────────────────────────────────────
+
+export interface SessionTaskRecord {
+  id: string;
+  session_id: string;
+  user_id: string;
+  text: string;
+  completed: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 // ─── Break Segments ─────────────────────────────────────────
 
 export type BreakDuration = 3 | 5 | 10;

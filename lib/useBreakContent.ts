@@ -15,24 +15,53 @@ export interface BreakClip {
 
 // ─── Transform items → clips ────────────────────────────────
 
+const VALID_DURATIONS: BreakDuration[] = [3, 5, 10];
+
 /**
- * Each item produces ONE clip at its best_duration.
- * Items without best_duration fall back to a heuristic based on video length.
+ * Each item produces a clip for every valid duration the video can support.
+ * If the item has explicit segments, each segment becomes a clip.
+ * Otherwise a single clip at best_duration (or heuristic) is produced.
  */
 function itemsToClips(items: BreakContentItem[]): BreakClip[] {
   const clips: BreakClip[] = [];
+  // Deduplicate: only one clip per video_url + duration
+  const seen = new Set<string>();
 
   for (const item of items) {
-    const duration = (item.best_duration ?? durationFromLength(item.duration_seconds)) as BreakDuration;
-    const segment = item.segments?.find((s) => s.duration === duration);
+    const videoLen = item.duration_seconds ?? 0;
+    const videoKey = item.video_url ?? item.id;
 
-    clips.push({
-      clipId: item.id,
-      label: segment?.label ?? item.title,
-      duration,
-      startSeconds: segment?.start ?? 0,
-      sourceItem: item,
-    });
+    if (item.segments && item.segments.length > 0) {
+      // Produce a clip for each segment whose duration the video can support
+      for (const seg of item.segments) {
+        const d = seg.duration as BreakDuration;
+        if (!VALID_DURATIONS.includes(d)) continue;
+        if (videoLen > 0 && videoLen < d * 60) continue;
+        const dedup = `${videoKey}:${d}`;
+        if (seen.has(dedup)) continue;
+        seen.add(dedup);
+        clips.push({
+          clipId: `${item.id}:${d}`,
+          label: seg.label ?? item.title,
+          duration: d,
+          startSeconds: seg.start ?? 0,
+          sourceItem: item,
+        });
+      }
+    } else {
+      // Fallback: single clip at best_duration or heuristic
+      const duration = (item.best_duration ?? durationFromLength(videoLen)) as BreakDuration;
+      const dedup = `${videoKey}:${duration}`;
+      if (seen.has(dedup)) continue;
+      seen.add(dedup);
+      clips.push({
+        clipId: item.id,
+        label: item.title,
+        duration,
+        startSeconds: 0,
+        sourceItem: item,
+      });
+    }
   }
 
   return clips;

@@ -91,26 +91,6 @@ export const SortableTaskRow = memo(function SortableTaskRow({
           : "border-l-2 border-l-transparent border-b border-b-[var(--color-border-subtle)]"
       }`}
     >
-      {/* Play / active indicator */}
-      {onActivate && !completed && (
-        <button
-          type="button"
-          onClick={() => onActivate(task.id)}
-          className={`flex h-5 shrink-0 items-center justify-center transition-colors ${
-            isActive
-              ? "text-[var(--color-accent-primary)]"
-              : "text-[var(--color-text-tertiary)] opacity-0 group-hover:opacity-100 hover:text-white"
-          }`}
-          aria-label={isActive ? `Active: ${task.title}` : `Focus on ${task.title}`}
-        >
-          <Play
-            size={12}
-            strokeWidth={2}
-            className={isActive ? "fill-current" : ""}
-          />
-        </button>
-      )}
-
       {/* Drag handle */}
       <button
         type="button"
@@ -155,6 +135,26 @@ export const SortableTaskRow = memo(function SortableTaskRow({
         >
           {task.title}
         </span>
+      )}
+
+      {/* Play / active indicator */}
+      {onActivate && !completed && (
+        <button
+          type="button"
+          onClick={() => onActivate(task.id)}
+          className={`flex h-5 shrink-0 items-center justify-center transition-colors ${
+            isActive
+              ? "text-[var(--color-accent-primary)]"
+              : "text-[var(--color-text-tertiary)] opacity-0 group-hover:opacity-100 hover:text-white"
+          }`}
+          aria-label={isActive ? `Active: ${task.title}` : `Focus on ${task.title}`}
+        >
+          <Play
+            size={12}
+            strokeWidth={2}
+            className={isActive ? "fill-current" : ""}
+          />
+        </button>
       )}
 
       {/* Completion checkbox */}

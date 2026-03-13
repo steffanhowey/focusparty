@@ -119,7 +119,12 @@ export const HOST_CONFIGS: Record<HostPersonality, HostConfig> = {
   },
 };
 
-/** Get a host config, falling back to default if the key is unknown. */
+/** Get a host config, falling back to dynamic → default. */
 export function getHostConfig(personality: string): HostConfig {
-  return HOST_CONFIGS[personality as HostPersonality] ?? HOST_CONFIGS.default;
+  if (personality in HOST_CONFIGS) return HOST_CONFIGS[personality as HostPersonality];
+  // Dynamic lookup for factory-created rooms
+  const { getDynamicHostConfig } = require("./roomDna");
+  const dynamic = getDynamicHostConfig(personality);
+  if (dynamic) return dynamic;
+  return HOST_CONFIGS.default;
 }

@@ -59,6 +59,15 @@ export interface WorldBreakProfile {
 // channel sources, and persona overlays. Learning content uses the
 // world profiles directly (no category overlay needed).
 
+export interface SponsorLock {
+  /** Creator name that must match source_name on shelf items (case-insensitive). */
+  sourceName: string;
+  /** YouTube channel ID — discovery is restricted to this channel when locked. */
+  channelId: string;
+  /** Badge text shown in the flyout UI (e.g., "Powered by Headspace"). */
+  badge?: string;
+}
+
 export interface CategoryProfile {
   /** YouTube search terms for this category — discovery picks 1-2 per run. */
   queries: string[];
@@ -74,10 +83,17 @@ export interface CategoryProfile {
   };
   /** Creator authority boosts specific to this category. */
   creatorBoosts: Record<string, number>;
+  /** When set, locks this category to only show content from the specified sponsor. */
+  sponsorLock?: SponsorLock;
 }
 
 export const CATEGORY_PROFILES: Record<string, CategoryProfile> = {
   reset: {
+    sponsorLock: {
+      sourceName: "Headspace",
+      channelId: "UC3JhfsgFPLSLNEROQCdj-GQ",
+      badge: "Powered by Headspace",
+    },
     queries: [
       "guided breathing exercise short",
       "quick mindfulness reset technique",
@@ -129,26 +145,26 @@ export const CATEGORY_PROFILES: Record<string, CategoryProfile> = {
 
   reflect: {
     queries: [
-      "daily reflection prompts for productivity",
-      "mid-day goal check exercise",
-      "journaling prompts for builders",
-      "purpose and meaning reconnection exercise",
-      "gratitude practice short guided",
-      "stoic reflection exercise modern",
-      "weekly review technique short",
-      "values alignment check exercise",
+      "daily reflection prompts for founders",
+      "mid-day goal check exercise productivity",
+      "journaling prompts for tech workers",
+      "stoic reflection exercise modern entrepreneurs",
+      "weekly review technique developer",
+      "values alignment career tech",
+      "purpose reconnection ambitious professionals",
+      "founder mental models reflection",
     ],
     channels: [
-      { channelId: "UCG-KntY7aVnIGXYEBQvmBAQ", label: "Thomas Frank" },
+      { channelId: "UCG-KntY7aVnIGXYEBQvmBAQ", label: "Thomas Frank", query: "reflection review" },
       { channelId: "UC-9-kyTW8ZkZNDHQJ6FgpwQ", label: "Ali Abdaal", query: "reflection journaling" },
       { channelId: "UCMcRH2PRAMaY9P-4eUmwGpQ", label: "Daily Stoic" },
       { channelId: "UCIaH-gZIVC432YRjNVvnyCA", label: "Cal Newport", query: "deep life reflection" },
     ],
     contentGoal:
-      "Find content that prompts genuine introspection — reflection exercises, journaling prompts, goal-alignment checks, gratitude practices, and values reconnection for people in the middle of a work session.",
+      "Find content that prompts genuine introspection for ambitious tech workers — goal-alignment checks, journaling for founders, stoic reflections, values reconnection, and purpose exercises relevant to people building products and companies.",
     personaOverlay: {
       voicePrompt:
-        "You are curating reflection content for focused builders taking a mid-session break. You value content that prompts genuine introspection: guided journaling, goal-alignment exercises, gratitude practices, stoic reflections, and purpose reconnection. The content should make the viewer think, not just passively watch.",
+        "You are curating reflection content for ambitious tech workers (25-35, engineers/founders/designers) taking a mid-session break. You value content that prompts genuine introspection: guided journaling for professionals, goal-alignment exercises, stoic reflections, and purpose reconnection. The content should make the viewer think, not just passively watch. Reject anything that wouldn't resonate with a sharp startup engineer.",
       rejectPatterns: [
         "passive motivational content without interactive prompts",
         "generic self-help without actionable exercises",
@@ -156,13 +172,15 @@ export const CATEGORY_PROFILES: Record<string, CategoryProfile> = {
         "therapy or mental health diagnosis content",
         "long philosophical lectures without practical takeaways",
         "productivity system overviews (that's learning, not reflection)",
+        "art therapy or creative journaling aimed at artists",
+        "general-interest content not relevant to tech workers",
       ],
       preferPatterns: [
-        "guided journaling prompts with pauses for writing",
+        "guided journaling prompts for ambitious professionals",
         "goal-alignment and values check exercises",
-        "gratitude practice with clear structure",
-        "stoic reflection exercises (modern, practical)",
-        "mid-day purpose reconnection prompts",
+        "stoic reflection exercises (modern, practical, for builders)",
+        "founder/engineer mental models and decision frameworks",
+        "mid-day purpose reconnection for knowledge workers",
         "weekly/daily review frameworks as guided exercises",
       ],
     },
@@ -171,7 +189,6 @@ export const CATEGORY_PROFILES: Record<string, CategoryProfile> = {
       "daily stoic": 15,
       "ali abdaal": 10,
       "cal newport": 15,
-      "the school of life": 10,
       struthless: 10,
       "matt d'avella": 10,
     },
@@ -250,41 +267,53 @@ export const WORLD_BREAK_PROFILES: Record<WorldKey, WorldBreakProfile> = {
   default: {
     queries: [
       "learning how to learn technique",
-      "creative process deep dive talk",
+      "developer productivity workflow",
       "flow state focus research",
       "science of focus and attention research",
       "how experts practice and learn skills",
+      "design thinking product development",
+      "software engineering best practices talk",
+      "AI tools for developers practical",
     ],
     channels: [
-      { channelId: "UCHnyfMqiRRG1u-2MsSQLbXA", label: "Veritasium" },
+      { channelId: "UCsBjURrPoezykLs9EqgamOA", label: "Fireship" },
+      { channelId: "UCHnyfMqiRRG1u-2MsSQLbXA", label: "Veritasium", query: "technology engineering" },
       { channelId: "UCYO_jab_esuFRV4b17AJtAw", label: "3Blue1Brown" },
-      { channelId: "UCsXVk37bltHxD1rDPwtNM8Q", label: "Kurzgesagt" },
+      { channelId: "UCIaH-gZIVC432YRjNVvnyCA", label: "Cal Newport", query: "deep work productivity" },
     ],
-    publishedAfterMonths: 24,
+    publishedAfterMonths: 18,
     persona: {
       name: "Guide",
       voicePrompt:
-        "You are Guide, a calm, clear-eyed generalist curator. You value content that teaches something transferable in under 15 minutes — workflow breakdowns, learning-how-to-learn insights, creative process deep dives. You reject motivational fluff, clickbait, and anything that wastes a focused person's break time. You prefer creators who respect the viewer's intelligence.",
+        "You are Guide, a calm, clear-eyed curator for ambitious tech workers aged 25-35 in Silicon Valley. You value content that teaches something transferable about technology, productivity, craft, design, or engineering in under 15 minutes. You reject motivational fluff, clickbait, general-interest science unrelated to tech/work, lifestyle content, and anything that wastes a focused builder's break time. Every video must pass the test: 'Would a sharp 28-year-old engineer at a startup choose to watch this on a 5-minute break?' If not, reject it.",
       rejectPatterns: [
         "motivational fluff",
         "generic self-help",
         "clickbait thumbnails without substance",
         "content primarily about promoting a course or product",
+        "general science not connected to technology or engineering",
+        "pop science explainers about nature, biology, or space",
+        "health, medical, or nutrition content",
+        "news commentary or geopolitical analysis",
+        "marketing/SEO/growth-hacking aimed at non-technical audiences",
       ],
       preferPatterns: [
-        "transferable insights across disciplines",
-        "workflow breakdowns",
-        "learning-how-to-learn content",
-        "creative process deep dives",
+        "developer and engineering workflow breakdowns",
+        "learning-how-to-learn and metacognition content",
+        "design thinking and product craft",
+        "AI/ML practical applications for builders",
+        "system design and architecture insights",
+        "productivity science backed by research",
       ],
     },
     creatorBoosts: {
-      veritasium: 15,
+      fireship: 20,
       "3blue1brown": 20,
-      kurzgesagt: 15,
-      "wendover productions": 10,
-      "cgp grey": 15,
-      numberphile: 10,
+      veritasium: 10,
+      "cgp grey": 10,
+      "cal newport": 15,
+      "ali abdaal": 10,
+      "wendover productions": 5,
     },
   },
 
@@ -350,11 +379,11 @@ export const WORLD_BREAK_PROFILES: Record<WorldKey, WorldBreakProfile> = {
   "writer-room": {
     queries: [
       "technical writing for developers talk",
-      "content strategy for startups",
-      "how to write great blog posts creators",
+      "content strategy for startups tech",
+      "building audience newsletter substack tech",
       "writing PRDs product specs tips",
-      "copywriting for tech companies",
-      "building an audience through writing",
+      "developer blogging writing tips",
+      "founder storytelling content creation",
     ],
     channels: [
       { channelId: "UCZHkx_OyRXHb1D3XTQOmpIA", label: "Lenny Rachitsky", query: "writing" },
@@ -454,42 +483,47 @@ export const WORLD_BREAK_PROFILES: Record<WorldKey, WorldBreakProfile> = {
   // ────────────────────────────────────────────────────────
   "gentle-start": {
     queries: [
-      "building focus habits sustainable",
-      "overcoming creative resistance procrastination",
-      "self compassion creative work",
-      "gentle productivity without burnout",
+      "building focus habits for developers",
+      "overcoming creative resistance procrastination tech",
+      "burnout recovery tech workers",
+      "gentle productivity without burnout engineer",
+      "managing energy not time developer",
+      "sustainable work habits startup founder",
     ],
     channels: [
       { channelId: "UCG-KntY7aVnIGXYEBQvmBAQ", label: "Thomas Frank" },
-      { channelId: "UCJ24N4O0bP7LGLBDvye7oCA", label: "Matt D'Avella" },
-      { channelId: "UCIaH-gZIVC432YRjNVvnyCA", label: "Cal Newport", query: "deep work focus" },
+      { channelId: "UCJ24N4O0bP7LGLBDvye7oCA", label: "Matt D'Avella", query: "productivity habits" },
+      { channelId: "UCIaH-gZIVC432YRjNVvnyCA", label: "Cal Newport", query: "deep work sustainable" },
     ],
-    publishedAfterMonths: 24,
+    publishedAfterMonths: 18,
     persona: {
       name: "Bloom",
       voicePrompt:
-        "You are Bloom, a warm encouraging curator who believes momentum matters more than perfection. You value content about building focus habits, gentle productivity, overcoming resistance, and finding meaning in small steps. You reject hustle culture, high-pressure productivity systems, and anything that induces guilt. You prefer creators who speak with empathy and lived experience.",
+        "You are Bloom, a warm encouraging curator for tech workers aged 25-35 who need a gentler approach to productivity. Your audience is engineers, designers, and founders who are prone to burnout. You value content about building sustainable focus habits, overcoming resistance, energy management, and finding meaning in the work. You reject hustle culture, high-pressure productivity systems, generic self-help not relevant to knowledge workers, and anything that induces guilt. Every video must pass the test: 'Would this help a burned-out 30-year-old engineer at a startup get back on track?'",
       rejectPatterns: [
         "hustle culture content",
         "high-pressure productivity systems",
         "guilt-inducing 'you're not working hard enough' messaging",
         "aggressive morning routine content",
+        "general science or pop science not related to work/focus",
+        "health, medical, or nutrition content",
+        "art therapy or art journaling (not our audience)",
       ],
       preferPatterns: [
-        "building sustainable focus habits",
-        "overcoming creative resistance",
-        "mindfulness and intentional work",
-        "small-step momentum strategies",
-        "self-compassion in creative work",
+        "building sustainable focus habits for knowledge workers",
+        "overcoming creative resistance and procrastination",
+        "burnout prevention and recovery for tech workers",
+        "energy management and intentional rest",
+        "self-compassion in high-performance environments",
       ],
     },
     creatorBoosts: {
       "thomas frank": 15,
       "ali abdaal": 10,
       "matt d'avella": 15,
+      "cal newport": 15,
       struthless: 10,
       "therapy in a nutshell": 10,
-      "the school of life": 10,
     },
   },
 };
@@ -498,13 +532,16 @@ export const WORLD_BREAK_PROFILES: Record<WorldKey, WorldBreakProfile> = {
 
 /**
  * Get the break profile for a world.
- * Falls back to the default profile for unknown keys.
+ * Falls back to dynamic → default profile for unknown keys.
  */
 export function getBreakProfile(worldKey: string): WorldBreakProfile {
-  return (
-    WORLD_BREAK_PROFILES[worldKey as WorldKey] ??
-    WORLD_BREAK_PROFILES.default
-  );
+  if (worldKey in WORLD_BREAK_PROFILES)
+    return WORLD_BREAK_PROFILES[worldKey as WorldKey];
+  // Dynamic lookup for factory-created rooms
+  const { getDynamicBreakProfile } = require("../roomDna");
+  const dynamic = getDynamicBreakProfile(worldKey);
+  if (dynamic) return dynamic;
+  return WORLD_BREAK_PROFILES.default;
 }
 
 /**
@@ -577,12 +614,22 @@ export function pickQueries(
 /**
  * Pick one random channel source. For non-learning categories, uses the
  * category profile channels instead of the world profile.
+ * When a sponsorLock is set, ONLY returns the sponsor channel.
  */
 export function pickChannel(
   profile: WorldBreakProfile,
   category = "learning",
 ): ChannelSource | null {
   const catProfile = getCategoryProfile(category);
+
+  // Sponsor lock: always return the sponsor channel
+  if (catProfile?.sponsorLock) {
+    return {
+      channelId: catProfile.sponsorLock.channelId,
+      label: catProfile.sponsorLock.sourceName,
+    };
+  }
+
   const source = catProfile ? catProfile.channels : profile.channels;
   if (source.length === 0) return null;
   const idx = Math.floor(Math.random() * source.length);
@@ -596,6 +643,15 @@ export function pickChannel(
 export function getCategoryContentGoal(category: string): string | null {
   const catProfile = getCategoryProfile(category);
   return catProfile?.contentGoal ?? null;
+}
+
+/**
+ * Get the sponsor lock for a category, if one is configured.
+ * Returns null for learning and unlocked categories.
+ */
+export function getSponsorLock(category: string): SponsorLock | null {
+  const catProfile = getCategoryProfile(category);
+  return catProfile?.sponsorLock ?? null;
 }
 
 // ─── Validation (dev only) ──────────────────────────────────

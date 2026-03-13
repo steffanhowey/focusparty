@@ -1,40 +1,30 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { Minus } from "lucide-react";
 import { usePointerDrag } from "@/lib/usePointerDrag";
+import { FocusBody, type FocusBodyProps } from "./FocusBody";
 
-interface FloatingNotesProps {
-  text: string;
-  setText: (text: string) => void;
-  isSaving: boolean;
-  onBlur: () => void;
+interface FloatingFocusProps extends FocusBodyProps {
   onClose: () => void;
-  notesButtonRef: React.RefObject<HTMLButtonElement | null>;
-  /** When true, positions to the right of the centered break player */
-  breakActive?: boolean;
+  focusButtonRef: React.RefObject<HTMLButtonElement | null>;
 }
 
-export function FloatingNotes({
-  text,
-  setText,
-  isSaving,
-  onBlur,
+export function FloatingFocus({
   onClose,
-  notesButtonRef,
-  breakActive,
-}: FloatingNotesProps) {
+  focusButtonRef,
+  ...bodyProps
+}: FloatingFocusProps) {
   const { dragRef, dragStyle, wasDraggedRef } = usePointerDrag({
     threshold: 4,
   });
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // null = normal, "from" = frozen at current rect, "to" = animating to button
   const [animPhase, setAnimPhase] = useState<null | "from" | "to">(null);
   const frozenRect = useRef<DOMRect | null>(null);
   const targetRect = useRef<DOMRect | null>(null);
 
-  // Escape to close (instant)
+  // Escape to close (instant, no animation)
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -42,11 +32,6 @@ export function FloatingNotes({
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
-
-  // Auto-focus textarea on mount
-  useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
 
   // When we enter "from" phase, schedule "to" phase on next frame
   useEffect(() => {
@@ -62,7 +47,7 @@ export function FloatingNotes({
     if (wasDraggedRef.current) return;
 
     const panel = dragRef.current;
-    const btn = notesButtonRef.current;
+    const btn = focusButtonRef.current;
     if (!panel || !btn) {
       onClose();
       return;
@@ -71,7 +56,7 @@ export function FloatingNotes({
     frozenRect.current = panel.getBoundingClientRect();
     targetRect.current = btn.getBoundingClientRect();
     setAnimPhase("from");
-  }, [onClose, notesButtonRef, dragRef, wasDraggedRef]);
+  }, [onClose, focusButtonRef, dragRef, wasDraggedRef]);
 
   const handleTransitionEnd = useCallback(
     (e: React.TransitionEvent) => {
@@ -82,15 +67,11 @@ export function FloatingNotes({
     [animPhase, onClose],
   );
 
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => e.stopPropagation(),
-    [],
-  );
-
   // Minimizing animation: two-phase fixed-position element
   if (animPhase && frozenRect.current && targetRect.current) {
     const fr = frozenRect.current;
     const br = targetRect.current;
+
     const isTo = animPhase === "to";
 
     return (
@@ -103,6 +84,8 @@ export function FloatingNotes({
           width: fr.width,
           height: fr.height,
           transformOrigin: "center center",
+          // "from": identity transform at panel's current position
+          // "to": translate to button center + scale down
           transform: isTo
             ? `translate(${br.left + br.width / 2 - fr.left - fr.width / 2}px, ${br.top + br.height / 2 - fr.top - fr.height / 2}px) scale(0.06)`
             : "scale(1)",
@@ -154,37 +137,20 @@ export function FloatingNotes({
       >
         {/* Header — drag handle */}
         <div className="flex h-20 cursor-grab items-center justify-between px-4 active:cursor-grabbing md:px-6">
-          <span className="text-base font-semibold text-white">Notes</span>
+          <span className="text-base font-semibold text-white">Focus</span>
           <button
             type="button"
             onClick={handleMinimize}
             className="cursor-pointer rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
-            aria-label="Minimize notes"
+            aria-label="Minimize focus panel"
           >
             <Minus size={18} strokeWidth={2} />
           </button>
         </div>
 
-        {/* Textarea — fills remaining height */}
-        <div className="min-h-0 flex-1 px-4 md:px-6">
-          <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onBlur={onBlur}
-            onPointerDown={handlePointerDown}
-            placeholder="Jot something down…"
-            className="h-full w-full resize-none bg-transparent text-[13px] leading-relaxed text-white/90 outline-none placeholder:text-white/25"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
-            spellCheck={false}
-          />
-        </div>
-
-        {/* Footer — save indicator */}
-        <div className="flex items-center justify-end px-4 pb-3 md:px-6">
-          <span className="text-[11px] text-white/30">
-            {isSaving ? "Saving…" : text.length > 0 ? "Saved" : ""}
-          </span>
+        {/* Body */}
+        <div className="min-h-0 flex-1">
+          <FocusBody {...bodyProps} maxHeight="max-h-full" />
         </div>
       </div>
     </div>

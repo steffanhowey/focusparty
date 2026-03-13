@@ -9,7 +9,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { RotateCw, ListTodo } from "lucide-react";
+import { ListTodo, Play } from "lucide-react";
 import { JoinCountdownScreen } from "./JoinCountdownScreen";
 import { JoinRoomHeader } from "./JoinRoomHeader";
 import { JoinSprintOptions } from "./JoinSprintOptions";
@@ -35,6 +35,8 @@ interface JoinRoomModalProps {
   onClose: () => void;
   backgrounds?: Map<string, ActiveBackground>;
   onJoin?: (config: JoinConfig) => void;
+  /** Presence from the parent environment page — avoids duplicate channel. */
+  presence?: { participants: import("@/lib/types").PresencePayload[]; count: number };
 }
 
 type SprintMode = "current" | "next" | "fresh";
@@ -56,7 +58,7 @@ function formatMinutes(seconds: number): string {
   return `${m}m`;
 }
 
-export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }: JoinRoomModalProps) {
+export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, presence: externalPresence }: JoinRoomModalProps) {
   const router = useRouter();
   const { userId, displayName, username } = useCurrentUser();
   const [mounted, setMounted] = useState(false);
@@ -101,12 +103,15 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
     : getHostConfig("default");
 
   // ─── Presence + activity ─────────────────────────────────
-  const presence = usePartyPresence({
-    partyId: isOpen ? partyId : null,
+  // Use parent's presence when available to avoid a duplicate channel
+  // (which can cause the user to disappear from presence on modal close).
+  const ownPresence = usePartyPresence({
+    partyId: isOpen && !externalPresence ? partyId : null,
     userId,
     displayName,
     username,
   });
+  const presence = externalPresence ?? ownPresence;
 
   const feedNameMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -173,20 +178,16 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
     }
   }, [roomSprint.hasActiveSprint, sprintMode]);
 
-  // ─── Task suggestions (up to 3, goal-linked tasks first) ──
-  const taskSuggestions = useMemo(() => {
-    const sorted = [...activeTasks].sort((a, b) => {
-      // Goal-linked tasks first
-      const aHasGoal = a.goal_id ? 1 : 0;
-      const bHasGoal = b.goal_id ? 1 : 0;
-      if (bHasGoal !== aHasGoal) return bHasGoal - aHasGoal;
-      // Then by recency
-      return (
-        new Date(b.updated_at ?? b.created_at).getTime() -
-        new Date(a.updated_at ?? a.created_at).getTime()
-      );
-    });
-    return sorted.slice(0, 3);
+  // ─── Continue task (most recently updated incomplete task) ──
+  const continueTask = useMemo(() => {
+    if (activeTasks.length === 0) return null;
+    const sorted = [...activeTasks].sort((a, b) =>
+      new Date(b.updated_at ?? b.created_at).getTime() -
+      new Date(a.updated_at ?? a.created_at).getTime()
+    );
+    // Only suggest if the task was touched recently (status = in_progress preferred)
+    const inProgress = sorted.find((t) => t.status === "in_progress");
+    return inProgress ?? sorted[0];
   }, [activeTasks]);
 
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
@@ -212,20 +213,18 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
 
   // ─── Handlers ──────────────────────────────────────────────
 
-  const handleSuggestionClick = useCallback(
-    (task: (typeof taskSuggestions)[0], isContinue: boolean) => {
-      setSelectedTaskId(task.id);
-      setSelectedGoalId(task.goal_id);
-      if (task.goal_id) {
-        const goal = activeGoals.find((g) => g.id === task.goal_id);
-        setGoalText(goal ? `${goal.title}: ${task.title}` : task.title);
-      } else {
-        setGoalText(task.title);
-      }
-      setShowTaskPicker(false);
-    },
-    [activeGoals]
-  );
+  const handleContinueClick = useCallback(() => {
+    if (!continueTask) return;
+    setSelectedTaskId(continueTask.id);
+    setSelectedGoalId(continueTask.goal_id);
+    if (continueTask.goal_id) {
+      const goal = activeGoals.find((g) => g.id === continueTask.goal_id);
+      setGoalText(goal ? `${goal.title}: ${continueTask.title}` : continueTask.title);
+    } else {
+      setGoalText(continueTask.title);
+    }
+    setShowTaskPicker(false);
+  }, [continueTask, activeGoals]);
 
   const handleGoalChange = useCallback((text: string) => {
     setGoalText(text);
@@ -355,7 +354,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-[var(--color-navy-700)]/60 backdrop-blur-[8px]"
+        className="absolute inset-0 bg-black/40 backdrop-blur-[4px]"
         aria-hidden
       />
 
@@ -421,12 +420,17 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                   value={goalText}
                   onChange={(e) => handleGoalChange(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && hasGoal) setFormStep(2); }}
-                  placeholder="Write your task or commitment..."
+                  placeholder="Write your task or goal..."
                   className="w-full rounded-full py-2.5 pl-4 pr-10 text-sm text-white placeholder-white/30 outline-none ring-0 ring-white/0 transition-all focus:ring-1 focus:ring-white/12"
                   style={{
                     background: "var(--color-bg-elevated)",
                     border: "1px solid rgba(255,255,255,0.08)",
                   }}
+                />
+                <span
+                  className="absolute right-9 top-1/2 h-5 w-px -translate-y-1/2"
+                  style={{ background: "rgba(255,255,255,0.08)" }}
+                  aria-hidden
                 />
                 <button
                   type="button"
@@ -452,65 +456,22 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin }:
                 />
               )}
 
-              {/* Suggestion pills — single row, truncating */}
-              {taskSuggestions.length > 0 && (
-                <div className="mt-3 flex items-center gap-1.5 overflow-hidden">
-                  <span className="shrink-0 text-[11px] text-white/35">Suggestions:</span>
-                  {taskSuggestions.map((task, i) => (
-                    <button
-                      key={task.id}
-                      type="button"
-                      onClick={() => handleSuggestionClick(task, i === 0)}
-                      className="min-w-0 cursor-pointer truncate rounded-full px-2.5 py-1 text-[11px] font-medium transition-all"
-                      style={{
-                        background:
-                          selectedTaskId === task.id
-                            ? `${world.accentColor}25`
-                            : "rgba(255,255,255,0.06)",
-                        color:
-                          selectedTaskId === task.id
-                            ? world.accentColor
-                            : "rgba(255,255,255,0.5)",
-                        border:
-                          selectedTaskId === task.id
-                            ? `1px solid ${world.accentColor}40`
-                            : "1px solid transparent",
-                      }}
-                    >
-                      {i === 0 && (
-                        <RotateCw
-                          size={10}
-                          className="mr-1 inline-block"
-                          strokeWidth={2.5}
-                        />
-                      )}
-                      {i === 0 ? `Continue: ${task.title}` : task.title}
-                    </button>
-                  ))}
-                  {activeGoals.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => handleGoalSelect(activeGoals[0].id, activeGoals[0].title)}
-                      className="min-w-0 cursor-pointer truncate rounded-full px-2.5 py-1 text-[11px] font-medium transition-all"
-                      style={{
-                        background:
-                          selectedGoalId === activeGoals[0].id && !selectedTaskId
-                            ? `${world.accentColor}25`
-                            : "rgba(255,255,255,0.06)",
-                        color:
-                          selectedGoalId === activeGoals[0].id && !selectedTaskId
-                            ? world.accentColor
-                            : "rgba(255,255,255,0.5)",
-                        border:
-                          selectedGoalId === activeGoals[0].id && !selectedTaskId
-                            ? `1px solid ${world.accentColor}40`
-                            : "1px solid transparent",
-                      }}
-                    >
-                      {activeGoals[0].title}
-                    </button>
-                  )}
-                </div>
+              {/* Continue chip — single resumable task */}
+              {continueTask && !selectedTaskId && !goalText.trim() && (
+                <button
+                  type="button"
+                  onClick={handleContinueClick}
+                  className="mt-3 flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left transition-all hover:bg-white/[0.06]"
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                  }}
+                >
+                  <Play size={12} strokeWidth={2} className="shrink-0 text-white/40" />
+                  <span className="min-w-0 truncate text-xs text-white/50">
+                    Continue: <span className="text-white/70">{continueTask.title}</span>
+                  </span>
+                </button>
               )}
             </div>
 

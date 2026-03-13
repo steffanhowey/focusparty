@@ -4,13 +4,19 @@ import { X } from "lucide-react";
 
 interface PanelHeaderProps {
   title: string;
+  subtitle?: string | null;
   onClose: () => void;
 }
 
-export function PanelHeader({ title, onClose }: PanelHeaderProps) {
+export function PanelHeader({ title, subtitle, onClose }: PanelHeaderProps) {
   return (
-    <div className="flex h-20 items-center justify-between px-4 md:px-6">
-      <span className="text-base font-semibold text-white">{title}</span>
+    <div className={`flex ${subtitle ? "h-20" : "h-20"} items-center justify-between px-4 md:px-6`}>
+      <div className="min-w-0">
+        <span className="text-base font-semibold text-white">{title}</span>
+        {subtitle && (
+          <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">{subtitle}</p>
+        )}
+      </div>
       <button
         type="button"
         onClick={onClose}

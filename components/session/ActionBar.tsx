@@ -8,6 +8,7 @@ import {
   VideoOff,
   MessageCircle,
   ListTodo,
+  Crosshair,
   Settings,
   Music,
   LogOut,
@@ -23,7 +24,11 @@ import {
 import { MusicPopover } from "@/components/session/MusicPopover";
 import { CheckInMenu } from "@/components/session/CheckInMenu";
 import { BreakCategoryPopover } from "@/components/session/BreakCategoryPopover";
+// import { FocusPopover } from "@/components/session/FocusPopover";
+import { FocusDropdown } from "@/components/session/FocusDropdown";
+import { NotesPopover } from "@/components/session/NotesPopover";
 import type { BreakCategory } from "@/lib/breakConstants";
+import type { GoalRecord, TaskRecord } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { DurationPills } from "./DurationPills";
 import { useTimerDisplay, type Timer } from "@/lib/useTimer";
@@ -51,10 +56,35 @@ interface ActionBarProps {
   cameraActive: boolean;
   onToggleCamera: () => void;
   onOpenChat: () => void;
-  onOpenCommitments: () => void;
   onOpenSettings: () => void;
   chatActive: boolean;
-  commitmentsActive: boolean;
+  /** Focus popover config — passed through to FocusDropdown */
+  focusPopover?: {
+    open: boolean;
+    onToggle: () => void;
+    onClose: () => void;
+    goalText: string;
+    onGoalTextChange: (text: string) => void;
+    activeTaskId: string | null;
+    activeGoalId: string | null;
+    goals: GoalRecord[];
+    tasks: TaskRecord[];
+    accentColor: string;
+    onSelectTask: (taskId: string, taskTitle: string, goalId: string | null) => void;
+    onSelectGoal: (goalId: string, goalTitle: string) => void;
+    onCompleteTask: (taskId: string) => void;
+    onDeleteTask: (taskId: string) => void;
+    onCompleteGoal: (goalId: string) => void;
+    onDeleteGoal: (goalId: string) => void;
+    onAddTask: (title: string, goalId: string | null) => void;
+    onAddGoal: (title: string) => void;
+    onEditTask?: (taskId: string, newTitle: string) => void;
+    onEditGoal?: (goalId: string, newTitle: string) => void;
+    onComplete?: () => void;
+    continueTask?: TaskRecord | null;
+    onContinue?: (taskId: string) => void;
+    focusButtonRef?: React.RefObject<HTMLButtonElement | null>;
+  };
   settingsActive: boolean;
   momentumActive?: boolean;
   onOpenMomentum?: () => void;
@@ -91,20 +121,31 @@ interface ActionBarProps {
   onEndBreak?: () => void;
   /** Increment to force break countdown reset without changing duration */
   breakResetKey?: number;
-  /** Notes panel state */
-  notesActive?: boolean;
-  onToggleNotes?: () => void;
+  /** Notes popover config */
+  notesPopover?: {
+    open: boolean;
+    onToggle: () => void;
+    text: string;
+    setText: (text: string) => void;
+    isSaving: boolean;
+    onBlur: () => void;
+    onExpand: () => void;
+    onClose: () => void;
+    notesButtonRef: React.RefObject<HTMLButtonElement | null>;
+  };
 }
 
 const ICON = { size: 18, strokeWidth: 1.8 } as const;
 
-function Tip({ label, children }: { label: string; children: ReactNode }) {
+function Tip({ label, children, hidden }: { label: string; children: ReactNode; hidden?: boolean }) {
   return (
     <div className="group/tip relative">
       {children}
-      <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[rgba(10,10,10,0.9)] px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100">
-        {label}
-      </span>
+      {!hidden && (
+        <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[rgba(10,10,10,0.9)] px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100">
+          {label}
+        </span>
+      )}
     </div>
   );
 }
@@ -115,10 +156,9 @@ export const ActionBar = memo(function ActionBar({
   cameraActive,
   onToggleCamera,
   onOpenChat,
-  onOpenCommitments,
   onOpenSettings,
   chatActive,
-  commitmentsActive,
+  focusPopover,
   settingsActive,
   momentumActive,
   onOpenMomentum,
@@ -148,8 +188,7 @@ export const ActionBar = memo(function ActionBar({
   onResetBreakTimer,
   onEndBreak,
   breakResetKey,
-  notesActive,
-  onToggleNotes,
+  notesPopover,
 }: ActionBarProps) {
   const musicWrapperRef = useRef<HTMLDivElement>(null);
   const checkInWrapperRef = useRef<HTMLDivElement>(null);
@@ -408,77 +447,133 @@ export const ActionBar = memo(function ActionBar({
           />
         </div>
 
-        {onToggleCheckIn && onCheckIn && (
-          <div ref={checkInWrapperRef} className="relative">
-            <Tip label="Check In">
-              <button
-                type="button"
-                onClick={onToggleCheckIn}
-                className={checkInOpen ? activeBtn : defaultBtn}
-                aria-label="Check in"
-                aria-expanded={checkInOpen}
-    
-              >
-                <Zap {...ICON} />
-              </button>
-            </Tip>
+        <div ref={checkInWrapperRef} className={`relative ${onToggleCheckIn && onCheckIn ? "" : "invisible"}`}>
+          <Tip label="Check In">
+            <button
+              type="button"
+              onClick={onToggleCheckIn}
+              className={checkInOpen ? activeBtn : defaultBtn}
+              aria-label="Check in"
+              aria-expanded={checkInOpen}
 
+            >
+              <Zap {...ICON} />
+            </button>
+          </Tip>
+
+          {onToggleCheckIn && onCheckIn && (
             <CheckInMenu
               isOpen={checkInOpen ?? false}
               onClose={onCloseCheckIn ?? onToggleCheckIn}
               wrapperRef={checkInWrapperRef}
               onCheckIn={onCheckIn}
             />
-          </div>
-        )}
+          )}
+        </div>
 
-        {onToggleBreakPopover && onSelectBreakCategory && (
-          <div ref={breakWrapperRef} className="relative">
-            <Tip label="Breaks">
-              <button
-                type="button"
-                onClick={onToggleBreakPopover}
-                className={breaksActive || breakPopoverOpen ? activeBtn : defaultBtn}
-                aria-label="Breaks"
-                aria-expanded={breakPopoverOpen}
-              >
-                <Coffee {...ICON} />
-              </button>
-            </Tip>
+        <div ref={breakWrapperRef} className={`relative ${onToggleBreakPopover && onSelectBreakCategory ? "" : "invisible"}`}>
+          <Tip label="Breaks">
+            <button
+              type="button"
+              onClick={onToggleBreakPopover}
+              className={breaksActive || breakPopoverOpen ? activeBtn : defaultBtn}
+              aria-label="Breaks"
+              aria-expanded={breakPopoverOpen}
+            >
+              <Coffee {...ICON} />
+            </button>
+          </Tip>
 
+          {onToggleBreakPopover && onSelectBreakCategory && (
             <BreakCategoryPopover
               isOpen={breakPopoverOpen ?? false}
               onClose={onCloseBreakPopover ?? onToggleBreakPopover}
               wrapperRef={breakWrapperRef}
               onSelectCategory={onSelectBreakCategory}
             />
-          </div>
-        )}
+          )}
+        </div>
 
-        {onToggleNotes && (
-          <Tip label="Notes">
+        {/* ── Center: Focus button + dropdown ── */}
+        <div className="mx-0.5 h-6 w-px bg-white/10" />
+
+        <div className="relative">
+          <Tip label="Focus" hidden={focusPopover?.open}>
             <button
+              ref={focusPopover?.focusButtonRef}
               type="button"
-              onClick={onToggleNotes}
-              className={notesActive ? activeBtn : defaultBtn}
+              onClick={focusPopover?.onToggle}
+              className={`${btn} ${
+                focusPopover?.open
+                  ? "bg-white/15 text-white"
+                  : "text-white/70 hover:bg-white/10 hover:text-white"
+              }`}
+              aria-label="Focus"
+              aria-expanded={focusPopover?.open}
+            >
+              <Crosshair size={20} strokeWidth={1.8} />
+            </button>
+          </Tip>
+
+          {focusPopover?.open && (
+            <FocusDropdown
+              open={focusPopover.open}
+              onToggle={focusPopover.onToggle}
+              onClose={focusPopover.onClose}
+              goalText={focusPopover.goalText}
+              onGoalTextChange={focusPopover.onGoalTextChange}
+              activeTaskId={focusPopover.activeTaskId}
+              activeGoalId={focusPopover.activeGoalId}
+              goals={focusPopover.goals}
+              tasks={focusPopover.tasks}
+              accentColor={focusPopover.accentColor}
+              onSelectTask={focusPopover.onSelectTask}
+              onSelectGoal={focusPopover.onSelectGoal}
+              onCompleteTask={focusPopover.onCompleteTask}
+              onDeleteTask={focusPopover.onDeleteTask}
+              onCompleteGoal={focusPopover.onCompleteGoal}
+              onDeleteGoal={focusPopover.onDeleteGoal}
+              onAddTask={focusPopover.onAddTask}
+              onAddGoal={focusPopover.onAddGoal}
+              onEditTask={focusPopover.onEditTask}
+              onEditGoal={focusPopover.onEditGoal}
+              onComplete={focusPopover.onComplete}
+              continueTask={focusPopover.continueTask}
+              onContinue={focusPopover.onContinue}
+              triggerRef={focusPopover.focusButtonRef}
+            />
+          )}
+        </div>
+
+        <div className="mx-0.5 h-6 w-px bg-white/10" />
+
+        {/* ── Right group ── */}
+        <div className={`relative ${notesPopover ? "" : "invisible"}`}>
+          <Tip label="Notes" hidden={notesPopover?.open}>
+            <button
+              ref={notesPopover?.notesButtonRef}
+              type="button"
+              onClick={notesPopover?.onToggle}
+              className={notesPopover?.open ? activeBtn : defaultBtn}
               aria-label="Notes"
+              aria-expanded={notesPopover?.open}
             >
               <StickyNote {...ICON} />
             </button>
           </Tip>
-        )}
 
-        <Tip label="Commitments">
-          <button
-            type="button"
-            onClick={onOpenCommitments}
-            className={commitmentsActive ? activeBtn : defaultBtn}
-            aria-label="Commitments"
-
-          >
-            <ListTodo {...ICON} />
-          </button>
-        </Tip>
+          {notesPopover?.open && (
+            <NotesPopover
+              text={notesPopover.text}
+              setText={notesPopover.setText}
+              isSaving={notesPopover.isSaving}
+              onBlur={notesPopover.onBlur}
+              onExpand={notesPopover.onExpand}
+              onClose={notesPopover.onClose}
+              triggerRef={notesPopover.notesButtonRef}
+            />
+          )}
+        </div>
 
         <Tip label="Chat">
           <button
@@ -492,19 +587,19 @@ export const ActionBar = memo(function ActionBar({
           </button>
         </Tip>
 
-        {onOpenMomentum && (
+        <div className={onOpenMomentum ? "" : "invisible"}>
           <Tip label="Momentum">
             <button
               type="button"
               onClick={onOpenMomentum}
               className={momentumActive ? activeBtn : defaultBtn}
               aria-label="Momentum"
-  
+
             >
               <Activity {...ICON} />
             </button>
           </Tip>
-        )}
+        </div>
 
         <Tip label="Settings">
           <button

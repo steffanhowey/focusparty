@@ -7,6 +7,7 @@ import { useBreakContent } from "@/lib/useBreakContent";
 import type { BreakClip } from "@/lib/useBreakContent";
 import type { BreakContentItem, BreakDuration } from "@/lib/types";
 import { BREAK_CATEGORY_MAP, type BreakCategory } from "@/lib/breakConstants";
+import { getSponsorLock } from "@/lib/breaks/worldBreakProfiles";
 
 const DURATION_PRESETS: BreakDuration[] = [3, 5, 10];
 
@@ -29,6 +30,7 @@ export function BreaksFlyout({
   const [selectedDuration, setSelectedDuration] = useState<BreakDuration>(5);
 
   const categoryConfig = BREAK_CATEGORY_MAP[category];
+  const sponsorLock = getSponsorLock(category);
 
   const filteredClips = useMemo(
     () => clips.filter((c) => c.duration === selectedDuration),
@@ -56,6 +58,11 @@ export function BreaksFlyout({
       {/* Category subtitle */}
       <div className="px-5 pb-2">
         <p className="text-xs text-white/40">{categoryConfig.subtitle}</p>
+        {sponsorLock?.badge && (
+          <p className="mt-1 text-[10px] font-medium tracking-wide text-white/25">
+            {sponsorLock.badge}
+          </p>
+        )}
       </div>
 
       {/* Duration picker */}

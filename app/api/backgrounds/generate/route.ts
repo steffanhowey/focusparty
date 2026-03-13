@@ -17,7 +17,9 @@ function getOpenAI(): OpenAI {
   return _openai;
 }
 
-const VALID_WORLD_KEYS: Set<string> = new Set([
+import { getDynamicVisualProfile } from "@/lib/roomDna";
+
+const HARDCODED_WORLD_KEYS: Set<string> = new Set([
   "default",
   "vibe-coding",
   "writer-room",
@@ -61,9 +63,12 @@ export async function POST(request: Request) {
 
   const { worldKey, count = 3, variationSeed, timeOfDay } = body;
 
-  if (!worldKey || !VALID_WORLD_KEYS.has(worldKey)) {
+  // Accept hardcoded world keys and any factory-created room that has a dynamic visual profile
+  const isKnownWorld = HARDCODED_WORLD_KEYS.has(worldKey ?? "");
+  const hasDynamicProfile = worldKey ? getDynamicVisualProfile(worldKey) !== null : false;
+  if (!worldKey || (!isKnownWorld && !hasDynamicProfile)) {
     return NextResponse.json(
-      { error: `Invalid worldKey. Must be one of: ${[...VALID_WORLD_KEYS].join(", ")}` },
+      { error: `Invalid worldKey. Must be a known world or a factory-created room with a visual profile.` },
       { status: 400 }
     );
   }

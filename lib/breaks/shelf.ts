@@ -5,14 +5,15 @@
 // content, enforces diversity, and learns from engagement.
 
 import { createClient } from "@/lib/supabase/admin";
-import { WORLD_BREAK_PROFILES, ALL_CATEGORIES } from "./worldBreakProfiles";
+import { WORLD_BREAK_PROFILES, ALL_CATEGORIES, getSponsorLock } from "./worldBreakProfiles";
+import { screenContent } from "./contentSafety";
 
 // ─── Constants ──────────────────────────────────────────────
 
 const SHELF_PER_DURATION_MIN = 5;
 const SHELF_PER_DURATION_MAX = 8;
 const SHELF_TTL_DAYS = 7;
-const MIN_TASTE_SCORE = 70;
+const MIN_TASTE_SCORE = 55;
 // NOTE: Relaxed pass removed — showing nothing is better than showing irrelevant content.
 // If a bucket can't fill at the strict threshold, it stays small.
 const MAX_PER_CREATOR = 2;
@@ -133,20 +134,20 @@ export async function refreshShelf(
   let shelfSize = 0;
   const buckets: Record<number, number> = {};
 
-  // Collect all candidate_ids already on the active shelf (any duration)
-  // to prevent duplicate items from the same candidate in the same bucket.
+  // Collect all video_urls already on the active shelf (any duration)
+  // to prevent the same video appearing in multiple duration buckets.
   const { data: existingShelfItems } = await supabase
     .from("fp_break_content_items")
-    .select("candidate_id, best_duration")
+    .select("video_url, best_duration")
     .eq("room_world_key", worldKey)
     .eq("category", category)
     .eq("status", "active")
-    .not("candidate_id", "is", null);
+    .not("video_url", "is", null);
 
-  // Set of "candidateId:duration" keys already on shelf
+  // Set of "videoUrl:duration" keys already on shelf
   const onShelf = new Set(
     (existingShelfItems ?? []).map(
-      (i) => `${i.candidate_id}:${i.best_duration}`,
+      (i) => `${i.video_url}:${i.best_duration}`,
     ),
   );
 
@@ -177,30 +178,39 @@ export async function refreshShelf(
         }
       }
 
-      // Get ALL top-scored candidates for this world (any best_duration)
+      // Get top-scored candidates across ALL worlds (any best_duration)
       // where the video is long enough to support this duration.
-      // This is the key change: we promote into ALL valid buckets,
-      // not just the candidate's best_duration.
+      // We don't filter by world_key here because the same video content
+      // is valid for any room world — deduplication at discovery time
+      // means only one world "owns" each candidate, but all worlds
+      // should benefit from the shared content pool.
       const { data: topCandidates } = await supabase
         .from("fp_break_content_scores")
-        .select("*, candidate:fp_break_content_candidates(*)")
-        .eq("world_key", worldKey)
+        .select("*, candidate:fp_break_content_candidates!inner(*)")
+        .eq("candidate.category", category)
         .gte("taste_score", MIN_TASTE_SCORE)
         .gte("relevance_score", 40)
         .order("taste_score", { ascending: false })
         .limit(needed * 4);
 
       if (topCandidates) {
+        const sponsor = getSponsorLock(category);
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const eligible = topCandidates.filter((s: any) => {
           const c = s.candidate;
           if (!c || c.status === "rejected") return false;
           // Only promote candidates from the same category
           if ((c.category ?? "learning") !== category) return false;
+          // Sponsor lock: only promote content from the sponsor
+          if (sponsor && (c.creator ?? "").toLowerCase() !== sponsor.sourceName.toLowerCase()) return false;
           // Video must be long enough for this duration
           if ((c.duration_seconds ?? 0) < minVideoSeconds) return false;
-          // Don't duplicate same candidate+duration on shelf
-          if (onShelf.has(`${c.id}:${duration}`)) return false;
+          // Don't duplicate same video URL in this duration bucket
+          if (c.video_url && onShelf.has(`${c.video_url}:${duration}`)) return false;
+          // Safety re-screen — catch candidates that predate the blocklist
+          const safety = screenContent(c.title ?? "", c.description);
+          if (!safety.safe) return false;
 
           const creatorName = (c.creator ?? "").toLowerCase();
           if (creatorName) {
@@ -250,7 +260,7 @@ export async function refreshShelf(
           }
 
           // Track what we've placed on shelf
-          onShelf.add(`${c.id}:${duration}`);
+          onShelf.add(`${c.video_url}:${duration}`);
           const creatorName = (c.creator ?? "").toLowerCase();
           if (creatorName) {
             creatorCounts.set(

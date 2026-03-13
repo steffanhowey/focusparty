@@ -48,9 +48,10 @@ import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
 import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
 import { BreakReEntryCountdown } from "@/components/environment/BreakReEntryCountdown";
 import { FloatingNotes } from "@/components/environment/FloatingNotes";
+import { FloatingFocus } from "@/components/session/FloatingFocus";
 import { useBreakContent, type BreakClip } from "@/lib/useBreakContent";
 
-type SidePanel = "none" | "momentum" | "commitments" | "chat" | "settings" | "breaks";
+type SidePanel = "none" | "momentum" | "chat" | "settings" | "breaks";
 type CelebrationInfo = { color: string; text: string };
 const PANEL_WIDTH = 380;
 const DEFAULT_DURATION_SEC = 25 * 60;
@@ -246,6 +247,7 @@ export default function EnvironmentPage() {
   const [phase, setPhase] = useState<SessionPhase>("setup");
   const [showJoinModal, setShowJoinModal] = useState(true);
   const [goal, setGoal] = useState("");
+  const [activeGoalId, setActiveGoalId] = useState<string | null>(null);
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
   const reviewElapsedRef = useRef(0);
   const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
@@ -257,6 +259,9 @@ export default function EnvironmentPage() {
   const [committedTaskIds, setCommittedTaskIds] = useState<Set<string>>(new Set());
   const [micActive, setMicActive] = useState(false);
   const [checkInOpen, setCheckInOpen] = useState(false);
+  const [focusPopoverOpen, setFocusPopoverOpen] = useState(false);
+  const [floatingFocusOpen, setFloatingFocusOpen] = useState(false);
+  const focusButtonRef = useRef<HTMLButtonElement>(null);
   const [celebrations, setCelebrations] = useState<Map<string, CelebrationInfo>>(new Map());
   const lastFeedLengthRef = useRef(0);
 
@@ -269,14 +274,21 @@ export default function EnvironmentPage() {
   const [breakPopoverOpen, setBreakPopoverOpen] = useState(false);
 
   // ─── Notes state ───────────────────────────────────────────
-  const [notesOpen, setNotesOpen] = useState(false);
+  const [notesPopoverOpen, setNotesPopoverOpen] = useState(false);
+  const [floatingNotesOpen, setFloatingNotesOpen] = useState(false);
+  const notesButtonRef = useRef<HTMLButtonElement>(null);
   const sessionId = persistence.sessionRow?.id ?? null;
   const breakContext = useMemo(() => ({
     category: breakActive ? breakCategory : null,
     contentItemId: breakActive ? (breakContent?.id ?? null) : null,
   }), [breakActive, breakCategory, breakContent?.id]);
   const notes = useNotes(partyId, sessionId, breakContext);
-  const handleToggleNotes = useCallback(() => setNotesOpen((prev) => !prev), []);
+  const handleToggleNotesPopover = useCallback(() => setNotesPopoverOpen((prev) => !prev), []);
+  const handleCloseNotesPopover = useCallback(() => setNotesPopoverOpen(false), []);
+  const handleToggleNotes = useCallback(() => {
+    // Used by BreakVideoOverlay — open floating notes directly during breaks
+    setFloatingNotesOpen((prev) => !prev);
+  }, []);
 
   // Break content shelf — used to give synthetics real content IDs
   const { items: breakShelfItems } = useBreakContent(world.worldKey, "learning");
@@ -284,7 +296,7 @@ export default function EnvironmentPage() {
   // Break clips for channel changer — set when user picks from flyout
   const [breakClips, setBreakClips] = useState<BreakClip[]>([]);
   const currentBreakClipIndex = useMemo(
-    () => breakContent ? breakClips.findIndex((c) => c.clipId === breakContent.id) : 0,
+    () => breakContent ? breakClips.findIndex((c) => c.sourceItem.id === breakContent.id) : 0,
     [breakClips, breakContent]
   );
 
@@ -310,10 +322,8 @@ export default function EnvironmentPage() {
 
   const handleTimerComplete = useCallback(() => {
     reviewElapsedRef.current = durationSec;
-    setPhase("review");
-    // fire-and-forget: non-critical persistence
+    // Sprint done — complete it in the background, stay in room
     persistence.completeSprint().catch((err) => console.error("Failed to complete sprint:", err));
-    persistence.updatePhase("review").catch((err) => console.error("Failed to update phase to review:", err));
     hostTriggersRef.current.triggerReviewEntered();
   }, [durationSec, persistence]);
 
@@ -563,7 +573,7 @@ export default function EnvironmentPage() {
   }, [activeLinkedResource, hostTriggers]);
 
   // ─── Goals (for task drawer context) ─────────────────────
-  const { activeGoals } = useGoals();
+  const { activeGoals, createGoal, completeGoal, deleteGoal: deleteGoalApi, updateGoal } = useGoals();
   const commitments = useCommitments();
   const activeGoalForTask = useMemo(() => {
     if (!activeTask?.goal_id) return null;
@@ -576,6 +586,8 @@ export default function EnvironmentPage() {
       (t) => t.goal_id === activeGoalForTask.id
     );
   }, [activeGoalForTask, activeTasks, completedTasks]);
+
+
 
   const [isAISuggesting, setIsAISuggesting] = useState(false);
 
@@ -887,12 +899,19 @@ export default function EnvironmentPage() {
     reviewElapsedRef.current = durationSec - timer.getSnapshot().seconds;
     timer.pause();
     music.pause();
-    setPhase("review");
     // fire-and-forget: non-critical persistence
     persistence.completeSprint().catch((err) => console.error("Failed to complete sprint:", err));
-    persistence.updatePhase("review").catch((err) => console.error("Failed to update phase to review:", err));
-    hostTriggers.triggerReviewEntered();
-  }, [durationSec, timer, music, persistence, hostTriggers]);
+    hostTriggers.triggerSessionCompleted();
+    persistence.endSession("completed").catch((err) => console.error("Failed to end session:", err));
+    if (partyId && !party?.persistent) {
+      updatePartyStatus(partyId, "completed").catch((err) => console.error("Failed to update party status:", err));
+    }
+    // Resolve any orphaned commitment
+    if (commitments.activeCommitment && !resolutionHandledRef.current) {
+      commitments.resolveCommitment("failed").catch(() => {});
+    }
+    router.push("/rooms");
+  }, [durationSec, timer, music, persistence, hostTriggers, partyId, party?.persistent, commitments, router]);
 
   // Intercept Leave button: confirm during sprint, skip otherwise
   const handleLeaveClick = useCallback(() => {
@@ -1086,6 +1105,36 @@ export default function EnvironmentPage() {
     [completeTask, activeTasks, completedTasks, activeGoals, userId, partyId, persistence.sessionRow?.id]
   );
 
+  // ─── Goal completion with celebration ──────────────────
+  const handleCompleteGoal = useCallback(
+    async (goalId: string) => {
+      completeGoal(goalId);
+
+      if (!userId) return;
+      const goalRecord = activeGoals.find((g) => g.id === goalId);
+
+      logEvent({
+        party_id: partyId,
+        session_id: persistence.sessionRow?.id ?? null,
+        user_id: userId,
+        event_type: "task_completed",
+        body: goalRecord?.title ?? null,
+      }).catch((err) =>
+        console.error("[EnvironmentPage] goal_completed event failed:", err?.message ?? err?.code ?? JSON.stringify(err))
+      );
+
+      setCelebrations((prev) => new Map(prev).set(userId, { color: "#5BC682", text: "Goal done!" }));
+      setTimeout(() => {
+        setCelebrations((prev) => {
+          const next = new Map(prev);
+          next.delete(userId);
+          return next;
+        });
+      }, 2000);
+    },
+    [completeGoal, activeGoals, userId, partyId, persistence.sessionRow?.id]
+  );
+
   // ─── Timer controls (duration change + reset) ─────────
 
   const currentDurationMin = Math.round(durationSec / 60);
@@ -1114,8 +1163,12 @@ export default function EnvironmentPage() {
     () => setActivePanel((prev) => (prev === "momentum" ? "none" : "momentum")),
     []
   );
-  const handleToggleCommitments = useCallback(
-    () => setActivePanel((prev) => (prev === "commitments" ? "none" : "commitments")),
+  const handleToggleFocusPopover = useCallback(
+    () => setFocusPopoverOpen((prev) => !prev),
+    []
+  );
+  const handleCloseFocusPopover = useCallback(
+    () => setFocusPopoverOpen(false),
     []
   );
   const handleToggleChat = useCallback(
@@ -1349,7 +1402,7 @@ export default function EnvironmentPage() {
     [activeTask, handleCompleteTask, selectTask, pendingSwitchTaskId, commitTask, activeTasks, completedTasks]
   );
 
-  const handleActivateCommitment = useCallback(
+  const handleActivateFocus = useCallback(
     (taskId: string) => {
       if (activeTask?.id === taskId) return;
       if (activeTask) {
@@ -1367,6 +1420,24 @@ export default function EnvironmentPage() {
   const handleSwitchComplete = useCallback(() => handleSwitchConfirm("complete"), [handleSwitchConfirm]);
   const handleSwitchSwitch = useCallback(() => handleSwitchConfirm("switch"), [handleSwitchConfirm]);
   const handleSwitchCancel = useCallback(() => setPendingSwitchTaskId(null), []);
+
+  // ─── Focus popover handlers ──────────────────────
+  const handlePopoverSelectTask = useCallback(
+    (taskId: string, taskTitle: string, _goalId: string | null) => {
+      setActiveGoalId(null);
+      handleActivateFocus(taskId);
+    },
+    [handleActivateFocus],
+  );
+
+  const handlePopoverSelectGoal = useCallback(
+    (goalId: string, goalTitle: string) => {
+      setActiveGoalId(goalId);
+      selectTask(null);
+      setGoal(goalTitle);
+    },
+    [selectTask],
+  );
 
   // ─── Participants for display (real + synthetic) ────────
   const participantInfos = useMemo(() => {
@@ -1616,31 +1687,27 @@ export default function EnvironmentPage() {
         <div id={music.playerContainerId} />
       </div>
 
-      {/* Left-side participant strip (absolute, always visible during sprint) */}
-      {phase !== "setup" && (
-        <>
-          <EnvironmentParticipants
-            participants={participantInfos}
-            onParticipantClick={handleParticipantClick}
-            cameraStream={camera.stream}
-            celebrations={celebrations}
-          />
-          {selectedParticipant && (
-            <ParticipantCard
-              participant={selectedParticipant.participant}
-              feedEvents={feedEvents}
-              onHighFive={handleHighFive}
-              highFiveCooldownUntil={
-                highFiveCooldowns.get(
-                  selectedParticipant.participant.id
-                ) ?? null
-              }
-              onClose={handleCloseCard}
-              anchorRect={selectedParticipant.anchorRect}
-              onJoinBreak={handleJoinBreak}
-            />
-          )}
-        </>
+      {/* Left-side participant strip (always visible — shown behind join modal too) */}
+      <EnvironmentParticipants
+        participants={participantInfos}
+        onParticipantClick={handleParticipantClick}
+        cameraStream={camera.stream}
+        celebrations={celebrations}
+      />
+      {selectedParticipant && phase !== "setup" && (
+        <ParticipantCard
+          participant={selectedParticipant.participant}
+          feedEvents={feedEvents}
+          onHighFive={handleHighFive}
+          highFiveCooldownUntil={
+            highFiveCooldowns.get(
+              selectedParticipant.participant.id
+            ) ?? null
+          }
+          onClose={handleCloseCard}
+          anchorRect={selectedParticipant.anchorRect}
+          onJoinBreak={handleJoinBreak}
+        />
       )}
 
       {/* Sprint goal — ~25% above dead center */}
@@ -1682,10 +1749,55 @@ export default function EnvironmentPage() {
                 cameraActive={camera.isActive}
                 onToggleCamera={camera.toggle}
                 onOpenChat={handleToggleChat}
-                onOpenCommitments={handleToggleCommitments}
                 onOpenSettings={handleToggleSettings}
                 chatActive={activePanel === "chat"}
-                commitmentsActive={activePanel === "commitments"}
+                focusPopover={{
+                  open: focusPopoverOpen,
+                  onToggle: handleToggleFocusPopover,
+                  onClose: handleCloseFocusPopover,
+                  goalText: goal,
+                  onGoalTextChange: setGoal,
+                  activeTaskId: activeTask?.id ?? null,
+                  activeGoalId,
+                  goals: activeGoals,
+                  tasks: activeTasks,
+                  accentColor: world.accentColor,
+                  onSelectTask: handlePopoverSelectTask,
+                  onSelectGoal: handlePopoverSelectGoal,
+                  onCompleteTask: handleCompleteTask,
+                  onDeleteTask: deleteTask,
+                  onCompleteGoal: handleCompleteGoal,
+                  onDeleteGoal: deleteGoalApi,
+                  onAddTask: (title: string, goalId: string | null) => addTask({ title, goal_id: goalId }),
+                  onAddGoal: (title: string) => createGoal({ title }),
+                  onEditTask: editTask,
+                  onEditGoal: (goalId: string, newTitle: string) => updateGoal(goalId, { title: newTitle }),
+                  onComplete: () => {
+                    if (activeTask) {
+                      handleCompleteTask(activeTask.id);
+                    } else if (activeGoalId) {
+                      handleCompleteGoal(activeGoalId);
+                    } else if (goal.trim()) {
+                      // Freeform text — fire celebration and clear
+                      if (userId) {
+                        logEvent({
+                          party_id: partyId,
+                          session_id: persistence.sessionRow?.id ?? null,
+                          user_id: userId,
+                          event_type: "task_completed",
+                          body: goal,
+                        }).catch(() => {});
+                        setCelebrations((prev) => new Map(prev).set(userId, { color: "#5BC682", text: "Done!" }));
+                        setTimeout(() => {
+                          setCelebrations((prev) => { const next = new Map(prev); next.delete(userId!); return next; });
+                        }, 2000);
+                      }
+                      setGoal("");
+                    }
+                    handleCloseFocusPopover();
+                  },
+                  focusButtonRef,
+                }}
                 settingsActive={activePanel === "settings"}
                 momentumActive={activePanel === "momentum"}
                 onOpenMomentum={handleToggleMomentum}
@@ -1727,8 +1839,20 @@ export default function EnvironmentPage() {
                 onToggleBreakPopover={handleToggleBreakPopover}
                 onCloseBreakPopover={handleCloseBreakPopover}
                 onSelectBreakCategory={handleSelectBreakCategory}
-                notesActive={notesOpen}
-                onToggleNotes={sessionId ? handleToggleNotes : undefined}
+                notesPopover={sessionId ? {
+                  open: notesPopoverOpen,
+                  onToggle: handleToggleNotesPopover,
+                  text: notes.text,
+                  setText: notes.setText,
+                  isSaving: notes.isSaving,
+                  onBlur: notes.onBlur,
+                  onExpand: () => {
+                    setNotesPopoverOpen(false);
+                    setFloatingNotesOpen(true);
+                  },
+                  onClose: handleCloseNotesPopover,
+                  notesButtonRef,
+                } : undefined}
               />
             )}
       </div>
@@ -1759,13 +1883,11 @@ export default function EnvironmentPage() {
             aria-label={
               activePanel === "momentum"
                 ? "Momentum"
-                : activePanel === "commitments"
-                  ? "Commitments"
-                  : activePanel === "chat"
-                    ? "Chat"
-                    : activePanel === "breaks"
-                      ? "Breaks"
-                      : "Settings"
+                : activePanel === "chat"
+                  ? "Chat"
+                  : activePanel === "breaks"
+                    ? "Breaks"
+                    : "Settings"
             }
           >
             {activePanel === "momentum" && (
@@ -1775,25 +1897,10 @@ export default function EnvironmentPage() {
                 onClose={closePanel}
               />
             )}
-            {(activePanel === "commitments" || activePanel === "chat") && (
+            {activePanel === "chat" && (
               <SideDrawer
                 onClose={closePanel}
-                panel={activePanel as "commitments" | "chat"}
-                activeTasks={committedActiveTasks}
-                completedTasks={committedCompletedTasks}
-                onCompleteTask={handleCompleteTask}
-                onUncompleteTask={uncompleteTask}
-                onAddTask={addAndCommitTask}
-                onDeleteTask={deleteTask}
-                onEditTask={editTask}
-                onReorderTasks={reorderTasks}
-                activeGoal={activeGoalForTask}
-                goalTasks={goalTasks}
-                onSetSprintGoal={handleSetSprintGoal}
-                onAISuggest={activeGoalForTask ? handleAISuggest : undefined}
-                isAISuggesting={isAISuggesting}
-                activeTaskId={activeTask?.id ?? null}
-                onActivateTask={handleActivateCommitment}
+                panel="chat"
                 messages={chat.messages}
                 onSendMessage={chat.sendMessage}
               />
@@ -1826,17 +1933,7 @@ export default function EnvironmentPage() {
         onEndSession={handleConfirmLeave}
       />
 
-      {/* Review modal */}
-      <SessionReviewModal
-        isOpen={phase === "review"}
-        sessionDurationSec={durationSec}
-        elapsedSec={reviewElapsedRef.current}
-        onAnotherRound={handleAnotherRound}
-        onDone={handleDone}
-        onReflectionComplete={handleReflectionComplete}
-        linkedResource={activeLinkedResource}
-        sessionId={persistence.sessionRow?.id ?? null}
-      />
+      {/* Review modal removed — single exit flow via leave confirm */}
 
       {/* Task switch confirmation */}
       <SwitchTaskModal
@@ -1856,6 +1953,7 @@ export default function EnvironmentPage() {
           onClose={() => setShowJoinModal(false)}
           onJoin={handleJoinFromModal}
           backgrounds={modalBackgrounds}
+          presence={presence}
         />
       )}
 
@@ -1870,19 +1968,42 @@ export default function EnvironmentPage() {
           onFinish={handleBreakVideoFinish}
           onChangeClip={handleChangeClip}
           onToggleNotes={handleToggleNotes}
-          notesOpen={notesOpen}
+          notesOpen={floatingNotesOpen}
+        />
+      )}
+
+      {/* Floating commitment panel */}
+      {floatingFocusOpen && (
+        <FloatingFocus
+          activeTaskId={activeTask?.id ?? null}
+          activeGoalId={activeGoalId}
+          goals={activeGoals}
+          tasks={activeTasks}
+          accentColor={world.accentColor}
+          onSelectTask={handlePopoverSelectTask}
+          onSelectGoal={handlePopoverSelectGoal}
+          onCompleteTask={handleCompleteTask}
+          onDeleteTask={deleteTask}
+          onCompleteGoal={handleCompleteGoal}
+          onDeleteGoal={deleteGoalApi}
+          onAddTask={(title, goalId) => addTask({ title, goal_id: goalId })}
+          onAddGoal={(title) => createGoal({ title })}
+          onEditTask={editTask}
+          onEditGoal={(goalId: string, newTitle: string) => updateGoal(goalId, { title: newTitle })}
+          onClose={() => setFloatingFocusOpen(false)}
+          focusButtonRef={focusButtonRef}
         />
       )}
 
       {/* Floating notes window */}
-      {notesOpen && sessionId && (
+      {floatingNotesOpen && sessionId && (
         <FloatingNotes
           text={notes.text}
           setText={notes.setText}
           isSaving={notes.isSaving}
           onBlur={notes.onBlur}
-          onClose={() => setNotesOpen(false)}
-          breakActive={breakActive}
+          onClose={() => setFloatingNotesOpen(false)}
+          notesButtonRef={notesButtonRef}
         />
       )}
 

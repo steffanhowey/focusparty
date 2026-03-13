@@ -65,10 +65,22 @@ const BLOCKED_PATTERNS: RegExp[] = [
   /\bgenocide\b/i,
   /\bethnoc?leansing/i,
   /\bcollapse of (?:south korea|north korea|china|russia|ukraine|israel|palestine|iran)/i,
-  /\b(?:south korea|north korea|china|russia|ukraine|israel|palestine|iran) (?:is )?(?:over|finished|doomed|collapsing)/i,
+  /\b(?:south korea|north korea|china|russia|ukraine|israel|palestine|iran)\b.{0,10}\b(?:is |are )?(?:over|finished|doomed|collapsing|falling|dying)\b/i,
   /\bww3\b/i,
   /\bworld war 3\b/i,
   /\bnuclear war\b/i,
+
+  // Off-topic for a focus/productivity app
+  /\btattoo\b/i,
+  /\bplastic surgery\b/i,
+  /\bmukbang\b/i,
+  /\basmr\b/i,
+  /\bcelebrity gossip\b/i,
+  /\btrue crime\b/i,
+  /\bcrime documentary\b/i,
+  /\bparanormal\b/i,
+  /\bghost hunting\b/i,
+  /\bprank\b/i,
 
   // Conspiracy & misinformation
   /\bconspiracy theor/i,
@@ -143,6 +155,18 @@ You MUST set reject=true AND safety_score=0 for ANY content that:
 - Pushes conspiracy theories or medical misinformation
 - Is sexually explicit or NSFW in any way
 - Promotes gambling, scams, or get-rich-quick schemes
+
+AUDIENCE FIT — MANDATORY (override all other guidance):
+You MUST set reject=true for content that does NOT fit this audience:
+- Target: ambitious tech workers aged 25-35 in Silicon Valley (engineers, designers, founders, PMs)
+- REJECT: general-interest science (astronomy, biology, physics) unless directly about technology
+- REJECT: pop science explainers about nature, animals, space, or the human body
+- REJECT: health/medical/nutrition content (unless it's ergonomics for desk workers)
+- REJECT: news commentary, geopolitical analysis, or current events
+- REJECT: art therapy, art journaling, or creative arts not related to tech/design
+- REJECT: lifestyle content (cooking, travel, fashion, home improvement)
+- REJECT: clickbait titles about topics unrelated to tech, productivity, or craft
+- The litmus test: "Would a sharp 28-year-old startup engineer choose this for a 5-minute work break?"
 
 IMPORTANT — these are NOT reasons to reject:
 - Casual profanity or strong opinions (founders/engineers swear — that's fine)

@@ -13,7 +13,7 @@ import { CLIENT_NAV_HREFS } from "./navItems";
 
 const PAGE_TITLES: Record<string, string> = {
   "/rooms": "Rooms",
-  "/commitments": "Commitments",
+  "/goals": "Goals",
   "/stats": "Stats",
   "/settings": "Settings",
 };
@@ -52,7 +52,7 @@ function renderTabContent(tab: string): ReactNode {
           </Suspense>
         </main>
       );
-    case "/commitments":
+    case "/goals":
       return (
         <main className="flex-1">
           <Suspense fallback={null}>
@@ -170,15 +170,15 @@ export function HubShell({ children }: { children: ReactNode }) {
                 {title}
               </span>
             </div>
-            {effectivePath === "/commitments" ? (
+            {effectivePath === "/goals" ? (
               <Button
                 variant="primary"
                 size="sm"
                 leftIcon={<Plus size={18} strokeWidth={1.8} />}
                 onClick={() => document.dispatchEvent(new CustomEvent("fp:create-goal"))}
-                aria-label="New commitment"
+                aria-label="New goal"
               >
-                <span className="hidden sm:inline">New Commitment</span>
+                <span className="hidden sm:inline">New Goal</span>
               </Button>
             ) : (
               <a

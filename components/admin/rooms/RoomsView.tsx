@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 import { DataTable, type Column } from "../DataTable";
 import { Pagination } from "../Pagination";
 import { StatusBadge } from "../StatusBadge";
 import { RoomDetailModal } from "./RoomDetailModal";
+import { CreateRoomWizard } from "./CreateRoomWizard";
 import { relativeTime } from "@/lib/activityEventRender";
 
 interface RoomRow {
@@ -31,6 +32,7 @@ export function RoomsView() {
   const [loading, setLoading] = useState(true);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const limit = 25;
 
   const fetchRooms = useCallback(async () => {
@@ -161,6 +163,14 @@ export function RoomsView() {
         <span className="ml-auto text-xs text-[var(--color-text-tertiary)]">
           {total} rooms
         </span>
+        <button
+          type="button"
+          onClick={() => setWizardOpen(true)}
+          className="flex h-9 items-center gap-1.5 rounded-full bg-white/10 px-4 text-sm font-medium text-white transition-colors hover:bg-white/15"
+        >
+          <Plus size={14} />
+          Create Room
+        </button>
       </div>
 
       {loading ? (
@@ -194,6 +204,12 @@ export function RoomsView() {
           setSelectedRoomId(null);
         }}
         onUpdate={fetchRooms}
+      />
+
+      <CreateRoomWizard
+        isOpen={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onCreated={fetchRooms}
       />
     </div>
   );

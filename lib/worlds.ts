@@ -110,9 +110,14 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
   },
 };
 
-/** Get a world config by key, falling back to default if unknown. */
+/** Get a world config by key, falling back to dynamic → default. */
 export function getWorldConfig(worldKey: string): WorldConfig {
-  return WORLD_CONFIGS[worldKey as WorldKey] ?? WORLD_CONFIGS.default;
+  if (worldKey in WORLD_CONFIGS) return WORLD_CONFIGS[worldKey as WorldKey];
+  // Dynamic lookup for factory-created rooms
+  const { getDynamicWorldConfig } = require("./roomDna");
+  const dynamic = getDynamicWorldConfig(worldKey);
+  if (dynamic) return dynamic;
+  return WORLD_CONFIGS.default;
 }
 
 /**

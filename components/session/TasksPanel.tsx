@@ -36,7 +36,7 @@ interface TasksPanelProps {
   onSetSprintGoal?: (taskId: string) => void;
   onAISuggest?: () => void;
   isAISuggesting?: boolean;
-  // Active commitment
+  // Active goal
   activeTaskId?: string | null;
   onActivateTask?: (taskId: string) => void;
 }
@@ -145,7 +145,7 @@ export const TasksPanel = memo(function TasksPanel({
       onDragCancel={handleDragCancel}
     >
       <div
-        className="flex flex-1 flex-col overflow-hidden px-4 py-3"
+        className="flex flex-1 flex-col overflow-hidden py-1"
       >
         {/* Goal context header */}
         {activeGoal && goalTasks && (
@@ -225,7 +225,7 @@ export const TasksPanel = memo(function TasksPanel({
 
           {!hasTasks && !showAddInput && (
             <p className="px-4 py-6 text-center text-xs text-[var(--color-text-tertiary)]">
-              No commitments yet
+              No items yet
             </p>
           )}
 
@@ -253,7 +253,7 @@ export const TasksPanel = memo(function TasksPanel({
                     setShowAddInput(false);
                   }
                 }}
-                placeholder="What will you commit to?"
+                placeholder="What's next?"
                 className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
               />
               {newTaskText.trim() && (
@@ -269,7 +269,7 @@ export const TasksPanel = memo(function TasksPanel({
               className="flex items-center gap-2 px-2 py-3 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
             >
               <Plus size={14} strokeWidth={1.5} />
-              <span className="text-sm">Add commitment</span>
+              <span className="text-sm">Add item</span>
             </button>
           )}
 
