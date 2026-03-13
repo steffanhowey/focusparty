@@ -104,7 +104,8 @@ export const VIBE_ICONS: Record<VibeId, LucideIcon> = {
 /* ─── Misc ────────────────────────────────────────────────── */
 
 export const DEFAULT_VOLUME = 50;
-export const MUSIC_STORAGE_KEY = "focusparty-music";
+export const MUSIC_STORAGE_KEY = "skillgap-music";
+const OLD_MUSIC_STORAGE_KEY = "focusparty-music";
 export const YT_PLAYER_ID = "fp-yt-player";
 export const YT_PREVIEW_PLAYER_ID = "fp-yt-preview";
 
@@ -120,7 +121,11 @@ const PREFS_DEFAULTS: MusicPrefs = { vibe: null, volume: DEFAULT_VOLUME };
 export function loadMusicPrefs(): MusicPrefs {
   if (typeof window === "undefined") return PREFS_DEFAULTS;
   try {
-    const raw = localStorage.getItem(MUSIC_STORAGE_KEY);
+    let raw = localStorage.getItem(MUSIC_STORAGE_KEY);
+    if (!raw) {
+      raw = localStorage.getItem(OLD_MUSIC_STORAGE_KEY);
+      if (raw) localStorage.setItem(MUSIC_STORAGE_KEY, raw); // migrate forward
+    }
     if (!raw) return PREFS_DEFAULTS;
     return { ...PREFS_DEFAULTS, ...JSON.parse(raw) };
   } catch {

@@ -1,6 +1,6 @@
-# Vercel deployment plan — FocusParty
+# Vercel deployment plan — SkillGap
 
-Everything you need to deploy FocusParty to Vercel and keep it running smoothly.
+Everything you need to deploy SkillGap to Vercel and keep it running smoothly.
 
 ---
 
@@ -9,7 +9,7 @@ Everything you need to deploy FocusParty to Vercel and keep it running smoothly.
 | Item | Status |
 |------|--------|
 | Next.js app with `build` script | ✅ `npm run build` |
-| Code on GitHub (`steffanhowey/focusparty`) | ✅ |
+| Code on GitHub (`steffanhowey/skillgap`) | ✅ |
 | `.gitignore` includes `.next`, `node_modules`, `.env*`, `.vercel` | ✅ |
 | Production build succeeds locally | ✅ Verified |
 | No hardcoded secrets; auth is stubbed | ✅ |
@@ -23,7 +23,7 @@ Everything you need to deploy FocusParty to Vercel and keep it running smoothly.
 
 2. **Import the repo**  
    - Click **Add New… → Project**.  
-   - Select **Import** next to `steffanhowey/focusparty` (or paste `https://github.com/steffanhowey/focusparty`).  
+   - Select **Import** next to `steffanhowey/skillgap` (or paste `https://github.com/steffanhowey/skillgap`).  
    - Click **Import**.
 
 3. **Project settings (keep defaults)**  
@@ -38,7 +38,7 @@ Everything you need to deploy FocusParty to Vercel and keep it running smoothly.
    - When you add auth or APIs later, add vars in **Project → Settings → Environment Variables** (e.g. `NEXT_PUBLIC_*` for client, others for server).
 
 5. **Deploy**  
-   Click **Deploy**. Vercel will build and give you a URL like `focusparty-*.vercel.app`.
+   Click **Deploy**. Vercel will build and give you a URL like `skillgap-*.vercel.app`.
 
 ---
 
@@ -60,7 +60,7 @@ Everything you need to deploy FocusParty to Vercel and keep it running smoothly.
 2. **Auth redirect URLs**  
    If you use OAuth (e.g. Supabase, NextAuth):  
    - Add your Vercel production URL and preview URL pattern to the provider’s allowed redirect/callback URLs.  
-   - Example: `https://focusparty-xxx.vercel.app/callback`, `https://*.vercel.app/callback` for previews.
+   - Example: `https://skillgap-xxx.vercel.app/callback`, `https://*.vercel.app/callback` for previews.
 
 ---
 
@@ -98,7 +98,7 @@ Example (only if required later):
 ## Summary
 
 1. Sign in to Vercel with GitHub.  
-2. Import **steffanhowey/focusparty**.  
+2. Import **steffanhowey/skillgap**.  
 3. Leave all build settings as default and click **Deploy**.  
 4. Use the generated URL (and optionally add a custom domain).  
 5. When you add env vars or auth, set them in Project Settings and update redirect URLs with your Vercel URL.

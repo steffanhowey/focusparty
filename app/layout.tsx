@@ -16,7 +16,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "FocusParty — Your AI co-working partner",
+  title: "SkillGap",
   description: "Always there. Never no-shows.",
 };
 

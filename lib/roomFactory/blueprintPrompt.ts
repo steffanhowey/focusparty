@@ -43,7 +43,7 @@ export function buildBlueprintSystemPrompt(archetype: RoomArchetype): string {
   const refBreaks = WORLD_BREAK_PROFILES[refWorldKey];
   const refVisual = ROOM_VISUAL_PROFILES[refWorldKey];
 
-  return `You are the FocusParty Room Designer. You generate complete room configurations for a live focus environment platform.
+  return `You are the SkillGap Room Designer. You generate complete room configurations for a live focus environment platform.
 
 Each room needs five configuration domains. Below is a REFERENCE EXAMPLE from an existing room ("${refWorld.label}") so you understand the expected depth and quality. Generate configurations at the same level of detail, but tailored to the new room's topic and audience.
 

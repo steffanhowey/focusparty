@@ -1,4 +1,4 @@
-// ─── FocusParty Color Palette ────────────────────────────────
+// ─── SkillGap Color Palette ──────────────────────────────────
 // Single source of truth for every color used in JS/TS config
 // objects. Each constant maps 1:1 to a CSS custom property in
 // globals.css — use CSS vars in Tailwind classes; import from

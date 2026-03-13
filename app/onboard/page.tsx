@@ -196,7 +196,7 @@ function OnboardContent() {
     createParty(
       {
         creator_id: user.id,
-        name: `${displayName}'s Party`,
+        name: `${displayName}'s Room`,
         character: "ember",
         planned_duration_min: 25,
         max_participants: 3,
@@ -385,7 +385,7 @@ function OnboardContent() {
               You&apos;re all set!
             </h1>
             <p className="mt-2 text-[var(--color-text-secondary)]">
-              Start your first focus session and see what FocusParty is all about.
+              Start your first focus session and see what SkillGap is all about.
             </p>
 
             <div className="mt-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6 text-center">
@@ -408,7 +408,7 @@ function OnboardContent() {
                 className="mt-2 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
               >
                 <PartyPopper size={20} strokeWidth={1.8} />
-                {saving ? "Joining..." : "Join a party"}
+                {saving ? "Joining..." : "Start focusing"}
               </button>
             </div>
           </>

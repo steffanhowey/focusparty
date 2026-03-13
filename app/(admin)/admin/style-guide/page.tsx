@@ -55,7 +55,7 @@ export default function StyleGuidePage() {
         Button Style Guide
       </h1>
       <p className="mb-8 text-sm text-[var(--color-text-secondary)]">
-        All interactive button components in the FocusParty design system.
+        All interactive button components in the SkillGap design system.
       </p>
 
       {/* ── Button ── */}

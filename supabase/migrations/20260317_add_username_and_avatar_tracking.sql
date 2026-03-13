@@ -34,7 +34,7 @@ VALUES
   ('kai'), ('rio'), ('dev'), ('sage'), ('ellis'), ('wren'),
   ('ava'), ('noor'), ('quinn'), ('lux'), ('sol'), ('fern'),
   -- System / brand reserves
-  ('admin'), ('focusparty'), ('system'), ('host'), ('support'),
+  ('admin'), ('focusparty'), ('skillgap'), ('system'), ('host'), ('support'),
   ('help'), ('null'), ('undefined'), ('anonymous'), ('guest'),
   ('moderator'), ('mod'), ('bot'), ('official'), ('staff')
 ON CONFLICT DO NOTHING;

@@ -1,4 +1,4 @@
-# FocusParty
+# SkillGap
 
 Your AI co-working partner. Always there. Never no-shows.
 
@@ -15,14 +15,16 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **app/(marketing)** — Landing page (public)
 - **app/(auth)** — Login, signup, OAuth callback
-- **app/(hub)** — Dashboard (sidebar + Home, Progress, Party, Settings)
+- **app/(hub)** — Dashboard (sidebar + Home, Rooms, Tasks, Progress, Settings)
 - **app/session** — Fullscreen focus session (state machine)
-- **app/join/[id]** — Focus Party invite entry
+- **app/join/[id]** — Room invite entry
 - **app/onboard** — First-time onboarding
 
 ## Tech
 
-- Next.js 15 (App Router)
+- Next.js 16 (App Router)
 - TypeScript
 - Tailwind CSS v4
-- Montserrat (design system font)
+- Inter (design system font)
+- Supabase (auth, database, realtime, storage)
+- OpenAI (gpt-4o-mini, gpt-image-1)

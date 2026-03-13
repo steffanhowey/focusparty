@@ -109,7 +109,7 @@ export function ProfileSettings() {
       <div>
         <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Profile</h2>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          Manage your identity across FocusParty.
+          Manage your identity across SkillGap.
         </p>
       </div>
 

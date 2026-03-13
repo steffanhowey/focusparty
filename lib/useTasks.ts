@@ -12,9 +12,11 @@ import {
   reorderTasks as reorderTasksApi,
 } from "./tasks";
 
-const MIGRATION_KEY = "focusparty-tasks-migrated";
+const MIGRATION_KEY = "skillgap-tasks-migrated";
+const OLD_MIGRATION_KEY = "focusparty-tasks-migrated";
 const OLD_TASKS_KEY = "focusparty-tasks";
-const ACTIVE_TASK_KEY = "focusparty-active-task";
+const ACTIVE_TASK_KEY = "skillgap-active-task";
+const OLD_ACTIVE_TASK_KEY = "focusparty-active-task";
 
 /* ─── localStorage → Supabase migration ─────────────────────── */
 
@@ -28,7 +30,7 @@ interface OldTask {
 
 async function migrateLocalStorageTasks(userId: string) {
   if (typeof window === "undefined") return;
-  if (localStorage.getItem(MIGRATION_KEY)) return;
+  if (localStorage.getItem(MIGRATION_KEY) || localStorage.getItem(OLD_MIGRATION_KEY)) return;
 
   try {
     const raw = localStorage.getItem(OLD_TASKS_KEY);
@@ -56,6 +58,7 @@ async function migrateLocalStorageTasks(userId: string) {
     localStorage.setItem(MIGRATION_KEY, "true");
     localStorage.removeItem(OLD_TASKS_KEY);
     localStorage.removeItem(ACTIVE_TASK_KEY);
+    localStorage.removeItem(OLD_ACTIVE_TASK_KEY);
   } catch {
     // Fail gracefully — new tasks still work
     console.warn("Task migration from localStorage failed");

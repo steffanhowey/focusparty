@@ -24,7 +24,7 @@ export async function generateMetadata({
     .single();
 
   if (!party) {
-    return { title: "Party not found — FocusParty" };
+    return { title: "Party not found — SkillGap" };
   }
 
   let inviterName: string | null = null;
@@ -40,8 +40,8 @@ export async function generateMetadata({
   const character = CHARACTERS[party.character as CharacterId];
   const title = inviterName
     ? `${inviterName} invited you to "${party.name}"`
-    : `Join "${party.name}" on FocusParty`;
-  const description = `${party.name} — a focus sprint with ${character.name}. Join now on FocusParty.`;
+    : `Join "${party.name}" on SkillGap`;
+  const description = `${party.name} — a focus sprint with ${character.name}. Join now on SkillGap.`;
 
   return {
     title,

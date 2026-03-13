@@ -13,7 +13,8 @@ export interface SessionSettings {
   selectedSpeakerId: string;
 }
 
-const STORAGE_KEY = "focusparty-settings";
+const STORAGE_KEY = "skillgap-settings";
+const OLD_STORAGE_KEY = "focusparty-settings";
 
 const DEFAULTS: SessionSettings = {
   character: "ember",
@@ -28,7 +29,11 @@ const DEFAULTS: SessionSettings = {
 function loadSettings(): SessionSettings {
   if (typeof window === "undefined") return DEFAULTS;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    let raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      raw = localStorage.getItem(OLD_STORAGE_KEY);
+      if (raw) localStorage.setItem(STORAGE_KEY, raw); // migrate forward
+    }
     if (!raw) return DEFAULTS;
     return { ...DEFAULTS, ...JSON.parse(raw) };
   } catch {

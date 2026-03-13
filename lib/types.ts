@@ -1,4 +1,4 @@
-// FocusParty core types — aligned with FOCUSPARTY_SHELL_CAPABILITIES.md
+// SkillGap core types
 
 import type { BreakCategory } from "./breakConstants";
 export type { BreakCategory };

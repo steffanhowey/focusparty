@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { CHARACTERS } from "@/lib/constants";
 import type { CharacterId } from "@/lib/types";
 
-export const alt = "FocusParty Invite";
+export const alt = "SkillGap Invite";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -36,7 +36,7 @@ export default async function Image({
             fontFamily: "sans-serif",
           }}
         >
-          <div style={{ fontSize: 32, color: "#888888" }}>FocusParty</div>
+          <div style={{ fontSize: 32, color: "#888888" }}>SkillGap</div>
           <div style={{ fontSize: 48, color: "#ffffff", marginTop: 20, fontWeight: 700 }}>
             Party not found
           </div>
@@ -74,7 +74,7 @@ export default async function Image({
       >
         {/* Brand */}
         <div style={{ fontSize: 24, color: "#888888", marginBottom: 40, letterSpacing: 1 }}>
-          FocusParty
+          SkillGap
         </div>
 
         {/* Party name */}

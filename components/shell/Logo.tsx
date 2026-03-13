@@ -41,7 +41,7 @@ export function Logo({
     >
       <Image
         src={src}
-        alt="FocusParty"
+        alt="SkillGap"
         fill
         className={`object-contain ${variant === "small" ? "object-center" : "object-left"}`}
         sizes={`(max-width: 240px) 120px, ${resolvedMaxWidth}px`}
@@ -54,7 +54,7 @@ export function Logo({
       <Link
         href={href}
         className="inline-flex items-center"
-        aria-label="FocusParty Home"
+        aria-label="SkillGap Home"
       >
         {image}
       </Link>

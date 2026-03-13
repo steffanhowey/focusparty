@@ -1,4 +1,4 @@
-# FocusParty Capability Audit
+# SkillGap Capability Audit
 
 > Architectural reality map — what exists, what's reusable, what's missing, what's wrong-shaped.
 > Generated 2026-03-08
@@ -8,7 +8,7 @@
 ## 1. Summary
 
 ### What the app already has
-FocusParty is a functional co-working focus session platform with:
+SkillGap is a functional co-working focus session platform with:
 - **Auth + profiles** — Magic link OTP, auto-profile creation, 3-step onboarding
 - **Party system** — Create/join rooms, invite links with OG metadata, participant tracking
 - **Full session engine** — Setup → breathing → sprint → review → break phases, timer, webcam, screen share
@@ -22,7 +22,7 @@ FocusParty is a functional co-working focus session platform with:
 2. **App shell** — HubShell + Sidebar + client-side nav is production quality, responsive, and extensible
 3. **Task domain** — Full CRUD with realtime, optimistic updates, drag-and-drop — maps directly to goals/sprints
 4. **Auth + middleware** — PKCE flow, onboarding redirect, session refresh — complete and correct
-5. **Session flow architecture** — Phase-based state machine (setup→breathing→sprint→review→break) is the exact pattern FocusParty needs
+5. **Session flow architecture** — Phase-based state machine (setup→breathing→sprint→review→break) is the exact pattern SkillGap needs
 
 ### Biggest missing primitives
 1. **AI orchestration** — Zero LLM infrastructure. No edge functions, no providers, no structured output, no prompts
@@ -124,7 +124,7 @@ FocusParty is a functional co-working focus session platform with:
 ## 3. Reuse Matrix
 
 ### Keep As-Is
-| Capability | Current Implementation | FocusParty Mapping |
+| Capability | Current Implementation | SkillGap Mapping |
 |------------|----------------------|-------------------|
 | Auth / magic link | Supabase OTP + PKCE via AuthProvider | Same — no changes needed |
 | Middleware | JWT refresh, onboarding redirect, route protection | Same — add new protected routes as needed |
@@ -135,19 +135,19 @@ FocusParty is a functional co-working focus session platform with:
 | Spacing / radius / shadow / z-index tokens | Complete scales | Same |
 
 ### Extend
-| Capability | Current Implementation | FocusParty Mapping | What to Add |
+| Capability | Current Implementation | SkillGap Mapping | What to Add |
 |------------|----------------------|-------------------|------------|
 | Character themes | 3 personas (Ember/Moss/Byte) with color territories | World/territory system | Add world metadata, ambient config, host personality per character |
-| App shell (HubShell) | Sidebar + header + lazy tabs | FocusParty hub shell | Add room/world route, adapt header for session context |
+| App shell (HubShell) | Sidebar + header + lazy tabs | SkillGap hub shell | Add room/world route, adapt header for session context |
 | Task system | Full CRUD kanban with realtime | Goal/sprint system | Add session linkage, sprint tracking fields, completion attribution |
-| Party system | Create/join rooms, invite links, participants | FocusParty room instances | Add room state machine, host config, world assignment |
+| Party system | Create/join rooms, invite links, participants | SkillGap room instances | Add room state machine, host config, world assignment |
 | Realtime channels | 3 postgres_changes channels | Room-scoped realtime | Add Presence for "who's here", Broadcast for host messages |
 | Session phases | setup→breathing→sprint→review→break | Sprint engine | Persist sessions to DB, add AI host triggers per phase |
 | fp_profiles | Basic profile fields | Rich participant profiles | Add generated handles, avatar pipeline, stats fields |
 | Onboarding | 3-step (name→avatar→start) | Extended onboarding | Add character preference, initial world selection |
 
 ### Refactor
-| Capability | Current Implementation | Problem | FocusParty Target |
+| Capability | Current Implementation | Problem | SkillGap Target |
 |------------|----------------------|---------|------------------|
 | Session state | Ephemeral React state in SessionPage | Refresh kills everything | Persistent session records in fp_sessions table |
 | Chat system | Client-side useState only | No persistence, no AI | Persistent messages table + AI host message pipeline |
@@ -155,7 +155,7 @@ FocusParty is a functional co-working focus session platform with:
 | Event system | Single DOM CustomEvent (fp:create-task) | Not scalable | Proper event bus or Supabase-based activity events |
 
 ### Replace
-| Capability | Current Implementation | Why Replace | FocusParty Target |
+| Capability | Current Implementation | Why Replace | SkillGap Target |
 |------------|----------------------|------------|------------------|
 | — | — | — | — |
 
@@ -270,7 +270,7 @@ FocusParty is a functional co-working focus session platform with:
 5. **Add Broadcast channel** — host messages pushed to all room participants in real-time
 
 ### Phase 3: Social & Momentum (2-3 weeks)
-> Build the social proof engine that makes FocusParty sticky.
+> Build the social proof engine that makes SkillGap sticky.
 
 1. **Momentum feed UI** — chronological activity stream in room view
 2. **Feed events from all participants** — see when others complete sprints, finish tasks
@@ -309,4 +309,4 @@ FocusParty is a functional co-working focus session platform with:
 
 ---
 
-*This audit is the bridge between present reality and FocusParty's target architecture. No greenfield rebuild needed — this is a delta plan.*
+*This audit is the bridge between present reality and SkillGap's target architecture. No greenfield rebuild needed — this is a delta plan.*

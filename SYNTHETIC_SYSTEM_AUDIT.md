@@ -1,6 +1,6 @@
-# FocusParty Synthetic User System — Complete Technical Audit
+# SkillGap Synthetic User System — Complete Technical Audit
 
-> Generated March 2026. This document covers every aspect of how synthetic (AI-simulated) participants work in FocusParty — from the data model to the tick engine, AI message generation, visual display, and all integration points.
+> Generated March 2026. This document covers every aspect of how synthetic (AI-simulated) participants work in SkillGap — from the data model to the tick engine, AI message generation, visual display, and all integration points.
 
 ---
 

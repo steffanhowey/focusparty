@@ -13,7 +13,7 @@ export function EmptyState() {
         />
       </div>
       <p className="max-w-xs text-sm text-[var(--color-text-secondary)]">
-        Create a focus party and invite friends to work together with an AI host.
+        Create a room and invite friends to work together with an AI host.
       </p>
     </div>
   );

@@ -12,7 +12,8 @@ import {
 import type { CharacterId } from "@/lib/types";
 import { CHARACTERS } from "@/lib/constants";
 
-const COLOR_MODE_KEY = "focusparty-color-mode";
+const COLOR_MODE_KEY = "skillgap-color-mode";
+const OLD_COLOR_MODE_KEY = "focusparty-color-mode";
 export type ColorMode = "dark" | "light";
 
 interface ThemeContextValue {
@@ -37,7 +38,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Apply stored color mode on client after mount so SSR and first client render match.
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(COLOR_MODE_KEY);
+      let stored = localStorage.getItem(COLOR_MODE_KEY);
+      if (!stored) {
+        stored = localStorage.getItem(OLD_COLOR_MODE_KEY);
+        if (stored) localStorage.setItem(COLOR_MODE_KEY, stored); // migrate forward
+      }
       if (stored === "light" || stored === "dark") setColorModeState(stored);
     } catch {
       // ignore
