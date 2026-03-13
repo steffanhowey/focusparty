@@ -15,6 +15,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { Target, Plus } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { useGoals } from "@/lib/useGoals";
 import { useTasks } from "@/lib/useTasks";
 import { useProjects } from "@/lib/useProjects";
@@ -91,7 +92,7 @@ function MobileGoalBoard({
   return (
     <div className="flex flex-1 flex-col">
       {/* Tab bar */}
-      <div className="flex gap-1 rounded-[var(--radius-md)] bg-[var(--color-bg-secondary)] p-1">
+      <div className="flex gap-1 rounded-md bg-[var(--color-bg-secondary)] p-1">
         {GOAL_COLUMNS.map((status) => {
           const cfg = GOAL_STATUS_CONFIG[status];
           const count = goalsByStatus[status].length;
@@ -101,7 +102,7 @@ function MobileGoalBoard({
               key={status}
               type="button"
               onClick={() => setActiveStatus(status)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-sm)] py-2.5 text-xs font-medium transition-colors ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-sm py-2.5 text-xs font-medium transition-colors ${
                 isActive
                   ? "bg-[var(--color-bg-elevated)] shadow-sm"
                   : "text-[var(--color-text-tertiary)]"
@@ -110,7 +111,7 @@ function MobileGoalBoard({
             >
               {cfg.label}
               <span
-                className={`text-[10px] ${
+                className={`text-2xs ${
                   isActive
                     ? "text-[var(--color-text-secondary)]"
                     : "text-[var(--color-text-tertiary)]"
@@ -177,14 +178,14 @@ function MobileGoalBoard({
                 />
               </div>
             ) : (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setShowAddInput(true)}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+                leftIcon={<Plus size={14} strokeWidth={1.5} />}
               >
-                <Plus size={14} strokeWidth={1.5} />
                 New goal
-              </button>
+              </Button>
             )}
           </>
         )}
@@ -440,13 +441,9 @@ export function GoalBoard() {
           <p className="mb-6 max-w-xs text-sm text-[var(--color-text-tertiary)]">
             Create a goal to organize your tasks around meaningful outcomes.
           </p>
-          <button
-            type="button"
-            onClick={() => setShowCreateModal(true)}
-            className="cursor-pointer rounded-full bg-[var(--color-accent-primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-85 hover:scale-[1.02]"
-          >
+          <Button variant="cta" size="sm" onClick={() => setShowCreateModal(true)}>
             Create your first goal
-          </button>
+          </Button>
         </div>
         <CreateGoalModal
           isOpen={showCreateModal}
@@ -537,7 +534,7 @@ export function GoalBoard() {
 
         <DragOverlay dropAnimation={null}>
           {draggedGoal ? (
-            <div className="w-[280px] rounded-[var(--radius-sm)] border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 shadow-lg">
+            <div className="w-[280px] rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 shadow-lg">
               <p className="text-sm text-[var(--color-text-primary)]">
                 {draggedGoal.title}
               </p>

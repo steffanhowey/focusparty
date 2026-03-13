@@ -10,9 +10,9 @@ import type { ActivityFeedItem, CommitmentType } from "@/lib/types";
 // ─── Commitment type display ────────────────────────────────
 
 const COMMITMENT_CONFIG: Record<CommitmentType, { icon: typeof User; label: string; color: string }> = {
-  personal: { icon: User, label: "Personal", color: "#888888" },
-  social: { icon: Users, label: "Social", color: "#5CC2EC" },
-  locked: { icon: Lock, label: "Locked In", color: "#F59E0B" },
+  personal: { icon: User, label: "Personal", color: "var(--color-navy-500)" },
+  social: { icon: Users, label: "Social", color: "var(--color-navy-500)" },
+  locked: { icon: Lock, label: "Locked In", color: "var(--color-navy-500)" },
 };
 
 // ─── Host personality descriptions ──────────────────────────
@@ -65,7 +65,7 @@ function SprintCountdown({
   return (
     <div className="mb-3 rounded-lg bg-white/[0.05] px-3 py-2">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+        <span className="text-2xs font-semibold uppercase tracking-wider text-white/40">
           Sprint
         </span>
         <span className="text-xs tabular-nums text-white/60">
@@ -123,7 +123,7 @@ function HighFiveButton({
         background: sent
           ? "rgba(91,198,130,0.15)"
           : "rgba(245,158,11,0.15)",
-        color: sent ? "#5BC682" : "#F5C54E",
+        color: sent ? "var(--color-green-700)" : "var(--color-gold-700)",
       }}
     >
       {sent ? (
@@ -230,8 +230,7 @@ export function ParticipantCard({
         background: "rgba(10,10,10,0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        boxShadow:
-          "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow: "var(--shadow-float)",
       }}
       role="dialog"
       aria-label={`${participant.displayName} profile`}
@@ -285,7 +284,7 @@ export function ParticipantCard({
 
           {/* Host label */}
           {participant.participantType === "host" && (
-            <span className="text-xs" style={{ color: "#8C55EF" }}>
+            <span className="text-xs" style={{ color: "var(--color-violet-700)" }}>
               Room Host
             </span>
           )}
@@ -296,8 +295,8 @@ export function ParticipantCard({
       {participant.status === "on_break" && participant.breakContentTitle ? (
         <div className="mb-3 rounded-lg bg-white/[0.05] px-3 py-2.5">
           <div className="mb-2 flex items-center gap-1.5">
-            <Coffee size={10} strokeWidth={2} style={{ color: "#8C55EF" }} />
-            <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#8C55EF" }}>
+            <Coffee size={10} strokeWidth={2} style={{ color: "var(--color-violet-700)" }} />
+            <span className="text-2xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-violet-700)" }}>
               On Break
             </span>
           </div>
@@ -323,7 +322,7 @@ export function ParticipantCard({
               className="mt-2.5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:brightness-110"
               style={{
                 background: "rgba(140, 85, 239, 0.15)",
-                color: "#8C55EF",
+                color: "var(--color-violet-700)",
               }}
             >
               <Coffee size={15} strokeWidth={2} />
@@ -343,7 +342,7 @@ export function ParticipantCard({
               <div className="mb-3 rounded-lg bg-white/[0.05] px-3 py-2">
                 {goalText && (
                   <>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                    <span className="text-2xs font-semibold uppercase tracking-wider text-white/40">
                       Working on
                     </span>
                     <p className="mt-0.5 text-xs leading-relaxed text-white/70">
@@ -359,7 +358,7 @@ export function ParticipantCard({
                       className={`flex items-center gap-1.5${goalText ? " mt-2 border-t border-white/[0.06] pt-2" : ""}`}
                     >
                       <Icon size={11} strokeWidth={1.5} style={{ color: cfg.color }} />
-                      <span className="text-[10px] font-medium" style={{ color: cfg.color }}>
+                      <span className="text-2xs font-medium" style={{ color: cfg.color }}>
                         {cfg.label}
                       </span>
                     </div>
@@ -395,7 +394,7 @@ export function ParticipantCard({
                 <div className="text-lg font-bold text-white">
                   {stats.sprintsCompleted}
                 </div>
-                <div className="text-[10px] text-white/40">Sprints</div>
+                <div className="text-2xs text-white/40">Sprints</div>
               </div>
             )}
             {participant.participantType === "real" &&
@@ -404,7 +403,7 @@ export function ParticipantCard({
                   <div className="text-lg font-bold text-white">
                     {stats.tasksCompleted}
                   </div>
-                  <div className="text-[10px] text-white/40">Tasks</div>
+                  <div className="text-2xs text-white/40">Tasks</div>
                 </div>
               )}
           </div>

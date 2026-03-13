@@ -29,7 +29,7 @@ export function ResumeSessionCard({
 
   return (
     <div
-      className="relative overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)]"
+      className="relative overflow-hidden rounded-md border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)]"
     >
       {/* Character-colored left stripe */}
       <div
@@ -43,7 +43,7 @@ export function ResumeSessionCard({
             Active session in progress
           </p>
           <span
-            className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
+            className="rounded-full px-2 py-0.5 text-2xs font-semibold uppercase"
             style={{
               background: `${statusCfg.color}20`,
               color: statusCfg.color,

@@ -14,7 +14,7 @@ export function PanelHeader({ title, subtitle, onClose }: PanelHeaderProps) {
       <div className="min-w-0">
         <span className="text-base font-semibold text-white">{title}</span>
         {subtitle && (
-          <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">{subtitle}</p>
+          <p className="mt-0.5 text-2xs text-[var(--color-text-tertiary)]">{subtitle}</p>
         )}
       </div>
       <button

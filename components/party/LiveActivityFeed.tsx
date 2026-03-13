@@ -73,7 +73,7 @@ export function LiveActivityFeed({
                 <p className="text-sm leading-snug text-[var(--color-text-secondary)]">
                   {event.displayText}
                 </p>
-                <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">
+                <p className="mt-0.5 text-2xs text-[var(--color-text-tertiary)]">
                   {relativeTime(event.created_at)}
                 </p>
               </div>

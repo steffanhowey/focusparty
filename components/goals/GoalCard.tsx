@@ -96,7 +96,7 @@ export function GoalCard({
                     width: `${progress.percent}%`,
                     background:
                       progress.percent === 100
-                        ? "#5BC682"
+                        ? "var(--color-green-700)"
                         : "var(--color-accent-primary)",
                   }}
                 />

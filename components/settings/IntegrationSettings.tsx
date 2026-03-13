@@ -10,6 +10,7 @@ import {
   ToggleLeft,
   ToggleRight,
 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { useConnectedAccounts } from "@/lib/integrations/useConnectedAccounts";
 import { PROVIDERS, PROVIDER_ORDER } from "@/lib/integrations/providers";
 import type {
@@ -123,7 +124,7 @@ function ScopePicker({
           {scope.enabled ? (
             <ToggleRight
               size={18}
-              className="shrink-0 text-[#5BC682]"
+              className="shrink-0 text-[var(--color-green-700)]"
             />
           ) : (
             <ToggleLeft
@@ -175,7 +176,7 @@ function ProviderCard({
 
   return (
     <div
-      className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-5"
+      className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-5"
       style={{
         borderColor: isConnected
           ? `${provider.color}33`
@@ -202,7 +203,7 @@ function ProviderCard({
                 <span className="flex items-center gap-1">
                   <span
                     className="inline-block h-1.5 w-1.5 rounded-full"
-                    style={{ background: "#5BC682" }}
+                    style={{ background: "var(--color-green-700)" }}
                   />
                   {displayLabel ?? "Connected"}
                 </span>
@@ -215,43 +216,33 @@ function ProviderCard({
 
         <div className="flex items-center gap-2">
           {isConnected && provider.hasScopeSelection && (
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="xs"
               onClick={handleExpand}
-              className="flex h-9 cursor-pointer items-center gap-1 rounded-full border border-[var(--color-border-default)] px-3 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-active)]"
+              rightIcon={expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             >
               Scopes
-              {expanded ? (
-                <ChevronUp size={14} />
-              ) : (
-                <ChevronDown size={14} />
-              )}
-            </button>
+            </Button>
           )}
 
           {isConnected ? (
-            <button
-              type="button"
-              onClick={onDisconnect}
-              className="flex h-9 cursor-pointer items-center rounded-full border border-[var(--color-border-default)] px-4 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[#EF5555]/40 hover:text-[#EF5555]"
-            >
+            <Button variant="danger" size="xs" onClick={onDisconnect}>
               Disconnect
-            </button>
+            </Button>
           ) : (
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="xs"
               onClick={onConnect}
               disabled={connecting}
-              className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 text-xs font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+              loading={connecting}
+              leftIcon={!connecting ? <ExternalLink size={14} /> : undefined}
+              className="font-semibold"
               style={{ background: provider.color }}
             >
-              {connecting ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <ExternalLink size={14} />
-              )}
               Connect
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -356,7 +347,7 @@ export function IntegrationSettings() {
                 ? "rgba(91, 198, 130, 0.12)"
                 : "rgba(239, 85, 85, 0.12)",
             color:
-              statusMessage.type === "success" ? "#5BC682" : "#EF5555",
+              statusMessage.type === "success" ? "var(--color-green-700)" : "var(--color-red-700)",
           }}
         >
           {statusMessage.type === "success" ? (

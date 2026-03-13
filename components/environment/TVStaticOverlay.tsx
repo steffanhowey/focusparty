@@ -288,7 +288,7 @@ export function TVStaticOverlay({
         <div className="relative z-10 rounded-lg px-4 py-2 text-center"
           style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
         >
-          <p className="text-[10px] uppercase tracking-wider text-white/50">
+          <p className="text-2xs uppercase tracking-wider text-white/50">
             Next up
           </p>
           <p className="mt-0.5 max-w-[240px] text-xs font-medium text-white/90">

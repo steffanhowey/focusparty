@@ -107,7 +107,7 @@ export function FloatingNotes({
             ? `translate(${br.left + br.width / 2 - fr.left - fr.width / 2}px, ${br.top + br.height / 2 - fr.top - fr.height / 2}px) scale(0.06)`
             : "scale(1)",
           opacity: isTo ? 0 : 1,
-          borderRadius: isTo ? "9999px" : "12px",
+          borderRadius: isTo ? "9999px" : "var(--radius-md)",
           overflow: "hidden",
           pointerEvents: "none",
           transition: isTo
@@ -122,8 +122,7 @@ export function FloatingNotes({
             background: "rgba(10,10,10,0.65)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
-            boxShadow:
-              "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+            boxShadow: "var(--shadow-float)",
           }}
         />
       </div>
@@ -148,8 +147,7 @@ export function FloatingNotes({
           background: "rgba(10,10,10,0.65)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
-          boxShadow:
-            "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+          boxShadow: "var(--shadow-float)",
         }}
       >
         {/* Header — drag handle */}
@@ -174,15 +172,14 @@ export function FloatingNotes({
             onBlur={onBlur}
             onPointerDown={handlePointerDown}
             placeholder="Jot something down…"
-            className="h-full w-full resize-none bg-transparent text-[13px] leading-relaxed text-white/90 outline-none placeholder:text-white/25"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+            className="h-full w-full resize-none bg-transparent text-sm leading-relaxed text-white/90 outline-none placeholder:text-white/25"
             spellCheck={false}
           />
         </div>
 
         {/* Footer — save indicator */}
         <div className="flex items-center justify-end px-4 pb-3 md:px-6">
-          <span className="text-[11px] text-white/30">
+          <span className="text-2xs text-white/30">
             {isSaving ? "Saving…" : text.length > 0 ? "Saved" : ""}
           </span>
         </div>

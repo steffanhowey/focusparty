@@ -30,7 +30,7 @@ export const SplitScreen = memo(function SplitScreen({
         className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-subtle)]"
         style={{
           background: c.roomBg,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+          boxShadow: "var(--shadow-float)",
         }}
       >
         {rightPanel ?? (
@@ -65,13 +65,13 @@ export const SplitScreen = memo(function SplitScreen({
           background: "rgba(10,10,10,0.65)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+          boxShadow: "var(--shadow-float)",
         }}
       >
         {screenShareStream ? (
           <>
             <ScreenSharePreview stream={screenShareStream} />
-            <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-[var(--color-coral-700)]/80 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+            <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-[var(--color-coral-700)]/80 px-2 py-0.5 text-2xs font-medium text-white backdrop-blur-sm">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
               Screen
             </div>
@@ -88,7 +88,7 @@ export const SplitScreen = memo(function SplitScreen({
               >
                 S
               </div>
-              <span className="text-[10px]">Camera preview</span>
+              <span className="text-2xs">Camera preview</span>
             </div>
           )
         )}

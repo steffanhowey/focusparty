@@ -179,8 +179,7 @@ export function GoalDetailModal({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add a description..."
             rows={2}
-            className="w-full resize-none rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2.5 text-sm text-white placeholder:text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+            className="w-full resize-none rounded-md border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2.5 text-sm text-white placeholder:text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
           />
         </div>
 
@@ -202,7 +201,7 @@ export function GoalDetailModal({
           <label className="mb-1.5 block text-xs text-[var(--color-text-tertiary)]">
             Tasks
           </label>
-          <div className="max-h-48 overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-white/[0.02] px-1 py-1">
+          <div className="max-h-48 overflow-y-auto rounded-md border border-[var(--color-border-default)] bg-white/[0.02] px-1 py-1">
             <GoalTaskList
               tasks={tasks}
               goalId={goal.id}

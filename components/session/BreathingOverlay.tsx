@@ -154,13 +154,13 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
       {/* Goal text — reinforces intention, fades during launch */}
       {goalText && (
         <p
-          className="absolute top-16 left-1/2 -translate-x-1/2 text-center text-sm text-[#888888] transition-opacity duration-300"
+          className="absolute top-16 left-1/2 -translate-x-1/2 text-center text-sm text-[var(--color-navy-500)] transition-opacity duration-300"
           style={{
             animation: "fp-breathe-fade-in 0.8s ease 0.3s both",
             opacity: launching ? 0 : undefined,
           }}
         >
-          Focusing on: <span className="text-[#c0c0c0]">{goalText}</span>
+          Focusing on: <span className="text-[var(--color-navy-400)]">{goalText}</span>
         </p>
       )}
 
@@ -226,9 +226,8 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
       >
         <p
           key={`${phase}-${breath}`}
-          className={`text-xl font-semibold ${isDone ? "text-white" : "text-[#c0c0c0]"}`}
+          className={`text-xl font-semibold ${isDone ? "text-white" : "text-[var(--color-navy-400)]"}`}
           style={{
-            fontFamily: "var(--font-montserrat), sans-serif",
             animation: isDone
               ? "fp-breathe-fade-in 0.5s ease forwards"
               : `fp-breathe-text-enter ${isInhale ? `${INHALE_MS}ms` : `${EXHALE_MS}ms`} ease forwards`,
@@ -250,7 +249,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
                   width: 8,
                   height: 8,
                   background: completed
-                    ? "#535aee"
+                    ? "var(--color-purple-700)"
                     : active
                       ? "rgba(83, 90, 238, 0.45)"
                       : "rgba(255, 255, 255, 0.1)",
@@ -269,9 +268,8 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
             type="button"
             onClick={handleLetsGo}
             data-autofocus
-            className="mt-4 cursor-pointer rounded-full bg-[#535aee] px-10 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#4636d3] hover:shadow-[0_0_24px_rgba(83,90,238,0.4)]"
+            className="mt-4 cursor-pointer rounded-full bg-[var(--color-purple-700)] px-10 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-[var(--color-accent-secondary)] hover:shadow-[0_0_24px_rgba(83,90,238,0.4)]"
             style={{
-              fontFamily: "var(--font-montserrat), sans-serif",
               animation: "fp-breathe-fade-in 0.5s ease 0.15s both",
             }}
           >
@@ -285,7 +283,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
         <button
           type="button"
           onClick={handleSkip}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer text-xs text-[#555] transition-colors hover:text-[#888888]"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer text-xs text-[#555] transition-colors hover:text-[var(--color-navy-500)]"
         >
           Skip
         </button>

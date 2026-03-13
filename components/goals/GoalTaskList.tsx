@@ -67,7 +67,7 @@ export function GoalTaskList({
           <button
             type="button"
             onClick={() => onCompleteTask(task.id)}
-            className="flex h-4.5 w-4.5 shrink-0 cursor-pointer items-center justify-center rounded-[5px] border border-white/20 transition-colors hover:border-white/40 hover:bg-white/10"
+            className="flex h-4.5 w-4.5 shrink-0 cursor-pointer items-center justify-center rounded-xs border border-white/20 transition-colors hover:border-white/40 hover:bg-white/10"
             aria-label="Complete task"
           >
             <Check size={10} strokeWidth={2.5} className="opacity-0 group-hover:opacity-40" />
@@ -120,7 +120,7 @@ export function GoalTaskList({
               <button
                 type="button"
                 onClick={() => onUncompleteTask(task.id)}
-                className="flex h-4.5 w-4.5 shrink-0 cursor-pointer items-center justify-center rounded-[5px] border border-white/20 bg-white/10"
+                className="flex h-4.5 w-4.5 shrink-0 cursor-pointer items-center justify-center rounded-xs border border-white/20 bg-white/10"
                 aria-label="Uncomplete task"
               >
                 <Check size={10} strokeWidth={2.5} className="text-white/50" />

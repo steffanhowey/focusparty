@@ -125,11 +125,11 @@ export function SettingsView() {
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            { key: "default", label: "Default", color: "#7c5cfc" },
-            { key: "vibe-coding", label: "Vibe Coding", color: "#5BC682" },
-            { key: "writer-room", label: "Writer Room", color: "#5CC2EC" },
-            { key: "yc-build", label: "YC Build", color: "#F5C54E" },
-            { key: "gentle-start", label: "Gentle Start", color: "#ADE2C0" },
+            { key: "default", label: "Default", color: "var(--color-indigo-700)" },
+            { key: "vibe-coding", label: "Vibe Coding", color: "var(--color-green-700)" },
+            { key: "writer-room", label: "Writer Room", color: "var(--color-cyan-700)" },
+            { key: "yc-build", label: "YC Build", color: "var(--color-gold-700)" },
+            { key: "gentle-start", label: "Gentle Start", color: "var(--color-green-500)" },
           ].map((world) => (
             <div
               key={world.key}

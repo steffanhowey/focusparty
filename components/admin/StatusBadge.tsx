@@ -1,15 +1,24 @@
 "use client";
 
+import {
+  STATUS_TODO,
+  STATUS_IN_PROGRESS,
+  STATUS_DONE,
+  NAVY_500,
+  GREEN_700,
+  PRIORITY_MEDIUM,
+} from "@/lib/palette";
+
 const STATUS_COLORS: Record<string, string> = {
-  active: "#5BC682",
-  waiting: "#eab308",
-  completed: "#888888",
-  candidate: "#eab308",
-  approved: "#5BC682",
-  archived: "#888888",
-  todo: "#888888",
-  in_progress: "#7c5cfc",
-  done: "#5BC682",
+  active: GREEN_700,
+  waiting: PRIORITY_MEDIUM,
+  completed: NAVY_500,
+  candidate: PRIORITY_MEDIUM,
+  approved: GREEN_700,
+  archived: NAVY_500,
+  todo: STATUS_TODO,
+  in_progress: STATUS_IN_PROGRESS,
+  done: STATUS_DONE,
 };
 
 interface StatusBadgeProps {
@@ -18,7 +27,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, label }: StatusBadgeProps) {
-  const color = STATUS_COLORS[status] ?? "#888888";
+  const color = STATUS_COLORS[status] ?? NAVY_500;
   const displayLabel = label ?? status.replace(/_/g, " ");
 
   return (

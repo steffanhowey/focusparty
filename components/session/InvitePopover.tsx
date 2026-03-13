@@ -86,7 +86,7 @@ export function InvitePopover({
 
   return (
     <div
-      className={`absolute rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl ${
+      className={`absolute rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg ${
         position === "below" ? "top-full mt-3" : "bottom-full mb-3"
       } ${align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"}`}
       style={{
@@ -95,15 +95,14 @@ export function InvitePopover({
         WebkitBackdropFilter: "blur(24px)",
         zIndex: 40,
         minWidth: 280,
-        boxShadow:
-          "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow: "var(--shadow-float)",
       }}
       role="dialog"
       aria-label="Invite to party"
     >
       {inviteCode && joinUrl ? (
         <>
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
             Invite Link
           </p>
           <div className="flex gap-2">

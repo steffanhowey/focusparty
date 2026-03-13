@@ -142,14 +142,14 @@ export function SessionReviewModal({
 
       {/* Modal card */}
       <div
-        className="animate-fp-review-enter relative w-full max-w-[520px] overflow-hidden rounded-[var(--radius-xl)] p-8"
+        className="animate-fp-review-enter relative w-full max-w-[520px] overflow-hidden rounded-xl p-8"
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "rgba(10,10,10,0.94)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: "0 16px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
+          boxShadow: "var(--shadow-xl)",
           "--color-bg-elevated": "#141414",
           "--color-text-primary": "#ffffff",
           "--color-text-secondary": "#c0c0c0",
@@ -164,7 +164,6 @@ export function SessionReviewModal({
           <h2
             id="review-modal-title"
             className="text-3xl font-bold text-white"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             {celebrationText}
           </h2>
@@ -180,12 +179,12 @@ export function SessionReviewModal({
                 onChange={(e) => setWritebackEnabled(e.target.checked)}
                 className="h-4 w-4 rounded accent-[var(--color-accent-primary)]"
               />
-              <span className="flex-1 text-sm text-[#c0c0c0]">
+              <span className="flex-1 text-sm text-[var(--color-navy-400)]">
                 Post progress note to{" "}
                 <span className="capitalize text-white">{linkedResource.provider}</span>
               </span>
               {writebackSending && (
-                <span className="text-xs text-[#888]">Sending...</span>
+                <span className="text-xs text-[var(--color-navy-500)]">Sending...</span>
               )}
             </label>
           </div>

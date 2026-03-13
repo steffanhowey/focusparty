@@ -330,7 +330,6 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
         <div>
           <h2
             className="text-xl font-semibold text-white"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             {party.name}
           </h2>

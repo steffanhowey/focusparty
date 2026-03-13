@@ -67,7 +67,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
           </button>
 
           {/* Text */}
-          <span className="min-w-0 flex-1 text-[13px] leading-snug text-[var(--color-text-secondary)]">
+          <span className="min-w-0 flex-1 text-sm leading-snug text-[var(--color-text-secondary)]">
             {task.text}
           </span>
 
@@ -98,7 +98,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
             <Check size={10} strokeWidth={2.5} className="text-white" />
           </button>
 
-          <span className="min-w-0 flex-1 text-[13px] leading-snug text-[var(--color-text-tertiary)] line-through">
+          <span className="min-w-0 flex-1 text-sm leading-snug text-[var(--color-text-tertiary)] line-through">
             {task.text}
           </span>
 
@@ -140,10 +140,10 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
               if (!newText.trim()) setShowInput(false);
             }}
             placeholder="Add a step..."
-            className="min-w-0 flex-1 bg-transparent text-[13px] text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
+            className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
           />
           {newText.trim() && (
-            <span className="shrink-0 text-[10px] text-[var(--color-text-tertiary)]">
+            <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
               &crarr;
             </span>
           )}
@@ -155,7 +155,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
           className="mt-1 flex items-center gap-2.5 py-1.5 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
         >
           <Plus size={14} strokeWidth={1.5} />
-          <span className="text-[13px]">Add step</span>
+          <span className="text-sm">Add step</span>
         </button>
       )}
     </div>

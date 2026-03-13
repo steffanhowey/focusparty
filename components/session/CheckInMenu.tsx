@@ -74,40 +74,39 @@ export function CheckInMenu({
 
   return (
     <div
-      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl"
+      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
       style={{
         background: "rgba(10,10,10,0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         zIndex: 40,
         minWidth: 240,
-        boxShadow:
-          "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow: "var(--shadow-float)",
       }}
       role="dialog"
       aria-label="Check in"
     >
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+      <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
         Check In
       </p>
 
       <div className="flex flex-col gap-0.5">
         <MenuItem
-          icon={<TrendingUp {...ICON} className="text-[#5BC682]" />}
+          icon={<TrendingUp {...ICON} className="text-[var(--color-text-tertiary)]" />}
           onClick={() => handleQuickAction("progress")}
         >
           Making progress
         </MenuItem>
 
         <MenuItem
-          icon={<Rocket {...ICON} className="text-[#F59E0B]" />}
+          icon={<Rocket {...ICON} className="text-[var(--color-text-tertiary)]" />}
           onClick={() => handleQuickAction("ship")}
         >
           Shipped something
         </MenuItem>
 
         <MenuItem
-          icon={<RotateCcw {...ICON} className="text-[#F5C54E]" />}
+          icon={<RotateCcw {...ICON} className="text-[var(--color-text-tertiary)]" />}
           onClick={() => handleQuickAction("reset")}
         >
           Need a reset
@@ -119,7 +118,7 @@ export function CheckInMenu({
 
       {!showInput ? (
         <MenuItem
-          icon={<MessageSquare {...ICON} className="text-[#5CC2EC]" />}
+          icon={<MessageSquare {...ICON} className="text-[var(--color-text-tertiary)]" />}
           onClick={() => setShowInput(true)}
         >
           Share update

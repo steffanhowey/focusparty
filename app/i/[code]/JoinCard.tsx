@@ -91,7 +91,6 @@ export function JoinCard({
             ) : (
               <h1
                 className="mb-6 text-2xl font-semibold text-white"
-                style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
               >
                 Join party
               </h1>

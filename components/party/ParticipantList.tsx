@@ -28,7 +28,7 @@ export function ParticipantList({
         return (
           <div
             key={p.id}
-            className="flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2"
+            className="flex items-center gap-3 rounded-md px-3 py-2"
           >
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-semibold"
@@ -46,7 +46,7 @@ export function ParticipantList({
               </span>
               {isCreator && (
                 <span
-                  className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
+                  className="ml-2 rounded-full px-2 py-0.5 text-2xs font-semibold uppercase"
                   style={{ background: `${c.primary}25`, color: c.primary }}
                 >
                   Host
@@ -60,7 +60,7 @@ export function ParticipantList({
       {Array.from({ length: emptySlots }).map((_, i) => (
         <div
           key={`empty-${i}`}
-          className="flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2"
+          className="flex items-center gap-3 rounded-md px-3 py-2"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-dashed border-[var(--color-border-default)]">
             <span className="text-xs text-[var(--color-text-tertiary)]">?</span>

@@ -30,7 +30,7 @@ export function FavoritePartiesCard({ parties }: FavoritePartiesCardProps) {
           return (
             <div
               key={p.partyId}
-              className="flex items-center gap-3 rounded-[var(--radius-md)] px-2 py-1.5"
+              className="flex items-center gap-3 rounded-md px-2 py-1.5"
             >
               <div
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"

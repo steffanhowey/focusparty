@@ -21,8 +21,12 @@ import {
 } from "lucide-react";
 import type { ActivityEvent } from "./types";
 import { CATEGORY_FEED_LABEL } from "./breakConstants";
+import { TONE_SUCCESS, TONE_NEUTRAL } from "./palette";
 
 // ─── Tone System ────────────────────────────────────────────
+// Linear-inspired: only two tones.
+//   success (green) — completions, wins, shipped items
+//   neutral (gray)  — everything else (the icon shape carries meaning)
 
 export type EventTone = "neutral" | "success" | "info" | "warning";
 
@@ -32,15 +36,6 @@ export interface RenderedActivityEvent {
   tone: EventTone;
   color: string;
 }
-
-// ─── Color Map (aligned with existing theme tokens) ─────────
-
-const TONE_COLORS: Record<EventTone, string> = {
-  success: "#5BC682",
-  warning: "#F5C54E",
-  info: "#5CC2EC",
-  neutral: "#888888",
-};
 
 // ─── Actor Name Resolution ───────────────────────────────────
 
@@ -73,8 +68,8 @@ const ACTOR_IN_BODY_EVENTS = new Set([
  * Used by both the room activity feed and the personal progress feed
  * to ensure consistent language and iconography.
  *
- * When no explicit actorName is provided, auto-resolves from event.body
- * for event types where body = actor display name (join, leave, sprint, etc.).
+ * Color philosophy: green = win/completion, neutral gray = everything else.
+ * The icon shape communicates the event type; color only signals achievement.
  */
 export function renderActivityEvent(
   event: ActivityEvent,
@@ -91,8 +86,8 @@ export function renderActivityEvent(
       return {
         icon: Play,
         label: `${name} started a focus session`,
-        tone: "warning",
-        color: TONE_COLORS.warning,
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
 
     case "session_completed":
@@ -100,7 +95,7 @@ export function renderActivityEvent(
         icon: Trophy,
         label: `${name} wrapped a focus session`,
         tone: "success",
-        color: TONE_COLORS.success,
+        color: TONE_SUCCESS,
       };
 
     case "sprint_started": {
@@ -109,8 +104,8 @@ export function renderActivityEvent(
       return {
         icon: Zap,
         label: `${name} started sprint${suffix}`,
-        tone: "warning",
-        color: TONE_COLORS.warning,
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
     }
 
@@ -120,7 +115,7 @@ export function renderActivityEvent(
         icon: Zap,
         label: sprintN ? `${name} completed sprint #${sprintN}` : `${name} completed a sprint`,
         tone: "success",
-        color: TONE_COLORS.success,
+        color: TONE_SUCCESS,
       };
     }
 
@@ -132,8 +127,8 @@ export function renderActivityEvent(
       return {
         icon: Target,
         label,
-        tone: "info",
-        color: TONE_COLORS.info,
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
     }
 
@@ -142,7 +137,7 @@ export function renderActivityEvent(
         icon: CheckCircle2,
         label: `${name} completed a goal`,
         tone: "success",
-        color: TONE_COLORS.success,
+        color: TONE_SUCCESS,
       };
 
     case "task_completed": {
@@ -153,7 +148,7 @@ export function renderActivityEvent(
           ? `${name} finished: ${taskTitle.length > 35 ? taskTitle.slice(0, 32) + "..." : taskTitle}`
           : `${name} finished a task`,
         tone: "success",
-        color: TONE_COLORS.success,
+        color: TONE_SUCCESS,
       };
     }
 
@@ -161,8 +156,8 @@ export function renderActivityEvent(
       return {
         icon: MessageSquare,
         label: `${name} submitted a reflection`,
-        tone: "info",
-        color: TONE_COLORS.info,
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
 
     case "participant_joined":
@@ -170,7 +165,7 @@ export function renderActivityEvent(
         icon: UserPlus,
         label: `${name} joined the room`,
         tone: "neutral",
-        color: TONE_COLORS.neutral,
+        color: TONE_NEUTRAL,
       };
 
     case "participant_left":
@@ -178,7 +173,7 @@ export function renderActivityEvent(
         icon: UserMinus,
         label: `${name} left the room`,
         tone: "neutral",
-        color: TONE_COLORS.neutral,
+        color: TONE_NEUTRAL,
       };
 
     case "host_prompt": {
@@ -187,8 +182,8 @@ export function renderActivityEvent(
       return {
         icon: Sparkles,
         label: `${hostName}: ${hostBody}`,
-        tone: "info",
-        color: "#8C55EF",
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
     }
 
@@ -198,8 +193,8 @@ export function renderActivityEvent(
       return {
         icon: Hand,
         label: `${name} high-fived ${targetName}`,
-        tone: "success",
-        color: "#F59E0B",
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
     }
 
@@ -213,8 +208,8 @@ export function renderActivityEvent(
           return {
             icon: TrendingUp,
             label: `${name} is making progress`,
-            tone: "success",
-            color: TONE_COLORS.success,
+            tone: "neutral",
+            color: TONE_NEUTRAL,
           };
         case "ship":
           return {
@@ -223,14 +218,14 @@ export function renderActivityEvent(
               ? `${name} shipped ${taskTitle.length > 30 ? taskTitle.slice(0, 27) + "..." : taskTitle}`
               : `${name} shipped something`,
             tone: "success",
-            color: "#F59E0B",
+            color: TONE_SUCCESS,
           };
         case "reset":
           return {
             icon: RotateCcw,
             label: `${name} is resetting`,
-            tone: "warning",
-            color: TONE_COLORS.warning,
+            tone: "neutral",
+            color: TONE_NEUTRAL,
           };
         case "update":
           return {
@@ -238,15 +233,15 @@ export function renderActivityEvent(
             label: message
               ? `${name}: "${message.length > 40 ? message.slice(0, 37) + "..." : message}"`
               : `${name} shared an update`,
-            tone: "info",
-            color: TONE_COLORS.info,
+            tone: "neutral",
+            color: TONE_NEUTRAL,
           };
         default:
           return {
             icon: Zap,
             label: `${name} checked in`,
-            tone: "info",
-            color: TONE_COLORS.info,
+            tone: "neutral",
+            color: TONE_NEUTRAL,
           };
       }
     }
@@ -262,8 +257,8 @@ export function renderActivityEvent(
       return {
         icon: Lock,
         label,
-        tone: "info",
-        color: TONE_COLORS.info,
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
     }
 
@@ -272,7 +267,7 @@ export function renderActivityEvent(
         icon: Trophy,
         label: `${name} delivered on their commitment`,
         tone: "success",
-        color: "#F59E0B",
+        color: TONE_SUCCESS,
       };
 
     case "commitment_failed":
@@ -280,7 +275,7 @@ export function renderActivityEvent(
         icon: XCircle,
         label: `${name} switched focus`,
         tone: "neutral",
-        color: TONE_COLORS.neutral,
+        color: TONE_NEUTRAL,
       };
 
     case "goal_shipped": {
@@ -291,7 +286,7 @@ export function renderActivityEvent(
           ? `${name} shipped: ${goalTitle.length > 30 ? goalTitle.slice(0, 27) + "..." : goalTitle}`
           : `${name} shipped a goal`,
         tone: "success",
-        color: "#F59E0B",
+        color: TONE_SUCCESS,
       };
     }
 
@@ -303,8 +298,8 @@ export function renderActivityEvent(
         label: contentTitle
           ? `${name} took a ${categoryLabel} break: ${contentTitle.length > 30 ? contentTitle.slice(0, 27) + "..." : contentTitle}`
           : `${name} took a ${categoryLabel} break`,
-        tone: "info",
-        color: "#8C55EF",
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
     }
 
@@ -312,8 +307,8 @@ export function renderActivityEvent(
       return {
         icon: Play,
         label: `${name} returned to sprint`,
-        tone: "success",
-        color: TONE_COLORS.success,
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
 
     case "break_cancelled":
@@ -321,7 +316,7 @@ export function renderActivityEvent(
         icon: XCircle,
         label: `${name} skipped break`,
         tone: "neutral",
-        color: TONE_COLORS.neutral,
+        color: TONE_NEUTRAL,
       };
 
     case "integration_linked": {
@@ -332,8 +327,8 @@ export function renderActivityEvent(
         label: resourceTitle
           ? `${name} linked ${provider ?? "external"} item: ${resourceTitle.length > 30 ? resourceTitle.slice(0, 27) + "..." : resourceTitle}`
           : `${name} linked an external item`,
-        tone: "info",
-        color: TONE_COLORS.info,
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
     }
 
@@ -342,8 +337,8 @@ export function renderActivityEvent(
       return {
         icon: GitBranch,
         label: `${name} posted progress to ${wbProvider ?? "external service"}`,
-        tone: "info",
-        color: TONE_COLORS.info,
+        tone: "neutral",
+        color: TONE_NEUTRAL,
       };
     }
 
@@ -352,7 +347,7 @@ export function renderActivityEvent(
         icon: CircleDot,
         label: `${name} did something`,
         tone: "neutral",
-        color: TONE_COLORS.neutral,
+        color: TONE_NEUTRAL,
       };
   }
 }

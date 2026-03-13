@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/lib/useCurrentUser";
 import { useProfile } from "@/lib/useProfile";
 import { useUsernameValidation, type UsernameStatus } from "@/lib/username";
 import { RefreshCw, Check, X, Loader2, Save } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 const inputClass =
   "h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-4 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]";
@@ -15,10 +16,10 @@ function UsernameStatusIcon({ status }: { status: UsernameStatus }) {
     case "checking":
       return <Loader2 size={16} className="animate-spin text-[var(--color-text-tertiary)]" />;
     case "available":
-      return <Check size={16} className="text-[#5BC682]" />;
+      return <Check size={16} className="text-[var(--color-green-700)]" />;
     case "taken":
     case "invalid":
-      return <X size={16} className="text-[#EF5555]" />;
+      return <X size={16} className="text-[var(--color-red-700)]" />;
     default:
       return null;
   }
@@ -113,7 +114,7 @@ export function ProfileSettings() {
       </div>
 
       {/* Avatar section */}
-      <div className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
+      <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
         <label className="mb-3 block text-xs font-medium text-[var(--color-text-secondary)]">
           Avatar
         </label>
@@ -138,14 +139,15 @@ export function ProfileSettings() {
             )}
           </div>
           <div className="space-y-2">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={regenerateAvatar}
               disabled={generating || !profile.username}
-              className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border-default)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-active)] hover:text-[var(--color-text-primary)] disabled:opacity-50"
+              leftIcon={<RefreshCw size={14} className={generating ? "animate-spin" : ""} />}
             >
-              <RefreshCw size={14} className={generating ? "animate-spin" : ""} />
               {generating ? "Generating..." : "Regenerate"}
-            </button>
+            </Button>
             {genMessage && (
               <p className="text-xs text-[var(--color-text-tertiary)]">{genMessage}</p>
             )}
@@ -159,7 +161,7 @@ export function ProfileSettings() {
       </div>
 
       {/* Display name */}
-      <div className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
+      <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
         <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
           Display name
         </label>
@@ -184,7 +186,7 @@ export function ProfileSettings() {
       </div>
 
       {/* Username */}
-      <div className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
+      <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
         <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
           Username
         </label>
@@ -202,9 +204,9 @@ export function ProfileSettings() {
               style={{
                 borderColor:
                   username.status === "available"
-                    ? "#5BC682"
+                    ? "var(--color-green-700)"
                     : username.status === "taken" || username.status === "invalid"
-                      ? "#EF5555"
+                      ? "var(--color-red-700)"
                       : undefined,
               }}
             />
@@ -223,10 +225,10 @@ export function ProfileSettings() {
           )}
         </div>
         {username.error && (
-          <p className="mt-1.5 text-xs text-[#EF5555]">{username.error}</p>
+          <p className="mt-1.5 text-xs text-[var(--color-red-700)]">{username.error}</p>
         )}
         {username.status === "available" && usernameChanged && (
-          <p className="mt-1.5 text-xs text-[#5BC682]">@{username.value} is available</p>
+          <p className="mt-1.5 text-xs text-[var(--color-green-700)]">@{username.value} is available</p>
         )}
         {profile.username && !usernameChanged && (
           <p className="mt-1.5 text-xs text-[var(--color-text-tertiary)]">
@@ -236,7 +238,7 @@ export function ProfileSettings() {
       </div>
 
       {/* Email (read-only) */}
-      <div className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
+      <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
         <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
           Email
         </label>

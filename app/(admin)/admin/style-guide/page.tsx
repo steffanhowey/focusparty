@@ -27,7 +27,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <section className="mb-10">
       <h2
         className="mb-4 text-lg font-bold text-white"
-        style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
       >
         {title}
       </h2>
@@ -52,7 +51,6 @@ export default function StyleGuidePage() {
     <div className="mx-auto max-w-4xl pb-16">
       <h1
         className="mb-2 text-2xl font-bold text-white"
-        style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
       >
         Button Style Guide
       </h1>
@@ -195,14 +193,14 @@ export default function StyleGuidePage() {
             <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--color-text-tertiary)]" />
             <div>
               <p className="text-xs font-semibold text-[var(--color-text-secondary)]">Completed</p>
-              <p className="text-[10px] text-[var(--color-text-tertiary)]">Finished what I set out to do</p>
+              <p className="text-2xs text-[var(--color-text-tertiary)]">Finished what I set out to do</p>
             </div>
           </ToggleCard>
           <ToggleCard selected={true} className="flex items-start gap-2.5 w-48">
             <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--color-accent-primary)]" />
             <div>
               <p className="text-xs font-semibold text-white">Selected Card</p>
-              <p className="text-[10px] text-[var(--color-text-tertiary)]">This one is selected</p>
+              <p className="text-2xs text-[var(--color-text-tertiary)]">This one is selected</p>
             </div>
           </ToggleCard>
         </Row>

@@ -102,7 +102,6 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
         <div>
           <h2
             className="mb-1 text-xl font-bold text-white"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             Choose your environment
           </h2>
@@ -120,7 +119,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                   key={key}
                   type="button"
                   onClick={() => handleSelectWorld(world)}
-                  className="cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-4 text-left transition-all duration-150 hover:border-transparent"
+                  className="cursor-pointer rounded-md border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-4 text-left transition-all duration-150 hover:border-transparent"
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.borderColor =
                       world.accentColor;
@@ -142,9 +141,6 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                   {/* Label */}
                   <h3
                     className="text-sm font-semibold text-white"
-                    style={{
-                      fontFamily: "var(--font-montserrat), sans-serif",
-                    }}
                   >
                     {world.label}
                   </h3>
@@ -155,7 +151,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                   </p>
 
                   {/* Meta row */}
-                  <div className="mt-3 flex items-center gap-3 text-[10px] text-[var(--color-text-tertiary)]">
+                  <div className="mt-3 flex items-center gap-3 text-2xs text-[var(--color-text-tertiary)]">
                     <span className="flex items-center gap-1">
                       <Clock size={10} />
                       {world.defaultSprintLength}m
@@ -196,9 +192,6 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                 />
                 <h2
                   className="text-xl font-bold text-white"
-                  style={{
-                    fontFamily: "var(--font-montserrat), sans-serif",
-                  }}
                 >
                   {selectedWorld.label}
                 </h2>
@@ -219,10 +212,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                 onChange={(e) => setName(e.target.value)}
                 maxLength={80}
                 autoFocus
-                className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-white/[0.06] px-4 text-sm text-white outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
-                style={{
-                  fontFamily: "var(--font-montserrat), sans-serif",
-                }}
+                className="h-11 w-full rounded-md border border-[var(--color-border-default)] bg-white/[0.06] px-4 text-sm text-white outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
               />
             </div>
 

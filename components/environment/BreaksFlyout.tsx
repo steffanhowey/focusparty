@@ -60,7 +60,7 @@ export function BreaksFlyout({
       <div className="px-5 pb-2">
         <p className="text-xs text-white/40">{categoryConfig.subtitle}</p>
         {sponsorLock?.badge && (
-          <p className="mt-1 text-[10px] font-medium tracking-wide text-white/25">
+          <p className="mt-1 text-2xs font-medium tracking-wide text-white/25">
             {sponsorLock.badge}
           </p>
         )}
@@ -78,7 +78,7 @@ export function BreaksFlyout({
       </div>
 
       <div className="fp-shell-scroll flex-1 overflow-y-auto px-5 py-3">
-        <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-white/25">
+        <p className="mb-3 text-2xs font-medium uppercase tracking-wider text-white/25">
           {selectedDuration}-min {categoryConfig.label.toLowerCase()} for {worldLabel}
         </p>
 

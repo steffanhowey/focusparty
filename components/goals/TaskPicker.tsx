@@ -65,7 +65,7 @@ export function TaskPicker({ value, onChange, tasks }: TaskPickerProps) {
   const dropdown = open ? (
     <div
       ref={dropdownRef}
-      className="max-h-48 overflow-y-auto rounded-2xl border border-[var(--color-border-default)] bg-[rgba(10,10,10,0.95)] p-1.5 shadow-2xl backdrop-blur-[20px]"
+      className="max-h-48 overflow-y-auto rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-dropdown)] p-1.5 shadow-lg backdrop-blur-[20px]"
       style={{
         position: "fixed",
         top: pos.top,

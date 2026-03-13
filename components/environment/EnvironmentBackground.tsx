@@ -40,7 +40,7 @@ export function EnvironmentBackground({
         /* Gradient placeholder when no AI background is available */
         <div
           className="absolute inset-0"
-          style={{ background: placeholderGradient ?? "#0a0a0a" }}
+          style={{ background: placeholderGradient ?? "var(--color-navy-800)" }}
         />
       )}
 

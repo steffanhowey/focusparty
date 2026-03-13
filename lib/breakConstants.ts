@@ -5,6 +5,7 @@ import {
   PersonStanding,
   type LucideIcon,
 } from "lucide-react";
+import { NAVY_500 } from "./palette";
 
 // ─── Break Category Type ─────────────────────────────────────
 
@@ -27,7 +28,7 @@ export const BREAK_CATEGORIES: BreakCategoryConfig[] = [
     id: "learning",
     label: "Learning",
     icon: BookOpen,
-    color: "#8C55EF",
+    color: NAVY_500,
     subtitle: "Watch something useful",
     feedLabel: "learning",
   },
@@ -35,7 +36,7 @@ export const BREAK_CATEGORIES: BreakCategoryConfig[] = [
     id: "reset",
     label: "Reset",
     icon: Wind,
-    color: "#5CC2EC",
+    color: NAVY_500,
     subtitle: "Clear your head",
     feedLabel: "reset",
   },
@@ -43,7 +44,7 @@ export const BREAK_CATEGORIES: BreakCategoryConfig[] = [
     id: "reflect",
     label: "Reflect",
     icon: Lightbulb,
-    color: "#F5C54E",
+    color: NAVY_500,
     subtitle: "Reconnect to what matters",
     feedLabel: "reflection",
   },
@@ -51,7 +52,7 @@ export const BREAK_CATEGORIES: BreakCategoryConfig[] = [
     id: "move",
     label: "Move",
     icon: PersonStanding,
-    color: "#5BC682",
+    color: NAVY_500,
     subtitle: "Get your body moving",
     feedLabel: "movement",
   },

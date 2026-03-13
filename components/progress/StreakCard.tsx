@@ -19,14 +19,14 @@ export function StreakCard({ currentStreak, bestStreak }: StreakCardProps) {
           className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
           style={{
             background: isActive
-              ? "rgba(245, 197, 78, 0.15)"
+              ? "var(--color-bg-active)"
               : "var(--color-bg-hover)",
           }}
         >
           <Flame
             size={28}
             style={{
-              color: isActive ? "#F5C54E" : "var(--color-text-tertiary)",
+              color: isActive ? "var(--color-text-secondary)" : "var(--color-text-tertiary)",
             }}
           />
         </div>
@@ -36,7 +36,6 @@ export function StreakCard({ currentStreak, bestStreak }: StreakCardProps) {
           <div className="flex items-baseline gap-1.5">
             <span
               className="text-3xl font-bold text-white"
-              style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
             >
               {currentStreak}
             </span>
@@ -56,7 +55,6 @@ export function StreakCard({ currentStreak, bestStreak }: StreakCardProps) {
           <p className="text-xs text-[var(--color-text-tertiary)]">Best</p>
           <p
             className="text-lg font-semibold text-white"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             {bestStreak}
           </p>

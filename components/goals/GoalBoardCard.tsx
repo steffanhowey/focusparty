@@ -68,7 +68,7 @@ export const GoalBoardCard = memo(function GoalBoardCard({
       {...listeners}
       onClick={onClick}
       aria-label={`Goal: ${goal.title}`}
-      className="group w-full rounded-[var(--radius-sm)] border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 text-left transition-shadow hover:shadow-[var(--shadow-sm)] md:cursor-grab md:touch-none md:active:cursor-grabbing"
+      className="group w-full rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 text-left transition-shadow hover:shadow-[var(--shadow-sm)] md:cursor-grab md:touch-none md:active:cursor-grabbing"
     >
       <div className="flex items-start gap-2">
         {/* Drag handle icon — desktop only */}
@@ -105,7 +105,7 @@ export const GoalBoardCard = memo(function GoalBoardCard({
                       width: `${progress.percent}%`,
                       background:
                         progress.percent === 100
-                          ? "#5BC682"
+                          ? "var(--color-green-700)"
                           : "var(--color-accent-primary)",
                     }}
                   />

@@ -73,14 +73,13 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         onClick={onClose}
       />
       <div
-        className="relative max-h-[90vh] w-full max-w-[480px] overflow-auto rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-8 shadow-xl"
+        className="relative max-h-[90vh] w-full max-w-[480px] overflow-auto rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-8 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
           <h2
             id="modal-title"
             className="mb-4 text-xl font-bold text-white"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             {title}
           </h2>

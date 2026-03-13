@@ -4,6 +4,13 @@
 // Callers provide events; this module provides intelligence.
 
 import type { ActivityEvent, RoomState } from "./types";
+import {
+  ROOM_QUIET,
+  ROOM_WARMING,
+  ROOM_FOCUSED,
+  ROOM_FLOWING,
+  ROOM_COOLING,
+} from "./palette";
 
 // ─── Display Config ──────────────────────────────────────────
 
@@ -11,11 +18,11 @@ export const ROOM_STATE_CONFIG: Record<
   RoomState,
   { label: string; icon: string; color: string }
 > = {
-  quiet: { label: "Quiet Room", icon: "🌙", color: "#888888" },
-  warming_up: { label: "Warming Up", icon: "🌿", color: "#F59E0B" },
-  focused: { label: "Deep Focus", icon: "🔥", color: "#EF4444" },
-  flowing: { label: "Flowing", icon: "⚡", color: "#8B5CF6" },
-  cooling_down: { label: "Cooling Down", icon: "🌊", color: "#5CC2EC" },
+  quiet: { label: "Quiet Room", icon: "🌙", color: ROOM_QUIET },
+  warming_up: { label: "Warming Up", icon: "🌿", color: ROOM_WARMING },
+  focused: { label: "Deep Focus", icon: "🔥", color: ROOM_FOCUSED },
+  flowing: { label: "Flowing", icon: "⚡", color: ROOM_FLOWING },
+  cooling_down: { label: "Cooling Down", icon: "🌊", color: ROOM_COOLING },
 };
 
 // ─── Constants ───────────────────────────────────────────────

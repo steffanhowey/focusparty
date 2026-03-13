@@ -1,13 +1,22 @@
 import type { CharacterDef, CharacterId, PlanTier } from "./types";
+import {
+  CORAL_700,
+  ORANGE_700,
+  GOLD_700,
+  GREEN_700,
+  CYAN_700,
+  PURPLE_700,
+  VIOLET_700,
+} from "./palette";
 
 export const CHARACTERS: Record<CharacterId, CharacterDef> = {
   ember: {
     id: "ember",
     name: "Ember",
     tagline: "The Warm Motivator",
-    primary: "#E96861",
-    secondary: "#EE984B",
-    accent: "#F5C54E",
+    primary: CORAL_700,
+    secondary: ORANGE_700,
+    accent: GOLD_700,
     glow: "rgba(233,104,97,0.25)",
     roomBg: "linear-gradient(135deg, #2a1a16 0%, #1f1520 50%, #141414 100%)",
   },
@@ -15,8 +24,8 @@ export const CHARACTERS: Record<CharacterId, CharacterDef> = {
     id: "moss",
     name: "Moss",
     tagline: "The Quiet Scholar",
-    primary: "#5BC682",
-    secondary: "#5CC2EC",
+    primary: GREEN_700,
+    secondary: CYAN_700,
     accent: "#ADE2C0",
     glow: "rgba(91,198,130,0.25)",
     roomBg: "linear-gradient(135deg, #0f1f18 0%, #111a20 50%, #141414 100%)",
@@ -25,8 +34,8 @@ export const CHARACTERS: Record<CharacterId, CharacterDef> = {
     id: "byte",
     name: "Byte",
     tagline: "The Analytical Optimizer",
-    primary: "#535AEE",
-    secondary: "#8C55EF",
+    primary: PURPLE_700,
+    secondary: VIOLET_700,
     accent: "#A9ADF7",
     glow: "rgba(83,90,238,0.25)",
     roomBg: "linear-gradient(135deg, #121212 0%, #111111 50%, #141414 100%)",

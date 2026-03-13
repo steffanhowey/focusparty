@@ -96,8 +96,8 @@ export function FeaturedRoom({
 
   return (
     <div
-      className="group/featured relative w-full overflow-hidden rounded-[var(--radius-md)] cursor-pointer"
-      style={{ height: "clamp(300px, 40vh, 440px)" }}
+      className="group/featured relative w-full overflow-hidden rounded-md border border-[var(--color-border-default)] cursor-pointer"
+      style={{ height: "clamp(340px, 50vh, 500px)" }}
       onClick={onClick}
       role="button"
     >
@@ -133,7 +133,7 @@ export function FeaturedRoom({
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
         </span>
-        <span className="text-[11px] font-semibold text-white">Most Active</span>
+        <span className="text-2xs font-semibold text-white">Most Active</span>
       </div>
 
       {/* Content overlay */}

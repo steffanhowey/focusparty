@@ -71,7 +71,7 @@ export function TimerDropdown({
       {/* Dropdown panel */}
       {open && (
         <div
-          className="absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl"
+          className="absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
           style={{
             background: "rgba(10,10,10,0.95)",
             backdropFilter: "blur(20px)",
@@ -82,7 +82,7 @@ export function TimerDropdown({
           aria-label="Timer controls"
         >
           {/* Section label */}
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
             Duration
           </p>
 

@@ -190,7 +190,7 @@ export function EnvironmentHeader({
               background: "rgba(10,10,10,0.90)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+              boxShadow: "var(--shadow-float)",
               zIndex: 40,
               width: 280,
               maxHeight: "min(420px, calc(100vh - 100px))",
@@ -201,7 +201,7 @@ export function EnvironmentHeader({
             aria-label="Switch room"
           >
             {/* Section title */}
-            <p className="px-3 pt-2.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            <p className="px-3 pt-2.5 pb-1 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
               Available Rooms
             </p>
 
@@ -269,7 +269,7 @@ export function EnvironmentHeader({
                         <p className={`truncate text-sm font-medium ${isCurrent ? "text-white" : "text-[var(--color-text-secondary)]"}`}>
                           {p.name}
                         </p>
-                        <p className="truncate text-[11px] text-[var(--color-text-tertiary)]">
+                        <p className="truncate text-2xs text-[var(--color-text-tertiary)]">
                           {world.description}
                         </p>
                       </div>

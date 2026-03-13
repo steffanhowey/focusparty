@@ -163,7 +163,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
           <button
             type="button"
             onClick={() => onComplete(task.id)}
-            className="flex h-[18px] w-[18px] items-center justify-center rounded-[4px] bg-emerald-500 transition-colors hover:bg-emerald-400"
+            className="flex h-[18px] w-[18px] items-center justify-center rounded-xs bg-emerald-500 transition-colors hover:bg-emerald-400"
             aria-label={`Restore ${task.title}`}
           >
             <Check size={11} strokeWidth={2.5} className="text-white" />
@@ -172,7 +172,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
           <button
             type="button"
             onClick={() => onComplete(task.id)}
-            className="flex h-[18px] w-[18px] items-center justify-center rounded-[4px] border border-[var(--color-border-default)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
+            className="flex h-[18px] w-[18px] items-center justify-center rounded-xs border border-[var(--color-border-default)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
             aria-label={`Complete ${task.title}`}
           >
             <Check

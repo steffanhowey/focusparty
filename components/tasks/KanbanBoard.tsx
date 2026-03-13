@@ -100,7 +100,7 @@ function MobileKanban({
   return (
     <div className="flex flex-1 flex-col">
       {/* Tab bar */}
-      <div className="flex gap-1 rounded-[var(--radius-md)] bg-[var(--color-bg-secondary)] p-1">
+      <div className="flex gap-1 rounded-md bg-[var(--color-bg-secondary)] p-1">
         {STATUS_COLUMNS.map((status) => {
           const cfg = STATUS_CONFIG[status];
           const count = tasksByStatus[status].length;
@@ -110,7 +110,7 @@ function MobileKanban({
               key={status}
               type="button"
               onClick={() => setActiveStatus(status)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-sm)] py-2.5 text-xs font-medium transition-colors ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-sm py-2.5 text-xs font-medium transition-colors ${
                 isActive
                   ? "bg-[var(--color-bg-elevated)] shadow-sm"
                   : "text-[var(--color-text-tertiary)]"
@@ -119,7 +119,7 @@ function MobileKanban({
             >
               {cfg.label}
               <span
-                className={`text-[10px] ${
+                className={`text-2xs ${
                   isActive
                     ? "text-[var(--color-text-secondary)]"
                     : "text-[var(--color-text-tertiary)]"
@@ -145,7 +145,7 @@ function MobileKanban({
             key={task.id}
             type="button"
             onClick={() => onTaskClick?.(task)}
-            className="rounded-[var(--radius-sm)] border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 text-left transition-shadow active:shadow-[var(--shadow-sm)]"
+            className="rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 text-left transition-shadow active:shadow-[var(--shadow-sm)]"
           >
             <p
               className={`break-words text-sm leading-snug ${
@@ -204,7 +204,7 @@ function MobileKanban({
                   className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
                 />
                 {newTaskText.trim() && (
-                  <span className="shrink-0 text-[11px] text-[var(--color-text-tertiary)]">
+                  <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
                     ↵
                   </span>
                 )}
@@ -377,7 +377,7 @@ export function KanbanBoard({
 
       <DragOverlay dropAnimation={null}>
         {draggedTask ? (
-          <div className="w-[280px] rounded-[var(--radius-sm)] border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 shadow-lg">
+          <div className="w-[280px] rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 shadow-lg">
             <p className="text-sm text-[var(--color-text-primary)]">
               {draggedTask.title}
             </p>

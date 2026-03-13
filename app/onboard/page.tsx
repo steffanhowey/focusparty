@@ -212,10 +212,10 @@ function OnboardContent() {
       case "checking":
         return <Loader2 size={16} className="animate-spin text-[var(--color-text-tertiary)]" />;
       case "available":
-        return <Check size={16} className="text-[#5BC682]" />;
+        return <Check size={16} className="text-[var(--color-green-700)]" />;
       case "taken":
       case "invalid":
-        return <X size={16} className="text-[#EF5555]" />;
+        return <X size={16} className="text-[var(--color-red-700)]" />;
       default:
         return null;
     }
@@ -258,7 +258,7 @@ function OnboardContent() {
                 : "Set your name and pick a unique @username."}
             </p>
 
-            <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
+            <div className="mt-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
               {/* Display name */}
               <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
                 Display name
@@ -288,9 +288,9 @@ function OnboardContent() {
                   style={{
                     borderColor:
                       username.status === "available"
-                        ? "#5BC682"
+                        ? "var(--color-green-700)"
                         : username.status === "taken" || username.status === "invalid"
-                          ? "#EF5555"
+                          ? "var(--color-red-700)"
                           : undefined,
                   }}
                 />
@@ -299,10 +299,10 @@ function OnboardContent() {
                 </span>
               </div>
               {username.error && (
-                <p className="mt-1.5 text-xs text-[#EF5555]">{username.error}</p>
+                <p className="mt-1.5 text-xs text-[var(--color-red-700)]">{username.error}</p>
               )}
               {username.status === "available" && (
-                <p className="mt-1.5 text-xs text-[#5BC682]">@{username.value} is available</p>
+                <p className="mt-1.5 text-xs text-[var(--color-green-700)]">@{username.value} is available</p>
               )}
 
               <button
@@ -326,7 +326,7 @@ function OnboardContent() {
               We generated a unique avatar just for you.
             </p>
 
-            <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
+            <div className="mt-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
               <div className="flex flex-col items-center gap-5">
                 {/* Avatar display */}
                 <div className="relative h-[120px] w-[120px] overflow-hidden rounded-full border-2 border-[var(--color-border-default)]">
@@ -388,7 +388,7 @@ function OnboardContent() {
               Start your first focus session and see what FocusParty is all about.
             </p>
 
-            <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6 text-center">
+            <div className="mt-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6 text-center">
               {/* Avatar + username welcome */}
               <div className="mb-4 flex flex-col items-center gap-3">
                 {avatarUrl && (

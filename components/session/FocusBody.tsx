@@ -90,7 +90,7 @@ function InlineAdd({ onAdd, label = "task" }: { onAdd: (title: string) => void; 
         className="min-w-0 flex-1 bg-transparent text-sm text-white/60 placeholder:text-white/20 outline-none"
       />
       {text.trim() && (
-        <span className="shrink-0 text-[10px] text-white/20">↵</span>
+        <span className="shrink-0 text-2xs text-white/20">↵</span>
       )}
     </div>
   );
@@ -129,9 +129,9 @@ function ItemMenu({
       ref={menuRef}
       className="absolute right-2 top-full z-50 mt-1 w-40 rounded-lg py-1"
       style={{
-        background: "#0a0a0a",
+        background: "var(--color-navy-800)",
         border: "1px solid rgba(255,255,255,0.1)",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+        boxShadow: "var(--shadow-lg)",
       }}
     >
       <MenuItem
@@ -421,7 +421,7 @@ export function FocusBody({
           <button
             type="button"
             onClick={() => setGoalsSortNewest((s) => !s)}
-            className="flex cursor-pointer items-center gap-1 text-[10px] text-white/30 transition-colors hover:text-white/50"
+            className="flex cursor-pointer items-center gap-1 text-2xs text-white/30 transition-colors hover:text-white/50"
           >
             <ArrowUpDown size={10} strokeWidth={2} />
             <span>{goalsSortNewest ? "Newest" : "Oldest"}</span>
@@ -461,7 +461,7 @@ export function FocusBody({
                 className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder-white/25 outline-none"
               />
               {addText.trim() && (
-                <span className="shrink-0 text-[10px] text-white/20">↵</span>
+                <span className="shrink-0 text-2xs text-white/20">↵</span>
               )}
             </div>
           )}
@@ -639,7 +639,7 @@ export function FocusBody({
           <button
             type="button"
             onClick={() => setTasksSortNewest((s) => !s)}
-            className="flex cursor-pointer items-center gap-1 text-[10px] text-white/30 transition-colors hover:text-white/50"
+            className="flex cursor-pointer items-center gap-1 text-2xs text-white/30 transition-colors hover:text-white/50"
           >
             <ArrowUpDown size={10} strokeWidth={2} />
             <span>{tasksSortNewest ? "Newest" : "Oldest"}</span>
@@ -679,7 +679,7 @@ export function FocusBody({
                 className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder-white/25 outline-none"
               />
               {addText.trim() && (
-                <span className="shrink-0 text-[10px] text-white/20">↵</span>
+                <span className="shrink-0 text-2xs text-white/20">↵</span>
               )}
             </div>
           )}

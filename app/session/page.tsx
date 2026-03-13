@@ -758,7 +758,7 @@ export default function SessionPage() {
                 background: "rgba(10,10,10,0.65)",
                 backdropFilter: "blur(24px)",
                 WebkitBackdropFilter: "blur(24px)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+                boxShadow: "var(--shadow-float)",
               }}
               role="complementary"
               aria-label={activePanel === "chat" ? "Chat" : "Settings"}

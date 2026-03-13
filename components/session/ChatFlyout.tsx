@@ -65,8 +65,8 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
                 <div
                   className={`max-w-[80%] px-3.5 py-2 text-sm leading-relaxed ${
                     msg.role === "user"
-                      ? "rounded-2xl rounded-br-sm bg-[var(--color-accent-primary)] text-white"
-                      : "rounded-2xl rounded-bl-sm bg-white/[0.08] text-[var(--color-text-secondary)]"
+                      ? "rounded-lg rounded-br-sm bg-[var(--color-accent-primary)] text-white"
+                      : "rounded-lg rounded-bl-sm bg-white/[0.08] text-[var(--color-text-secondary)]"
                   }`}
                 >
                   {msg.text}

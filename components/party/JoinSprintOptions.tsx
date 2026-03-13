@@ -106,7 +106,7 @@ export function JoinSprintOptions({
   const dropdown = open ? (
     <div
       ref={dropdownRef}
-      className="rounded-2xl border border-[var(--color-border-default)] bg-[rgba(10,10,10,0.95)] p-1.5 shadow-2xl backdrop-blur-[20px]"
+      className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-dropdown)] p-1.5 shadow-lg backdrop-blur-[20px]"
       style={{
         position: "fixed",
         top: pos.top,
@@ -135,7 +135,7 @@ export function JoinSprintOptions({
             <Timer size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
             <div>
               <p className="text-sm font-medium text-[var(--color-text-secondary)]">Current Sprint</p>
-              <p className="text-[11px] text-[var(--color-text-tertiary)]">
+              <p className="text-2xs text-[var(--color-text-tertiary)]">
                 {formatMinutes(remainingSeconds)} remaining · {focusingCount} focusing
               </p>
             </div>
@@ -159,7 +159,7 @@ export function JoinSprintOptions({
             <Clock size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
             <div>
               <p className="text-sm font-medium text-[var(--color-text-secondary)]">Next Sprint</p>
-              <p className="text-[11px] text-[var(--color-text-tertiary)]">
+              <p className="text-2xs text-[var(--color-text-tertiary)]">
                 Starts in {formatMinutes(remainingSeconds)} · Join fresh with group
               </p>
             </div>

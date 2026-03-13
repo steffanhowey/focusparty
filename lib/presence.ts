@@ -1,5 +1,9 @@
 import type { SessionPhase, ParticipantStatus, PresencePayload, CharacterId, CommitmentType } from "./types";
 import { CATEGORY_FEED_LABEL } from "./breakConstants";
+import {
+  PARTICIPANT_IDLE,
+  PARTICIPANT_FOCUSED,
+} from "./palette";
 
 // ─── Phase → Status Mapping ──────────────────────────────────
 
@@ -75,11 +79,11 @@ export const PARTICIPANT_STATUS_CONFIG: Record<
   ParticipantStatus,
   { label: string; color: string; dotColor: string }
 > = {
-  idle: { label: "Idle", color: "#888888", dotColor: "#888888" },
-  starting: { label: "Starting", color: "#F5C54E", dotColor: "#F5C54E" },
-  focused: { label: "Focused", color: "#5BC682", dotColor: "#5BC682" },
-  reviewing: { label: "Reviewing", color: "#5CC2EC", dotColor: "#5CC2EC" },
-  on_break: { label: "On Break", color: "#8C55EF", dotColor: "#8C55EF" },
+  idle: { label: "Idle", color: PARTICIPANT_IDLE, dotColor: PARTICIPANT_IDLE },
+  starting: { label: "Starting", color: PARTICIPANT_IDLE, dotColor: PARTICIPANT_IDLE },
+  focused: { label: "Focused", color: PARTICIPANT_FOCUSED, dotColor: PARTICIPANT_FOCUSED },
+  reviewing: { label: "Reviewing", color: PARTICIPANT_IDLE, dotColor: PARTICIPANT_IDLE },
+  on_break: { label: "On Break", color: PARTICIPANT_IDLE, dotColor: PARTICIPANT_IDLE },
 };
 
 // ─── Event Display Text ──────────────────────────────────────

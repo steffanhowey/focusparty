@@ -18,6 +18,13 @@ import { useMusic } from "@/lib/useMusic";
 import { useChat } from "@/lib/useChat";
 import { useNotes } from "@/lib/useNotes";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import {
+  GREEN_700,
+  CYAN_700,
+  GOLD_700,
+  AMBER_700,
+  VIOLET_700,
+} from "@/lib/palette";
 import { updatePartyStatus, leaveParty, type Party } from "@/lib/parties";
 import { useEnvironmentParty } from "@/lib/useEnvironmentParty";
 import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
@@ -386,7 +393,7 @@ export default function EnvironmentPage() {
 
     for (const event of newEvents) {
       let targetId: string | null = null;
-      let color = "#5CC2EC";
+      let color = CYAN_700;
       let text = "";
 
       if (event.event_type === "check_in") {
@@ -401,16 +408,16 @@ export default function EnvironmentPage() {
         const message = event.payload?.message as string | undefined;
 
         if (action === "progress") {
-          color = "#5BC682";
+          color = GREEN_700;
           text = "Making progress";
         } else if (action === "ship") {
-          color = "#F59E0B";
+          color = AMBER_700;
           text = taskTitle ? `Shipped ${taskTitle}` : "Shipped something";
         } else if (action === "reset") {
-          color = "#F5C54E";
+          color = GOLD_700;
           text = "Taking a reset";
         } else if (action === "update") {
-          color = "#5CC2EC";
+          color = CYAN_700;
           text = message || "Shared an update";
         }
       }
@@ -420,7 +427,7 @@ export default function EnvironmentPage() {
         // Skip synthetic return high-fives targeting us — already handled optimistically
         if (event.actor_type === "synthetic" && hfTarget === userId) continue;
         targetId = hfTarget;
-        color = "#F59E0B";
+        color = AMBER_700;
         text = "High five!";
       }
 
@@ -429,13 +436,13 @@ export default function EnvironmentPage() {
           event.actor_type === "synthetic"
             ? (event.payload?.synthetic_id as string) ?? null
             : event.user_id;
-        color = "#5BC682";
+        color = GREEN_700;
         text = "Sprint complete!";
       }
 
       if (event.event_type === "break_completed") {
         targetId = event.user_id;
-        color = "#8C55EF";
+        color = VIOLET_700;
         text = "Back to it!";
       }
 
@@ -445,7 +452,7 @@ export default function EnvironmentPage() {
         targetId = event.actor_type === "synthetic"
           ? (event.payload?.synthetic_id as string) ?? null
           : event.user_id;
-        color = "#5BC682";
+        color = GREEN_700;
         text = "Task done!";
       }
 
@@ -453,7 +460,7 @@ export default function EnvironmentPage() {
         // Skip own goal completions — already handled optimistically in handleCompleteGoal
         if (event.user_id === userId) continue;
         targetId = event.user_id;
-        color = "#5BC682";
+        color = GREEN_700;
         text = "Goal done!";
       }
 
@@ -1184,7 +1191,7 @@ export default function EnvironmentPage() {
         console.error("[EnvironmentPage] task_completed event failed:", err?.message ?? err?.code ?? JSON.stringify(err))
       );
 
-      setCelebrations((prev) => new Map(prev).set(userId, { color: "#5BC682", text: "Task done!" }));
+      setCelebrations((prev) => new Map(prev).set(userId, { color: GREEN_700, text: "Task done!" }));
       setTimeout(() => {
         setCelebrations((prev) => {
           const next = new Map(prev);
@@ -1233,7 +1240,7 @@ export default function EnvironmentPage() {
         console.error("[EnvironmentPage] goal_completed event failed:", err?.message ?? err?.code ?? JSON.stringify(err))
       );
 
-      setCelebrations((prev) => new Map(prev).set(userId, { color: "#5BC682", text: "Goal done!" }));
+      setCelebrations((prev) => new Map(prev).set(userId, { color: GREEN_700, text: "Goal done!" }));
       setTimeout(() => {
         setCelebrations((prev) => {
           const next = new Map(prev);
@@ -1397,21 +1404,21 @@ export default function EnvironmentPage() {
       setCheckInOpen(false);
 
       // ── Optimistic celebration: fire avatar effect immediately ──
-      let color = "#5CC2EC";
+      let color = CYAN_700;
       let text = "";
       const taskTitle = activeTask?.title;
 
       if (action === "progress") {
-        color = "#5BC682";
+        color = GREEN_700;
         text = "Making progress";
       } else if (action === "ship") {
-        color = "#F59E0B";
+        color = AMBER_700;
         text = taskTitle ? `Shipped ${taskTitle}` : "Shipped something";
       } else if (action === "reset") {
-        color = "#F5C54E";
+        color = GOLD_700;
         text = "Taking a reset";
       } else if (action === "update") {
-        color = "#5CC2EC";
+        color = CYAN_700;
         text = message || "Shared an update";
       }
 
@@ -1710,7 +1717,7 @@ export default function EnvironmentPage() {
       setTimeout(() => {
         // Optimistic celebration on user's avatar
         setCelebrations((prev) =>
-          new Map(prev).set(userId, { color: "#F59E0B", text: "High five!" })
+          new Map(prev).set(userId, { color: AMBER_700, text: "High five!" })
         );
         setTimeout(() => {
           setCelebrations((prev) => {
@@ -1874,7 +1881,7 @@ export default function EnvironmentPage() {
                           event_type: "task_completed",
                           body: goal,
                         }).catch(() => {});
-                        setCelebrations((prev) => new Map(prev).set(userId, { color: "#5BC682", text: "Done!" }));
+                        setCelebrations((prev) => new Map(prev).set(userId, { color: GREEN_700, text: "Done!" }));
                         setTimeout(() => {
                           setCelebrations((prev) => { const next = new Map(prev); next.delete(userId!); return next; });
                         }, 2000);
@@ -1965,8 +1972,7 @@ export default function EnvironmentPage() {
               background: "rgba(10,10,10,0.65)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
-              boxShadow:
-                "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+              boxShadow: "var(--shadow-float)",
             }}
             role="complementary"
             aria-label={

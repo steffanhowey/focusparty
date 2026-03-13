@@ -84,7 +84,7 @@ export function CommitmentTaskPicker({
       className={
         inline
           ? "max-h-56 overflow-y-auto py-1"
-          : "absolute left-0 right-0 z-20 mx-5 mt-1.5 max-h-56 overflow-y-auto rounded-xl py-1 shadow-2xl"
+          : "absolute left-0 right-0 z-20 mx-5 mt-1.5 max-h-56 overflow-y-auto rounded-xl py-1 shadow-lg"
       }
       style={
         inline
@@ -131,7 +131,7 @@ export function CommitmentTaskPicker({
               </span>
 
               {hasTasks ? (
-                <span className="ml-auto shrink-0 text-[10px] text-white/25">
+                <span className="ml-auto shrink-0 text-2xs text-white/25">
                   {goalTasks.length} {goalTasks.length === 1 ? "task" : "tasks"}
                 </span>
               ) : (
@@ -179,7 +179,7 @@ export function CommitmentTaskPicker({
           {goals.length > 0 && (
             <div className="mx-2 my-1 h-px bg-white/[0.06]" />
           )}
-          <div className="px-3 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/25">
+          <div className="px-3 pt-1.5 pb-1 text-2xs font-semibold uppercase tracking-wider text-white/25">
             Tasks
           </div>
           {standaloneTasks.map((task) => {

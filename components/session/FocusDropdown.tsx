@@ -145,17 +145,17 @@ export const FocusDropdown = memo(function FocusDropdown({
   return (
     <div
       ref={popoverRef}
-      className="absolute bottom-full left-1/2 z-[60] mb-3 w-96 -translate-x-1/2 overflow-visible rounded-xl border border-[var(--color-border-default)] p-3 shadow-2xl"
+      className="absolute bottom-full left-1/2 z-[60] mb-3 w-96 -translate-x-1/2 overflow-visible rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
       style={{
         background: "rgba(10,10,10,0.98)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow: "var(--shadow-float)",
       }}
     >
       <div className="flex flex-col">
         {/* Title — top of popover */}
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">What are you working on?</p>
+        <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">What are you working on?</p>
 
         {/* Goals + Tasks accordions — toggled by ListTodo button */}
         {showPicker && (

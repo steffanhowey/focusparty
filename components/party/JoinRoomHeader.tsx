@@ -58,7 +58,7 @@ function AvatarCluster({
         ))}
       </span>
       {overflow > 0 && (
-        <span className="ml-1.5 text-[11px] text-white/50">
+        <span className="ml-1.5 text-2xs text-white/50">
           +{overflow}
         </span>
       )}
@@ -78,7 +78,7 @@ export function JoinRoomHeader({
   return (
     <div className="flex gap-4 p-6 pb-0">
       {/* Cover image */}
-      <div className="relative h-[110px] w-[150px] shrink-0 overflow-hidden rounded-[var(--radius-md)]">
+      <div className="relative h-[110px] w-[150px] shrink-0 overflow-hidden rounded-md">
         {coverSrc ? (
           <Image
             src={coverSrc}
@@ -99,7 +99,6 @@ export function JoinRoomHeader({
       <div className="min-w-0 flex-1 py-0.5">
         <h2
           className="truncate text-lg font-bold text-white"
-          style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
         >
           {party?.name ?? world.label}
         </h2>
@@ -109,7 +108,7 @@ export function JoinRoomHeader({
         </p>
 
         {/* Meta line */}
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-white/50">
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-2xs text-white/50">
           {focusingCount > 0 && (
             <span>{focusingCount} focusing</span>
           )}

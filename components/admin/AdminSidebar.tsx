@@ -24,7 +24,6 @@ export function AdminSidebar({ activeId, onNavClick }: AdminSidebarProps) {
         <Shield size={18} strokeWidth={1.8} className="shrink-0 text-[var(--color-accent-primary)]" />
         <span
           className="text-sm font-bold tracking-wide text-[var(--color-text-primary)]"
-          style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
         >
           Admin
         </span>

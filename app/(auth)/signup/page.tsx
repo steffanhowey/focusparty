@@ -76,7 +76,7 @@ function SignUpForm() {
         We&apos;ll send you a magic link.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
+      <div className="mt-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
         {sent ? (
           <div className="text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-bg-active)]">

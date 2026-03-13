@@ -22,12 +22,11 @@ export function TimerDisplay({
       : "text-white";
 
   const sizeClass =
-    phase === "sprint" ? "text-[28px] md:text-[36px]" : "text-base";
+    phase === "sprint" ? "text-3xl md:text-4xl" : "text-base";
 
   return (
     <span
       className={`font-extrabold tracking-tight ${sizeClass} ${colorClass}`}
-      style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
     >
       {formatted}
     </span>

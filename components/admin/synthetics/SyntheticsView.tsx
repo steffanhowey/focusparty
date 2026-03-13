@@ -17,10 +17,10 @@ interface SyntheticStatus {
 }
 
 const ARCHETYPE_COLORS: Record<string, string> = {
-  coder: "#7c5cfc",
-  writer: "#5CC2EC",
-  founder: "#F5C54E",
-  gentle: "#5BC682",
+  coder: "var(--color-indigo-700)",
+  writer: "var(--color-cyan-700)",
+  founder: "var(--color-gold-700)",
+  gentle: "var(--color-green-700)",
 };
 
 export function SyntheticsView() {

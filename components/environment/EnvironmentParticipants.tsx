@@ -126,7 +126,7 @@ export const EnvironmentParticipants = memo(function EnvironmentParticipants({
   const badgeStyle = {
     background: "rgba(255, 255, 255, 0.10)",
     border: "2px solid rgba(255,255,255,0.12)",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+    boxShadow: "var(--shadow-md)",
     backdropFilter: "blur(8px)",
     WebkitBackdropFilter: "blur(8px)",
   };
@@ -160,7 +160,7 @@ export const EnvironmentParticipants = memo(function EnvironmentParticipants({
                 className="h-16 w-16 rounded-full object-cover transition-transform duration-150 hover:scale-105"
                 style={{
                   border: "2px solid rgba(255,255,255,0.12)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+                  boxShadow: "var(--shadow-md)",
                   ...(celebrations?.has(p.id) && {
                     "--burst-color": celebrations.get(p.id)!.color,
                     animation: "fp-burst-glow 1.4s ease-out",
@@ -173,9 +173,9 @@ export const EnvironmentParticipants = memo(function EnvironmentParticipants({
               <div
                 className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full"
                 style={{
-                  background: "#8C55EF",
+                  background: "var(--color-violet-700)",
                   border: "2px solid rgba(10,10,10,0.9)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                  boxShadow: "var(--shadow-sm)",
                 }}
               >
                 <Coffee size={10} strokeWidth={2.5} className="text-white" />
@@ -190,7 +190,7 @@ export const EnvironmentParticipants = memo(function EnvironmentParticipants({
                 style={{ animation: "fp-status-float 2s ease-out forwards" }}
               >
                 <span
-                  className="block max-w-[120px] truncate whitespace-nowrap rounded-full px-2 py-0.5 text-center text-[10px] font-medium leading-tight"
+                  className="block max-w-[120px] truncate whitespace-nowrap rounded-full px-2 py-0.5 text-center text-2xs font-medium leading-tight"
                   style={{
                     backgroundColor: "rgba(0, 0, 0, 0.65)",
                     color: celebrations.get(p.id)!.color,
@@ -277,7 +277,7 @@ function CameraAvatar({ stream, celebrationColor }: { stream: MediaStream; celeb
       className="h-16 w-16 rounded-full object-cover transition-transform duration-150 hover:scale-105"
       style={{
         border: "2px solid rgba(255,255,255,0.12)",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+        boxShadow: "var(--shadow-md)",
         transform: "scaleX(-1)",
         ...(celebrationColor && {
           "--burst-color": celebrationColor,

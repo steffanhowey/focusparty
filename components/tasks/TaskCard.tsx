@@ -42,7 +42,7 @@ export const TaskCard = memo(function TaskCard({
       {...listeners}
       onClick={() => onClick?.(task)}
       aria-label={`Task: ${task.title}`}
-      className="group w-full rounded-[var(--radius-sm)] border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 text-left transition-shadow hover:shadow-[var(--shadow-sm)] md:cursor-grab md:touch-none md:active:cursor-grabbing"
+      className="group w-full rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 text-left transition-shadow hover:shadow-[var(--shadow-sm)] md:cursor-grab md:touch-none md:active:cursor-grabbing"
     >
       <div className="flex items-start gap-2">
         {/* Drag handle icon — desktop only */}

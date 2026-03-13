@@ -79,7 +79,7 @@ export function ActivityChart({ data, range }: ActivityChartProps) {
           {data.map((d) => (
             <div
               key={d.day}
-              className="flex-1 text-center text-[10px] text-[var(--color-text-tertiary)]"
+              className="flex-1 text-center text-2xs text-[var(--color-text-tertiary)]"
             >
               {formatDay(d.day, range)}
             </div>
@@ -89,10 +89,10 @@ export function ActivityChart({ data, range }: ActivityChartProps) {
 
       {isCompact && (
         <div className="mt-2 flex justify-between">
-          <span className="text-[10px] text-[var(--color-text-tertiary)]">
+          <span className="text-2xs text-[var(--color-text-tertiary)]">
             {formatDay(data[0].day, range)}
           </span>
-          <span className="text-[10px] text-[var(--color-text-tertiary)]">
+          <span className="text-2xs text-[var(--color-text-tertiary)]">
             Today
           </span>
         </div>

@@ -67,7 +67,7 @@ export function CommitmentPicker({ value, onChange, accentColor }: CommitmentPic
   const dropdown = open ? (
     <div
       ref={dropdownRef}
-      className="rounded-2xl border border-[var(--color-border-default)] bg-[rgba(10,10,10,0.95)] p-1.5 shadow-2xl backdrop-blur-[20px]"
+      className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-dropdown)] p-1.5 shadow-lg backdrop-blur-[20px]"
       style={{
         position: "fixed",
         top: pos.top,
@@ -86,7 +86,7 @@ export function CommitmentPicker({ value, onChange, accentColor }: CommitmentPic
           <Icon size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-[var(--color-text-secondary)]">{label}</p>
-            <p className="text-[11px] text-[var(--color-text-tertiary)]">{desc}</p>
+            <p className="text-2xs text-[var(--color-text-tertiary)]">{desc}</p>
           </div>
           {value === type && (
             <Check

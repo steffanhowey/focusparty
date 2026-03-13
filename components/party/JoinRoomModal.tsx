@@ -10,6 +10,7 @@ import {
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { ListTodo } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { JoinRoomHeader } from "./JoinRoomHeader";
 import { FocusBody } from "@/components/session/FocusBody";
 import { DurationPills } from "@/components/session/DurationPills";
@@ -285,14 +286,13 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
 
       {/* Modal panel — dead center */}
       <div
-        className="relative w-full max-w-[520px] overflow-visible rounded-[var(--radius-xl)]"
+        className="relative w-full max-w-[520px] overflow-visible rounded-xl"
         style={{
           background: "rgba(10,10,10,0.94)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow:
-            "0 16px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
+          boxShadow: "var(--shadow-xl)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -364,7 +364,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
                   {/* Task/goal picker dropdown */}
                   {showTaskPicker && (activeTasks.length > 0 || activeGoals.length > 0) && (
                     <div
-                      className="absolute left-0 right-0 z-20 mx-5 mt-1.5 overflow-hidden rounded-xl shadow-2xl"
+                      className="absolute left-0 right-0 z-20 mx-5 mt-1.5 overflow-hidden rounded-xl shadow-lg"
                       style={{
                         background: "rgba(10,10,10,0.95)",
                         backdropFilter: "blur(16px)",
@@ -396,14 +396,14 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
 
                 {/* Footer */}
                 <div className="mt-auto flex items-center justify-end gap-3 px-5 pb-5">
-                  <button
-                    type="button"
+                  <Button
+                    variant="cta"
+                    size="sm"
                     onClick={() => { setShowTaskPicker(false); setFormStep(2); }}
                     disabled={!hasGoal}
-                    className="cursor-pointer rounded-full bg-[var(--color-accent-primary)] px-6 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] active:opacity-75 disabled:cursor-default disabled:opacity-40 disabled:hover:scale-100"
                   >
                     Next
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -428,28 +428,22 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
 
                 {/* Footer */}
                 <div className="mt-auto flex items-center justify-between px-5 pb-5">
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setFormStep(1)}
-                    className="cursor-pointer rounded-full px-5 py-2.5 text-sm font-medium text-white/50 transition-colors hover:text-white/80"
                   >
                     Back
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    variant="cta"
+                    size="sm"
                     onClick={handleJoin}
                     disabled={!hasGoal || isJoining}
-                    className="cursor-pointer rounded-full bg-[var(--color-accent-primary)] px-6 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] active:opacity-75 disabled:cursor-default disabled:opacity-40 disabled:hover:scale-100"
+                    loading={isJoining}
                   >
-                    {isJoining ? (
-                      <span className="flex items-center gap-2">
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        Joining...
-                      </span>
-                    ) : (
-                      buttonLabel
-                    )}
-                  </button>
+                    {isJoining ? "Joining..." : buttonLabel}
+                  </Button>
                 </div>
               </div>
             </div>

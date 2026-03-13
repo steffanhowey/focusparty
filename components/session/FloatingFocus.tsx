@@ -90,7 +90,7 @@ export function FloatingFocus({
             ? `translate(${br.left + br.width / 2 - fr.left - fr.width / 2}px, ${br.top + br.height / 2 - fr.top - fr.height / 2}px) scale(0.06)`
             : "scale(1)",
           opacity: isTo ? 0 : 1,
-          borderRadius: isTo ? "9999px" : "12px",
+          borderRadius: isTo ? "9999px" : "var(--radius-md)",
           overflow: "hidden",
           pointerEvents: "none",
           transition: isTo
@@ -105,8 +105,7 @@ export function FloatingFocus({
             background: "rgba(10,10,10,0.65)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
-            boxShadow:
-              "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+            boxShadow: "var(--shadow-float)",
           }}
         />
       </div>
@@ -131,8 +130,7 @@ export function FloatingFocus({
           background: "rgba(10,10,10,0.65)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
-          boxShadow:
-            "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+          boxShadow: "var(--shadow-float)",
         }}
       >
         {/* Header — drag handle */}

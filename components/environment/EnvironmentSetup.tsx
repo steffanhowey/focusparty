@@ -83,8 +83,7 @@ export function EnvironmentSetup({
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow:
-            "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+          boxShadow: "var(--shadow-float)",
         }}
       >
         {/* Room header */}
@@ -132,7 +131,7 @@ export function EnvironmentSetup({
           {/* Task dropdown */}
           {showTasks && (
             <div
-              className="mt-1.5 max-h-48 overflow-y-auto rounded-lg py-1 shadow-2xl"
+              className="mt-1.5 max-h-48 overflow-y-auto rounded-lg py-1 shadow-lg"
               style={{
                 background: "rgba(10,10,10,0.95)",
                 border: "1px solid rgba(255,255,255,0.08)",

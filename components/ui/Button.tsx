@@ -2,7 +2,7 @@
 
 import { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "cta" | "link";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "cta" | "link";
 type ButtonSize = "xs" | "sm" | "default";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -25,6 +25,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     "rounded-full bg-[var(--color-accent-primary)] text-white transition-all duration-150 hover:opacity-85 active:opacity-75",
   secondary:
     "rounded-full border border-[var(--color-accent-primary)] bg-transparent text-[var(--color-accent-primary)] transition-colors duration-150 hover:bg-[var(--color-accent-primary)]/10",
+  outline:
+    "rounded-full border border-[var(--color-border-default)] bg-transparent text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-border-focus)] hover:text-white",
   ghost:
     "rounded-full bg-transparent text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-[var(--color-bg-hover)]",
   danger:
@@ -38,7 +40,7 @@ const variantStyles: Record<ButtonVariant, string> = {
 const sizeStyles: Record<ButtonSize, string> = {
   xs: "h-8 px-3 text-xs",
   sm: "h-9 px-4 text-sm",
-  default: "h-12 px-6",
+  default: "h-12 px-6 text-sm",
 };
 
 function Spinner() {
@@ -84,7 +86,6 @@ export function Button({
     <button
       type="button"
       className={`inline-flex items-center gap-2 whitespace-nowrap cursor-pointer font-medium disabled:cursor-not-allowed disabled:opacity-50 ${sizeStyles[size]} ${variantStyles[variant]} ${fullWidth ? "w-full justify-center" : ""} ${className}`}
-      style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
       disabled={isDisabled}
       {...props}
     >

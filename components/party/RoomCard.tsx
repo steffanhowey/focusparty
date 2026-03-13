@@ -59,7 +59,7 @@ function AvatarCluster({
         ))}
       </span>
       {overflow > 0 && (
-        <span className="ml-1 text-[10px] text-[var(--color-text-tertiary)]">
+        <span className="ml-1 text-2xs text-[var(--color-text-tertiary)]">
           +{overflow}
         </span>
       )}
@@ -108,8 +108,8 @@ export function RoomCard({
         : "waiting";
 
   const statusConfig = {
-    active: { dot: "#10B981", label: party.persistent ? "Open" : "Active" },
-    waiting: { dot: "#F59E0B", label: "Waiting" },
+    active: { dot: "var(--color-green-700)", label: party.persistent ? "Open" : "Active" },
+    waiting: { dot: "var(--color-amber-700)", label: "Waiting" },
     full: { dot: "#6B7280", label: "Full" },
   } as const;
 
@@ -125,7 +125,7 @@ export function RoomCard({
     >
       {/* Image card */}
       <div
-        className="group/card relative h-[200px] w-full overflow-hidden rounded-[var(--radius-md)] border shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)]"
+        className="group/card relative h-[200px] w-full overflow-hidden rounded-md border shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)]"
         style={{
           borderColor: isPreviewPlaying
             ? `${world.accentColor}60`
@@ -178,7 +178,7 @@ export function RoomCard({
                 background: "rgba(10,10,10,0.55)",
                 backdropFilter: "blur(16px)",
                 WebkitBackdropFilter: "blur(16px)",
-                boxShadow: "0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+                boxShadow: "var(--shadow-float)",
               }}
               aria-label={isPreviewPlaying ? "Stop vibe check" : "Vibe check"}
             >
@@ -225,7 +225,7 @@ export function RoomCard({
       }`}
     >
       {isJoining && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[var(--radius-md)]" style={{ background: "rgba(10,10,10,0.6)" }}>
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md" style={{ background: "rgba(10,10,10,0.6)" }}>
           <div className="flex items-center gap-2 text-sm font-medium text-white">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
             Entering...
@@ -235,7 +235,7 @@ export function RoomCard({
 
       <div className="p-4">
         <div className="mb-3 flex items-center justify-end">
-          <span className="flex items-center gap-1.5 text-[11px] text-[var(--color-text-tertiary)]">
+          <span className="flex items-center gap-1.5 text-2xs text-[var(--color-text-tertiary)]">
             <span
               className="inline-block h-2 w-2 rounded-full"
               style={{ background: s.dot }}

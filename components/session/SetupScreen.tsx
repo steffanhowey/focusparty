@@ -33,8 +33,7 @@ const CARD_STYLE: React.CSSProperties = {
   background: "rgba(10,10,10,0.95)",
   backdropFilter: "blur(20px)",
   WebkitBackdropFilter: "blur(20px)",
-  boxShadow:
-    "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+  boxShadow: "var(--shadow-float)",
   "--color-bg-elevated": "#141414",
   "--color-text-primary": "#ffffff",
   "--color-text-secondary": "#c0c0c0",
@@ -136,14 +135,13 @@ export function SetupScreen({
         </div>
       )}
       <div
-        className="animate-fp-setup-enter w-full max-w-[480px] overflow-visible rounded-[var(--radius-lg)] border border-white/[0.08] p-8 shadow-xl"
+        className="animate-fp-setup-enter w-full max-w-[480px] overflow-visible rounded-lg border border-white/[0.08] p-8 shadow-xl"
         style={CARD_STYLE}
       >
         {roomName && (
           <div className="mb-5">
             <h2
               className="text-xl font-bold text-[var(--color-text-primary)]"
-              style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
             >
               {roomName}
             </h2>
@@ -170,7 +168,7 @@ export function SetupScreen({
             <div className="flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
               <span
                 className="inline-block h-2 w-2 rounded-full"
-                style={{ background: focusingCount > 0 ? "#10B981" : "#F59E0B" }}
+                style={{ background: focusingCount > 0 ? "var(--color-green-700)" : "var(--color-amber-700)" }}
               />
               <span>
                 {focusingCount > 0
@@ -198,7 +196,6 @@ export function SetupScreen({
         {!roomName && (
           <h2
             className="mb-6 text-2xl font-bold text-[var(--color-text-primary)]"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             Ready to focus?
           </h2>
@@ -307,7 +304,7 @@ export function SetupScreen({
                           className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
                         />
                         {newTaskText.trim() && (
-                          <span className="shrink-0 text-[11px] text-[var(--color-text-tertiary)]">
+                          <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
                             ↵
                           </span>
                         )}

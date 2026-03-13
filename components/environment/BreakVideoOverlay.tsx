@@ -302,8 +302,7 @@ export function BreakVideoOverlay({
         background: "rgba(10,10,10,0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        boxShadow:
-          "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow: "var(--shadow-float)",
         ...(isOvertime
           ? {
               animation: "fp-break-pulse 2s ease-in-out infinite",
@@ -327,7 +326,7 @@ export function BreakVideoOverlay({
             className="relative h-10 w-10 rounded-full border border-white/20 transition-transform duration-300 active:scale-95"
             style={{
               background: "radial-gradient(circle at 40% 35%, rgba(60,60,60,1), rgba(25,25,25,1))",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.6)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), var(--shadow-sm)",
               transform: `rotate(${currentClipIndex * (360 / clips.length)}deg)`,
               transition: "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
             }}
@@ -426,11 +425,11 @@ export function BreakVideoOverlay({
               style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%)" }}
             >
               <div className="min-w-0">
-                <p className="text-[13px] font-medium leading-tight text-white/90 line-clamp-1">
+                <p className="text-sm font-medium leading-tight text-white/90 line-clamp-1">
                   {content.title}
                 </p>
                 {content.source_name && (
-                  <p className="mt-0.5 text-[11px] text-white/50">{content.source_name}</p>
+                  <p className="mt-0.5 text-2xs text-white/50">{content.source_name}</p>
                 )}
               </div>
               <div className="flex shrink-0 items-center gap-2">
@@ -453,7 +452,7 @@ export function BreakVideoOverlay({
                     e.stopPropagation();
                     if (!wasDraggedRef.current) handleClose();
                   }}
-                  className="shrink-0 cursor-pointer rounded-full px-3 py-1 text-[11px] font-medium text-white/60 transition-colors duration-150 hover:bg-white/10 hover:text-white/90"
+                  className="shrink-0 cursor-pointer rounded-full px-3 py-1 text-2xs font-medium text-white/60 transition-colors duration-150 hover:bg-white/10 hover:text-white/90"
                   style={{ border: "1px solid rgba(255,255,255,0.15)" }}
                 >
                   End Break

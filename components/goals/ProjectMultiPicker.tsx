@@ -81,7 +81,7 @@ export function ProjectMultiPicker({
     if (!trimmed) return;
     const created = await onCreateProject({
       name: trimmed,
-      color: "#7c5cfc",
+      color: "var(--color-indigo-700)",
       emoji: "",
     });
     if (created) {
@@ -102,7 +102,7 @@ export function ProjectMultiPicker({
   const dropdown = open ? (
     <div
       ref={dropdownRef}
-      className="rounded-2xl border border-[var(--color-border-default)] bg-[rgba(10,10,10,0.95)] p-1.5 shadow-2xl backdrop-blur-[20px]"
+      className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-dropdown)] p-1.5 shadow-lg backdrop-blur-[20px]"
       style={{
         position: "fixed",
         top: pos.top,

@@ -73,25 +73,25 @@ export function DashboardView() {
           label="Total Users"
           value={stats?.totalUsers ?? 0}
           icon={Users}
-          color="#5CC2EC"
+          color="var(--color-cyan-700)"
         />
         <StatCard
           label="Active Sessions"
           value={stats?.activeSessionsNow ?? 0}
           icon={Zap}
-          color="#5BC682"
+          color="var(--color-green-700)"
         />
         <StatCard
           label="Sessions Today"
           value={stats?.sessionsToday ?? 0}
           icon={Calendar}
-          color="#F5C54E"
+          color="var(--color-gold-700)"
         />
         <StatCard
           label="Active Parties"
           value={stats?.activeParties ?? 0}
           icon={PartyPopper}
-          color="#7c5cfc"
+          color="var(--color-indigo-700)"
         />
       </div>
 

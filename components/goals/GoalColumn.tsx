@@ -61,7 +61,7 @@ export const GoalColumn = memo(function GoalColumn({
   const goalIds = goals.map((g) => g.id);
 
   return (
-    <div className="flex min-w-0 flex-1 basis-0 flex-col rounded-[var(--radius-md)] bg-[rgba(255,255,255,0.035)] p-3">
+    <div className="flex min-w-0 flex-1 basis-0 flex-col rounded-md bg-[rgba(255,255,255,0.035)] p-3">
       {/* Column header */}
       <div className="mb-3 flex items-center gap-2">
         <span className="text-sm font-medium" style={{ color: cfg.color }}>
@@ -129,7 +129,7 @@ export const GoalColumn = memo(function GoalColumn({
                   className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
                 />
                 {newGoalTitle.trim() && (
-                  <span className="shrink-0 text-[11px] text-[var(--color-text-tertiary)]">
+                  <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
                     ↵
                   </span>
                 )}

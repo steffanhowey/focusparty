@@ -155,7 +155,7 @@ export const TasksPanel = memo(function TasksPanel({
               <span className="min-w-0 flex-1 truncate text-xs font-semibold text-white">
                 {activeGoal.title}
               </span>
-              <span className="shrink-0 text-[10px] text-[var(--color-text-tertiary)]">
+              <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
                 {computeGoalProgress(goalTasks).completed}/{computeGoalProgress(goalTasks).total}
               </span>
             </div>
@@ -172,17 +172,17 @@ export const TasksPanel = memo(function TasksPanel({
                       <button
                         type="button"
                         onClick={() => onCompleteTask(task.id)}
-                        className="flex h-3.5 w-3.5 shrink-0 cursor-pointer items-center justify-center rounded-[4px] border border-white/20 transition-colors hover:border-white/40"
+                        className="flex h-3.5 w-3.5 shrink-0 cursor-pointer items-center justify-center rounded-xs border border-white/20 transition-colors hover:border-white/40"
                         aria-label="Complete"
                       />
-                      <span className="min-w-0 flex-1 truncate text-[11px] text-[var(--color-text-secondary)]">
+                      <span className="min-w-0 flex-1 truncate text-2xs text-[var(--color-text-secondary)]">
                         {task.title}
                       </span>
                       {onSetSprintGoal && (
                         <button
                           type="button"
                           onClick={() => onSetSprintGoal(task.id)}
-                          className="shrink-0 cursor-pointer rounded px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-accent-primary)] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[var(--color-accent-primary)]/10"
+                          className="shrink-0 cursor-pointer rounded px-1.5 py-0.5 text-2xs font-medium text-[var(--color-accent-primary)] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[var(--color-accent-primary)]/10"
                         >
                           Sprint this
                         </button>
@@ -197,7 +197,7 @@ export const TasksPanel = memo(function TasksPanel({
                 type="button"
                 onClick={onAISuggest}
                 disabled={isAISuggesting}
-                className="mt-2 flex w-full cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1.5 text-[11px] font-medium text-[var(--color-accent-primary)] transition-colors hover:bg-[var(--color-accent-primary)]/10 disabled:cursor-default disabled:opacity-50"
+                className="mt-2 flex w-full cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1.5 text-2xs font-medium text-[var(--color-accent-primary)] transition-colors hover:bg-[var(--color-accent-primary)]/10 disabled:cursor-default disabled:opacity-50"
               >
                 {isAISuggesting ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
                 {isAISuggesting ? "Suggesting..." : "What should I do next?"}
@@ -257,7 +257,7 @@ export const TasksPanel = memo(function TasksPanel({
                 className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
               />
               {newTaskText.trim() && (
-                <span className="shrink-0 text-[11px] text-[var(--color-text-tertiary)]">
+                <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
                   ↵
                 </span>
               )}
@@ -313,8 +313,7 @@ export const TasksPanel = memo(function TasksPanel({
           <div
             className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-3 py-2 shadow-lg"
             style={{
-              boxShadow:
-                "0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+              boxShadow: "var(--shadow-float)",
             }}
           >
             <span className="text-sm font-medium text-white">

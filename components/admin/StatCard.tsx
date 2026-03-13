@@ -27,7 +27,6 @@ export function StatCard({
           </p>
           <p
             className="mt-2 text-3xl font-bold text-[var(--color-text-primary)]"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             {value}
           </p>

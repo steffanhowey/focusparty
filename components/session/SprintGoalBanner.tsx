@@ -14,7 +14,7 @@ export function SprintGoalBanner({
   return (
     <div className="flex flex-col items-center text-center px-8">
       <span
-        className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/30"
+        className="mb-3 text-2xs font-semibold uppercase tracking-widest text-white/30"
       >
         Goal
       </span>
@@ -24,7 +24,6 @@ export function SprintGoalBanner({
           <h2
             className="text-3xl font-bold tracking-tight text-white md:text-4xl"
             style={{
-              fontFamily: "var(--font-montserrat), sans-serif",
               textShadow: "0 2px 8px rgba(0,0,0,0.5)",
             }}
           >
@@ -42,7 +41,6 @@ export function SprintGoalBanner({
         <h2
           className="text-3xl font-bold tracking-tight text-white md:text-4xl"
           style={{
-            fontFamily: "var(--font-montserrat), sans-serif",
             textShadow: "0 2px 8px rgba(0,0,0,0.5)",
           }}
         >

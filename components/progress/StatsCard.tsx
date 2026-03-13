@@ -18,7 +18,6 @@ export function StatsCard({ label, value, sublabel, icon }: StatsCardProps) {
           <p className="text-sm text-[var(--color-text-secondary)]">{label}</p>
           <p
             className="mt-1 text-2xl font-bold text-white"
-            style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
           >
             {value}
           </p>

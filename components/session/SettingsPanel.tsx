@@ -77,7 +77,7 @@ function Accordion({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between px-4 py-3 text-[13px] font-medium text-white transition-colors hover:bg-white/[0.04]"
+        className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-white/[0.04]"
       >
         {label}
         <ChevronDown
@@ -365,7 +365,7 @@ function UserPreferencesContent({
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+      <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
         {label}
       </p>
       {children}

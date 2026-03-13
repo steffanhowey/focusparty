@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { Target, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { useGoals } from "@/lib/useGoals";
 import { useTasks } from "@/lib/useTasks";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -163,13 +164,9 @@ export function GoalsList() {
           <p className="mb-6 max-w-xs text-sm text-[var(--color-text-tertiary)]">
             Create a goal to organize your tasks around meaningful outcomes.
           </p>
-          <button
-            type="button"
-            onClick={() => setShowCreateModal(true)}
-            className="cursor-pointer rounded-full bg-[var(--color-accent-primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-85 hover:scale-[1.02]"
-          >
+          <Button variant="cta" size="sm" onClick={() => setShowCreateModal(true)}>
             Create your first goal
-          </button>
+          </Button>
         </div>
       )}
 
@@ -209,7 +206,7 @@ export function GoalsList() {
                 <button
                   type="button"
                   onClick={() => completeTask(task.id)}
-                  className="flex h-4.5 w-4.5 shrink-0 cursor-pointer items-center justify-center rounded-[5px] border border-white/20 transition-colors hover:border-white/40 hover:bg-white/10"
+                  className="flex h-4.5 w-4.5 shrink-0 cursor-pointer items-center justify-center rounded-xs border border-white/20 transition-colors hover:border-white/40 hover:bg-white/10"
                   aria-label="Complete task"
                 />
                 <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-secondary)]">
@@ -243,8 +240,8 @@ export function GoalsList() {
                   className="flex items-center gap-3 rounded-xl border border-[var(--color-border-default)] px-4 py-3"
                   style={{ background: "rgba(255,255,255,0.02)" }}
                 >
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#5BC682]/20">
-                    <Target size={12} className="text-[#5BC682]" />
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-green-700)]/20">
+                    <Target size={12} className="text-[var(--color-green-700)]" />
                   </div>
                   <span className="truncate text-sm text-[var(--color-text-secondary)] line-through">
                     {goal.title}

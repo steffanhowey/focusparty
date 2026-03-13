@@ -1,13 +1,23 @@
 import type { TaskPriority, TaskStatus } from "./types";
+import {
+  STATUS_TODO,
+  STATUS_IN_PROGRESS,
+  STATUS_DONE,
+  PRIORITY_URGENT,
+  PRIORITY_HIGH,
+  PRIORITY_MEDIUM,
+  PRIORITY_LOW,
+  PROJECT_COLORS,
+} from "./palette";
 
 export const PRIORITY_CONFIG: Record<
   TaskPriority,
   { label: string; icon: string; color: string }
 > = {
-  p1: { label: "Urgent", icon: "⚡", color: "#ef4444" },
-  p2: { label: "High", icon: "↑", color: "#f97316" },
-  p3: { label: "Medium", icon: "→", color: "#eab308" },
-  p4: { label: "Low", icon: "↓", color: "#9ca3af" },
+  p1: { label: "Urgent", icon: "⚡", color: PRIORITY_URGENT },
+  p2: { label: "High", icon: "↑", color: PRIORITY_HIGH },
+  p3: { label: "Medium", icon: "→", color: PRIORITY_MEDIUM },
+  p4: { label: "Low", icon: "↓", color: PRIORITY_LOW },
   none: { label: "No priority", icon: "", color: "transparent" },
 };
 
@@ -15,18 +25,11 @@ export const STATUS_CONFIG: Record<
   TaskStatus,
   { label: string; color: string }
 > = {
-  todo: { label: "To Do", color: "#888888" },
-  in_progress: { label: "In Progress", color: "#7c5cfc" },
-  done: { label: "Done", color: "#5BC682" },
+  todo: { label: "To Do", color: STATUS_TODO },
+  in_progress: { label: "In Progress", color: STATUS_IN_PROGRESS },
+  done: { label: "Done", color: STATUS_DONE },
 };
 
 export const STATUS_COLUMNS: TaskStatus[] = ["todo", "in_progress", "done"];
 
-export const PROJECT_COLORS = [
-  "#7c5cfc",
-  "#ef4444",
-  "#f97316",
-  "#eab308",
-  "#22c55e",
-  "#06b6d4",
-] as const;
+export { PROJECT_COLORS };

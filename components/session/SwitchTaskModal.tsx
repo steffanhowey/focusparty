@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback, useState } from "react";
 import { createPortal } from "react-dom";
+import { Button } from "@/components/ui/Button";
 
 interface SwitchTaskModalProps {
   isOpen: boolean;
@@ -56,10 +57,9 @@ export function SwitchTaskModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-[360px] rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-6 shadow-xl">
+      <div className="relative w-full max-w-[360px] rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-6 shadow-xl">
         <h3
           className="mb-2 text-base font-semibold text-white"
-          style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
         >
           Switch task?
         </h3>
@@ -69,20 +69,12 @@ export function SwitchTaskModal({
         </p>
 
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={onComplete}
-            className="flex-1 rounded-full bg-[var(--color-accent-primary)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
+          <Button variant="primary" size="sm" fullWidth onClick={onComplete}>
             Mark as done
-          </button>
-          <button
-            type="button"
-            onClick={onSwitch}
-            className="flex-1 rounded-full border border-[var(--color-border-default)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] hover:text-white"
-          >
+          </Button>
+          <Button variant="outline" size="sm" fullWidth onClick={onSwitch}>
             Switch task
-          </button>
+          </Button>
         </div>
       </div>
     </div>,
