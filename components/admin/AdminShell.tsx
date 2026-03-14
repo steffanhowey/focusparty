@@ -5,11 +5,18 @@ import { Menu } from "lucide-react";
 import { AdminSidebar } from "./AdminSidebar";
 import { ADMIN_NAV_ITEMS, ADMIN_NAV_HREFS } from "./adminNavItems";
 import { useAdminAuth } from "@/lib/admin/useAdminAuth";
+import { useAdminData } from "@/lib/admin/useAdminData";
 
 const PAGE_TITLES: Record<string, string> = {
   "/admin": "Dashboard",
   "/admin/users": "Users",
   "/admin/rooms": "Rooms",
+  "/admin/pipeline": "Pipeline",
+  "/admin/review": "Review Queue",
+  "/admin/topics": "Topics",
+  "/admin/content": "Content",
+  "/admin/creators": "Creators",
+  "/admin/analytics": "Analytics",
   "/admin/backgrounds": "Backgrounds",
   "/admin/activity": "Activity",
   "/admin/synthetics": "Synthetics",
@@ -54,6 +61,36 @@ const LazySyntheticsView = lazy(() =>
 const LazySettingsView = lazy(() =>
   import("@/components/admin/settings/SettingsView").then((m) => ({
     default: m.SettingsView,
+  }))
+);
+const LazyPipelineView = lazy(() =>
+  import("@/components/admin/pipeline/PipelineView").then((m) => ({
+    default: m.PipelineView,
+  }))
+);
+const LazyReviewQueueView = lazy(() =>
+  import("@/components/admin/review/ReviewQueueView").then((m) => ({
+    default: m.ReviewQueueView,
+  }))
+);
+const LazyTopicsView = lazy(() =>
+  import("@/components/admin/topics/TopicsView").then((m) => ({
+    default: m.TopicsView,
+  }))
+);
+const LazyContentView = lazy(() =>
+  import("@/components/admin/content/ContentView").then((m) => ({
+    default: m.ContentView,
+  }))
+);
+const LazyCreatorsView = lazy(() =>
+  import("@/components/admin/creators/CreatorsView").then((m) => ({
+    default: m.CreatorsView,
+  }))
+);
+const LazyAnalyticsView = lazy(() =>
+  import("@/components/admin/analytics/AnalyticsView").then((m) => ({
+    default: m.AnalyticsView,
   }))
 );
 
@@ -101,6 +138,42 @@ function renderTabContent(tab: string): ReactNode {
           <LazySettingsView />
         </Suspense>
       );
+    case "/admin/pipeline":
+      return (
+        <Suspense fallback={null}>
+          <LazyPipelineView />
+        </Suspense>
+      );
+    case "/admin/review":
+      return (
+        <Suspense fallback={null}>
+          <LazyReviewQueueView />
+        </Suspense>
+      );
+    case "/admin/topics":
+      return (
+        <Suspense fallback={null}>
+          <LazyTopicsView />
+        </Suspense>
+      );
+    case "/admin/content":
+      return (
+        <Suspense fallback={null}>
+          <LazyContentView />
+        </Suspense>
+      );
+    case "/admin/creators":
+      return (
+        <Suspense fallback={null}>
+          <LazyCreatorsView />
+        </Suspense>
+      );
+    case "/admin/analytics":
+      return (
+        <Suspense fallback={null}>
+          <LazyAnalyticsView />
+        </Suspense>
+      );
     default:
       return null;
   }
@@ -108,6 +181,10 @@ function renderTabContent(tab: string): ReactNode {
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const { isAdmin, isLoading } = useAdminAuth();
+  const { data: badgeData } = useAdminData<{ badges: Record<string, number> }>(
+    "/api/admin/nav-badges",
+    { refreshInterval: 60000 }
+  );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [clientTab, setClientTab] = useState<string | null>(null);
 
@@ -169,7 +246,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <div className="flex h-screen overflow-hidden">
       {/* Desktop sidebar */}
       <div className="hidden md:flex md:flex-shrink-0">
-        <AdminSidebar activeId={activeNavId} onNavClick={handleNavClick} />
+        <AdminSidebar activeId={activeNavId} onNavClick={handleNavClick} badges={badgeData?.badges} />
       </div>
 
       {/* Mobile overlay drawer */}
@@ -182,7 +259,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             aria-label="Close menu"
           />
           <div className="relative h-full w-56 flex-shrink-0 shadow-xl">
-            <AdminSidebar activeId={activeNavId} onNavClick={handleMobileNavClick} />
+            <AdminSidebar activeId={activeNavId} onNavClick={handleMobileNavClick} badges={badgeData?.badges} />
           </div>
         </div>
       )}

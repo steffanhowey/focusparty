@@ -27,6 +27,7 @@ interface UsePartyPresenceInput {
   breakContentId?: string | null;
   breakContentTitle?: string | null;
   breakContentThumbnail?: string | null;
+  breakLearningState?: "pre_watch" | "watching" | "comprehension" | "exercise" | "discussion" | null;
 }
 
 interface UsePartyPresenceReturn {
@@ -63,6 +64,7 @@ export function usePartyPresence(
     breakContentId,
     breakContentTitle,
     breakContentThumbnail,
+    breakLearningState,
   } = input;
 
   const [participants, setParticipants] = useState<PresencePayload[]>([]);
@@ -122,6 +124,7 @@ export function usePartyPresence(
             breakContentId,
             breakContentTitle,
             breakContentThumbnail,
+            breakLearningState,
           });
           await channel.track(payload);
           setIsTracking(true);
@@ -148,7 +151,7 @@ export function usePartyPresence(
     if (!channelRef.current || !userId) return;
 
     // Build a fingerprint of the trackable fields to avoid redundant re-tracks
-    const fingerprint = JSON.stringify([userId, displayName, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec, breakContentId, breakContentTitle, breakContentThumbnail]);
+    const fingerprint = JSON.stringify([userId, displayName, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec, breakContentId, breakContentTitle, breakContentThumbnail, breakLearningState]);
     if (fingerprint === lastTrackedRef.current) return;
     lastTrackedRef.current = fingerprint;
 
@@ -166,9 +169,10 @@ export function usePartyPresence(
       breakContentId,
       breakContentTitle,
       breakContentThumbnail,
+      breakLearningState,
     });
     channelRef.current.track(payload);
-  }, [userId, displayName, username, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec, breakContentId, breakContentTitle, breakContentThumbnail]);
+  }, [userId, displayName, username, avatarUrl, character, activeSessionId, phase, goalPreview, commitmentType, sprintStartedAt, sprintDurationSec, breakContentId, breakContentTitle, breakContentThumbnail, breakLearningState]);
 
   // Ref avoids stale closure — participants changes on every sync event
   const participantsRef = useRef(participants);

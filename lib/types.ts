@@ -1,6 +1,7 @@
 // SkillGap core types
 
 import type { BreakCategory } from "./breakConstants";
+import type { Scaffolding } from "./scaffolding/generator";
 export type { BreakCategory };
 
 export type CharacterId = "ember" | "moss" | "byte";
@@ -269,7 +270,8 @@ export type ActivityEventType =
   | "break_completed"
   | "break_cancelled"
   | "integration_linked"
-  | "integration_writeback";
+  | "integration_writeback"
+  | "discussion_prompt";
 
 // ─── Room State ──────────────────────────────────────────────
 
@@ -312,6 +314,11 @@ export interface HostGenerationInput {
     url: string | null;
     resourceType: string;
   } | null;
+  /** Pre-written host guidance from auto-generated blueprint */
+  blueprintHints?: {
+    triggerHint: string;
+    curriculumContext?: string;
+  };
 }
 
 export interface HostGenerationResult {
@@ -359,6 +366,8 @@ export interface PresencePayload {
   breakContentId: string | null;
   breakContentTitle: string | null;
   breakContentThumbnail: string | null;
+  /** Current scaffolding learning state during break */
+  breakLearningState: "pre_watch" | "watching" | "comprehension" | "exercise" | "discussion" | null;
   updatedAt: string;
 }
 
@@ -501,6 +510,10 @@ export interface BreakContentItem {
   best_duration: 3 | 5 | 10 | null;
   /** AI-assigned topic tags for personalization (e.g. ["react", "system-design"]) */
   topics: string[] | null;
+  /** AI-generated learning scaffolding (null for legacy/unscaffolded content) */
+  scaffolding: Scaffolding | null;
+  /** Scaffolding generation status */
+  scaffolding_status: "none" | "pending" | "complete" | "failed" | null;
 }
 
 // ─── AI Curator — Candidates ────────────────────────────────
@@ -514,6 +527,7 @@ export interface BreakContentCandidate {
   title: string;
   description: string | null;
   creator: string | null;
+  channel_id: string | null;
   video_url: string;
   thumbnail_url: string | null;
   duration_seconds: number | null;
@@ -523,6 +537,7 @@ export interface BreakContentCandidate {
   comment_count: number | null;
   discovered_at: string;
   status: "pending" | "evaluated" | "rejected" | "promoted";
+  discovery_source: "scheduled" | "hot-topic" | "creator" | "manual";
 }
 
 // ─── AI Curator — Scores ────────────────────────────────────
@@ -574,4 +589,76 @@ export interface NoteRecord {
   note_text: string;
   created_at: string;
   updated_at: string;
+}
+
+// ─── Analytics & Performance ─────────────────────────────────
+
+export interface ContentPerformance {
+  id: string;
+  videoId: string;
+  worldKey: string;
+  periodDate: string;
+  impressions: number;
+  starts: number;
+  completions: number;
+  abandonments: number;
+  extensions: number;
+  avgWatchSeconds: number;
+  completionRate: number;
+  engagementScore: number;
+}
+
+export interface RoomPerformance {
+  id: string;
+  roomId: string;
+  periodDate: string;
+  uniqueParticipants: number;
+  totalSessions: number;
+  totalSprints: number;
+  avgSessionMinutes: number;
+  retentionRate: number;
+  breakCompletionRate: number;
+}
+
+export interface CalibrationRecommendation {
+  dimension: string;
+  currentWeight: number;
+  recommendedWeight: number;
+  reason: string;
+}
+
+export interface ScoreCalibration {
+  id: string;
+  calibrationType: "taste_score" | "heat_score" | "creator_authority";
+  runAt: string;
+  sampleSize: number;
+  correlation: number;
+  currentWeights: Record<string, number>;
+  recommendedWeights: Record<string, number> | null;
+  recommendations: CalibrationRecommendation[];
+  autoApplied: boolean;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+}
+
+export interface AutoApprovalConfig {
+  id: string;
+  enabled: boolean;
+  minHeatScore: number;
+  minContentScore: number;
+  minCreatorAuthority: number;
+  minCurriculumItems: number;
+  maxDailyApprovals: number;
+  updatedAt: string;
+  updatedBy: string | null;
+}
+
+export interface AutoApprovalLogEntry {
+  id: string;
+  blueprintId: string;
+  criteriaSnapshot: AutoApprovalConfig;
+  scoresSnapshot: Record<string, number>;
+  decision: "approved" | "skipped" | "cap_reached";
+  reason: string | null;
+  createdAt: string;
 }

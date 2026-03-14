@@ -98,6 +98,11 @@ export async function provisionRoom(
       persistent: true,
       invite_code: inviteCode,
       blueprint_id: input.blueprintId,
+      ...(bp.generation_source === "auto" ? {
+        topic_slug: bp.topic_slug,
+        is_trending: true,
+        generation_source: "auto" as const,
+      } : {}),
     })
     .select("id")
     .single();
@@ -119,6 +124,11 @@ export async function provisionRoom(
           persistent: true,
           invite_code: retryCode,
           blueprint_id: input.blueprintId,
+          ...(bp.generation_source === "auto" ? {
+            topic_slug: bp.topic_slug,
+            is_trending: true,
+            generation_source: "auto" as const,
+          } : {}),
         })
         .select("id")
         .single();

@@ -53,9 +53,12 @@ import { updateSessionGoalStatus } from "@/lib/sessions";
 import { checkGoalCompletion } from "@/lib/goalCascade";
 import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
 import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
+import { CurriculumBreakFlyout } from "@/components/environment/CurriculumBreakFlyout";
 import { FloatingNotes } from "@/components/environment/FloatingNotes";
 import { FloatingFocus } from "@/components/session/FloatingFocus";
 import { useBreakContent, type BreakClip } from "@/lib/useBreakContent";
+import { useCurriculum } from "@/lib/useCurriculum";
+import { extractYouTubeId } from "@/lib/youtube";
 
 type SidePanel = "none" | "momentum" | "chat" | "settings" | "breaks";
 type CelebrationInfo = { color: string; text: string };
@@ -301,6 +304,9 @@ export default function EnvironmentPage() {
   // Break content shelf — used to give synthetics real content IDs
   const { items: breakShelfItems } = useBreakContent(world.worldKey, "learning");
 
+  // Curriculum for auto-generated rooms
+  const { curriculum, currentPosition, markCompleted: markCurriculumCompleted } = useCurriculum(partyId, userId);
+
   // Break clips for channel changer — set when user picks from flyout
   const [breakClips, setBreakClips] = useState<BreakClip[]>([]);
   const currentBreakClipIndex = useMemo(
@@ -355,6 +361,7 @@ export default function EnvironmentPage() {
     breakContentId: phase === "break" ? (breakContent?.id ?? null) : null,
     breakContentTitle: phase === "break" ? (breakContent?.title ?? null) : null,
     breakContentThumbnail: phase === "break" ? (breakContent?.thumbnail_url ?? null) : null,
+    breakLearningState: phase === "break" && breakActive ? "watching" : null,
   });
 
   // ─── Activity feed + room state ───────────────────────
@@ -807,8 +814,8 @@ export default function EnvironmentPage() {
 
   // ─── Resuming countdown → sprint transition (after break) ──
   // Capture break info in a ref so it's available after clearing breakContent
-  const breakInfoRef = useRef({ category: breakCategory, title: breakContent?.title ?? null });
-  breakInfoRef.current = { category: breakCategory, title: breakContent?.title ?? null };
+  const breakInfoRef = useRef({ category: breakCategory, title: breakContent?.title ?? null, videoUrl: breakContent?.video_url ?? null });
+  breakInfoRef.current = { category: breakCategory, title: breakContent?.title ?? null, videoUrl: breakContent?.video_url ?? null };
 
   useEffect(() => {
     if (phase !== "resuming") return;
@@ -850,6 +857,12 @@ export default function EnvironmentPage() {
           content_title: info.title,
         },
       }).catch(() => {});
+
+      // Mark curriculum video as completed
+      if (info.videoUrl) {
+        const ytId = extractYouTubeId(info.videoUrl);
+        if (ytId) markCurriculumCompleted(ytId);
+      }
     }
   }, [phase, resumingCountdown]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1321,16 +1334,18 @@ export default function EnvironmentPage() {
   // ─── Break flow ────────────────────────────────────────
 
   const handleSelectBreakContent = useCallback((item: BreakContentItem, duration: BreakDuration, clips: BreakClip[]) => {
+    console.log("[break] selected item:", item.title, "| scaffolding:", item.scaffolding ? "YES" : "NO", "| scaffolding_status:", item.scaffolding_status);
     setBreakContent(item);
     setBreakDuration(duration);
     setBreakClips(clips);
     setActivePanel("none");
-    setBreakActive(true);
     timer.pause();
     setPhase("break");
     persistence.updatePhase("break").catch((err) =>
       console.error("Failed to update phase to break:", err)
     );
+
+    setBreakActive(true);
 
     if (userId && persistence.sessionRow) {
       logEvent({
@@ -1362,6 +1377,8 @@ export default function EnvironmentPage() {
     setResumingCountdown(3);
     setPhase("resuming");
   }, []);
+
+
 
   // ─── Join someone else's break ──────────────────────────
 
@@ -2008,13 +2025,23 @@ export default function EnvironmentPage() {
               />
             )}
             {activePanel === "breaks" && (
-              <BreaksFlyout
-                roomWorldKey={world.worldKey}
-                worldLabel={world.label}
-                category={breakCategory}
-                onClose={closePanel}
-                onSelectContent={handleSelectBreakContent}
-              />
+              breakCategory === "learning" && curriculum ? (
+                <CurriculumBreakFlyout
+                  curriculum={curriculum}
+                  currentPosition={currentPosition}
+                  roomWorldKey={world.worldKey}
+                  onClose={closePanel}
+                  onSelectContent={handleSelectBreakContent}
+                />
+              ) : (
+                <BreaksFlyout
+                  roomWorldKey={world.worldKey}
+                  worldLabel={world.label}
+                  category={breakCategory}
+                  onClose={closePanel}
+                  onSelectContent={handleSelectBreakContent}
+                />
+              )
             )}
           </aside>
         </div>
@@ -2052,7 +2079,7 @@ export default function EnvironmentPage() {
         />
       )}
 
-      {/* Break session flow */}
+      {/* Break session flow — video overlay */}
       {breakActive && breakContent && (
         <BreakVideoOverlay
           content={breakContent}
@@ -2064,6 +2091,7 @@ export default function EnvironmentPage() {
           onChangeClip={handleChangeClip}
           onToggleNotes={handleToggleNotes}
           notesOpen={floatingNotesOpen}
+          scaffolding={breakContent.scaffolding ?? null}
         />
       )}
 

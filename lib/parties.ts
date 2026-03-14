@@ -22,6 +22,7 @@ export interface Party {
   world_key: string;
   host_personality: string;
   persistent: boolean;
+  blueprint_id: string | null;
 }
 
 export interface PartyParticipant {
@@ -53,7 +54,7 @@ export interface PartyWithCount extends Party {
 // ---------- Column constants ----------
 
 const PARTY_COLS =
-  "id, creator_id, name, character, planned_duration_min, max_participants, status, created_at, invite_code, world_key, host_personality, persistent";
+  "id, creator_id, name, character, planned_duration_min, max_participants, status, created_at, invite_code, world_key, host_personality, persistent, blueprint_id";
 
 const PARTICIPANT_COLS =
   "id, party_id, user_id, display_name, joined_at, left_at";

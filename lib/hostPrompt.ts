@@ -36,7 +36,10 @@ RULES:
 - Match the personality tone precisely.
 
 Recent host messages in this room (avoid repeating these):
-${input.recentHostMessages.length > 0 ? input.recentHostMessages.map((m) => `- "${m}"`).join("\n") : "(none)"}`;
+${input.recentHostMessages.length > 0 ? input.recentHostMessages.map((m) => `- "${m}"`).join("\n") : "(none)"}${input.blueprintHints?.triggerHint ? `
+
+ROOM-SPECIFIC GUIDANCE (from the room's learning design):
+${input.blueprintHints.triggerHint}${input.blueprintHints.curriculumContext ? `\n${input.blueprintHints.curriculumContext}` : ""}` : ""}`;
 
   const linkedLine = input.linkedResource
     ? `Linked work item: [${input.linkedResource.provider}] "${input.linkedResource.title}" (${input.linkedResource.resourceType})`

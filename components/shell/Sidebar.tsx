@@ -198,7 +198,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
       ) : (
         <>
           <div className="flex h-14 shrink-0 items-center px-4">
-            <Logo href="/rooms" maxWidth={150} />
+            <Logo href="/rooms" height={22} maxWidth={120} />
           </div>
           <nav className={`flex flex-col ${NAV_ITEM_GAP} px-3 pt-2`}>
             {NAV_ITEMS.map((item) => {

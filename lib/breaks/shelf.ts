@@ -252,6 +252,8 @@ export async function refreshShelf(
               segments,
               best_duration: duration,
               topics: scored.topics ?? null,
+              scaffolding: scored.scaffolding ?? null,
+              scaffolding_status: scored.scaffolding ? "complete" : "none",
             });
 
           if (insertErr) {

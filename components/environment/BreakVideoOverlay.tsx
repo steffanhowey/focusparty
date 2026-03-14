@@ -8,6 +8,8 @@ import { StickyNote } from "lucide-react";
 import { TVStaticOverlay, playChannelChangeSound } from "./TVStaticOverlay";
 import type { BreakContentItem, BreakDuration, BreakSegment } from "@/lib/types";
 import type { BreakClip } from "@/lib/useBreakContent";
+import type { Scaffolding } from "@/lib/scaffolding/generator";
+import { trackScaffoldingEvent } from "@/lib/breaks/scaffoldingTracking";
 
 // ─── Types ───────────────────────────────────────────────
 interface BreakVideoOverlayProps {
@@ -21,6 +23,8 @@ interface BreakVideoOverlayProps {
   onToggleNotes?: () => void;
   /** When true, player shifts left to make room for notes panel */
   notesOpen?: boolean;
+  /** AI-generated learning scaffolding */
+  scaffolding?: Scaffolding | null;
 }
 
 /** Fire-and-forget engagement tracking. */
@@ -53,6 +57,7 @@ export function BreakVideoOverlay({
   onChangeClip,
   onToggleNotes,
   notesOpen,
+  scaffolding,
 }: BreakVideoOverlayProps) {
   const totalSeconds = durationMinutes * 60;
   const ytId = extractYouTubeId(content.video_url);
@@ -73,6 +78,8 @@ export function BreakVideoOverlay({
   const [nextClipLabel, setNextClipLabel] = useState("");
   const [shieldVisible, setShieldVisible] = useState(true);
   const [paused, setPaused] = useState(false);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [hoveredMoment, setHoveredMoment] = useState<number | null>(null);
   const pendingNextIndexRef = useRef<number | null>(null);
 
   // Derived
@@ -274,7 +281,10 @@ export function BreakVideoOverlay({
         if (!p) return;
         try {
           const dur = p.getDuration();
-          if (dur > 0) setProgress(p.getCurrentTime() / dur);
+          if (dur > 0) {
+            setProgress(p.getCurrentTime() / dur);
+            setVideoDuration(dur);
+          }
         } catch { /* player not ready */ }
       }, 250);
       return () => clearInterval(id);
@@ -283,7 +293,10 @@ export function BreakVideoOverlay({
     const el = videoRef.current;
     if (el) {
       const onUpdate = () => {
-        if (el.duration > 0) setProgress(el.currentTime / el.duration);
+        if (el.duration > 0) {
+          setProgress(el.currentTime / el.duration);
+          setVideoDuration(el.duration);
+        }
       };
       el.addEventListener("timeupdate", onUpdate);
       return () => el.removeEventListener("timeupdate", onUpdate);
@@ -482,6 +495,46 @@ export function BreakVideoOverlay({
                 className="h-full rounded-full bg-white/70 transition-[width] duration-200"
                 style={{ width: `${progress * 100}%` }}
               />
+              {/* Key moment markers */}
+              {scaffolding?.keyMoments && videoDuration > 0 && scaffolding.keyMoments.map((km, i) => {
+                const pct = (km.timestampSeconds / videoDuration) * 100;
+                if (pct < 0 || pct > 100) return null;
+                return (
+                  <div
+                    key={i}
+                    className="absolute top-1/2 -translate-y-1/2"
+                    style={{ left: `${pct}%` }}
+                    onMouseEnter={() => setHoveredMoment(i)}
+                    onMouseLeave={() => setHoveredMoment(null)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (ytId && playerRef.current) {
+                        playerRef.current.seekTo(km.timestampSeconds, true);
+                      } else if (videoRef.current) {
+                        videoRef.current.currentTime = km.timestampSeconds;
+                      }
+                      trackScaffoldingEvent(content.id, "key_moment_clicked", {
+                        timestampSeconds: km.timestampSeconds,
+                        label: km.label,
+                      });
+                    }}
+                  >
+                    <div className="h-[6px] w-[6px] -translate-x-1/2 cursor-pointer rounded-full bg-white/60 transition-colors hover:bg-white" />
+                    {hoveredMoment === i && (
+                      <div
+                        className="absolute bottom-4 left-1/2 z-20 w-48 -translate-x-1/2 rounded-lg border border-white/10 px-3 py-2"
+                        style={{
+                          background: "rgba(10, 10, 10, 0.9)",
+                          backdropFilter: "blur(12px)",
+                        }}
+                      >
+                        <p className="text-xs font-medium text-white/90">{km.label}</p>
+                        <p className="mt-0.5 text-[10px] text-white/40">{km.takeaway}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 
-const LOGO_DARK_MODE = "/logo/focusparty_new.png";
+const LOGO_DARK_MODE = "/logo/skillgap_light.png";
 const LOGO_MARK = "/logo/focusparty_logo_mark.png";
 const LOGO_LIGHT_MODE = "/logo/Group%2040.png";
 

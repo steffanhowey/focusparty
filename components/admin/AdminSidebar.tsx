@@ -8,9 +8,10 @@ import { NavIcon } from "@/components/shell/navItems";
 interface AdminSidebarProps {
   activeId: string;
   onNavClick?: (href: string) => void;
+  badges?: Record<string, number>;
 }
 
-export function AdminSidebar({ activeId, onNavClick }: AdminSidebarProps) {
+export function AdminSidebar({ activeId, onNavClick, badges }: AdminSidebarProps) {
   return (
     <aside
       className="relative z-[var(--z-card)] flex h-screen w-56 flex-shrink-0 flex-col overflow-visible backdrop-blur-xl"
@@ -57,6 +58,17 @@ export function AdminSidebar({ activeId, onNavClick }: AdminSidebarProps) {
             >
               <NavIcon icon={item.icon} />
               <span className="text-sm font-medium">{item.label}</span>
+              {badges && badges[item.id] > 0 && (
+                <span
+                  className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none"
+                  style={{
+                    background: "var(--color-accent-primary)",
+                    color: "var(--color-bg-primary)",
+                  }}
+                >
+                  {badges[item.id]}
+                </span>
+              )}
             </a>
           );
         })}

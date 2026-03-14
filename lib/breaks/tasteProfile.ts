@@ -131,6 +131,71 @@ export async function updateTasteProfile(
     }
   }
 
+  // ── Scaffolding engagement bonus deltas ──────────────────
+  // Query scaffolding events for items the user engaged with
+  try {
+    const { data: scaffoldingEvents } = await supabase
+      .from("fp_scaffolding_events")
+      .select("event_type, content_item_id")
+      .eq("user_id", userId)
+      .gt("created_at", since)
+      .in("event_type", [
+        "exercise_completed",
+        "pre_watch_attempted",
+        "comprehension_rewatch",
+        "discussion_shared",
+        "exercise_skipped",
+        "post_watch_auto_dismissed",
+      ]);
+
+    if (scaffoldingEvents && scaffoldingEvents.length > 0) {
+      const SCAFFOLDING_DELTAS: Record<string, number> = {
+        exercise_completed: 0.10,
+        pre_watch_attempted: 0.05,
+        comprehension_rewatch: 0.05,
+        discussion_shared: 0.05,
+        exercise_skipped: -0.05,
+        post_watch_auto_dismissed: -0.05,
+      };
+
+      // Fetch topics for any scaffolding items not already in itemMap
+      const scaffoldingItemIds = [
+        ...new Set(
+          scaffoldingEvents
+            .map((e) => e.content_item_id)
+            .filter((id) => !itemMap.has(id))
+        ),
+      ];
+      if (scaffoldingItemIds.length > 0) {
+        const { data: extraItems } = await supabase
+          .from("fp_break_content_items")
+          .select("id, topics, duration_seconds, room_world_key")
+          .in("id", scaffoldingItemIds);
+        for (const i of extraItems ?? []) {
+          itemMap.set(i.id, i);
+        }
+      }
+
+      for (const event of scaffoldingEvents) {
+        const item = itemMap.get(event.content_item_id);
+        if (!item || !item.topics || item.room_world_key !== worldKey) continue;
+
+        const delta = SCAFFOLDING_DELTAS[event.event_type] ?? 0;
+        if (delta === 0) continue;
+
+        for (const topic of item.topics) {
+          const existing = deltas.get(topic) ?? { delta: 0, count: 0 };
+          existing.delta += delta;
+          existing.count += 1;
+          deltas.set(topic, existing);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[tasteProfile] Scaffolding events query failed:", err);
+    // Continue with base taste update — scaffolding is additive
+  }
+
   if (deltas.size === 0) return { updated: 0 };
 
   // Load current profile

@@ -47,8 +47,10 @@ export interface EvaluationResult {
   segments: BreakSegment[];
   bestDuration: 3 | 5 | 10;
   rejected: boolean;
-  /** 3-5 lowercase topic tags for personalization */
+  /** 2-5 canonical topic slugs from the taxonomy */
   topics: string[];
+  /** Topics suggested by AI that aren't in the taxonomy (max 2) */
+  suggestedNewTopics: { slug: string; name: string; category: string }[];
 }
 
 // ─── Evaluate a single candidate ────────────────────────────
@@ -62,7 +64,8 @@ export async function evaluateCandidate(
   candidate: BreakContentCandidate,
   worldKey: string,
   currentShelfTitles: string[],
-  transcriptContext?: { transcript: string; chapters: string } | null
+  transcriptContext?: { transcript: string; chapters: string } | null,
+  taxonomyPrompt?: string
 ): Promise<EvaluationResult> {
   const worldConfig =
     WORLD_CONFIGS[worldKey as keyof typeof WORLD_CONFIGS] ??
@@ -138,7 +141,10 @@ Identify the best 3-minute, 5-minute, and 10-minute segments of this video. Each
 
 Pick ONE best_duration (3, 5, or 10) — the single duration where this video delivers the most value as a break clip. Short dense explainers → 3. Tutorials with worked examples → 5. Deep dives, talks, and long-form analysis → 10.
 
-Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "system-design", "creative-coding", "typography", "rust", "api-design", "productivity", "css-animations", "machine-learning", "ux-research". Be specific — "react-hooks" is better than "javascript". Tags are used for personalization.`,
+Assign 2-5 topic slugs from the APPROVED TOPIC LIST below. Use ONLY exact slugs from this list. If the content covers a topic not in the list, use the closest match AND add the unlisted topic to "suggested_new_topics" (max 2).
+
+APPROVED TOPICS:
+${taxonomyPrompt ?? "react, system-design, creative-coding, typescript, prompt-engineering, vibe-coding, ai-pair-programming, cursor, nextjs"}`,
       },
     ],
     response_format: {
@@ -227,8 +233,26 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
             topics: {
               type: "array",
               description:
-                "3-5 lowercase hyphenated topic tags for personalization (e.g. 'react-hooks', 'system-design', 'creative-coding')",
+                "2-5 canonical topic slugs from the approved topic list",
               items: { type: "string" },
+            },
+            suggested_new_topics: {
+              type: "array",
+              description:
+                "Topics not in the approved list that this content covers (max 2). Only include if no approved topic fits.",
+              items: {
+                type: "object",
+                properties: {
+                  slug: { type: "string", description: "Lowercase hyphenated slug" },
+                  name: { type: "string", description: "Human-readable name" },
+                  category: {
+                    type: "string",
+                    enum: ["tool", "technique", "concept", "role", "platform"],
+                  },
+                },
+                required: ["slug", "name", "category"],
+                additionalProperties: false,
+              },
             },
           },
           required: [
@@ -244,6 +268,7 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
             "best_duration",
             "reject",
             "topics",
+            "suggested_new_topics",
           ],
           additionalProperties: false,
         },
@@ -269,6 +294,7 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
     best_duration: number;
     reject: boolean;
     topics: string[];
+    suggested_new_topics: { slug: string; name: string; category: string }[];
   };
 
   // Hard safety gate: force-reject anything the AI scores as unsafe.
@@ -334,5 +360,6 @@ Assign 3-5 topic tags (lowercase, hyphenated, specific). Examples: "react", "sys
     bestDuration: ([3, 5, 10].includes(parsed.best_duration) ? parsed.best_duration : 5) as 3 | 5 | 10,
     rejected: parsed.reject || isSafetyRejected || isRelevanceRejected,
     topics: (parsed.topics ?? []).map((t) => t.toLowerCase().trim()).slice(0, 5),
+    suggestedNewTopics: (parsed.suggested_new_topics ?? []).slice(0, 2),
   };
 }

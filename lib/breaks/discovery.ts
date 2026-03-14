@@ -16,6 +16,7 @@ import {
 import { screenContent } from "./contentSafety";
 import { evaluatePendingCandidates } from "./evaluateBatch";
 import { refreshShelf, type ShelfRefreshResult } from "./shelf";
+import { createSignalFromDiscovery } from "@/lib/topics/signalService";
 
 interface DiscoveryResult {
   worldKey: string;
@@ -154,6 +155,7 @@ export async function discoverCandidates(
         title: video.title,
         description: video.description,
         creator: video.channelTitle,
+        channel_id: video.channelId,
         video_url: `https://www.youtube.com/watch?v=${video.videoId}`,
         thumbnail_url: video.thumbnailUrl,
         duration_seconds: video.durationSeconds,
@@ -171,6 +173,18 @@ export async function discoverCandidates(
       console.error("[breaks/discover] insert error:", error);
     } else {
       inserted++;
+      // Write signal for topic clustering pipeline (fire-and-forget)
+      try {
+        await createSignalFromDiscovery({
+          videoId: video.videoId,
+          title: video.title,
+          creator: video.channelTitle,
+          viewCount: video.viewCount,
+          publishedAt: video.publishedAt,
+        });
+      } catch (err) {
+        console.warn("[breaks/discover] signal creation failed:", err);
+      }
     }
   }
 

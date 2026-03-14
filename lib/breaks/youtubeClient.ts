@@ -25,6 +25,7 @@ export interface YTVideoDetails {
   videoId: string;
   title: string;
   description: string;
+  channelId: string;
   channelTitle: string;
   publishedAt: string;
   thumbnailUrl: string;
@@ -32,6 +33,17 @@ export interface YTVideoDetails {
   viewCount: number;
   likeCount: number;
   commentCount: number;
+}
+
+export interface YTChannelDetails {
+  channelId: string;
+  title: string;
+  description: string;
+  subscriberCount: number;
+  viewCount: number;
+  videoCount: number;
+  thumbnailUrl: string;
+  publishedAt: string;
 }
 
 // ─── Search ─────────────────────────────────────────────────
@@ -126,6 +138,7 @@ export async function getVideoDetails(
     videoId: item.id ?? "",
     title: item.snippet?.title ?? "",
     description: item.snippet?.description ?? "",
+    channelId: item.snippet?.channelId ?? "",
     channelTitle: item.snippet?.channelTitle ?? "",
     publishedAt: item.snippet?.publishedAt ?? "",
     thumbnailUrl:
@@ -136,6 +149,47 @@ export async function getVideoDetails(
     viewCount: parseInt(item.statistics?.viewCount ?? "0", 10),
     likeCount: parseInt(item.statistics?.likeCount ?? "0", 10),
     commentCount: parseInt(item.statistics?.commentCount ?? "0", 10),
+  }));
+}
+
+// ─── Channel Details ────────────────────────────────────────
+
+/**
+ * Fetch channel details (stats, metadata) for a list of channel IDs.
+ * Costs 1 quota unit per channel. Max 50 per call.
+ */
+export async function getChannelDetails(
+  channelIds: string[]
+): Promise<YTChannelDetails[]> {
+  if (channelIds.length === 0) return [];
+
+  const params = new URLSearchParams({
+    part: "snippet,statistics",
+    id: channelIds.slice(0, 50).join(","),
+    key: getApiKey(),
+  });
+
+  const res = await fetch(`${YT_BASE}/channels?${params}`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`[youtube] channels failed (${res.status}): ${text}`);
+  }
+
+  const data = await res.json();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.items ?? []).map((item: any) => ({
+    channelId: item.id ?? "",
+    title: item.snippet?.title ?? "",
+    description: item.snippet?.description ?? "",
+    subscriberCount: parseInt(item.statistics?.subscriberCount ?? "0", 10),
+    viewCount: parseInt(item.statistics?.viewCount ?? "0", 10),
+    videoCount: parseInt(item.statistics?.videoCount ?? "0", 10),
+    thumbnailUrl:
+      item.snippet?.thumbnails?.medium?.url ??
+      item.snippet?.thumbnails?.default?.url ??
+      "",
+    publishedAt: item.snippet?.publishedAt ?? "",
   }));
 }
 

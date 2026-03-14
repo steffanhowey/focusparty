@@ -1,17 +1,22 @@
 // ─── Batch Candidate Evaluator ──────────────────────────────
 // Fetches pending candidates, scores them with AI, and persists
-// scores + status updates to the database.
+// scores + status updates to the database. Prefetches transcripts
+// in batch for all candidates before evaluation.
 
 import { createClient } from "@/lib/supabase/admin";
 import { evaluateCandidate } from "./scoring";
 import {
-  fetchTranscript,
-  formatTranscriptForLLM,
+  getTranscriptBatch,
+  formatTranscriptForScoring,
   parseChapters,
   formatChaptersForLLM,
 } from "./transcript";
+import type { TranscriptResult } from "./transcript";
 import { screenContent } from "./contentSafety";
 import type { BreakContentCandidate } from "@/lib/types";
+import { getTopics, formatTaxonomyForPrompt, createTopic } from "@/lib/topics/taxonomy";
+import { createSignalFromEvaluation } from "@/lib/topics/signalService";
+import { ensureCreator, updateCreatorTopics } from "@/lib/creators/catalog";
 
 interface BatchResult {
   evaluated: number;
@@ -61,6 +66,29 @@ export async function evaluatePendingCandidates(
     `[breaks/evaluate] Processing ${candidates.length} candidates`
   );
 
+  // Load taxonomy once for the entire batch (cached, ~80 topics)
+  let taxonomyPrompt: string | undefined;
+  try {
+    const topics = await getTopics();
+    taxonomyPrompt = formatTaxonomyForPrompt(topics);
+  } catch (err) {
+    console.warn("[breaks/evaluate] Failed to load taxonomy, using freeform topics:", err);
+  }
+
+  // Batch-prefetch transcripts for all candidates
+  const videoIds = (candidates as BreakContentCandidate[])
+    .map((c) => c.external_id)
+    .filter(Boolean);
+  let transcriptMap = new Map<string, TranscriptResult>();
+  try {
+    transcriptMap = await getTranscriptBatch(videoIds);
+    console.log(
+      `[breaks/evaluate] Prefetched transcripts: ${transcriptMap.size}/${videoIds.length} available`
+    );
+  } catch (err) {
+    console.warn("[breaks/evaluate] Batch transcript prefetch failed:", err);
+  }
+
   // Fetch current shelf titles per (world, category) for novelty context.
   // Novelty must be scoped to category — a move video should be compared
   // against other move shelf items, not learning titles.
@@ -103,29 +131,14 @@ export async function evaluatePendingCandidates(
         continue;
       }
 
-      // ── Transcript enrichment (optional, graceful degradation) ──
+      // ── Transcript from prefetched batch ──
       let transcriptContext: { transcript: string; chapters: string } | null = null;
+      const transcriptResult = candidate.external_id
+        ? transcriptMap.get(candidate.external_id) ?? null
+        : null;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let cachedTranscript = (candidate as any).transcript;
-
-      if (!cachedTranscript && candidate.external_id) {
-        const segments = await fetchTranscript(candidate.external_id);
-        if (segments && segments.length > 0) {
-          cachedTranscript = segments;
-          // Cache on candidate row so we never refetch
-          await supabase
-            .from("fp_break_content_candidates")
-            .update({ transcript: segments })
-            .eq("id", candidate.id);
-          console.log(
-            `[breaks/evaluate] Fetched transcript for "${candidate.title}" (${segments.length} segments)`
-          );
-        }
-      }
-
-      if (cachedTranscript && Array.isArray(cachedTranscript) && cachedTranscript.length > 0) {
-        const formattedTranscript = formatTranscriptForLLM(cachedTranscript);
+      if (transcriptResult) {
+        const formattedTranscript = formatTranscriptForScoring(transcriptResult);
         const chapters = parseChapters(candidate.description ?? null);
         const formattedChapters = formatChaptersForLLM(chapters);
         transcriptContext = {
@@ -140,7 +153,8 @@ export async function evaluatePendingCandidates(
         candidate,
         candidate.world_key,
         shelfTitles,
-        transcriptContext
+        transcriptContext,
+        taxonomyPrompt
       );
 
       if (result.rejected) {
@@ -154,7 +168,7 @@ export async function evaluatePendingCandidates(
           `[breaks/evaluate] REJECTED "${candidate.title}" — ${result.evaluationNotes}`
         );
       } else {
-        // Insert score
+        // Insert score with transcript metadata
         const { error: scoreErr } = await supabase
           .from("fp_break_content_scores")
           .insert({
@@ -172,6 +186,10 @@ export async function evaluatePendingCandidates(
             segments: result.segments,
             best_duration: result.bestDuration,
             topics: result.topics,
+            suggested_new_topics: result.suggestedNewTopics,
+            transcript_available: !!transcriptResult,
+            transcript_word_count: transcriptResult?.wordCount ?? null,
+            transcript_source: transcriptResult?.source ?? null,
           });
 
         if (scoreErr) {
@@ -186,9 +204,48 @@ export async function evaluatePendingCandidates(
           .update({ status: "evaluated" })
           .eq("id", candidate.id);
 
+        // Create pending topics for any AI-suggested new topics
+        if (result.suggestedNewTopics?.length) {
+          for (const suggestion of result.suggestedNewTopics) {
+            try {
+              await createTopic({
+                slug: suggestion.slug,
+                name: suggestion.name,
+                category: suggestion.category,
+                status: "pending",
+              });
+              console.log(
+                `[breaks/evaluate] Created pending topic: ${suggestion.slug}`
+              );
+            } catch {
+              // Duplicate slug — ignore
+            }
+          }
+        }
+
+        // Write signal for topic clustering pipeline
+        try {
+          await createSignalFromEvaluation(candidate, result.topics, result.tasteScore);
+        } catch (err) {
+          console.warn("[breaks/evaluate] signal creation failed:", err);
+        }
+
+        // Auto-catalog creator (fire-and-forget)
+        if (candidate.channel_id) {
+          ensureCreator(candidate.channel_id, {
+            channelName: candidate.creator ?? undefined,
+            discoverySource: "pipeline",
+          }).catch((err) =>
+            console.warn("[breaks/evaluate] creator catalog failed:", err)
+          );
+          updateCreatorTopics(candidate.channel_id, result.topics).catch((err) =>
+            console.warn("[breaks/evaluate] creator topics update failed:", err)
+          );
+        }
+
         evaluated++;
         console.log(
-          `[breaks/evaluate] SCORED "${candidate.title}" → ${result.tasteScore} — ${result.evaluationNotes}`
+          `[breaks/evaluate] SCORED "${candidate.title}" → ${result.tasteScore}${transcriptResult ? " (with transcript)" : ""} — ${result.evaluationNotes}`
         );
       }
     } catch (err) {

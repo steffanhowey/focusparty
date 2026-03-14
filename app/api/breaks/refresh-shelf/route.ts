@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
+import { startPipelineEvent } from "@/lib/pipeline/logger";
 import { refreshShelf, refreshAllShelves } from "@/lib/breaks/shelf";
 import { evaluatePendingCandidates } from "@/lib/breaks/evaluateBatch";
 
@@ -17,12 +18,22 @@ export async function GET(request: Request) {
     return NextResponse.json({ skipped: true, reason: "curator disabled" });
   }
 
+  const event = await startPipelineEvent("shelf_refresh", "Shelf Refresh");
+
   try {
     // Catch any unevaluated candidates before promoting
     const evalResult = await evaluatePendingCandidates(undefined, 30);
     const results = await refreshAllShelves();
+
+    await event.complete({
+      itemsProcessed: results.length,
+      itemsSucceeded: results.length,
+      summary: { evalResult, shelvesRefreshed: results.length },
+    });
+
     return NextResponse.json({ ok: true, evalResult, results });
   } catch (err) {
+    await event.fail(err);
     console.error("[breaks/refresh-shelf] cron error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }

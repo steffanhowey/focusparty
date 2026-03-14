@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
+import { startPipelineEvent } from "@/lib/pipeline/logger";
 import {
   discoverCandidates,
   discoverAndPromote,
@@ -24,22 +25,36 @@ export async function GET(request: Request) {
     return NextResponse.json({ skipped: true, reason: "curator disabled" });
   }
 
+  const event = await startPipelineEvent("discovery_scheduled", "Scheduled Discovery");
+
   try {
     const worldKeys = Object.keys(WORLD_BREAK_PROFILES);
     const results = [];
+    let errorCount = 0;
     for (const worldKey of worldKeys) {
       for (const category of ALL_CATEGORIES) {
         try {
           const result = await discoverCandidates(worldKey, category);
           results.push(result);
         } catch (err) {
+          errorCount++;
           console.error(`[breaks/discover] cron error for ${worldKey}/${category}:`, err);
           results.push({ worldKey, category, error: true });
         }
       }
     }
+
+    await event.complete({
+      status: errorCount > 0 ? "partial" : "completed",
+      itemsProcessed: results.length,
+      itemsSucceeded: results.length - errorCount,
+      itemsFailed: errorCount,
+      summary: { worldsProcessed: worldKeys.length },
+    });
+
     return NextResponse.json({ ok: true, results });
   } catch (err) {
+    await event.fail(err);
     console.error("[breaks/discover] cron error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }

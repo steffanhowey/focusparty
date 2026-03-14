@@ -45,6 +45,7 @@ export function buildPresencePayload(input: {
   breakContentId?: string | null;
   breakContentTitle?: string | null;
   breakContentThumbnail?: string | null;
+  breakLearningState?: "pre_watch" | "watching" | "comprehension" | "exercise" | "discussion" | null;
 }): PresencePayload {
   return {
     userId: input.userId,
@@ -62,6 +63,7 @@ export function buildPresencePayload(input: {
     breakContentId: input.breakContentId ?? null,
     breakContentTitle: input.breakContentTitle ?? null,
     breakContentThumbnail: input.breakContentThumbnail ?? null,
+    breakLearningState: input.breakLearningState ?? null,
     updatedAt: new Date().toISOString(),
   };
 }
@@ -150,6 +152,8 @@ export function eventDisplayText(
       return `${name} returned to sprint`;
     case "break_cancelled":
       return `${name} skipped break`;
+    case "discussion_prompt":
+      return body ? `Discussion: ${body}` : "A discussion question was shared";
     default:
       return `${name} did something`;
   }

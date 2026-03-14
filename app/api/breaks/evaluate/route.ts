@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
+import { startPipelineEvent } from "@/lib/pipeline/logger";
 import { evaluatePendingCandidates } from "@/lib/breaks/evaluateBatch";
 
 /**
@@ -16,10 +17,18 @@ export async function GET(request: Request) {
     return NextResponse.json({ skipped: true, reason: "curator disabled" });
   }
 
+  const event = await startPipelineEvent("evaluation", "Content Evaluation");
+
   try {
     const result = await evaluatePendingCandidates(undefined, 30);
+    await event.complete({
+      itemsProcessed: result.evaluated,
+      itemsSucceeded: result.evaluated,
+      summary: result,
+    });
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
+    await event.fail(err);
     console.error("[breaks/evaluate] cron error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
