@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/admin";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { getHostConfig } from "@/lib/hosts";
 import { getPartyHostPersonality } from "@/lib/worlds";
 import { buildHostContext, isCooldownActive } from "@/lib/hostTrigger";
@@ -15,7 +16,20 @@ const VALID_TRIGGERS = new Set<HostTriggerType>([
   "session_completed",
 ]);
 
-export async function POST(request: Request) {
+/**
+ * POST /api/host/trigger
+ *
+ * Triggers an AI host message in a room based on a session event.
+ * Requires authenticated user session.
+ */
+export async function POST(request: Request): Promise<NextResponse> {
+  // Auth: require a logged-in user
+  const serverSupabase = await createServerClient();
+  const { data: { user } } = await serverSupabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
 

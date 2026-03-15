@@ -3,127 +3,144 @@ import { createClient as createAdminClient } from "@/lib/supabase/admin";
 import { generateAndCachePath, mapPathRow } from "@/lib/learn/pathGenerator";
 import type { LearningPath } from "@/lib/types";
 import type { ProfessionalFunction, FluencyLevel } from "@/lib/onboarding/types";
+import { GeneratePathSchema, parseBody } from "@/lib/learn/validation";
 
-// ─── In-memory generation tracking ──────────────────────────
+// ─── In-memory dedup (per-instance optimization only) ──────
+// Prevents duplicate generation starts on the same Lambda instance.
+// NOT used for polling — Supabase is the source of truth.
 
-interface GenerationState {
-  status: "generating" | "complete" | "failed";
-  query: string;
-  path: LearningPath | null;
-  error: string | null;
-  created_at: number;
-}
-
-const generations = new Map<string, GenerationState>();
-const queryToId = new Map<string, string>();
-
-const TTL_MS = 5 * 60 * 1000; // 5 minutes
-
-/** Remove entries older than TTL */
-function sweepStale(): void {
-  const now = Date.now();
-  for (const [id, state] of generations) {
-    if (now - state.created_at > TTL_MS) {
-      generations.delete(id);
-      if (queryToId.get(state.query) === id) {
-        queryToId.delete(state.query);
-      }
-    }
-  }
-}
+const activeGenerations = new Set<string>();
 
 // ─── POST: Start background generation ──────────────────────
 
 /**
  * POST /api/learn/search/generate
  * Starts background path generation. Returns { generation_id } immediately.
+ * Status is tracked in fp_generation_status (Supabase), not in-memory.
  */
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const body = await request.json();
-    const query = (body.query as string)?.trim();
-    const userFunction = (body.function as ProfessionalFunction) ?? null;
-    const userFluency = (body.fluency as FluencyLevel) ?? null;
-    const secondaryFunctions = (body.secondary_functions as ProfessionalFunction[]) ?? undefined;
-
-    if (!query) {
+    const raw = await request.json();
+    const parsed = parseBody(GeneratePathSchema, raw);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "query is required" },
+        { error: parsed.error },
         { status: 400 }
       );
     }
 
-    sweepStale();
+    const { query } = parsed.data;
+    const userFunction = (parsed.data.function ?? null) as ProfessionalFunction | null;
+    const userFluency = (parsed.data.fluency ?? null) as FluencyLevel | null;
+    const secondaryFunctions = parsed.data.secondary_functions as ProfessionalFunction[] | undefined;
 
     const normalizedQuery = query.toLowerCase();
-    // Include function+fluency in dedup key so same query generates different paths per profile
     const dedupKey = userFunction && userFluency
       ? `${normalizedQuery}__${userFunction}__${userFluency}`
       : normalizedQuery;
 
-    // Dedup: if already generating for this query+profile, return existing ID
-    const existingId = queryToId.get(dedupKey);
-    if (existingId && generations.get(existingId)?.status === "generating") {
+    const admin = createAdminClient();
+
+    // Dedup: check if there's already an active generation for this query+profile
+    const { data: existing } = await admin
+      .from("fp_generation_status")
+      .select("id")
+      .eq("query", normalizedQuery)
+      .eq("status", "generating")
+      .gte("created_at", new Date(Date.now() - 5 * 60 * 1000).toISOString())
+      .limit(1);
+
+    if (existing?.length) {
       return NextResponse.json(
-        { generation_id: existingId, query: normalizedQuery },
+        { generation_id: existing[0].id, query: normalizedQuery },
         { status: 202 }
       );
     }
 
-    const id = crypto.randomUUID();
-    const state: GenerationState = {
-      status: "generating",
-      query: normalizedQuery,
-      path: null,
-      error: null,
-      created_at: Date.now(),
-    };
+    // Same-instance dedup (prevents duplicate fire-and-forget on rapid retries)
+    if (activeGenerations.has(dedupKey)) {
+      const { data: inFlight } = await admin
+        .from("fp_generation_status")
+        .select("id")
+        .eq("query", normalizedQuery)
+        .eq("status", "generating")
+        .order("created_at", { ascending: false })
+        .limit(1);
 
-    generations.set(id, state);
-    queryToId.set(dedupKey, id);
+      if (inFlight?.length) {
+        return NextResponse.json(
+          { generation_id: inFlight[0].id, query: normalizedQuery },
+          { status: 202 }
+        );
+      }
+    }
 
-    // Fire-and-forget promise handles generation.
-    // after() keeps the Vercel serverless function alive so the promise can resolve.
+    // Create generation status row
+    const { data: genRow, error: insertErr } = await admin
+      .from("fp_generation_status")
+      .insert({
+        query: normalizedQuery,
+        adapted_for_function: userFunction,
+        adapted_for_fluency: userFluency,
+        status: "generating",
+      })
+      .select("id")
+      .single();
+
+    if (insertErr || !genRow) {
+      console.error("[learn/search/generate] Failed to create generation status:", insertErr);
+      return NextResponse.json(
+        { error: "Failed to start generation" },
+        { status: 500 }
+      );
+    }
+
+    const generationId = genRow.id as string;
+    activeGenerations.add(dedupKey);
+
     const adaptationLabel = userFunction && userFluency ? ` [${userFunction}/${userFluency}]` : "";
-    console.log(`[learn/search/generate] Starting generation for "${query}"${adaptationLabel} (id: ${id})`);
+    console.log(`[learn/search/generate] Starting generation for "${query}"${adaptationLabel} (id: ${generationId})`);
 
+    // Fire-and-forget generation
     const generationPromise = generateAndCachePath(query, {
       userFunction: userFunction ?? undefined,
       userFluency: userFluency ?? undefined,
       secondaryFunctions,
     })
-      .then((path) => {
-        const entry = generations.get(id);
-        if (!entry) return;
+      .then(async (path: LearningPath | null) => {
         if (path) {
-          console.log(`[learn/search/generate] Generation complete for "${query}" (id: ${id}), path: ${path.id}`);
-          generations.set(id, { ...entry, status: "complete", path });
+          console.log(`[learn/search/generate] Complete for "${query}" (id: ${generationId}), path: ${path.id}`);
+          await admin
+            .from("fp_generation_status")
+            .update({ status: "complete", path_id: path.id })
+            .eq("id", generationId);
         } else {
-          console.log(`[learn/search/generate] Generation returned null for "${query}" (id: ${id}) — not enough content`);
-          generations.set(id, {
-            ...entry,
-            status: "failed",
-            error: "Not enough content available for this topic yet.",
-          });
+          console.log(`[learn/search/generate] Null result for "${query}" (id: ${generationId})`);
+          await admin
+            .from("fp_generation_status")
+            .update({
+              status: "failed",
+              error: "Not enough content available for this topic yet.",
+            })
+            .eq("id", generationId);
         }
       })
-      .catch((err) => {
-        console.error(`[learn/search/generate] Generation failed for "${query}" (id: ${id}):`, err);
-        const entry = generations.get(id);
-        if (entry) {
-          generations.set(id, { ...entry, status: "failed", error: String(err) });
-        }
+      .catch(async (err: unknown) => {
+        console.error(`[learn/search/generate] Failed for "${query}" (id: ${generationId}):`, err);
+        await admin
+          .from("fp_generation_status")
+          .update({ status: "failed", error: String(err) })
+          .eq("id", generationId);
       })
       .finally(() => {
-        queryToId.delete(dedupKey);
+        activeGenerations.delete(dedupKey);
       });
 
-    // after() keeps the serverless function alive until the promise settles.
-    // In dev mode the Node process stays alive regardless, so this is a no-op.
+    // after() keeps the serverless function alive until the promise settles
     after(() => generationPromise);
 
     return NextResponse.json(
-      { generation_id: id, query: normalizedQuery },
+      { generation_id: generationId, query: normalizedQuery },
       { status: 202 }
     );
   } catch (error) {
@@ -138,13 +155,12 @@ export async function POST(request: Request): Promise<NextResponse> {
 // ─── GET: Poll generation status ────────────────────────────
 
 /**
- * GET /api/learn/search/generate?generation_id=...&query=...
- * Polls for generation status. Falls back to Supabase if in-memory miss.
+ * GET /api/learn/search/generate?generation_id=...
+ * Polls for generation status from Supabase.
  */
 export async function GET(request: Request): Promise<NextResponse> {
   const url = new URL(request.url);
   const generationId = url.searchParams.get("generation_id");
-  const query = url.searchParams.get("query")?.trim().toLowerCase();
 
   if (!generationId) {
     return NextResponse.json(
@@ -153,62 +169,69 @@ export async function GET(request: Request): Promise<NextResponse> {
     );
   }
 
-  // 1. Check in-memory map
-  const state = generations.get(generationId);
-  console.log(`[learn/search/generate] Poll for ${generationId}: in-memory=${state?.status ?? "miss"}, map_size=${generations.size}`);
-  if (state) {
-    const response = {
-      status: state.status,
-      path: state.path,
-      error: state.error,
-    };
+  const admin = createAdminClient();
 
-    // Clean up terminal states after returning
-    if (state.status === "complete" || state.status === "failed") {
-      generations.delete(generationId);
-      if (queryToId.get(state.query) === generationId) {
-        queryToId.delete(state.query);
-      }
-    }
+  // Look up generation status
+  const { data: genStatus, error } = await admin
+    .from("fp_generation_status")
+    .select("status, path_id, error, query")
+    .eq("id", generationId)
+    .single();
 
-    return NextResponse.json(response);
+  if (error || !genStatus) {
+    return NextResponse.json({
+      status: "failed",
+      path: null,
+      error: "Generation not found. It may have expired.",
+    });
   }
 
-  // 2. Fallback: check Supabase for recently-created path matching the query
-  //    (handles serverless instance miss / cold start)
-  if (query) {
-    try {
-      const admin = createAdminClient();
-      const twoMinutesAgo = new Date(
-        Date.now() - 2 * 60 * 1000
-      ).toISOString();
+  const row = genStatus as {
+    status: string;
+    path_id: string | null;
+    error: string | null;
+    query: string;
+  };
 
-      const { data: recentPaths } = await admin
-        .from("fp_learning_paths")
-        .select("*")
-        .ilike("query", `%${query}%`)
-        .gte("created_at", twoMinutesAgo)
-        .order("created_at", { ascending: false })
-        .limit(1);
+  // Still generating
+  if (row.status === "generating") {
+    return NextResponse.json({
+      status: "generating",
+      path: null,
+      error: null,
+    });
+  }
 
-      if (recentPaths?.length) {
-        return NextResponse.json({
-          status: "complete",
-          path: mapPathRow(
-            recentPaths[0] as unknown as Record<string, unknown>
-          ),
-          error: null,
-        });
-      }
-    } catch {
-      // Fallback failed — treat as still generating
+  // Failed
+  if (row.status === "failed") {
+    return NextResponse.json({
+      status: "failed",
+      path: null,
+      error: row.error,
+    });
+  }
+
+  // Complete — fetch the path
+  if (row.path_id) {
+    const { data: pathRow } = await admin
+      .from("fp_learning_paths")
+      .select("*")
+      .eq("id", row.path_id)
+      .single();
+
+    if (pathRow) {
+      return NextResponse.json({
+        status: "complete",
+        path: mapPathRow(pathRow as unknown as Record<string, unknown>),
+        error: null,
+      });
     }
   }
 
-  // 3. Unknown ID, no DB match — assume still generating
+  // Path ID set but path not found
   return NextResponse.json({
-    status: "generating",
+    status: "failed",
     path: null,
-    error: null,
+    error: "Generated path not found.",
   });
 }

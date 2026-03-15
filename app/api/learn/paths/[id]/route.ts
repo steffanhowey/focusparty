@@ -4,6 +4,7 @@ import { createClient as createAdminClient } from "@/lib/supabase/admin";
 import { mapPathRow, mapProgressRow } from "@/lib/learn/pathGenerator";
 import type { LearningProgress } from "@/lib/types";
 import { evaluateSubmission, type SubmissionEvaluation } from "@/lib/learn/evaluator";
+import { UpdateProgressSchema, parseBody } from "@/lib/learn/validation";
 
 /**
  * GET /api/learn/paths/[id]
@@ -83,21 +84,25 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: {
-    item_index?: number;
-    item_completed?: string;
-    item_state?: Record<string, unknown>;
-    time_delta_seconds?: number;
-    submission?: string;
-  } = {};
+  let raw: unknown;
   try {
-    body = await request.json();
+    raw = await request.json();
   } catch {
     return NextResponse.json(
       { error: "Invalid request body" },
       { status: 400 }
     );
   }
+
+  const parsed = parseBody(UpdateProgressSchema, raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error },
+      { status: 400 }
+    );
+  }
+
+  const body = parsed.data;
 
   const admin = createAdminClient();
 

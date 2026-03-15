@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillGap.ai — Practice Loop Service Blueprint</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #e5e5e5;
+    --text-muted: #888;
+    --accent: #f97316;
+    --red: #ef4444;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 40px; line-height: 1.6; }
+
+  h1 { font-size: 28px; margin-bottom: 8px; }
+  .subtitle { color: var(--text-muted); font-size: 15px; margin-bottom: 48px; }
+
+  h2 { font-size: 20px; margin: 48px 0 24px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 16px; margin: 32px 0 12px; color: var(--accent); }
+
+  p { margin-bottom: 16px; color: var(--text-muted); font-size: 14px; }
+  strong { color: var(--text); }
+
+  /* Diagnosis Section */
+  .diagnosis { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+  .diagnosis-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .diagnosis-card.broken { border-left: 3px solid var(--red); }
+  .diagnosis-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--red); margin-bottom: 8px; }
+  .diagnosis-card h4 { font-size: 14px; margin-bottom: 8px; }
+  .diagnosis-card p { font-size: 13px; margin-bottom: 0; }
+
+  /* Blueprint Swim Lanes */
+  .blueprint { margin: 32px 0; overflow-x: auto; }
+  .blueprint-grid { display: grid; grid-template-columns: 140px repeat(6, 1fr); gap: 0; min-width: 900px; }
+  .lane-label { background: var(--surface2); padding: 16px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid var(--border); display: flex; align-items: center; }
+  .lane-label.user { color: var(--accent); }
+  .lane-label.front { color: var(--blue); }
+  .lane-label.back { color: var(--purple); }
+  .lane-label.support { color: var(--green); }
+
+  .phase-header { background: var(--surface); padding: 12px; font-size: 12px; font-weight: 600; text-align: center; border: 1px solid var(--border); color: var(--text); }
+  .phase-header span { display: block; font-size: 10px; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
+
+  .cell { background: var(--bg); padding: 12px; border: 1px solid var(--border); font-size: 12px; line-height: 1.5; }
+  .cell .action { color: var(--text); font-weight: 500; margin-bottom: 4px; }
+  .cell .detail { color: var(--text-muted); font-size: 11px; }
+  .cell .broken-tag { display: inline-block; background: rgba(239,68,68,0.15); color: var(--red); font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-top: 4px; }
+  .cell .new-tag { display: inline-block; background: rgba(34,197,94,0.15); color: var(--green); font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-top: 4px; }
+
+  /* Journey Comparison */
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; }
+  .journey { background: var(--surface); border-radius: 12px; padding: 24px; border: 1px solid var(--border); }
+  .journey.current { border-top: 3px solid var(--red); }
+  .journey.proposed { border-top: 3px solid var(--green); }
+  .journey h4 { font-size: 14px; margin-bottom: 16px; }
+  .journey h4 span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .journey h4 span.bad { color: var(--red); }
+  .journey h4 span.good { color: var(--green); }
+  .step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .current .step-num { background: rgba(239,68,68,0.15); color: var(--red); }
+  .proposed .step-num { background: rgba(34,197,94,0.15); color: var(--green); }
+  .step-text { font-size: 13px; color: var(--text-muted); }
+  .step-text strong { color: var(--text); }
+  .arrow { text-align: center; color: var(--text-muted); font-size: 18px; margin: 4px 0; }
+
+  /* Practice Type Cards */
+  .practice-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+  .ptype { background: var(--surface); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
+  .ptype h4 { font-size: 15px; margin-bottom: 4px; }
+  .ptype .when { font-size: 12px; color: var(--accent); margin-bottom: 12px; }
+  .ptype .desc { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+  .ptype .ui-spec { font-size: 12px; color: var(--text-muted); background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 0; }
+  .ptype .ui-spec strong { display: block; color: var(--text); margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+  /* Spec Table */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  th { text-align: left; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
+  td { padding: 10px 12px; border: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+  td strong { color: var(--text); }
+
+  .callout { background: var(--surface); border-left: 3px solid var(--accent); padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 24px 0; font-size: 13px; }
+  .callout strong { color: var(--accent); }
+
+  .section-divider { height: 1px; background: var(--border); margin: 48px 0; }
+</style>
+</head>
+<body>
+
+<h1>Practice Loop — Service Blueprint</h1>
+<p class="subtitle">SkillGap.ai | Diagnosis of current state + redesigned experience | March 2026</p>
+
+<!-- ============================================================ -->
+<h2>1. Diagnosis: Why It Sucks</h2>
+<p>The practice loop has four structural failures. Every one of them breaks the core promise: <strong>"We help you actually DO things with AI tools."</strong></p>
+
+<div class="diagnosis">
+  <div class="diagnosis-card broken">
+    <div class="label">Failure 1</div>
+    <h4>Tool Challenges Are Theater</h4>
+    <p>User clicks "Open Claude" → lands on claude.ai/new with no context, no pre-filled prompt, no instructions. Does whatever. Comes back. Clicks "I've completed this." Zero verification. The system literally cannot tell if they opened the tool or not.</p>
+  </div>
+  <div class="diagnosis-card broken">
+    <div class="label">Failure 2</div>
+    <h4>Comprehension Is Decoration</h4>
+    <p>One hardcoded question per content item. Always skippable. "Needs work" feedback still advances. No adaptive difficulty. No connection to what was just learned. It's a speed bump, not a checkpoint.</p>
+  </div>
+  <div class="diagnosis-card broken">
+    <div class="label">Failure 3</div>
+    <h4>Paste-Back Is a Dead End</h4>
+    <p>Textarea → paste code → get vague AI feedback → move on. No starter code. No scaffolding. No reference to which tool they should use. No incremental build. The AI evaluation gives a rating but it doesn't matter.</p>
+  </div>
+  <div class="diagnosis-card broken">
+    <div class="label">Failure 4</div>
+    <h4>70% of Scaffolding Is Wasted</h4>
+    <p>The LLM generates pre-watch challenges, key moments with timestamps, discussion questions, difficulty levels. None of it surfaces. The interleaver places exercises at arbitrary points with no correlation to content. All that intelligence sits in the DB unused.</p>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================ -->
+<h2>2. Current vs. Proposed User Journey</h2>
+<p>Side-by-side: what happens now vs. what should happen.</p>
+
+<div class="comparison">
+  <div class="journey current">
+    <h4><span class="bad">Current State</span><br>Tool Challenge Journey</h4>
+    <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Finish watching video</strong> — content ends abruptly</div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="step-num">2</div><div class="step-text"><strong>See practice card</strong> — generic prompt, bullet list of instructions, tool buttons</div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Click "Open Claude"</strong> — opens claude.ai/new in new tab. Blank conversation. No context carried over.</div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="step-num">4</div><div class="step-text"><strong>User is on their own</strong> — must remember the prompt, copy it manually, figure out what to do</div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Come back to SkillGap</strong> — click "I've completed this." No proof required. No screenshot. No output captured.</div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="step-num">6</div><div class="step-text"><strong>Advance</strong> — progress bar moves. Achievement unlocked eventually. But nothing was validated.</div></div>
+  </div>
+
+  <div class="journey proposed">
+    <h4><span class="good">Proposed State</span><br>Tool Challenge Journey</h4>
+    <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Finish watching video</strong> — transition card: "Now let's put this into practice." Shows which tool + estimated time.</div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="step-num">2</div><div class="step-text"><strong>See mission briefing</strong> — clear objective, why this matters, what "done" looks like. Pre-filled prompt shown in a copyable code block.</div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Click "Open in Claude"</strong> — opens claude.ai (or tool) in split view / new tab. <strong>Prompt is auto-copied to clipboard</strong> with toast confirmation.</div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="step-num">4</div><div class="step-text"><strong>SkillGap stays present</strong> — minimized sidebar with the mission objective + success criteria visible. Timer running. User can reference instructions without switching tabs.</div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Come back and show work</strong> — paste output OR screenshot. AI evaluates against success criteria. Gets specific, actionable feedback.</div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="step-num">6</div><div class="step-text"><strong>Advance with proof</strong> — progress shows completion quality (nailed it / good / needs iteration). Optional: iterate and resubmit for better score.</div></div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================ -->
+<h2>3. Service Blueprint — Full Swim Lane Map</h2>
+<p>Every layer of the practice experience, mapped across 6 phases. <span style="color: var(--red);">Red tags = broken today.</span> <span style="color: var(--green);">Green tags = new.</span></p>
+
+<div class="blueprint">
+<div class="blueprint-grid">
+  <!-- Header Row -->
+  <div class="lane-label" style="background: var(--bg);"></div>
+  <div class="phase-header">Phase 1<span>Transition</span></div>
+  <div class="phase-header">Phase 2<span>Mission Briefing</span></div>
+  <div class="phase-header">Phase 3<span>Tool Launch</span></div>
+  <div class="phase-header">Phase 4<span>Active Practice</span></div>
+  <div class="phase-header">Phase 5<span>Submission</span></div>
+  <div class="phase-header">Phase 6<span>Feedback</span></div>
+
+  <!-- User Actions -->
+  <div class="lane-label user">User Actions</div>
+  <div class="cell">
+    <div class="action">Finishes content item</div>
+    <div class="detail">Sees "Up Next: Practice" transition card with tool icon + time estimate</div>
+    <div class="broken-tag">TODAY: Abrupt jump, no context</div>
+  </div>
+  <div class="cell">
+    <div class="action">Reads mission briefing</div>
+    <div class="detail">Scans objective, reviews pre-filled prompt, clicks "Copy prompt"</div>
+    <div class="new-tag">NEW: Copyable prompt block</div>
+  </div>
+  <div class="cell">
+    <div class="action">Opens external tool</div>
+    <div class="detail">Clicks tool button → tool opens in new tab, prompt auto-copied to clipboard</div>
+    <div class="broken-tag">TODAY: Blank tool, no context</div>
+  </div>
+  <div class="cell">
+    <div class="action">Works in tool</div>
+    <div class="detail">Completes the challenge using the AI tool. Can reference SkillGap tab for instructions.</div>
+    <div class="broken-tag">TODAY: No reference, no timer</div>
+  </div>
+  <div class="cell">
+    <div class="action">Submits work</div>
+    <div class="detail">Pastes output text OR drags in screenshot. Clicks "Submit for review"</div>
+    <div class="broken-tag">TODAY: Just "Mark complete" with no input</div>
+  </div>
+  <div class="cell">
+    <div class="action">Reviews feedback</div>
+    <div class="detail">Reads AI evaluation. Optionally iterates. Advances.</div>
+    <div class="broken-tag">TODAY: No feedback on tool challenges</div>
+  </div>
+
+  <!-- Frontstage UI -->
+  <div class="lane-label front">Frontstage UI</div>
+  <div class="cell">
+    <div class="action">Transition Card</div>
+    <div class="detail">Tool icon + name, time estimate, "Practice what you learned" heading, tool logo</div>
+    <div class="new-tag">NEW component</div>
+  </div>
+  <div class="cell">
+    <div class="action">Mission Briefing Panel</div>
+    <div class="detail">
+      • Objective (1 sentence)<br>
+      • Why it matters (connection to content just watched)<br>
+      • Pre-filled prompt in code block with copy button<br>
+      • Step-by-step instructions<br>
+      • Success criteria checklist<br>
+      • Tool button (primary CTA)
+    </div>
+    <div class="new-tag">NEW component</div>
+  </div>
+  <div class="cell">
+    <div class="action">Tool Launch + Clipboard</div>
+    <div class="detail">
+      Opens tool URL in new tab.<br>
+      Clipboard API copies prompt.<br>
+      Toast: "Prompt copied! Paste it in {tool}."<br>
+      SkillGap tab stays open with mini-reference.
+    </div>
+    <div class="new-tag">NEW behavior</div>
+  </div>
+  <div class="cell">
+    <div class="action">Persistent Reference Bar</div>
+    <div class="detail">
+      When user returns to SkillGap tab:<br>
+      • Mission objective pinned at top<br>
+      • Success criteria checklist visible<br>
+      • Timer showing elapsed time<br>
+      • "Re-copy prompt" button
+    </div>
+    <div class="new-tag">NEW component</div>
+  </div>
+  <div class="cell">
+    <div class="action">Submission Panel</div>
+    <div class="detail">
+      Two modes:<br>
+      <strong>Text paste:</strong> Large textarea + "Paste your output"<br>
+      <strong>Screenshot:</strong> Drag-drop zone for image upload<br>
+      Both have "Submit for review" button
+    </div>
+    <div class="new-tag">NEW component</div>
+  </div>
+  <div class="cell">
+    <div class="action">Feedback Card</div>
+    <div class="detail">
+      Quality badge (Nailed it / Good / Needs iteration)<br>
+      Specific feedback tied to success criteria<br>
+      "Try again" or "Continue" buttons<br>
+      Optional: see exemplar output
+    </div>
+    <div class="new-tag">NEW for tool challenges</div>
+  </div>
+
+  <!-- Backstage Systems -->
+  <div class="lane-label back">Backstage</div>
+  <div class="cell">
+    <div class="action">Practice Interleaver</div>
+    <div class="detail">
+      Selects practice type based on scaffolding data + content just consumed + user level
+    </div>
+    <div class="broken-tag">TODAY: Arbitrary placement</div>
+  </div>
+  <div class="cell">
+    <div class="action">Prompt Builder</div>
+    <div class="detail">
+      Generates tool-specific prompt from scaffolding exercise data. Includes context from the content just watched. Adapts to user's skill level.
+    </div>
+    <div class="new-tag">NEW: Context-aware prompts</div>
+  </div>
+  <div class="cell">
+    <div class="action">Clipboard API</div>
+    <div class="detail">
+      navigator.clipboard.writeText() with prompt content. Fallback: visible code block for manual copy.
+    </div>
+    <div class="new-tag">NEW</div>
+  </div>
+  <div class="cell">
+    <div class="action">Session Timer</div>
+    <div class="detail">
+      Tracks time in practice. Stores elapsed time in progress record. Used for analytics + engagement scoring.
+    </div>
+    <div class="new-tag">NEW</div>
+  </div>
+  <div class="cell">
+    <div class="action">Submission Processor</div>
+    <div class="detail">
+      Text: send to AI evaluation endpoint<br>
+      Screenshot: OCR/vision → extract text → evaluate<br>
+      Store submission artifact on progress record
+    </div>
+    <div class="broken-tag">TODAY: No submission for tool challenges</div>
+  </div>
+  <div class="cell">
+    <div class="action">AI Evaluator</div>
+    <div class="detail">
+      GPT-4o-mini evaluates submission against success criteria from scaffolding. Returns structured feedback + quality score.
+    </div>
+    <div class="broken-tag">TODAY: Bypassed for tool challenges</div>
+  </div>
+
+  <!-- Support Processes -->
+  <div class="lane-label support">Support / Data</div>
+  <div class="cell">
+    <div class="action">Scaffolding DB</div>
+    <div class="detail">
+      fp_content_lake_items.scaffolding JSONB contains exercises, tools, success criteria, difficulty level — all pre-generated
+    </div>
+  </div>
+  <div class="cell">
+    <div class="action">Tool Registry</div>
+    <div class="detail">
+      lib/learn/toolRegistry.ts — tool metadata, URLs, prompt templates, icon assets, deep-link patterns
+    </div>
+    <div class="broken-tag">TODAY: Just homepage URLs</div>
+  </div>
+  <div class="cell">
+    <div class="action">Tool Deep Links</div>
+    <div class="detail">
+      Tool-specific URL patterns for pre-filling context where supported (Claude projects, v0 prompts, etc.)
+    </div>
+    <div class="new-tag">NEW: Per-tool URL builders</div>
+  </div>
+  <div class="cell">
+    <div class="action">Progress DB</div>
+    <div class="detail">
+      fp_learning_progress tracks: started_at, time_spent, submission_text, submission_image, evaluation_result, quality_score
+    </div>
+    <div class="broken-tag">TODAY: Missing submission fields</div>
+  </div>
+  <div class="cell">
+    <div class="action">Evaluation Endpoint</div>
+    <div class="detail">
+      /api/learn/evaluate — accepts text OR image, evaluates against success criteria, returns structured feedback
+    </div>
+    <div class="broken-tag">TODAY: Text only, no tool challenge support</div>
+  </div>
+  <div class="cell">
+    <div class="action">Achievement System</div>
+    <div class="detail">
+      Practice completion feeds into fp_achievements. Quality scores affect skill profile. "Nailed it" scores unlock special badges.
+    </div>
+    <div class="new-tag">NEW tie-in</div>
+  </div>
+</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================ -->
+<h2>4. The Three Practice Types — Redesigned</h2>
+<p>Each practice type has a distinct purpose and a distinct UI. No more one-size-fits-all PracticeViewer.</p>
+
+<div class="practice-types">
+  <div class="ptype">
+    <h4>Quick Check</h4>
+    <div class="when">After every content item (inline, not a separate "step")</div>
+    <div class="desc">1-2 questions that validate understanding before moving on. <strong>Not skippable.</strong> Wrong answers trigger a hint + retry, not a block. Correct answers give a satisfying micro-animation and advance.</div>
+    <div class="ui-spec">
+      <strong>UI Behavior</strong>
+      Appears as an overlay/card at the bottom of the content viewer — not a separate path step. Multiple choice OR short free-text. AI evaluates free-text. Wrong = hint text appears + try again. Right = checkmark animation + auto-advance after 1s. Max 2 attempts then reveal answer + advance.
+    </div>
+  </div>
+
+  <div class="ptype">
+    <h4>Tool Mission</h4>
+    <div class="when">After a section of 2-3 content items (a dedicated path step)</div>
+    <div class="desc">The main event. User opens a real AI tool and completes a specific task. This is what makes SkillGap different — you actually use the tools. <strong>The prompt is pre-built, the criteria are clear, and proof of work is required.</strong></div>
+    <div class="ui-spec">
+      <strong>UI Behavior</strong>
+      Full-width mission briefing card. Prominent tool button with logo. Copy-to-clipboard on click. When user returns: paste output or upload screenshot. AI evaluates. Quality badge shown. Can iterate or advance. Skip available but tracked as "skipped" (no credit).
+    </div>
+  </div>
+
+  <div class="ptype">
+    <h4>Reflection</h4>
+    <div class="when">End of a learning path section (before section milestone)</div>
+    <div class="desc">Open-ended prompt that connects what was learned to the user's actual work/goals. "How would you apply [concept] to [their stated goal]?" AI gives thoughtful feedback, not a grade.</div>
+    <div class="ui-spec">
+      <strong>UI Behavior</strong>
+      Clean textarea with the reflection prompt. Min 50 characters to submit. AI responds conversationally (not as an evaluator). Response shown inline. Always advances after submission. Optional: save as a "learning note" to their profile.
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================ -->
+<h2>5. Tool Mission — Detailed Flow Specification</h2>
+<p>This is the centerpiece of practice. Every detail matters.</p>
+
+<table>
+  <tr>
+    <th width="20%">Element</th>
+    <th width="40%">Specification</th>
+    <th width="40%">Why</th>
+  </tr>
+  <tr>
+    <td><strong>Transition In</strong></td>
+    <td>After last content item in section, show transition card: tool logo, "Time to practice" heading, estimated time (from scaffolding), "Start Mission" button</td>
+    <td>Context switch needs a beat. User should know what's coming and mentally shift from passive to active mode.</td>
+  </tr>
+  <tr>
+    <td><strong>Mission Briefing</strong></td>
+    <td>
+      <strong>Objective:</strong> 1 sentence, action-oriented ("Build a prompt that...")<br>
+      <strong>Context:</strong> 1-2 sentences connecting to content just watched<br>
+      <strong>Pre-built prompt:</strong> Shown in a styled code block. Copy button prominent. The prompt is specific to the content — not generic.<br>
+      <strong>Instructions:</strong> 3-5 numbered steps<br>
+      <strong>Success criteria:</strong> Checkable list of what "done" looks like<br>
+      <strong>Tool CTA:</strong> Large button with tool logo: "Open in Claude" / "Open in Cursor" / etc.
+    </td>
+    <td>The user should never wonder "what am I supposed to do?" Every piece of info they need is on screen before they leave.</td>
+  </tr>
+  <tr>
+    <td><strong>Prompt Design</strong></td>
+    <td>
+      The pre-built prompt is NOT just the exercise instructions. It's a <strong>ready-to-paste prompt</strong> for the target tool. Example for Claude:<br><br>
+      <em>"I just learned about [topic from video]. I want to practice [specific skill]. Help me [specific task]. Here's my starting point: [starter code/context]. Guide me step by step."</em><br><br>
+      Generated by a prompt builder that takes: scaffolding exercise data + content metadata + user's role/goal from profile.
+    </td>
+    <td>The #1 barrier to practice is "I don't know how to start." A pre-built prompt eliminates that barrier completely. This is the difference between homework and guided practice.</td>
+  </tr>
+  <tr>
+    <td><strong>Tool Launch</strong></td>
+    <td>
+      Click tool CTA → <code>navigator.clipboard.writeText(prompt)</code> → open tool URL in new tab → show toast: "Prompt copied! Paste it in Claude."<br><br>
+      Tool URLs from registry. Where deep-linking is supported (v0 has prompt params), use it.
+    </td>
+    <td>Copying + opening in one click reduces friction from 4 steps to 1. Toast confirms the copy worked.</td>
+  </tr>
+  <tr>
+    <td><strong>While Practicing</strong></td>
+    <td>
+      SkillGap tab shows a <strong>persistent reference bar</strong>:<br>
+      • Mission objective (pinned)<br>
+      • Success criteria checklist<br>
+      • Elapsed timer<br>
+      • "Re-copy prompt" button<br>
+      • "I'm done" button
+    </td>
+    <td>User will alt-tab back to reference instructions. This must be immediately visible — not buried under content they already watched.</td>
+  </tr>
+  <tr>
+    <td><strong>Submission</strong></td>
+    <td>
+      User clicks "I'm done" → submission panel:<br>
+      <strong>Option A:</strong> Paste text output (large textarea)<br>
+      <strong>Option B:</strong> Upload screenshot (drag-drop zone)<br>
+      Both: "Submit for review" button<br>
+      Skip: Available as text link ("Skip this practice") — tracked as skipped, no credit, no achievement XP.
+    </td>
+    <td>Proof of work is what makes practice real. But it must be frictionless — paste or screenshot, nothing more complex.</td>
+  </tr>
+  <tr>
+    <td><strong>AI Evaluation</strong></td>
+    <td>
+      <strong>Text submissions:</strong> GPT-4o-mini evaluates against success criteria. Returns structured response: quality (nailed_it / good / needs_iteration), per-criterion pass/fail, specific feedback, suggestion for improvement.<br>
+      <strong>Image submissions:</strong> GPT-4o-mini with vision analyzes screenshot against criteria. Same structured output.<br>
+      <strong>Schema:</strong> Structured Outputs with strict JSON schema.
+    </td>
+    <td>Feedback must be specific ("Your prompt structure is strong but missing error handling criteria") not vague ("Good job!"). This is where the AI proves its value.</td>
+  </tr>
+  <tr>
+    <td><strong>Feedback Display</strong></td>
+    <td>
+      Quality badge with color: 🟢 Nailed it / 🟡 Good / 🟠 Needs iteration<br>
+      Per-criterion breakdown (checkmarks / x marks)<br>
+      Specific feedback paragraph<br>
+      Two CTAs: "Try Again" (goes back to mission briefing) or "Continue" (advances)<br>
+      "Nailed it" gets a celebration micro-animation.
+    </td>
+    <td>Users need to see exactly where they hit and missed. "Try Again" creates a real practice loop — not just "mark complete and move on."</td>
+  </tr>
+</table>
+
+<div class="callout">
+  <strong>Key principle:</strong> Practice should never block progression. "Skip" is always available. But skipping means no credit, no badge, no XP. The incentive is intrinsic (learn the skill) + extrinsic (achievements, profile, shareable badges). Never punitive.
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================ -->
+<h2>6. What Changes in the Codebase</h2>
+<p>Mapping blueprint requirements to specific technical changes.</p>
+
+<table>
+  <tr><th>Area</th><th>Current State</th><th>Required Change</th></tr>
+  <tr>
+    <td><strong>PracticeViewer.tsx</strong></td>
+    <td>Single component handles all 3 types. Tool challenges just show buttons. "Mark Complete" with no input.</td>
+    <td><strong>Delete and rebuild as 3 components:</strong> QuickCheck (inline overlay), ToolMission (full mission briefing), Reflection (clean textarea). Each with purpose-built UI.</td>
+  </tr>
+  <tr>
+    <td><strong>toolRegistry.ts</strong></td>
+    <td>8 tools with static homepage URLs. No prompt templates. No deep-link patterns.</td>
+    <td><strong>Add per-tool:</strong> prompt template function, deep-link URL builder (where supported), icon asset path, clipboard format. Tool URLs should be contextual, not static.</td>
+  </tr>
+  <tr>
+    <td><strong>practiceInterleaver.ts</strong></td>
+    <td>Hardcoded: comprehension after every 2nd item, exercises at section boundaries. No correlation to content.</td>
+    <td><strong>Redesign:</strong> Quick Checks after every content item (inline, not separate steps). Tool Missions at section ends (only if scaffolding has exercises). Reflections before section milestones. Use scaffolding difficulty to sequence.</td>
+  </tr>
+  <tr>
+    <td><strong>Prompt Builder</strong></td>
+    <td>Doesn't exist. Exercises are shown raw from scaffolding.</td>
+    <td><strong>New module:</strong> lib/learn/promptBuilder.ts — takes scaffolding exercise + content metadata + user profile → generates a ready-to-paste tool prompt specific to the content.</td>
+  </tr>
+  <tr>
+    <td><strong>/api/learn/evaluate</strong></td>
+    <td>Text-only evaluation. No support for tool challenges. No image/vision support.</td>
+    <td><strong>Extend:</strong> Accept image uploads (base64). Use GPT-4o-mini with vision for screenshot evaluation. Return per-criterion breakdown, not just a quality rating.</td>
+  </tr>
+  <tr>
+    <td><strong>fp_learning_progress</strong></td>
+    <td>Tracks started_at and completed. No submission data.</td>
+    <td><strong>Add columns:</strong> submission_text, submission_image_url, evaluation_result (JSONB), quality_score, time_spent_seconds, skipped (boolean).</td>
+  </tr>
+  <tr>
+    <td><strong>Path page (paths/[id])</strong></td>
+    <td>Renders PracticeViewer for practice items. No transition cards. No persistent reference bar.</td>
+    <td><strong>Add:</strong> Transition card between content → practice. Persistent reference bar during tool missions. Submission panel. Feedback card with iteration support.</td>
+  </tr>
+  <tr>
+    <td><strong>Quick Checks</strong></td>
+    <td>Separate path step. Skippable. One question.</td>
+    <td><strong>Move inline:</strong> Overlay at bottom of content viewer. Not a path step. Not skippable (but max 2 attempts then reveal). Can be multiple choice or free-text. Pull from scaffolding comprehension_checks array (use ALL of them, not just first).</td>
+  </tr>
+</table>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================ -->
+<h2>7. Success Metrics</h2>
+<p>How we know the redesign is working.</p>
+
+<table>
+  <tr><th>Metric</th><th>Current</th><th>Target</th><th>Why It Matters</th></tr>
+  <tr>
+    <td><strong>Practice completion rate</strong></td>
+    <td>Unknown (no real tracking — "Mark Complete" is meaningless)</td>
+    <td>>40% of users who encounter a Tool Mission submit work</td>
+    <td>If users actually do the practice, the product is working</td>
+  </tr>
+  <tr>
+    <td><strong>Practice skip rate</strong></td>
+    <td>Unknown (skip and complete are indistinguishable)</td>
+    <td><50% skip rate on Tool Missions</td>
+    <td>If more than half skip, the missions aren't compelling enough</td>
+  </tr>
+  <tr>
+    <td><strong>"Nailed it" rate</strong></td>
+    <td>N/A</td>
+    <td>25-35% on first attempt</td>
+    <td>Too high = too easy. Too low = unclear instructions. Sweet spot is challenging but achievable.</td>
+  </tr>
+  <tr>
+    <td><strong>Iteration rate</strong></td>
+    <td>0% (no iteration possible)</td>
+    <td>>15% of non-"nailed it" users retry</td>
+    <td>Retry means the user cares about getting it right. This is real learning.</td>
+  </tr>
+  <tr>
+    <td><strong>Tool click-through rate</strong></td>
+    <td>Unknown</td>
+    <td>>60% of users who see a Tool Mission click the tool CTA</td>
+    <td>The mission briefing must be compelling enough to get them to actually open the tool</td>
+  </tr>
+  <tr>
+    <td><strong>Quick Check pass rate</strong></td>
+    <td>Unknown</td>
+    <td>70-80% on first attempt</td>
+    <td>Quick Checks validate content understanding. Below 70% = content or question quality issue.</td>
+  </tr>
+</table>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================ -->
+<h2>8. Implementation Priority</h2>
+<p>What to build first, and why.</p>
+
+<div class="diagnosis">
+  <div class="diagnosis-card" style="border-left: 3px solid var(--accent);">
+    <div class="label" style="color: var(--accent);">Sprint 1 — Fix Tool Missions</div>
+    <h4>The Big Win</h4>
+    <p>Mission briefing UI + clipboard copy + submission panel + AI evaluation with criteria. This single sprint transforms practice from theater to real. <strong>Most user-visible impact.</strong></p>
+  </div>
+  <div class="diagnosis-card" style="border-left: 3px solid var(--blue);">
+    <div class="label" style="color: var(--blue);">Sprint 2 — Fix Quick Checks</div>
+    <h4>Make Content Stick</h4>
+    <p>Move checks inline (not separate path steps). Make them non-skippable with 2-attempt limit. Use ALL comprehension checks from scaffolding. Add hint system.</p>
+  </div>
+  <div class="diagnosis-card" style="border-left: 3px solid var(--purple);">
+    <div class="label" style="color: var(--purple);">Sprint 3 — Prompt Builder</div>
+    <h4>Intelligence Layer</h4>
+    <p>Context-aware prompt generation that incorporates content metadata + user profile + scaffolding data. Makes every Tool Mission feel custom-built for the user.</p>
+  </div>
+  <div class="diagnosis-card" style="border-left: 3px solid var(--green);">
+    <div class="label" style="color: var(--green);">Sprint 4 — Reflections + Polish</div>
+    <h4>Depth</h4>
+    <p>Add end-of-section reflections. Connect to user goals. Save as learning notes. Polish transitions and micro-animations. Wire into achievement system.</p>
+  </div>
+</div>
+
+</body>
+</html>

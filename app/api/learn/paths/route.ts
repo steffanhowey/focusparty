@@ -7,6 +7,10 @@ import {
   mapProgressRow,
 } from "@/lib/learn/pathGenerator";
 import type { LearningPath, LearningProgress } from "@/lib/types";
+import { CreatePathSchema, parseBody } from "@/lib/learn/validation";
+import { logger } from "@/lib/logger";
+
+const log = logger("learn/paths");
 
 /**
  * POST /api/learn/paths
@@ -14,9 +18,9 @@ import type { LearningPath, LearningProgress } from "@/lib/types";
  * Body: { query: string }
  */
 export async function POST(request: Request): Promise<NextResponse> {
-  let body: { query?: string } = {};
+  let raw: unknown;
   try {
-    body = await request.json();
+    raw = await request.json();
   } catch {
     return NextResponse.json(
       { error: "Invalid request body" },
@@ -24,13 +28,15 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  const query = body.query?.trim();
-  if (!query || query.length < 2) {
+  const parsed = parseBody(CreatePathSchema, raw);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Query must be at least 2 characters" },
+      { error: parsed.error },
       { status: 400 }
     );
   }
+
+  const { query } = parsed.data;
 
   try {
     const path = await generateAndCachePath(query);
@@ -47,7 +53,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json({ path, cached: path.id !== "temp" });
   } catch (error) {
-    console.error("[learn/paths] generation error:", error);
+    log.error("generation failed", error, { query });
     return NextResponse.json(
       { error: "Failed to generate learning path" },
       { status: 500 }

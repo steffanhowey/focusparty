@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillGap.ai — The Learn Experience: End-to-End Blueprint</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --border-light: #333;
+    --text: #e5e5e5;
+    --text-muted: #999;
+    --text-dim: #666;
+    --accent: #f97316;
+    --red: #ef4444;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 48px 64px; line-height: 1.7; max-width: 1100px; margin: 0 auto; }
+
+  h1 { font-size: 32px; margin-bottom: 4px; letter-spacing: -0.02em; }
+  .subtitle { color: var(--text-muted); font-size: 15px; margin-bottom: 56px; }
+
+  h2 { font-size: 22px; margin: 64px 0 8px; letter-spacing: -0.01em; }
+  h2 + p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+
+  h3 { font-size: 16px; margin: 36px 0 12px; color: var(--accent); }
+
+  p { margin-bottom: 16px; font-size: 15px; color: var(--text-muted); }
+  p strong { color: var(--text); }
+
+  .divider { height: 1px; background: var(--border); margin: 56px 0; }
+
+  /* Core Belief */
+  .belief { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px; margin: 32px 0; }
+  .belief .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 12px; }
+  .belief .statement { font-size: 20px; line-height: 1.5; color: var(--text); margin-bottom: 16px; }
+  .belief .explain { font-size: 14px; color: var(--text-muted); }
+
+  /* Model Diagram */
+  .model { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; align-items: center; margin: 32px 0; gap: 0; }
+  .model-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+  .model-box .m-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .model-box h4 { font-size: 16px; margin-bottom: 8px; }
+  .model-box p { font-size: 13px; margin-bottom: 0; text-align: center; }
+  .model-arrow { text-align: center; color: var(--text-dim); font-size: 24px; }
+
+  /* Two Column */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0; }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .card .card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .card h4 { font-size: 15px; margin-bottom: 8px; }
+  .card p { font-size: 13px; margin-bottom: 0; }
+  .card.accent { border-left: 3px solid var(--accent); }
+  .card.blue { border-left: 3px solid var(--blue); }
+  .card.green { border-left: 3px solid var(--green); }
+  .card.purple { border-left: 3px solid var(--purple); }
+  .card.cyan { border-left: 3px solid var(--cyan); }
+  .card.red { border-left: 3px solid var(--red); }
+
+  /* Journey */
+  .journey { margin: 32px 0; }
+  .j-module { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+  .j-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+  .j-header h4 { font-size: 15px; }
+  .j-header .j-time { font-size: 12px; color: var(--text-dim); background: var(--bg); padding: 4px 10px; border-radius: 6px; }
+  .j-tasks { padding: 16px 20px; }
+  .j-task { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+  .j-task:last-child { margin-bottom: 0; }
+  .j-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .j-icon.watch { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .j-icon.do { background: rgba(249,115,22,0.15); color: var(--accent); }
+  .j-icon.check { background: rgba(34,197,94,0.15); color: var(--green); }
+  .j-icon.reflect { background: rgba(168,85,247,0.15); color: var(--purple); }
+  .j-task-content { font-size: 13px; color: var(--text-muted); }
+  .j-task-content strong { color: var(--text); font-size: 13px; }
+  .j-task-content .j-detail { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Flow */
+  .flow { display: flex; gap: 12px; margin: 24px 0; flex-wrap: wrap; }
+  .flow-step { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; flex: 1; min-width: 150px; }
+  .flow-step .f-num { font-size: 11px; color: var(--accent); margin-bottom: 4px; }
+  .flow-step .f-label { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .flow-step .f-detail { font-size: 12px; color: var(--text-dim); }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  th { text-align: left; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); }
+  td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+  td strong { color: var(--text); }
+
+  /* Callout */
+  .callout { background: var(--surface); border-left: 3px solid var(--accent); padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 24px 0; font-size: 14px; color: var(--text-muted); }
+  .callout strong { color: var(--accent); }
+
+  .tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 4px; margin-right: 4px; }
+  .tag.new { background: rgba(34,197,94,0.15); color: var(--green); }
+  .tag.change { background: rgba(249,115,22,0.15); color: var(--accent); }
+  .tag.keep { background: rgba(59,130,246,0.15); color: var(--blue); }
+</style>
+</head>
+<body>
+
+<h1>The Learn Experience</h1>
+<p class="subtitle">End-to-end blueprint for SkillGap.ai's guided learning product — March 2026</p>
+
+<!-- ============================================================ -->
+<h2>The Core Belief</h2>
+
+<div class="belief">
+  <div class="label">What We Believe</div>
+  <div class="statement">People don't need more content. They need guided, hands-on practice with the tools that will make them indispensable.</div>
+  <div class="explain">YouTube has infinite AI content. ChatGPT can answer any question. SkillGap's value is not finding videos or answering questions — it's designing a <strong>curriculum that takes someone from "I've heard of this" to "I can do this"</strong> through structured, task-driven practice with real AI tools. Content exists in service of tasks. Tasks are the product.</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<h2>The Two Entry Modes</h2>
+<p>Every user enters through one of two doors. Both lead to the same guided experience.</p>
+
+<div class="two-col">
+  <div class="card accent">
+    <div class="card-label" style="color: var(--accent);">Mode 1 — Pull (Intent)</div>
+    <h4>"I want to learn Cursor"</h4>
+    <p>User knows what they want. They search or browse by topic. They're looking for a structured path to get hands-on fast. Entry: search bar, topic filter, or direct link.</p>
+    <p style="margin-top: 12px;"><strong>What they see:</strong> Learning paths matching their search. Each path has a clear promise ("Build AI-powered apps with Cursor"), time estimate, difficulty level, and a "Start" button.</p>
+  </div>
+  <div class="card blue">
+    <div class="card-label" style="color: var(--blue);">Mode 2 — Push (Discovery)</div>
+    <h4>"What should I know about right now?"</h4>
+    <p>User wants to stay sharp but doesn't have a specific tool in mind. They need SkillGap to surface what matters. Entry: Learn homepage, digest notification, or personalized recommendation.</p>
+    <p style="margin-top: 12px;"><strong>What they see:</strong> Curated discovery feed. Trending topics. Personalized recommendations. Emerging tools. Each card = a learning path, not a video. Every card leads to the same guided experience.</p>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>The critical rule:</strong> No matter how a user arrives — search, discovery, recommendation, shared link — they always land on a <strong>learning path</strong> with a clear goal, structured tasks, and integrated tool practice. Never a video. Never a playlist. Never a content library.
+</div>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<h2>The Learn Homepage</h2>
+<p>Not a content library. A launchpad for skill-building.</p>
+
+<h3>For the Push User (No Specific Goal)</h3>
+<p>The homepage shows three sections, each surfacing learning paths — not videos, not articles, not playlists.</p>
+
+<div class="journey">
+  <div class="j-module">
+    <div class="j-header">
+      <h4>Section 1: What's Moving Right Now</h4>
+      <div class="j-time">Powered by signal system</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon do">→</div>
+        <div class="j-task-content">
+          <strong>Trending topics with ready-to-start paths</strong>
+          <div class="j-detail">Signal system detects heat (YouTube trends, Reddit buzz, HN discussions, new tool launches). Topic intelligence clusters signals. Curriculum generator creates paths. Discovery feed surfaces them. Each card: topic name, why it's trending (1 sentence), time estimate, "Start" button.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">→</div>
+        <div class="j-task-content">
+          <strong>Example cards:</strong>
+          <div class="j-detail">"Cursor just shipped background agents — get hands-on in 20 min" · "Claude Code is changing how developers work — build something with it" · "Devin 2.0 dropped — here's what it can actually do (and how to use it)"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="j-module">
+    <div class="j-header">
+      <h4>Section 2: Recommended for You</h4>
+      <div class="j-time">Powered by profile + taste</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon do">→</div>
+        <div class="j-task-content">
+          <strong>Personalized paths based on role, goal, and history</strong>
+          <div class="j-detail">Onboarding captures role (developer, PM, designer, marketer, etc.) + goal (stay current, career switch, level up, etc.) + topics. Taste profile tracks engagement. System recommends paths that close their specific skill gaps. A PM sees "AI for Product Decisions." A developer sees "Ship Faster with Copilot."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="j-module">
+    <div class="j-header">
+      <h4>Section 3: Continue Learning</h4>
+      <div class="j-time">Re-engagement hook</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon do">→</div>
+        <div class="j-task-content">
+          <strong>In-progress paths with progress bars</strong>
+          <div class="j-detail">Shows where they left off. "You're 60% through 'Build with Cursor' — next up: connect your frontend to an API." One-click resume.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3>For the Pull User (Specific Goal)</h3>
+<p>Search bar is prominent. Results are always learning paths.</p>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="f-num">1</div>
+    <div class="f-label">User searches</div>
+    <div class="f-detail">"cursor" or "AI coding" or "prompt engineering"</div>
+  </div>
+  <div class="flow-step">
+    <div class="f-num">2</div>
+    <div class="f-label">Results = paths</div>
+    <div class="f-detail">Matching existing paths. If none exist, system generates one in real-time from content lake.</div>
+  </div>
+  <div class="flow-step">
+    <div class="f-num">3</div>
+    <div class="f-label">Path card</div>
+    <div class="f-detail">Clear promise. Time estimate. Difficulty. "Start" button. That's it.</div>
+  </div>
+  <div class="flow-step">
+    <div class="f-num">4</div>
+    <div class="f-label">Enter curriculum</div>
+    <div class="f-detail">Same guided experience regardless of entry point.</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<h2>The Curriculum Model</h2>
+<p>This is the fundamental architecture. Everything else follows from this.</p>
+
+<div class="belief">
+  <div class="label">The Shift</div>
+  <div class="statement">Old model: Find videos → sequence them → bolt on practice.<br>New model: Define goal → design tasks → attach supporting content.</div>
+  <div class="explain">The primary unit of the curriculum is a <strong>task</strong> — something the user DOES. Videos, articles, and tutorials are supporting material attached to tasks. The AI curriculum generator designs a task sequence that builds progressively toward the goal, then finds the best content from the lake to support each task.</div>
+</div>
+
+<h3>Anatomy of a Learning Path</h3>
+
+<table>
+  <tr><th width="20%">Layer</th><th>Description</th></tr>
+  <tr>
+    <td><strong>Goal</strong></td>
+    <td>What the user will be able to DO when they finish. Not "understand X" but "build X with Y tool." Shown prominently on the path card and entry screen. Example: "Build and deploy an AI-powered app using Cursor."</td>
+  </tr>
+  <tr>
+    <td><strong>Modules</strong></td>
+    <td>3-6 progressive stages. Each module has a theme and builds on the previous. Module 1 might be orientation + setup. Module 3 might be guided building. Module 5 might be a solo challenge. Each module = 10-20 minutes.</td>
+  </tr>
+  <tr>
+    <td><strong>Tasks</strong></td>
+    <td>The atomic unit. Each task is one of four types: <strong>Watch</strong> (consume supporting content), <strong>Do</strong> (hands-on with a tool), <strong>Check</strong> (verify understanding), or <strong>Reflect</strong> (connect to personal context). Tasks within a module are sequenced intentionally — typically Watch → Do → Check, with Reflect at module boundaries.</td>
+  </tr>
+  <tr>
+    <td><strong>Supporting Content</strong></td>
+    <td>Videos and articles from the content lake, attached to Watch tasks. These are not the point — they support the Do tasks. A video might show someone doing the exact thing the user is about to do, so they have a reference. Shown in a reference panel, not full-screen.</td>
+  </tr>
+  <tr>
+    <td><strong>Tool Integration</strong></td>
+    <td>Each Do task names the tool, provides a pre-built prompt (copyable), deep-links where supported, and defines success criteria. The tool is part of the task, not a side quest.</td>
+  </tr>
+</table>
+
+<h3>The Four Task Types</h3>
+
+<div class="two-col">
+  <div class="card blue">
+    <div class="card-label" style="color: var(--blue);">👁 Watch</div>
+    <h4>Consume Supporting Content</h4>
+    <p><strong>Purpose:</strong> Give context before a Do task. Show what "good" looks like. Introduce a concept needed for the next step.</p>
+    <p><strong>UI:</strong> Video or article in a content viewer. Key moments highlighted. Duration: 3-8 min max. Always followed by a Do or Check task — never two Watch tasks in a row.</p>
+    <p><strong>Rule:</strong> Every Watch task must answer: "Why am I watching this?" The answer should be: "Because in 3 minutes, you're going to do this yourself."</p>
+  </div>
+  <div class="card accent">
+    <div class="card-label" style="color: var(--accent);">🔨 Do (Tool Mission)</div>
+    <h4>Hands-On with a Real Tool</h4>
+    <p><strong>Purpose:</strong> The main event. User opens an AI tool and completes a specific task. This is what makes SkillGap different from YouTube.</p>
+    <p><strong>UI:</strong> Mission briefing (objective, context, pre-built prompt, steps, success criteria, tool CTA). Clipboard copy on launch. Persistent reference bar while they work. Submit output (paste or screenshot). AI evaluation with specific feedback.</p>
+    <p><strong>Rule:</strong> Proof of work required for credit. Skip available but tracked. Iteration encouraged ("Try again" on non-perfect scores).</p>
+  </div>
+  <div class="card green">
+    <div class="card-label" style="color: var(--green);">✓ Check</div>
+    <h4>Verify Understanding</h4>
+    <p><strong>Purpose:</strong> Quick validation that concepts stuck before moving on. Not a quiz — a checkpoint.</p>
+    <p><strong>UI:</strong> Inline overlay at the bottom of the content viewer (not a separate step). 1-2 questions. Multiple choice or short free-text. Wrong = hint + retry (max 2 attempts, then reveal). Right = micro-animation + auto-advance.</p>
+    <p><strong>Rule:</strong> Not skippable, but never blocks for more than 30 seconds. Lightweight. The point is confirmation, not assessment.</p>
+  </div>
+  <div class="card purple">
+    <div class="card-label" style="color: var(--purple);">💭 Reflect</div>
+    <h4>Connect to Personal Context</h4>
+    <p><strong>Purpose:</strong> Bridge between learning and the user's real work/goals. "How would you apply this?" Appears at module boundaries.</p>
+    <p><strong>UI:</strong> Clean textarea with personalized prompt (references their role/goal from profile). Min 50 chars. AI responds conversationally, not as a grader. Saved as a learning note. Always advances.</p>
+    <p><strong>Rule:</strong> No grade. No judgment. This is about making the learning personal and sticky. Optional save to profile.</p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<h2>A Complete User Journey</h2>
+<p>One path, end to end: "Build AI-Powered Apps with Cursor." Every detail.</p>
+
+<div class="callout">
+  <strong>Context:</strong> User is a junior developer or PM who's heard of Cursor but hasn't used it. They searched "Cursor" on SkillGap, saw this path, and clicked "Start." Goal: go from zero to shipping something real.
+</div>
+
+<div class="journey">
+
+  <!-- Module 1 -->
+  <div class="j-module">
+    <div class="j-header">
+      <h4>Module 1: See What's Possible</h4>
+      <div class="j-time">~8 min</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon watch">👁</div>
+        <div class="j-task-content">
+          <strong>Watch: "What Cursor Can Do" (4 min)</strong>
+          <div class="j-detail">Curated video showing real-world Cursor usage. Someone building an app in minutes. This isn't education yet — it's motivation. The user sees the destination.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon check">✓</div>
+        <div class="j-task-content">
+          <strong>Check: Quick comprehension (inline)</strong>
+          <div class="j-detail">"What makes Cursor different from a regular code editor?" Multiple choice. Validates they absorbed the core concept before moving on.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">🔨</div>
+        <div class="j-task-content">
+          <strong>Do: Install and open Cursor</strong>
+          <div class="j-detail">First hands-on task — happens within 5 minutes of starting. "Download Cursor from cursor.com, open it, and take a screenshot of the welcome screen." Deep link to cursor.com. Submit screenshot. AI vision confirms. Quick win.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Module 2 -->
+  <div class="j-module">
+    <div class="j-header">
+      <h4>Module 2: Your First AI-Generated Component</h4>
+      <div class="j-time">~15 min</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon watch">👁</div>
+        <div class="j-task-content">
+          <strong>Watch: "How Cursor's Composer Works" (3 min)</strong>
+          <div class="j-detail">Short, targeted video showing exactly the feature they're about to use. Shown in a reference panel — not fullscreen. They can watch it while reading the mission briefing.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">🔨</div>
+        <div class="j-task-content">
+          <strong>Do: Generate a login form with Cursor Composer</strong>
+          <div class="j-detail">
+            <strong>Mission briefing:</strong><br>
+            Objective: "Use Cursor's Composer to generate a complete React login form from a single prompt."<br>
+            Pre-built prompt (shown in copyable code block): "Create a React login form component with email and password fields, form validation, error states, and a submit button. Use Tailwind CSS for styling."<br>
+            Steps: 1) Open Cursor. 2) Create a new file. 3) Open Composer (Cmd+I). 4) Paste the prompt. 5) Review and accept the output.<br>
+            Success criteria: ✓ Has email + password fields ✓ Has validation ✓ Has error states ✓ Uses Tailwind<br>
+            CTA: "Open Cursor" (copies prompt to clipboard + toast)<br>
+            <br>
+            <strong>Submission:</strong> Paste generated code. AI evaluates against criteria. Specific feedback: "Your form has all required fields ✓ but is missing client-side validation ✗. Try adding this to your prompt: 'Include email format validation and password strength indicator.'"
+          </div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon check">✓</div>
+        <div class="j-task-content">
+          <strong>Check: What did you learn? (inline)</strong>
+          <div class="j-detail">"What's the most effective way to get better output from Cursor?" Free-text, AI-evaluated. Validates they're thinking about prompt quality, not just copy-pasting.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Module 3 -->
+  <div class="j-module">
+    <div class="j-header">
+      <h4>Module 3: Edit and Iterate</h4>
+      <div class="j-time">~15 min</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon watch">👁</div>
+        <div class="j-task-content">
+          <strong>Watch: "Cursor's Inline Edit + Multi-File Edits" (4 min)</strong>
+          <div class="j-detail">Shows Cmd+K inline editing and multi-file generation. Reference for the task ahead.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">🔨</div>
+        <div class="j-task-content">
+          <strong>Do: Improve your login form with 3 iterations</strong>
+          <div class="j-detail">
+            Builds directly on Module 2's output. "Take your login form and make three improvements using Cursor's inline edit (Cmd+K)."<br>
+            Iteration 1: "Add a 'Remember me' checkbox and 'Forgot password' link"<br>
+            Iteration 2: "Add a loading spinner on the submit button"<br>
+            Iteration 3: "Add social login buttons (Google, GitHub)"<br>
+            Each iteration has its own prompt provided. Submit final code. AI evaluates all three additions.
+          </div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon reflect">💭</div>
+        <div class="j-task-content">
+          <strong>Reflect: Module milestone</strong>
+          <div class="j-detail">"You've now generated AND iterated on a component using AI. How could you use this workflow in your current work?" Personalized to their role from profile. Saved as learning note.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Module 4 -->
+  <div class="j-module">
+    <div class="j-header">
+      <h4>Module 4: Full-Stack with AI</h4>
+      <div class="j-time">~20 min</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon watch">👁</div>
+        <div class="j-task-content">
+          <strong>Watch: "Multi-File Generation in Cursor" (5 min)</strong>
+          <div class="j-detail">Shows someone building a frontend + API + database schema in one Composer session. This is the reference for the biggest task in the path.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">🔨</div>
+        <div class="j-task-content">
+          <strong>Do: Build a complete auth flow</strong>
+          <div class="j-detail">
+            The big one. "Use Cursor to generate: 1) Your login form (you already have this), 2) A registration form, 3) An API route that handles login/register, 4) A protected dashboard page."<br>
+            One comprehensive prompt provided. But they also need to iterate — the first output won't connect everything correctly. This is where they learn the real skill: multi-turn iteration with AI.<br>
+            Submit: All 4 files. AI evaluates the connections between them.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Module 5 -->
+  <div class="j-module" style="border: 1px solid var(--accent);">
+    <div class="j-header" style="border-bottom-color: var(--accent);">
+      <h4>Module 5: Solo Challenge</h4>
+      <div class="j-time">~20 min</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon do">🔨</div>
+        <div class="j-task-content">
+          <strong>Do: Build a user profile page — no prompts provided</strong>
+          <div class="j-detail">
+            This is the test. "Build a user profile page that fetches data from an API and displays it. Use Cursor. Write your own prompts. Make it look good."<br>
+            No pre-built prompt. No step-by-step. They compose their own prompts, iterate, and produce working code. This proves they've internalized the skill.<br>
+            Submit: Final code. Detailed AI evaluation covering: prompt quality (inferred from output), code completeness, UI polish, API integration.
+          </div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon reflect">💭</div>
+        <div class="j-task-content">
+          <strong>Reflect: Path completion</strong>
+          <div class="j-detail">"What was the biggest thing you learned about working with AI coding tools? How will you use this going forward?"</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon check" style="background: rgba(249,115,22,0.15); color: var(--accent);">🏆</div>
+        <div class="j-task-content">
+          <strong>Achievement: "Cursor Builder — Level 1"</strong>
+          <div class="j-detail">Completion card with what they built, skills demonstrated, time spent. Shareable to LinkedIn/X. Public achievement URL. Added to skill profile.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<h2>How Discovery Powers the Feed</h2>
+<p>The pipeline from "something is trending" to "there's a path about it on the homepage."</p>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="f-num">1</div>
+    <div class="f-label">Signals Detected</div>
+    <div class="f-detail">YouTube trending, Reddit discussion, HN post, new tool launch, RSS from AI blogs</div>
+  </div>
+  <div class="flow-step">
+    <div class="f-num">2</div>
+    <div class="f-label">Topic Clustered</div>
+    <div class="f-detail">Signal system groups signals into topic clusters. Heat score calculated. "Cursor background agents" = hot topic.</div>
+  </div>
+  <div class="flow-step">
+    <div class="f-num">3</div>
+    <div class="f-label">Content Sourced</div>
+    <div class="f-detail">Content lake searched for quality videos/articles on the topic. If thin, discovery cron fetches more from YouTube.</div>
+  </div>
+  <div class="flow-step">
+    <div class="f-num">4</div>
+    <div class="f-label">Curriculum Generated</div>
+    <div class="f-detail">AI designs a task sequence for the topic. Attaches best content from lake as support. Generates prompts, success criteria, tool integrations.</div>
+  </div>
+  <div class="flow-step">
+    <div class="f-num">5</div>
+    <div class="f-label">Editorial Review</div>
+    <div class="f-detail">Queued for human QA. Approved paths go live. Rejected paths get notes for improvement. (Auto-publish later as confidence grows.)</div>
+  </div>
+  <div class="flow-step">
+    <div class="f-num">6</div>
+    <div class="f-label">Live on Feed</div>
+    <div class="f-detail">Path appears in "What's Moving Right Now" with topic context, time estimate, and "Start" button.</div>
+  </div>
+</div>
+
+<h3>Two Path Speeds</h3>
+<div class="two-col">
+  <div class="card accent">
+    <div class="card-label" style="color: var(--accent);">Pre-Generated Paths</div>
+    <h4>Discovery Feed + Popular Topics</h4>
+    <p>Generated daily by cron (or triggered by hot signal). Full editorial review. These are the polished, high-confidence paths that appear on the homepage. Cover trending topics and evergreen skills.</p>
+  </div>
+  <div class="card blue">
+    <div class="card-label" style="color: var(--blue);">On-Demand Paths</div>
+    <h4>Search Results + Long-Tail Topics</h4>
+    <p>Generated in real-time when a user searches for something without a pre-made path. Uses content lake + curriculum generator. Quality may vary — flagged for async editorial review. User can start immediately.</p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<h2>The Curriculum Generator</h2>
+<p>The AI brain that designs task sequences. This is the biggest architectural change from the current system.</p>
+
+<h3>Current Path Generator (What Exists)</h3>
+<div class="card red">
+  <div class="card-label" style="color: var(--red);">Content-First Model</div>
+  <h4>Find → Sequence → Decorate</h4>
+  <p>pathGenerator.ts searches the content lake for relevant videos → sequences them by topic progression → adds connective text between items → bolts on practice from scaffolding data. The curriculum IS the video sequence. Practice is afterthought decoration.</p>
+</div>
+
+<h3>New Curriculum Generator (What We Need)</h3>
+<div class="card green">
+  <div class="card-label" style="color: var(--green);">Goal-First Model</div>
+  <h4>Goal → Tasks → Content</h4>
+  <p>New curriculum generator takes a GOAL (topic + skill level + desired outcome) → designs a MODULE sequence with progressive tasks → for each Watch task, finds the best supporting content from the lake → for each Do task, generates the mission briefing (objective, prompt, steps, success criteria, tool integration) → for each Check task, generates contextual questions. The curriculum IS the task sequence. Content is attached support.</p>
+</div>
+
+<h3>Curriculum Generator — Input/Output</h3>
+<table>
+  <tr><th>Input</th><th>Output</th></tr>
+  <tr>
+    <td>
+      <strong>Topic:</strong> "Cursor for AI coding"<br>
+      <strong>Audience level:</strong> Beginner<br>
+      <strong>User context:</strong> PM, wants to prototype faster<br>
+      <strong>Available content:</strong> 12 quality videos from lake<br>
+      <strong>Available tools:</strong> Cursor (from tool registry)
+    </td>
+    <td>
+      <strong>Path goal:</strong> "Build and deploy an AI-powered app using Cursor"<br>
+      <strong>Modules:</strong> 5 modules, each with 2-4 tasks<br>
+      <strong>Task sequence:</strong> Watch → Do → Check pattern per module<br>
+      <strong>Content assignments:</strong> Best video per Watch task<br>
+      <strong>Mission briefings:</strong> Full spec per Do task<br>
+      <strong>Progression:</strong> Guided → scaffolded → solo
+    </td>
+  </tr>
+</table>
+
+<h3>Key Design Principle: Progressive Scaffolding Removal</h3>
+<div class="flow">
+  <div class="flow-step" style="border-color: var(--green);">
+    <div class="f-num" style="color: var(--green);">Early</div>
+    <div class="f-label">Fully Guided</div>
+    <div class="f-detail">Complete prompt provided. Step-by-step instructions. Reference video available. Success criteria explicit.</div>
+  </div>
+  <div class="flow-step" style="border-color: var(--blue);">
+    <div class="f-num" style="color: var(--blue);">Middle</div>
+    <div class="f-label">Scaffolded</div>
+    <div class="f-detail">Partial prompt provided. High-level steps only. Video optional. Success criteria still explicit.</div>
+  </div>
+  <div class="flow-step" style="border-color: var(--accent);">
+    <div class="f-num" style="color: var(--accent);">Late</div>
+    <div class="f-label">Independent</div>
+    <div class="f-detail">No prompt provided. Goal only. User composes their own approach. AI evaluates the output, not the process.</div>
+  </div>
+  <div class="flow-step" style="border-color: var(--purple);">
+    <div class="f-num" style="color: var(--purple);">Final</div>
+    <div class="f-label">Solo Challenge</div>
+    <div class="f-detail">Open-ended. "Build X." No guidance. Proves mastery. Achievement unlocked.</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<h2>Tool Integration — Deep, Not Shallow</h2>
+<p>How each AI tool connects to the learning experience. This is what makes SkillGap worth using instead of just watching YouTube.</p>
+
+<table>
+  <tr><th>Element</th><th>Current (Broken)</th><th>Required</th></tr>
+  <tr>
+    <td><strong>Tool Links</strong></td>
+    <td>Static homepage URLs (claude.ai/new, cursor.com)</td>
+    <td>Context-aware URLs. Deep links where supported. At minimum: homepage + clear "paste your prompt here" instruction per tool.</td>
+  </tr>
+  <tr>
+    <td><strong>Prompts</strong></td>
+    <td>Raw exercise instructions shown as text</td>
+    <td>Pre-built, ready-to-paste prompts in styled code blocks. Generated specifically for the target tool. Copy-to-clipboard on tool launch. Different prompts for different tools.</td>
+  </tr>
+  <tr>
+    <td><strong>During Practice</strong></td>
+    <td>User leaves SkillGap entirely. No reference available.</td>
+    <td>Persistent reference bar on the SkillGap tab: mission objective, success criteria, re-copy prompt button, timer. User can alt-tab back for reference.</td>
+  </tr>
+  <tr>
+    <td><strong>Submission</strong></td>
+    <td>"Mark Complete" button with no input required</td>
+    <td>Paste output OR upload screenshot. Required for credit. AI evaluates against success criteria.</td>
+  </tr>
+  <tr>
+    <td><strong>Tool Registry</strong></td>
+    <td>8 tools with name + URL + category</td>
+    <td>Per-tool: URL builder, prompt template function, icon, clipboard format, deep-link support flag, submission type (text/screenshot/both), category-specific instructions.</td>
+  </tr>
+</table>
+
+<div class="callout">
+  <strong>Future opportunity:</strong> Partner with tool companies for referral revenue. Cursor, Claude, v0 all have referral or affiliate programs. Every "Open in Cursor" click is a potential conversion. Track click-throughs per tool in analytics. This is a natural revenue stream that aligns with user value — we're sending them to tools they genuinely need.
+</div>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<h2>Architecture Changes</h2>
+<p>What stays, what changes, what's new.</p>
+
+<table>
+  <tr><th>Component</th><th>Status</th><th>Details</th></tr>
+  <tr>
+    <td><strong>Content Lake</strong></td>
+    <td><span class="tag keep">KEEP</span></td>
+    <td>Still the source of quality content. Still uses pgvector for search. Still has scaffolding data. But its role shifts from "the product" to "a support layer." Videos are attached to tasks, not the other way around.</td>
+  </tr>
+  <tr>
+    <td><strong>Content Pipeline</strong></td>
+    <td><span class="tag keep">KEEP</span></td>
+    <td>Discovery → Evaluation → Shelf still runs. Still fills the lake. Still scores quality. The lake needs to be full for the curriculum generator to work.</td>
+  </tr>
+  <tr>
+    <td><strong>Signal System</strong></td>
+    <td><span class="tag keep">KEEP</span></td>
+    <td>Topic intelligence, heat scoring, signal collection. Now directly feeds the discovery path generation pipeline.</td>
+  </tr>
+  <tr>
+    <td><strong>pathGenerator.ts</strong></td>
+    <td><span class="tag change">REWRITE</span></td>
+    <td>Current: finds content → sequences it → adds connective text. New: takes a goal → designs task sequence → attaches content. Fundamentally different input/output model. New file: <code>lib/learn/curriculumGenerator.ts</code></td>
+  </tr>
+  <tr>
+    <td><strong>practiceInterleaver.ts</strong></td>
+    <td><span class="tag change">DELETE</span></td>
+    <td>No longer needed. Practice isn't "interleaved" between content — tasks ARE the curriculum. The curriculum generator places Watch/Do/Check/Reflect tasks intentionally.</td>
+  </tr>
+  <tr>
+    <td><strong>PracticeViewer.tsx</strong></td>
+    <td><span class="tag change">REBUILD</span></td>
+    <td>Delete current component. Build 3 new components: ToolMission (mission briefing + submission + feedback), QuickCheck (inline overlay), Reflection (clean textarea).</td>
+  </tr>
+  <tr>
+    <td><strong>Learning path page</strong></td>
+    <td><span class="tag change">REWRITE</span></td>
+    <td>Current page renders content items in sequence. New page needs to handle 4 task types with different UIs, persistent reference bar during Do tasks, inline checks, submission panels.</td>
+  </tr>
+  <tr>
+    <td><strong>LearnPage.tsx</strong></td>
+    <td><span class="tag change">REWRITE</span></td>
+    <td>Current: content cards with type tabs. New: discovery feed (trending paths, personalized paths, continue learning) + prominent search. All cards are paths.</td>
+  </tr>
+  <tr>
+    <td><strong>toolRegistry.ts</strong></td>
+    <td><span class="tag change">EXTEND</span></td>
+    <td>Add: prompt template functions, URL builders, clipboard formats, submission types, deep-link support flags.</td>
+  </tr>
+  <tr>
+    <td><strong>Prompt Builder</strong></td>
+    <td><span class="tag new">NEW</span></td>
+    <td><code>lib/learn/promptBuilder.ts</code> — Takes scaffolding exercise + content metadata + user profile → generates tool-specific, ready-to-paste prompts. The "magic" layer.</td>
+  </tr>
+  <tr>
+    <td><strong>Curriculum Generator</strong></td>
+    <td><span class="tag new">NEW</span></td>
+    <td><code>lib/learn/curriculumGenerator.ts</code> — The new brain. Takes goal + available content + user context → designs module/task sequence. Uses GPT-4o-mini with Structured Outputs. This replaces pathGenerator.ts as the core.</td>
+  </tr>
+  <tr>
+    <td><strong>Discovery Cron</strong></td>
+    <td><span class="tag new">NEW</span></td>
+    <td><code>/api/learn/generate-discovery</code> — Daily cron that checks hot topics from signal system, generates paths for trending topics, queues for editorial review.</td>
+  </tr>
+  <tr>
+    <td><strong>Evaluation Endpoint</strong></td>
+    <td><span class="tag change">EXTEND</span></td>
+    <td>Add image/vision support (screenshot submissions). Add per-criterion breakdown. Support tool challenge evaluation (not just comprehension).</td>
+  </tr>
+  <tr>
+    <td><strong>fp_learning_paths table</strong></td>
+    <td><span class="tag change">EXTEND</span></td>
+    <td>Add: source (search/discovery/trending), topic_cluster_id, tool_ids[], generation_method (pre-generated/on-demand). Path items need: task_type (watch/do/check/reflect), mission_briefing JSONB, tool_id.</td>
+  </tr>
+  <tr>
+    <td><strong>fp_learning_progress table</strong></td>
+    <td><span class="tag change">EXTEND</span></td>
+    <td>Add: submission_text, submission_image_url, evaluation_result JSONB, quality_score, time_spent_seconds, skipped boolean, attempts integer.</td>
+  </tr>
+</table>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<h2>Implementation Sequence</h2>
+<p>What to build, in what order, and why.</p>
+
+<div class="journey">
+
+  <div class="j-module" style="border-color: var(--red);">
+    <div class="j-header">
+      <h4>Sprint 1: Curriculum Generator + Task Model</h4>
+      <div class="j-time">The foundation</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon do">1</div>
+        <div class="j-task-content">
+          <strong>Build curriculumGenerator.ts</strong>
+          <div class="j-detail">New file. Takes goal + content + user context → outputs module/task sequence via GPT-4o-mini Structured Outputs. This is the brain. Define the PathItem types to include task_type, mission_briefing, tool integration. Delete practiceInterleaver.ts.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">2</div>
+        <div class="j-task-content">
+          <strong>Update database schema</strong>
+          <div class="j-detail">Extend fp_learning_paths with new fields. Extend fp_learning_progress with submission/evaluation fields. Update PathItem structure to support 4 task types.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">3</div>
+        <div class="j-task-content">
+          <strong>Build promptBuilder.ts</strong>
+          <div class="j-detail">Takes scaffolding + content + user profile → generates ready-to-paste, tool-specific prompts for Do tasks.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="j-module" style="border-color: var(--accent);">
+    <div class="j-header">
+      <h4>Sprint 2: Tool Mission UI</h4>
+      <div class="j-time">The main event</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon do">1</div>
+        <div class="j-task-content">
+          <strong>Build ToolMission component</strong>
+          <div class="j-detail">Mission briefing panel. Copyable prompt block. Tool CTA with clipboard. Persistent reference bar. Submission panel (text + screenshot). Feedback card with per-criteria breakdown.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">2</div>
+        <div class="j-task-content">
+          <strong>Extend toolRegistry.ts</strong>
+          <div class="j-detail">Add prompt templates, URL builders, clipboard formats, submission types per tool.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">3</div>
+        <div class="j-task-content">
+          <strong>Extend evaluation endpoint</strong>
+          <div class="j-detail">Support image uploads (vision). Per-criterion evaluation. Tool challenge support. Structured feedback output.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="j-module" style="border-color: var(--blue);">
+    <div class="j-header">
+      <h4>Sprint 3: Learning Path Page Rewrite</h4>
+      <div class="j-time">The experience</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon do">1</div>
+        <div class="j-task-content">
+          <strong>Rewrite paths/[id]/page.tsx</strong>
+          <div class="j-detail">Handle 4 task types. Watch = content viewer with inline checks. Do = ToolMission component. Check = inline overlay. Reflect = clean textarea. Transition cards between tasks. Module progress indicators.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">2</div>
+        <div class="j-task-content">
+          <strong>Build QuickCheck component</strong>
+          <div class="j-detail">Inline overlay at bottom of content viewer. MC or free-text. Hint system. Max 2 attempts. Not a separate path step.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">3</div>
+        <div class="j-task-content">
+          <strong>Build Reflection component</strong>
+          <div class="j-detail">Clean textarea. Personalized prompt. AI conversational response. Save as learning note. Always advances.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="j-module" style="border-color: var(--green);">
+    <div class="j-header">
+      <h4>Sprint 4: Discovery + Homepage</h4>
+      <div class="j-time">The entry point</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon do">1</div>
+        <div class="j-task-content">
+          <strong>Rewrite LearnPage.tsx</strong>
+          <div class="j-detail">Discovery feed: trending paths, personalized paths, continue learning. All cards = paths. Prominent search. No content library. No type tabs.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">2</div>
+        <div class="j-task-content">
+          <strong>Build discovery path generation cron</strong>
+          <div class="j-detail">Daily job: check hot topics from signal system → generate paths for trending topics → queue for editorial review → approved paths appear in discovery feed.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">3</div>
+        <div class="j-task-content">
+          <strong>Wire personalization</strong>
+          <div class="j-detail">Use onboarding data (role, goal, topics) + taste profile + learning history to rank and filter discovery feed. "For You" section.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="j-module" style="border-color: var(--purple);">
+    <div class="j-header">
+      <h4>Sprint 5: Achievements + Polish</h4>
+      <div class="j-time">The motivation</div>
+    </div>
+    <div class="j-tasks">
+      <div class="j-task">
+        <div class="j-icon do">1</div>
+        <div class="j-task-content">
+          <strong>Build completion celebration</strong>
+          <div class="j-detail">Achievement card on path completion. Share to LinkedIn/X. Public achievement URL with OG meta tags. Skill profile page.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">2</div>
+        <div class="j-task-content">
+          <strong>Polish transitions and micro-interactions</strong>
+          <div class="j-detail">Smooth task transitions. Module milestone celebrations. Progress animations. Quick Check satisfaction feedback. Overall flow refinement.</div>
+        </div>
+      </div>
+      <div class="j-task">
+        <div class="j-icon do">3</div>
+        <div class="j-task-content">
+          <strong>Analytics + metrics</strong>
+          <div class="j-detail">Track: tool click-throughs, submission rates, skip rates, quality scores, iteration rates, completion rates, time-to-completion. Dashboard for monitoring practice engagement.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<h2>What Makes This Different</h2>
+<p>Why someone uses SkillGap instead of YouTube + ChatGPT.</p>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-label" style="color: var(--text-dim);">YouTube + ChatGPT</div>
+    <h4>Self-directed, unstructured</h4>
+    <p>Find a video. Watch it. Maybe try something. No structure. No guidance on what to try. No evaluation. No progression. No proof you learned anything. You're on your own to figure out the "practice" part.</p>
+  </div>
+  <div class="card" style="border: 1px solid var(--accent);">
+    <div class="card-label" style="color: var(--accent);">SkillGap</div>
+    <h4>Guided, task-driven, tool-integrated</h4>
+    <p>Clear goal. Structured curriculum. Every video serves a task. Pre-built prompts for real tools. One-click launch with clipboard. Proof of work. AI evaluation with specific feedback. Progressive difficulty. Achievement on completion. You're guided the entire way.</p>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>The one-sentence pitch:</strong> SkillGap doesn't just show you AI tools — it puts them in your hands with a mission, a prompt, and a coach, so you go from watching to doing in minutes.
+</div>
+
+</body>
+</html>

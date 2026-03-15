@@ -2,6 +2,11 @@
 
 import { useEffect } from "react";
 
+/**
+ * Error boundary for the hub layout.
+ * Catches React rendering errors in any hub page and shows
+ * a recovery UI instead of white-screening the entire app.
+ */
 export default function HubError({
   error,
   reset,
@@ -10,33 +15,67 @@ export default function HubError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Hub error:", error);
+    console.error("[hub] Uncaught error:", error);
   }, [error]);
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
-      <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "60vh",
+        gap: "1rem",
+        padding: "2rem",
+        textAlign: "center",
+      }}
+    >
+      <h2
+        style={{
+          fontSize: "1.25rem",
+          fontWeight: 600,
+          color: "var(--color-text-primary)",
+        }}
+      >
         Something went wrong
       </h2>
-      <p className="max-w-sm text-sm text-[var(--color-text-secondary)]">
-        An unexpected error occurred. Try again or head back to Rooms.
+      <p
+        style={{
+          color: "var(--color-text-secondary)",
+          maxWidth: "28rem",
+          lineHeight: 1.5,
+        }}
+      >
+        An unexpected error occurred. You can try again, or refresh the page if
+        the problem persists.
       </p>
-      <div className="flex gap-3">
-        <button
-          onClick={reset}
-          className="rounded-full px-5 py-2.5 text-sm font-medium text-white"
-          style={{ background: "var(--color-accent-primary)" }}
+      <button
+        onClick={reset}
+        style={{
+          padding: "0.5rem 1.25rem",
+          borderRadius: "0.5rem",
+          backgroundColor: "var(--color-accent-primary)",
+          color: "#fff",
+          border: "none",
+          cursor: "pointer",
+          fontSize: "0.875rem",
+          fontWeight: 500,
+        }}
+      >
+        Try again
+      </button>
+      {error.digest && (
+        <p
+          style={{
+            fontSize: "0.75rem",
+            color: "var(--color-text-tertiary)",
+            marginTop: "0.5rem",
+          }}
         >
-          Try again
-        </button>
-        <a
-          href="/rooms"
-          className="rounded-full border px-5 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
-          style={{ borderColor: "var(--color-border-default)" }}
-        >
-          Back to Rooms
-        </a>
-      </div>
+          Error ID: {error.digest}
+        </p>
+      )}
     </div>
   );
 }

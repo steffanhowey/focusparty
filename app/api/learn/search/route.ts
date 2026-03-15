@@ -3,9 +3,10 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@/lib/supabase/admin";
 import { mapPathRow, mapProgressRow } from "@/lib/learn/pathGenerator";
 import type { LearningPath, LearningProgress } from "@/lib/types";
+import { SearchQuerySchema, parseSearchParams } from "@/lib/learn/validation";
 
 /**
- * GET /api/learn/search?q=...&limit=12
+ * GET /api/learn/search?q=...&limit=12&function=...&fluency=...
  *
  * Returns learning paths from cache only — never generates.
  * - No query: returns pre-generated discovery paths + user's in-progress paths
@@ -13,11 +14,14 @@ import type { LearningPath, LearningProgress } from "@/lib/types";
  */
 export async function GET(request: Request): Promise<NextResponse> {
   const url = new URL(request.url);
-  const query = url.searchParams.get("q")?.trim();
-  const limit = Math.min(
-    Number(url.searchParams.get("limit") ?? 12),
-    20
-  );
+  const parsed = parseSearchParams(SearchQuerySchema, url.searchParams);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+
+  const { q: query, limit } = parsed.data;
+  const fn = parsed.data.function ?? null;
+  const fluency = parsed.data.fluency ?? null;
 
   const admin = createAdminClient();
 
@@ -80,8 +84,6 @@ export async function GET(request: Request): Promise<NextResponse> {
   // ─── With query: cache lookup only ────────────────────────
   try {
     const normalizedQuery = query.toLowerCase();
-    const fn = url.searchParams.get("function") ?? null;
-    const fluency = url.searchParams.get("fluency") ?? null;
 
     // Build query — prefer adapted paths when function+fluency provided
     let cacheQuery = admin

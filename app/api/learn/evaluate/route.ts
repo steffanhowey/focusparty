@@ -4,21 +4,12 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { SAFETY_PROMPT } from "@/lib/breaks/contentSafety";
+import { EvaluateSchema, parseBody } from "@/lib/learn/validation";
 
 let _openai: OpenAI | null = null;
 function getClient(): OpenAI {
   if (!_openai) _openai = new OpenAI();
   return _openai;
-}
-
-interface EvaluateRequest {
-  practice_type: string;
-  question: string;
-  reference_answer?: string;
-  user_response: string;
-  context?: string;
-  success_criteria?: string;
-  hint?: string;
 }
 
 const SYSTEM_PROMPT = `You are a supportive learning coach evaluating a student's practice response.
@@ -148,14 +139,16 @@ const QUICK_CHECK_SCHEMA = {
  */
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const body = (await request.json()) as EvaluateRequest;
-
-    if (!body.user_response?.trim() || !body.question?.trim()) {
+    const raw = await request.json();
+    const parsed = parseBody(EvaluateSchema, raw);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: parsed.error },
         { status: 400 }
       );
     }
+
+    const body = parsed.data;
 
     const isToolChallenge =
       body.practice_type === "tool_challenge" && !!body.success_criteria;
@@ -213,8 +206,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     const text = response.choices[0]?.message?.content;
     if (!text) return NextResponse.json(DEFAULT_RESPONSE);
 
-    const parsed = JSON.parse(text);
-    return NextResponse.json(parsed);
+    const result = JSON.parse(text);
+    return NextResponse.json(result);
   } catch (error) {
     console.error("[learn/evaluate] Evaluation failed:", error);
     return NextResponse.json(DEFAULT_RESPONSE);
