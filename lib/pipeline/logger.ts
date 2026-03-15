@@ -19,7 +19,10 @@ export type PipelineJobType =
   | "background_rotate"
   | "synthetic_tick"
   | "analytics_aggregation"
-  | "score_calibration";
+  | "score_calibration"
+  | "pipeline_unified"
+  | "article_ingestion"
+  | "path_discovery";
 
 export interface PipelineEventHandle {
   eventId: string;
@@ -88,6 +91,9 @@ const EXPECTED_FREQUENCIES: Record<PipelineJobType, number> = {
   synthetic_tick: 2,
   analytics_aggregation: 1440,
   score_calibration: 10080,
+  pipeline_unified: 180,
+  article_ingestion: 360,
+  path_discovery: 720,
 };
 
 const JOB_NAMES: Record<PipelineJobType, string> = {
@@ -104,6 +110,9 @@ const JOB_NAMES: Record<PipelineJobType, string> = {
   synthetic_tick: "Synthetic Tick",
   analytics_aggregation: "Analytics Aggregation",
   score_calibration: "Score Calibration",
+  pipeline_unified: "Unified Pipeline Run",
+  article_ingestion: "Article Ingestion",
+  path_discovery: "Learning Path Discovery",
 };
 
 // ─── Core ───────────────────────────────────────────────────
