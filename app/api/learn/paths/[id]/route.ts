@@ -3,6 +3,7 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@/lib/supabase/admin";
 import { mapPathRow, mapProgressRow } from "@/lib/learn/pathGenerator";
 import type { LearningProgress } from "@/lib/types";
+import { evaluateSubmission, type SubmissionEvaluation } from "@/lib/learn/evaluator";
 
 /**
  * GET /api/learn/paths/[id]
@@ -87,6 +88,7 @@ export async function PATCH(
     item_completed?: string;
     item_state?: Record<string, unknown>;
     time_delta_seconds?: number;
+    submission?: string;
   } = {};
   try {
     body = await request.json();
@@ -169,14 +171,34 @@ export async function PATCH(
       (existing.time_invested_seconds ?? 0) + body.time_delta_seconds;
   }
 
+  let evaluation: SubmissionEvaluation | null = null;
+
   if (body.item_completed) {
     const itemStates = (existing.item_states as Record<string, unknown>) ?? {};
     const existingItemState = (itemStates[body.item_completed] as Record<string, unknown>) ?? {};
+
+    // Evaluate submission if provided (for "do" tasks with practice output)
+    if (body.submission) {
+      const completedItem = pathItems.find(
+        (item) => (item as { item_id?: string }).item_id === body.item_completed
+      ) as { task_type?: string; mission?: { objective?: string; success_criteria?: string[] } } | undefined;
+
+      if (completedItem?.task_type === "do" && completedItem.mission) {
+        evaluation = await evaluateSubmission({
+          submission: body.submission,
+          objective: completedItem.mission.objective ?? "",
+          successCriteria: completedItem.mission.success_criteria ?? [],
+        });
+      }
+    }
+
     itemStates[body.item_completed] = {
       ...existingItemState,
       ...(body.item_state ?? {}),
       completed: true,
       completed_at: new Date().toISOString(),
+      ...(evaluation ? { evaluation } : {}),
+      ...(body.submission ? { submission: body.submission } : {}),
     };
     updates.item_states = itemStates;
 
@@ -243,6 +265,9 @@ export async function PATCH(
     );
   }
 
-  return NextResponse.json({ progress: mapProgressRow(updated!) });
+  return NextResponse.json({
+    progress: mapProgressRow(updated!),
+    ...(evaluation ? { evaluation } : {}),
+  });
 }
 

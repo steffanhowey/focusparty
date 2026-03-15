@@ -38,6 +38,9 @@ export async function GET(request: Request) {
   // ── List by world key ──
   const roomWorldKey = url.searchParams.get("room_world_key");
   const category = url.searchParams.get("category");
+  const duration = url.searchParams.get("duration")
+    ? Number(url.searchParams.get("duration"))
+    : null;
 
   if (!roomWorldKey) {
     return NextResponse.json(
@@ -46,12 +49,26 @@ export async function GET(request: Request) {
     );
   }
 
+  // ── Non-learning categories are SHARED across all worlds ──
+  // Only "learning" content is world-specific.
+  // Reset, reflect, and move work universally — a breathing exercise
+  // is the same whether you're in vibe-coding or writer-room.
+  const SHARED_CATEGORIES = ["reset", "reflect", "move"];
+  const isShared = category && SHARED_CATEGORIES.includes(category);
+  const queryWorldKey = isShared ? "default" : roomWorldKey;
+
   let query = supabase
     .from("fp_break_content_items")
     .select("*")
-    .eq("room_world_key", roomWorldKey)
     .eq("status", "active")
     .order("sort_order", { ascending: true });
+
+  if (isShared) {
+    // For shared categories, pull from ALL worlds to maximize pool
+    // (content is universal, no reason to restrict by world)
+  } else {
+    query = query.eq("room_world_key", roomWorldKey);
+  }
 
   if (category) {
     query = query.eq("category", category);
@@ -63,10 +80,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // ── Deduplicate by video_url+duration — keep highest taste_score per video per duration ──
+  // ── Deduplicate by video_url — keep highest taste_score per video ──
   const seen = new Map<string, (typeof data)[number]>();
   for (const item of data ?? []) {
-    const key = `${item.video_url ?? item.id}:${item.best_duration}`;
+    const key = item.video_url ?? item.id;
     const existing = seen.get(key);
     if (!existing || (item.taste_score ?? 0) > (existing.taste_score ?? 0)) {
       seen.set(key, item);
@@ -83,6 +100,22 @@ export async function GET(request: Request) {
           (item.source_name ?? "").toLowerCase() ===
           sponsor.sourceName.toLowerCase()
       );
+    }
+  }
+
+  // ── Fallback: if still empty, try any category from user's world ──
+  if (items.length === 0 && category) {
+    const { data: anyItems } = await supabase
+      .from("fp_break_content_items")
+      .select("*")
+      .eq("room_world_key", roomWorldKey)
+      .eq("status", "active")
+      .order("taste_score", { ascending: false })
+      .limit(8);
+
+    if (anyItems && anyItems.length > 0) {
+      items = anyItems;
+      console.log(`[content] Last-resort fallback: any category for ${roomWorldKey}`);
     }
   }
 

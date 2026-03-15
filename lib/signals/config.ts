@@ -67,13 +67,37 @@ export const REDDIT_SUBREDDITS = [
 // ─── RSS Feeds ──────────────────────────────────────────────
 
 export const RSS_FEEDS = [
+  // ─── AI Labs & Research ───────────────────────────────────
   { url: "https://openai.com/blog/rss.xml", label: "OpenAI Blog" },
   { url: "https://www.anthropic.com/rss.xml", label: "Anthropic" },
   { url: "https://blog.google/technology/ai/rss/", label: "Google AI Blog" },
   { url: "https://huggingface.co/blog/feed.xml", label: "Hugging Face Blog" },
-  { url: "https://simonwillison.net/atom/everything/", label: "Simon Willison" },
-  { url: "https://lilianweng.github.io/index.xml", label: "Lil'Log" },
+  { url: "https://ai.meta.com/blog/rss/", label: "Meta AI Blog" },
+
+  // ─── Newsletters & Curated ────────────────────────────────
   { url: "https://www.latent.space/feed", label: "Latent Space" },
+  { url: "https://importai.substack.com/feed", label: "Import AI" },
+  { url: "https://www.bensbites.com/feed", label: "Ben's Bites" },
+  { url: "https://tldr.tech/ai/rss", label: "TLDR AI" },
+  { url: "https://newsletter.thebatch.com/feed", label: "The Batch (deeplearning.ai)" },
+
+  // ─── Practitioner Blogs ───────────────────────────────────
+  { url: "https://simonwillison.net/atom/everything/", label: "Simon Willison" },
+  { url: "https://lilianweng.github.io/index.xml", label: "Lil'Log (Lilian Weng)" },
+  { url: "https://eugeneyan.com/rss/", label: "Eugene Yan" },
+  { url: "https://jalammar.github.io/feed.xml", label: "Jay Alammar" },
+  { url: "https://huyenchip.com/feed.xml", label: "Chip Huyen" },
+  { url: "https://karpathy.github.io/feed.xml", label: "Andrej Karpathy" },
+
+  // ─── Developer / Platform ─────────────────────────────────
+  { url: "https://vercel.com/atom", label: "Vercel Blog" },
+  { url: "https://supabase.com/blog/rss.xml", label: "Supabase Blog" },
+  { url: "https://nextjs.org/blog/rss.xml", label: "Next.js Blog" },
+
+  // ─── Industry News ────────────────────────────────────────
+  { url: "https://venturebeat.com/category/ai/feed/", label: "VentureBeat AI" },
+  { url: "https://techcrunch.com/category/artificial-intelligence/feed/", label: "TechCrunch AI" },
+  { url: "https://www.technologyreview.com/feed/", label: "MIT Technology Review" },
 ] as const;
 
 // ─── AI Keywords for HN Relevance Filtering ─────────────────

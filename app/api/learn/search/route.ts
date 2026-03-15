@@ -80,17 +80,45 @@ export async function GET(request: Request): Promise<NextResponse> {
   // ─── With query: cache lookup only ────────────────────────
   try {
     const normalizedQuery = query.toLowerCase();
-    const { data: cachedRows } = await admin
+    const fn = url.searchParams.get("function") ?? null;
+    const fluency = url.searchParams.get("fluency") ?? null;
+
+    // Build query — prefer adapted paths when function+fluency provided
+    let cacheQuery = admin
       .from("fp_learning_paths")
       .select("*")
       .eq("is_cached", true)
-      .ilike("query", `%${normalizedQuery}%`)
+      .ilike("query", `%${normalizedQuery}%`);
+
+    if (fn && fluency) {
+      cacheQuery = cacheQuery
+        .eq("adapted_for_function", fn)
+        .eq("adapted_for_fluency", fluency);
+    }
+
+    const { data: cachedRows } = await cacheQuery
       .order("view_count", { ascending: false })
       .limit(limit);
 
-    const results = (cachedRows ?? []).map((r) =>
+    let results = (cachedRows ?? []).map((r) =>
       mapPathRow(r as unknown as Record<string, unknown>)
     );
+
+    // Fallback: if no adapted paths found, try unadapted paths
+    if (results.length === 0 && fn && fluency) {
+      const { data: fallbackRows } = await admin
+        .from("fp_learning_paths")
+        .select("*")
+        .eq("is_cached", true)
+        .ilike("query", `%${normalizedQuery}%`)
+        .is("adapted_for_function", null)
+        .order("view_count", { ascending: false })
+        .limit(limit);
+
+      results = (fallbackRows ?? []).map((r) =>
+        mapPathRow(r as unknown as Record<string, unknown>)
+      );
+    }
 
     if (results.length === 0) {
       return NextResponse.json({

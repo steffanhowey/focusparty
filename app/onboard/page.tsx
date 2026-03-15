@@ -1,34 +1,51 @@
 "use client";
 
-import { Suspense, useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Logo } from "@/components/shell/Logo";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
-import { createParty } from "@/lib/parties";
 import { useUsernameValidation } from "@/lib/username";
-import { PartyPopper, Check, X, Loader2, RefreshCw } from "lucide-react";
+import type {
+  ProfessionalFunction,
+  FluencyLevel,
+  OnboardingPick,
+} from "@/lib/onboarding/types";
+import {
+  trackStepViewed,
+  trackStepCompleted,
+  trackFunctionSelected,
+  trackFluencySelected,
+  trackPathAccepted,
+  trackOnboardingCompleted,
+} from "@/lib/onboarding/tracking";
+import FunctionStep from "./steps/FunctionStep";
+import FluencyStep from "./steps/FluencyStep";
+import PathRecommendationStep from "./steps/PathRecommendationStep";
+import UsernameStep from "./steps/UsernameStep";
 
-const STEPS_FULL = ["Identity", "Avatar", "Start focusing"];
-const STEPS_RE_ONBOARD = ["Identity", "Avatar"];
+const STEPS = ["Function", "Fluency", "Path", "Username"];
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+function generateTempHandle(): string {
+  const rand = Math.random().toString(36).slice(2, 8);
+  return `user_${rand}`;
 }
 
 export default function OnboardPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
-        <p className="text-[var(--color-text-secondary)]">Loading...</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div
+          className="flex min-h-screen items-center justify-center"
+          style={{
+            background: "var(--color-bg-primary)",
+            color: "var(--color-text-primary)",
+          }}
+        >
+          <p className="text-[var(--color-text-secondary)]">Loading...</p>
+        </div>
+      }
+    >
       <OnboardContent />
     </Suspense>
   );
@@ -40,99 +57,255 @@ function OnboardContent() {
   const searchParams = useSearchParams();
   const supabase = createClient();
 
-  // Re-onboarding mode: existing user coming back to set username
+  // Re-onboarding: existing user sent back to set username only
   const isReOnboard = searchParams.get("step") === "username";
-  const STEPS = isReOnboard ? STEPS_RE_ONBOARD : STEPS_FULL;
 
-  const [step, setStep] = useState(0);
-  const [displayName, setDisplayName] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [generating, setGenerating] = useState(false);
+  // Restore wizard progress from localStorage (survives tab close)
+  const savedProgress = useRef(
+    (() => {
+      if (isReOnboard || typeof window === "undefined") return null;
+      try {
+        const raw = localStorage.getItem("sg_onboard_progress");
+        return raw ? (JSON.parse(raw) as {
+          step: number;
+          primaryFunction: ProfessionalFunction | null;
+          secondaryFunctions: ProfessionalFunction[];
+          fluencyLevel: FluencyLevel | null;
+        }) : null;
+      } catch {
+        return null;
+      }
+    })()
+  );
+
+  const [step, setStep] = useState(isReOnboard ? 3 : (savedProgress.current?.step ?? 0));
   const [saving, setSaving] = useState(false);
-  const [genError, setGenError] = useState<string | null>(null);
 
+  // Timing for analytics
+  const wizardStartRef = useRef(Date.now());
+  const stepStartRef = useRef(Date.now());
+
+  // Selections accumulated through the wizard (restored from localStorage if available)
+  const [primaryFunction, setPrimaryFunction] =
+    useState<ProfessionalFunction | null>(savedProgress.current?.primaryFunction ?? null);
+  const [secondaryFunctions, setSecondaryFunctions] = useState<
+    ProfessionalFunction[]
+  >(savedProgress.current?.secondaryFunctions ?? []);
+  const [fluencyLevel, setFluencyLevel] = useState<FluencyLevel | null>(
+    savedProgress.current?.fluencyLevel ?? null
+  );
+  const [selectedPick, setSelectedPick] = useState<OnboardingPick | null>(null);
+
+  // Username (reuses existing validation hook)
   const username = useUsernameValidation();
+  const [displayName, setDisplayName] = useState("");
 
-  // Pre-fill display name from user metadata or existing profile
+  // Pre-fill display name from user metadata
   useEffect(() => {
     if (!user) return;
 
     if (isReOnboard) {
-      // For re-onboarding, fetch existing display name from profile
       const fetchProfile = async () => {
         const { data } = await supabase
           .from("fp_profiles")
-          .select("display_name, avatar_url")
+          .select("display_name")
           .eq("id", user.id)
           .maybeSingle();
         if (data?.display_name) setDisplayName(data.display_name);
-        if (data?.avatar_url) setAvatarUrl(data.avatar_url);
       };
       fetchProfile();
     } else {
       const meta = user.user_metadata;
-      const first = meta?.first_name ?? "";
-      const last = meta?.last_name ?? "";
+      const first = (meta?.first_name as string) ?? "";
+      const last = (meta?.last_name as string) ?? "";
       const full = `${first} ${last}`.trim();
       if (full) setDisplayName(full);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Auto-generate avatar when entering step 1 (avatar step)
+  // Track step views
   useEffect(() => {
-    if (step === 1 && !avatarUrl && !generating && user && username.value) {
-      generateAvatar();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    trackStepViewed(step);
+    stepStartRef.current = Date.now();
   }, [step]);
 
-  const generateAvatar = useCallback(async () => {
-    if (!user || !username.value) return;
-    setGenerating(true);
-    setGenError(null);
+  // Persist wizard progress to localStorage on each step change
+  useEffect(() => {
+    if (isReOnboard) return;
+    localStorage.setItem(
+      "sg_onboard_progress",
+      JSON.stringify({ step, primaryFunction, secondaryFunctions, fluencyLevel })
+    );
+  }, [step, primaryFunction, secondaryFunctions, fluencyLevel, isReOnboard]);
 
-    try {
-      const res = await fetch("/api/avatar/generate", {
+  // Partial save to DB when function/fluency are set (protects against data loss)
+  useEffect(() => {
+    if (!user || !primaryFunction || !fluencyLevel) return;
+    const supabaseClient = createClient();
+    supabaseClient
+      .from("fp_profiles")
+      .update({
+        primary_function: primaryFunction,
+        secondary_functions: secondaryFunctions,
+        fluency_level: fluencyLevel,
+      })
+      .eq("id", user.id)
+      .then(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fluencyLevel]);
+
+  // Auto-suggest username from display name
+  useEffect(() => {
+    if (step === 3 && displayName && !username.value) {
+      const suggested = displayName
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_|_$/g, "")
+        .slice(0, 20);
+      if (suggested.length >= 3) {
+        username.setValue(suggested);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, displayName]);
+
+  // --- Step handlers ---
+
+  const handleFunctionSelect = useCallback(
+    (primary: ProfessionalFunction, secondaries: ProfessionalFunction[]) => {
+      const elapsed = Date.now() - stepStartRef.current;
+      trackStepCompleted(0, primary, elapsed);
+      trackFunctionSelected(primary, secondaries);
+      setPrimaryFunction(primary);
+      setSecondaryFunctions(secondaries);
+      setStep(1);
+    },
+    []
+  );
+
+  const handleFluencySelect = useCallback((level: FluencyLevel, notSure?: boolean) => {
+    const elapsed = Date.now() - stepStartRef.current;
+    trackStepCompleted(1, level, elapsed);
+    trackFluencySelected(level, notSure ?? false);
+    setFluencyLevel(level);
+    if (notSure) {
+      localStorage.setItem("sg_fluency_not_sure", "true");
+    }
+    setStep(2);
+  }, []);
+
+  const handleStartPath = useCallback(
+    (pick: OnboardingPick) => {
+      const elapsed = Date.now() - stepStartRef.current;
+      trackStepCompleted(2, pick.display_title, elapsed);
+      trackPathAccepted(pick.id, true);
+      setSelectedPick(pick);
+      setStep(3);
+    },
+    []
+  );
+
+  const handleBrowse = useCallback(() => {
+    setSelectedPick(null);
+    setStep(3);
+  }, []);
+
+  /** Save all onboarding data and complete the wizard. */
+  const completeOnboarding = useCallback(
+    async (handle: string) => {
+      if (!user) return;
+      setSaving(true);
+
+      const updates: Record<string, unknown> = {
+        username: handle,
+        onboarding_completed: true,
+      };
+
+      if (primaryFunction) updates.primary_function = primaryFunction;
+      if (secondaryFunctions.length > 0)
+        updates.secondary_functions = secondaryFunctions;
+      if (fluencyLevel) updates.fluency_level = fluencyLevel;
+      if (selectedPick)
+        updates.recommended_first_path_id = selectedPick.id;
+
+      // Persist display name if not already saved
+      if (displayName.trim()) updates.display_name = displayName.trim();
+
+      const { error } = await supabase
+        .from("fp_profiles")
+        .update(updates)
+        .eq("id", user.id);
+
+      if (error) {
+        // Handle unique constraint on username
+        if (error.code === "23505") {
+          setSaving(false);
+          username.setValue(handle);
+          return;
+        }
+        console.error("[onboard] Save failed:", error);
+      }
+
+      // Track onboarding completion
+      const totalDuration = Date.now() - wizardStartRef.current;
+      trackStepCompleted(3, handle, Date.now() - stepStartRef.current);
+      trackOnboardingCompleted(totalDuration, 4);
+
+      // Clear wizard progress from localStorage
+      localStorage.removeItem("sg_onboard_progress");
+
+      // Fire avatar generation in the background
+      fetch("/api/avatar/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.value, userId: user.id }),
+        body: JSON.stringify({ username: handle, userId: user.id }),
+      }).catch(() => {
+        // Fallback avatar will be generated on next profile load
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        if (data.fallback) {
-          // Use DiceBear fallback
-          const fallbackUrl = `https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${username.value}`;
-          setAvatarUrl(fallbackUrl);
-          setGenError("AI generation unavailable. Using a placeholder — you can regenerate later from Settings.");
-          // Save fallback URL to profile
-          await supabase
-            .from("fp_profiles")
-            .update({ avatar_url: fallbackUrl })
-            .eq("id", user.id);
-        } else {
-          setGenError("Failed to generate avatar. Try again.");
-        }
+      // Navigate to the selected path or browse page
+      if (selectedPick) {
+        // Generate path from the pick topic, then navigate
+        router.push(`/learn?q=${encodeURIComponent(selectedPick.path_topic)}`);
       } else {
-        const data = await res.json();
-        setAvatarUrl(data.url);
+        router.push("/learn");
       }
-    } catch {
-      setGenError("Failed to generate avatar. Try again.");
-    } finally {
-      setGenerating(false);
-    }
-  }, [user, username.value, supabase]);
+    },
+    [
+      user,
+      supabase,
+      router,
+      primaryFunction,
+      secondaryFunctions,
+      fluencyLevel,
+      selectedPick,
+      displayName,
+      username,
+    ]
+  );
 
-  const shuffleAvatar = () => {
-    setAvatarUrl(null);
-    generateAvatar();
-  };
+  const handleUsernameConfirm = useCallback(() => {
+    if (!username.isValid) return;
+    completeOnboarding(username.value);
+  }, [username.isValid, username.value, completeOnboarding]);
+
+  const handleUsernameSkip = useCallback(() => {
+    completeOnboarding(generateTempHandle());
+  }, [completeOnboarding]);
+
+  // --- Auth guard ---
 
   if (authState === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
+      <div
+        className="flex min-h-screen items-center justify-center"
+        style={{
+          background: "var(--color-bg-primary)",
+          color: "var(--color-text-primary)",
+        }}
+      >
         <p className="text-[var(--color-text-secondary)]">Loading...</p>
       </div>
     );
@@ -143,87 +316,23 @@ function OnboardContent() {
     return null;
   }
 
-  const saveIdentity = async () => {
-    if (!user || !displayName.trim() || !username.isValid) return;
-    setSaving(true);
+  // --- Render ---
 
-    const { error } = await supabase
-      .from("fp_profiles")
-      .update({
-        display_name: displayName.trim(),
-        username: username.value,
-      })
-      .eq("id", user.id);
-
-    if (error) {
-      // Handle unique constraint violation (race condition)
-      if (error.code === "23505") {
-        setSaving(false);
-        username.setValue(username.value); // re-trigger availability check
-        return;
-      }
-      console.error("[onboard] Save identity failed:", error);
-    }
-
-    setSaving(false);
-    setStep(1);
-  };
-
-  const confirmAvatar = () => {
-    if (isReOnboard) {
-      // Re-onboarding complete — redirect back to app
-      router.push("/session");
-      return;
-    }
-    setStep(2);
-  };
-
-  const completeOnboarding = () => {
-    if (!user) return;
-    setSaving(true);
-
-    // Navigate immediately — DB calls fire in background
-    router.push("/session");
-
-    supabase
-      .from("fp_profiles")
-      .update({ onboarding_completed: true })
-      .eq("id", user.id)
-      .then(({ error }) => {
-        if (error) console.error("[onboard] Failed to mark onboarding complete:", error);
-      });
-
-    createParty(
-      {
-        creator_id: user.id,
-        name: `${displayName}'s Room`,
-        character: "ember",
-        planned_duration_min: 25,
-        max_participants: 3,
-        status: "active",
-      },
-      displayName
-    ).catch((err) => console.error("[onboard] Failed to create party:", err));
-  };
-
-  // Username status indicator
-  const usernameIndicator = () => {
-    switch (username.status) {
-      case "checking":
-        return <Loader2 size={16} className="animate-spin text-[var(--color-text-tertiary)]" />;
-      case "available":
-        return <Check size={16} className="text-[var(--color-green-700)]" />;
-      case "taken":
-      case "invalid":
-        return <X size={16} className="text-[var(--color-red-700)]" />;
-      default:
-        return null;
-    }
-  };
+  const visibleSteps = isReOnboard ? 1 : STEPS.length;
+  const normalizedStep = isReOnboard ? 0 : step;
 
   return (
-    <div className="flex min-h-screen flex-col" style={{ background: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
-      <header className="backdrop-blur-md" style={{ background: "var(--color-bg-primary)" }}>
+    <div
+      className="flex min-h-screen flex-col"
+      style={{
+        background: "var(--color-bg-primary)",
+        color: "var(--color-text-primary)",
+      }}
+    >
+      <header
+        className="backdrop-blur-md"
+        style={{ background: "var(--color-bg-primary)" }}
+      >
         <nav className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6">
           <Logo href="/" height={32} maxWidth={140} />
         </nav>
@@ -232,13 +341,13 @@ function OnboardContent() {
       <main className="mx-auto w-full max-w-md flex-1 px-4 py-16 sm:py-24">
         {/* Progress dots */}
         <div className="mb-10 flex items-center justify-center gap-2">
-          {STEPS.map((_, i) => (
+          {Array.from({ length: visibleSteps }).map((_, i) => (
             <div
               key={i}
               className={`h-2 rounded-full transition-all ${
-                i === step
+                i === normalizedStep
                   ? "w-8 bg-[var(--color-accent-primary)]"
-                  : i < step
+                  : i < normalizedStep
                     ? "w-2 bg-[var(--color-text-tertiary)]"
                     : "w-2 bg-[var(--color-border-default)]"
               }`}
@@ -246,172 +355,31 @@ function OnboardContent() {
           ))}
         </div>
 
-        {/* Step 1: Identity — display name + username */}
-        {step === 0 && (
-          <>
-            <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
-              {isReOnboard ? "Claim your handle" : "Who are you?"}
-            </h1>
-            <p className="mt-2 text-[var(--color-text-secondary)]">
-              {isReOnboard
-                ? "Pick a unique @username — this is how others will find you."
-                : "Set your name and pick a unique @username."}
-            </p>
+        {/* Step 1: Function */}
+        {step === 0 && <FunctionStep onSelect={handleFunctionSelect} />}
 
-            <div className="mt-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
-              {/* Display name */}
-              <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
-                Display name
-              </label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Your name"
-                className="h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-4 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
-              />
+        {/* Step 2: Fluency */}
+        {step === 1 && <FluencyStep onSelect={handleFluencySelect} />}
 
-              {/* Username */}
-              <label className="mb-1.5 mt-5 block text-xs font-medium text-[var(--color-text-secondary)]">
-                Username
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-tertiary)]">
-                  @
-                </span>
-                <input
-                  type="text"
-                  value={username.value}
-                  onChange={(e) => username.setValue(e.target.value)}
-                  placeholder="your_handle"
-                  className="h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] pl-8 pr-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
-                  style={{
-                    borderColor:
-                      username.status === "available"
-                        ? "var(--color-green-700)"
-                        : username.status === "taken" || username.status === "invalid"
-                          ? "var(--color-red-700)"
-                          : undefined,
-                  }}
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2">
-                  {usernameIndicator()}
-                </span>
-              </div>
-              {username.error && (
-                <p className="mt-1.5 text-xs text-[var(--color-red-700)]">{username.error}</p>
-              )}
-              {username.status === "available" && (
-                <p className="mt-1.5 text-xs text-[var(--color-green-700)]">@{username.value} is available</p>
-              )}
-
-              <button
-                onClick={saveIdentity}
-                disabled={!displayName.trim() || !username.isValid || saving}
-                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
-              >
-                {saving ? "Saving..." : "Continue"}
-              </button>
-            </div>
-          </>
+        {/* Step 3: Path recommendation */}
+        {step === 2 && primaryFunction && fluencyLevel && (
+          <PathRecommendationStep
+            primaryFunction={primaryFunction}
+            fluencyLevel={fluencyLevel}
+            secondaryFunctions={secondaryFunctions}
+            onStartPath={handleStartPath}
+            onBrowse={handleBrowse}
+          />
         )}
 
-        {/* Step 2: Avatar — AI-generated */}
-        {step === 1 && (
-          <>
-            <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
-              Here&apos;s your look
-            </h1>
-            <p className="mt-2 text-[var(--color-text-secondary)]">
-              We generated a unique avatar just for you.
-            </p>
-
-            <div className="mt-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
-              <div className="flex flex-col items-center gap-5">
-                {/* Avatar display */}
-                <div className="relative h-[120px] w-[120px] overflow-hidden rounded-full border-2 border-[var(--color-border-default)]">
-                  {generating ? (
-                    <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg-active)]">
-                      <div className="h-full w-full animate-pulse bg-gradient-to-br from-[var(--color-bg-active)] via-[var(--color-bg-hover)] to-[var(--color-bg-active)]" />
-                      <Loader2
-                        size={32}
-                        className="absolute animate-spin text-[var(--color-text-tertiary)]"
-                      />
-                    </div>
-                  ) : avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={avatarUrl}
-                      alt="Your avatar"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg-active)] text-3xl font-bold text-[var(--color-text-secondary)]">
-                      {getInitials(displayName || "FP")}
-                    </div>
-                  )}
-                </div>
-
-                {/* Shuffle button */}
-                <button
-                  onClick={shuffleAvatar}
-                  disabled={generating}
-                  className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border-default)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] disabled:opacity-50"
-                >
-                  <RefreshCw size={14} strokeWidth={2} className={generating ? "animate-spin" : ""} />
-                  {generating ? "Generating..." : "Shuffle"}
-                </button>
-
-                {genError && (
-                  <p className="text-center text-xs text-[var(--color-text-tertiary)]">{genError}</p>
-                )}
-              </div>
-
-              <button
-                onClick={confirmAvatar}
-                disabled={generating || !avatarUrl}
-                className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
-              >
-                {isReOnboard ? "Done" : "Looks good"}
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* Step 3: Start focusing (only for new users) */}
-        {step === 2 && !isReOnboard && (
-          <>
-            <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
-              You&apos;re all set!
-            </h1>
-            <p className="mt-2 text-[var(--color-text-secondary)]">
-              Start your first focus session and see what SkillGap is all about.
-            </p>
-
-            <div className="mt-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6 text-center">
-              {/* Avatar + username welcome */}
-              <div className="mb-4 flex flex-col items-center gap-3">
-                {avatarUrl && (
-                  <div className="h-16 w-16 overflow-hidden rounded-full border-2 border-[var(--color-border-default)]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
-                  </div>
-                )}
-                <p className="text-sm text-[var(--color-text-secondary)]">
-                  Welcome, <strong className="text-[var(--color-text-primary)]">@{username.value}</strong>.
-                  Let&apos;s get focused.
-                </p>
-              </div>
-              <button
-                onClick={completeOnboarding}
-                disabled={saving}
-                className="mt-2 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
-              >
-                <PartyPopper size={20} strokeWidth={1.8} />
-                {saving ? "Joining..." : "Start focusing"}
-              </button>
-            </div>
-          </>
+        {/* Step 4: Username */}
+        {step === 3 && (
+          <UsernameStep
+            username={username}
+            saving={saving}
+            onConfirm={handleUsernameConfirm}
+            onSkip={handleUsernameSkip}
+          />
         )}
       </main>
     </div>

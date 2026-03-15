@@ -9,10 +9,12 @@ import { Sidebar } from "./Sidebar";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { CHARACTERS } from "@/lib/constants";
 import { CLIENT_NAV_HREFS } from "./navItems";
+import { FunctionMigrationModal } from "@/components/onboarding/FunctionMigrationModal";
 
 
 const PAGE_TITLES: Record<string, string> = {
   "/rooms": "Rooms",
+  "/learn": "Learn",
   "/goals": "Goals",
   "/stats": "Stats",
   "/settings": "Settings",
@@ -42,6 +44,10 @@ const LazyIntegrationSettings = lazy(() =>
   import("@/components/settings/IntegrationSettings").then((m) => ({ default: m.IntegrationSettings }))
 );
 
+const LazyLearnPage = lazy(() =>
+  import("@/components/learn/LearnPage").then((m) => ({ default: m.LearnPage }))
+);
+
 function renderTabContent(tab: string): ReactNode {
   switch (tab) {
     case "/rooms":
@@ -49,6 +55,14 @@ function renderTabContent(tab: string): ReactNode {
         <main className="flex-1">
           <Suspense fallback={null}>
             <LazyPartyList />
+          </Suspense>
+        </main>
+      );
+    case "/learn":
+      return (
+        <main className="flex-1">
+          <Suspense fallback={null}>
+            <LazyLearnPage />
           </Suspense>
         </main>
       );
@@ -204,6 +218,9 @@ export function HubShell({ children }: { children: ReactNode }) {
           {clientTab !== null ? renderTabContent(effectivePath) : children}
         </div>
       </div>
+
+      {/* Existing user migration prompt for function/fluency */}
+      <FunctionMigrationModal />
     </div>
   );
 }

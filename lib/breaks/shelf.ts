@@ -13,9 +13,9 @@ import { screenContent } from "./contentSafety";
 const SHELF_PER_DURATION_MIN = 5;
 const SHELF_PER_DURATION_MAX = 8;
 const SHELF_TTL_DAYS = 7;
+/** Extended TTL for thin buckets — don't expire what you can't replace. */
+const SHELF_TTL_EXTENDED_DAYS = 21;
 const MIN_TASTE_SCORE = 55;
-// NOTE: Relaxed pass removed — showing nothing is better than showing irrelevant content.
-// If a bucket can't fill at the strict threshold, it stays small.
 const MAX_PER_CREATOR = 2;
 const DURATIONS = [3, 5, 10] as const;
 
@@ -106,26 +106,65 @@ export async function refreshShelf(
   // 0. Apply engagement-based score adjustments
   await applyEngagementAdjustments(worldKey, category);
 
-  // 1. Remove expired non-pinned items
-  const { data: expiredItems } = await supabase
-    .from("fp_break_content_items")
-    .select("id")
-    .eq("room_world_key", worldKey)
-    .eq("category", category)
-    .eq("status", "active")
-    .or("pinned.is.null,pinned.eq.false")
-    .not("expires_at", "is", null)
-    .lt("expires_at", now);
-
+  // 1. Smart expiration: only expire items when the bucket can sustain it.
+  //    Thin buckets use an extended TTL (21 days) instead of the standard 7 days.
+  //    This prevents the shelf from draining faster than the pipeline can fill it.
   let expired = 0;
-  if (expiredItems && expiredItems.length > 0) {
-    const ids = expiredItems.map((i) => i.id);
+
+  const standardCutoff = new Date(Date.now() - SHELF_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const extendedCutoff = new Date(Date.now() - SHELF_TTL_EXTENDED_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+  for (const dur of DURATIONS) {
+    // Get all active items in this bucket
+    const { data: bucketActive } = await supabase
+      .from("fp_break_content_items")
+      .select("id, pinned, expires_at")
+      .eq("room_world_key", worldKey)
+      .eq("category", category)
+      .eq("status", "active")
+      .eq("best_duration", dur);
+
+    const activeCount = bucketActive?.length ?? 0;
+    if (activeCount === 0) continue;
+
+    // Determine which TTL cutoff to use based on bucket health
+    const isThin = activeCount <= SHELF_PER_DURATION_MIN;
+    const cutoff = isThin ? extendedCutoff : standardCutoff;
+
+    // Find expired items using the appropriate cutoff
+    const expirable = (bucketActive ?? []).filter((i) => {
+      if (i.pinned) return false;
+      if (!i.expires_at) return false;
+      return i.expires_at < cutoff;
+    });
+
+    if (expirable.length === 0) continue;
+
+    // Don't expire if it would drop the bucket below minimum
+    const afterExpiry = activeCount - expirable.length;
+    let toExpire = expirable;
+    if (afterExpiry < SHELF_PER_DURATION_MIN) {
+      // Only expire enough to stay at minimum
+      const canExpire = Math.max(0, activeCount - SHELF_PER_DURATION_MIN);
+      if (canExpire === 0) {
+        console.warn(
+          `[breaks/shelf] Skipping expiration for ${worldKey}/${category}/${dur}min — bucket at ${activeCount} items (min: ${SHELF_PER_DURATION_MIN})`
+        );
+        continue;
+      }
+      toExpire = expirable.slice(0, canExpire);
+    }
+
+    const ids = toExpire.map((i) => i.id);
     await supabase
       .from("fp_break_content_items")
       .update({ status: "expired" })
       .in("id", ids);
-    expired = ids.length;
-    console.log(`[breaks/shelf] ${worldKey}: expired ${expired} items`);
+    expired += ids.length;
+  }
+
+  if (expired > 0) {
+    console.log(`[breaks/shelf] ${worldKey}/${category}: expired ${expired} items (smart TTL)`);
   }
 
   // 2. Promote + trim per duration bucket
@@ -134,21 +173,19 @@ export async function refreshShelf(
   let shelfSize = 0;
   const buckets: Record<number, number> = {};
 
-  // Collect all video_urls already on the active shelf (any duration)
-  // to prevent the same video appearing in multiple duration buckets.
+  // Collect all video_urls already on the active shelf (any duration).
+  // Each video should only appear in ONE duration bucket to maximize variety.
   const { data: existingShelfItems } = await supabase
     .from("fp_break_content_items")
-    .select("video_url, best_duration")
+    .select("video_url")
     .eq("room_world_key", worldKey)
     .eq("category", category)
     .eq("status", "active")
     .not("video_url", "is", null);
 
-  // Set of "videoUrl:duration" keys already on shelf
+  // Set of video_urls already on shelf — one video = one duration bucket only
   const onShelf = new Set(
-    (existingShelfItems ?? []).map(
-      (i) => `${i.video_url}:${i.best_duration}`,
-    ),
+    (existingShelfItems ?? []).map((i) => i.video_url as string),
   );
 
   for (const duration of DURATIONS) {
@@ -178,15 +215,14 @@ export async function refreshShelf(
         }
       }
 
-      // Get top-scored candidates across ALL worlds (any best_duration)
-      // where the video is long enough to support this duration.
-      // We don't filter by world_key here because the same video content
-      // is valid for any room world — deduplication at discovery time
-      // means only one world "owns" each candidate, but all worlds
-      // should benefit from the shared content pool.
+      // Get top-scored candidates discovered FOR THIS WORLD only.
+      // Each world has its own editorial persona and discovery queries —
+      // promoting cross-world content makes rooms feel identical.
+      // The cross-world fallback in the content API handles empty shelves.
       const { data: topCandidates } = await supabase
         .from("fp_break_content_scores")
         .select("*, candidate:fp_break_content_candidates!inner(*)")
+        .eq("candidate.world_key", worldKey)
         .eq("candidate.category", category)
         .gte("taste_score", MIN_TASTE_SCORE)
         .gte("relevance_score", 40)
@@ -206,8 +242,8 @@ export async function refreshShelf(
           if (sponsor && (c.creator ?? "").toLowerCase() !== sponsor.sourceName.toLowerCase()) return false;
           // Video must be long enough for this duration
           if ((c.duration_seconds ?? 0) < minVideoSeconds) return false;
-          // Don't duplicate same video URL in this duration bucket
-          if (c.video_url && onShelf.has(`${c.video_url}:${duration}`)) return false;
+          // Don't duplicate same video URL across ANY duration bucket
+          if (c.video_url && onShelf.has(c.video_url)) return false;
           // Safety re-screen — catch candidates that predate the blocklist
           const safety = screenContent(c.title ?? "", c.description);
           if (!safety.safe) return false;
@@ -261,8 +297,8 @@ export async function refreshShelf(
             continue;
           }
 
-          // Track what we've placed on shelf
-          onShelf.add(`${c.video_url}:${duration}`);
+          // Track what we've placed on shelf (by video_url only — one video per shelf)
+          if (c.video_url) onShelf.add(c.video_url);
           const creatorName = (c.creator ?? "").toLowerCase();
           if (creatorName) {
             creatorCounts.set(

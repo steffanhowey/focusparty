@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { LearningPath, LearningProgress } from "./types";
+import { useProfile } from "./useProfile";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -37,6 +38,11 @@ const POLL_INTERVAL_MS = 2000;
  * Phase 2: Background generation + polling if cache is thin
  */
 export function useLearnSearch(): UseLearnSearchReturn {
+  const { profile } = useProfile();
+  const userFunction = profile?.primary_function ?? null;
+  const userFluency = profile?.fluency_level ?? null;
+  const secondaryFunctions = profile?.secondary_functions ?? null;
+
   const [query, setQuery] = useState("");
   const [discoveryPaths, setDiscoveryPaths] = useState<LearningPath[]>([]);
   const [inProgressPaths, setInProgressPaths] = useState<PathWithProgress[]>(
@@ -77,6 +83,8 @@ export function useLearnSearch(): UseLearnSearchReturn {
     async (q: string, signal?: AbortSignal): Promise<boolean> => {
       const params = new URLSearchParams();
       if (q) params.set("q", q);
+      if (userFunction) params.set("function", userFunction);
+      if (userFluency) params.set("fluency", userFluency);
 
       const res = await fetch(`/api/learn/search?${params}`, { signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -90,7 +98,7 @@ export function useLearnSearch(): UseLearnSearchReturn {
 
       return data.should_generate === true;
     },
-    []
+    [userFunction, userFluency]
   );
 
   /** Start background generation + polling (Phase 2) */
@@ -103,11 +111,16 @@ export function useLearnSearch(): UseLearnSearchReturn {
       setGenerationStatus("generating");
 
       try {
-        // POST to start generation
+        // POST to start generation (include function/fluency for adapted paths)
+        const generateBody: Record<string, unknown> = { query: q };
+        if (userFunction) generateBody.function = userFunction;
+        if (userFluency) generateBody.fluency = userFluency;
+        if (secondaryFunctions?.length) generateBody.secondary_functions = secondaryFunctions;
+
         const postRes = await fetch("/api/learn/search/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: q }),
+          body: JSON.stringify(generateBody),
           signal: abort.signal,
         });
 
@@ -168,7 +181,7 @@ export function useLearnSearch(): UseLearnSearchReturn {
         if (!abort.signal.aborted) setGenerationStatus("failed");
       }
     },
-    [cancelGeneration, fetchSearch]
+    [cancelGeneration, fetchSearch, userFunction, userFluency, secondaryFunctions]
   );
 
   /** Retry generation with the current query */

@@ -87,8 +87,7 @@ export async function POST(request: Request) {
     }
 
     const targetWorld = worldKey || (await pickNextWorldKey());
-    const targetCategory = category ?? "learning";
-    const result = await discoverAndPromote(targetWorld, targetCategory);
+    const result = await discoverAndPromote(targetWorld, category);
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     console.error("[breaks/discover] error:", err);

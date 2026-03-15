@@ -17,6 +17,7 @@ import type { BreakContentCandidate } from "@/lib/types";
 import { getTopics, formatTaxonomyForPrompt, createTopic } from "@/lib/topics/taxonomy";
 import { createSignalFromEvaluation } from "@/lib/topics/signalService";
 import { ensureCreator, updateCreatorTopics } from "@/lib/creators/catalog";
+import { indexVideoToContentLake } from "@/lib/learn/embeddings";
 
 interface BatchResult {
   evaluated: number;
@@ -24,40 +25,55 @@ interface BatchResult {
   errors: number;
 }
 
+/** Timeout for the evaluation loop — stop before Vercel's 60s limit. */
+const EVAL_TIMEOUT_MS = 45_000;
+
 /**
  * Evaluate up to `limit` pending candidates.
  * If worldKey is provided, only evaluates that world.
+ * When category is NOT specified, uses fair queuing: fetches
+ * proportionally across all categories so learning content
+ * doesn't monopolize evaluation slots.
  * Processes sequentially to respect OpenAI rate limits.
  */
 export async function evaluatePendingCandidates(
   worldKey?: string,
-  limit = 10,
+  limit = 50,
   category?: string
 ): Promise<BatchResult> {
   const supabase = createClient();
 
-  // Fetch pending candidates (oldest first)
-  let query = supabase
-    .from("fp_break_content_candidates")
-    .select("*")
-    .eq("status", "pending")
-    .order("discovered_at", { ascending: true })
-    .limit(limit);
+  // ── Fair queuing: fetch proportionally across categories ──
+  const categories = category
+    ? [category]
+    : ["learning", "reset", "reflect", "move"];
+  const perCategoryLimit = Math.ceil(limit / categories.length);
 
-  if (worldKey) {
-    query = query.eq("world_key", worldKey);
-  }
-  if (category) {
-    query = query.eq("category", category);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let candidates: any[] = [];
+
+  for (const cat of categories) {
+    let query = supabase
+      .from("fp_break_content_candidates")
+      .select("*")
+      .eq("status", "pending")
+      .eq("category", cat)
+      .order("discovered_at", { ascending: true })
+      .limit(perCategoryLimit);
+
+    if (worldKey) {
+      query = query.eq("world_key", worldKey);
+    }
+
+    const { data, error: fetchErr } = await query;
+    if (fetchErr) {
+      console.error(`[breaks/evaluate] fetch error for ${cat}:`, fetchErr);
+      continue;
+    }
+    if (data) candidates.push(...data);
   }
 
-  const { data: candidates, error: fetchErr } = await query;
-  if (fetchErr) {
-    console.error("[breaks/evaluate] fetch error:", fetchErr);
-    return { evaluated: 0, rejected: 0, errors: 1 };
-  }
-
-  if (!candidates || candidates.length === 0) {
+  if (candidates.length === 0) {
     console.log("[breaks/evaluate] No pending candidates");
     return { evaluated: 0, rejected: 0, errors: 0 };
   }
@@ -114,8 +130,17 @@ export async function evaluatePendingCandidates(
   let evaluated = 0;
   let rejected = 0;
   let errors = 0;
+  const startTime = Date.now();
 
   for (const candidate of candidates as BreakContentCandidate[]) {
+    // Timeout guard — stop before Vercel's limit
+    if (Date.now() - startTime > EVAL_TIMEOUT_MS) {
+      console.log(
+        `[breaks/evaluate] Timeout after ${evaluated + rejected} candidates (${Date.now() - startTime}ms), stopping`
+      );
+      break;
+    }
+
     try {
       // ── Pre-screen: keyword blocklist (zero API cost) ──
       const safetyCheck = screenContent(candidate.title, candidate.description);
@@ -240,6 +265,24 @@ export async function evaluatePendingCandidates(
           );
           updateCreatorTopics(candidate.channel_id, result.topics).catch((err) =>
             console.warn("[breaks/evaluate] creator topics update failed:", err)
+          );
+        }
+
+        // Index to content lake for Learn search (fire-and-forget)
+        if (result.tasteScore >= 55) {
+          indexVideoToContentLake(candidate, {
+            taste_score: result.tasteScore,
+            relevance_score: result.relevanceScore,
+            engagement_score: result.engagementScore,
+            content_density: result.contentDensity,
+            creator_authority: result.creatorAuthority,
+            freshness_score: result.freshnessScore,
+            novelty_score: result.noveltyScore,
+            editorial_note: result.editorialNote,
+            topics: result.topics,
+            segments: result.segments,
+          }).catch((err) =>
+            console.warn("[breaks/evaluate] content lake indexing failed:", err)
           );
         }
 

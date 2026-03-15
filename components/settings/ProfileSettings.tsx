@@ -7,6 +7,12 @@ import { useProfile } from "@/lib/useProfile";
 import { useUsernameValidation, type UsernameStatus } from "@/lib/username";
 import { RefreshCw, Check, X, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import {
+  FUNCTION_OPTIONS,
+  FLUENCY_OPTIONS,
+  type ProfessionalFunction,
+  type FluencyLevel,
+} from "@/lib/onboarding/types";
 
 const inputClass =
   "h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-4 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]";
@@ -249,6 +255,128 @@ export function ProfileSettings() {
           className={`${inputClass} cursor-not-allowed opacity-60`}
         />
       </div>
+
+      {/* Function & Fluency */}
+      <FunctionFluencySection
+        userId={userId}
+        currentFunction={profile.primary_function as ProfessionalFunction | null}
+        currentFluency={profile.fluency_level as FluencyLevel | null}
+        onSaved={refetch}
+      />
     </div>
+  );
+}
+
+// ─── Function & Fluency Settings ─────────────────────────────
+
+function FunctionFluencySection({
+  userId,
+  currentFunction,
+  currentFluency,
+  onSaved,
+}: {
+  userId: string | null;
+  currentFunction: ProfessionalFunction | null;
+  currentFluency: FluencyLevel | null;
+  onSaved: () => void;
+}) {
+  const supabase = createClient();
+  const [fn, setFn] = useState<ProfessionalFunction | null>(currentFunction);
+  const [fl, setFl] = useState<FluencyLevel | null>(currentFluency);
+  const [saving, setSaving] = useState(false);
+
+  const hasChanges = fn !== currentFunction || fl !== currentFluency;
+
+  const save = useCallback(async () => {
+    if (!userId || !fn || !fl) return;
+    setSaving(true);
+    await supabase
+      .from("fp_profiles")
+      .update({ primary_function: fn, fluency_level: fl })
+      .eq("id", userId);
+    onSaved();
+    setSaving(false);
+  }, [userId, fn, fl, supabase, onSaved]);
+
+  const fnLabel =
+    FUNCTION_OPTIONS.find((o) => o.value === currentFunction)?.label ?? "Not set";
+  const flLabel =
+    FLUENCY_OPTIONS.find((o) => o.value === currentFluency)?.label ?? "Not set";
+
+  return (
+    <>
+      <div>
+        <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+          Personalization
+        </h2>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+          These shape your learning paths and recommendations.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6 space-y-5">
+        {/* Function */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+            Professional function
+          </label>
+          <select
+            value={fn ?? ""}
+            onChange={(e) => setFn((e.target.value || null) as ProfessionalFunction | null)}
+            className="h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-3 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+          >
+            <option value="">Select...</option>
+            {FUNCTION_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+          {!hasChanges && (
+            <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+              Current: {fnLabel}
+            </p>
+          )}
+        </div>
+
+        {/* Fluency */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+            AI fluency level
+          </label>
+          <select
+            value={fl ?? ""}
+            onChange={(e) => setFl((e.target.value || null) as FluencyLevel | null)}
+            className="h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-3 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+          >
+            <option value="">Select...</option>
+            {FLUENCY_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label} — {o.anchor}
+              </option>
+            ))}
+          </select>
+          {!hasChanges && (
+            <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+              Current: {flLabel}
+            </p>
+          )}
+        </div>
+
+        {/* Save */}
+        {hasChanges && (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={save}
+            disabled={saving || !fn || !fl}
+            loading={saving}
+            leftIcon={<Save size={14} />}
+          >
+            Save changes
+          </Button>
+        )}
+      </div>
+    </>
   );
 }

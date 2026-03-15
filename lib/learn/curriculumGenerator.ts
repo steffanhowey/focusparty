@@ -12,10 +12,13 @@ import type {
   TaskType,
   AiTool,
 } from "@/lib/types";
+import type { ProfessionalFunction, FluencyLevel } from "@/lib/onboarding/types";
 import { generateEmbedding, buildSearchText } from "@/lib/learn/embeddings";
 import { searchContentLake } from "@/lib/learn/contentLake";
 import { createClient as createAdminClient } from "@/lib/supabase/admin";
 import { resolveTools, getTool } from "@/lib/learn/toolRegistry";
+import { buildAdaptedPromptContext } from "@/lib/learn/adaptationEngine";
+import { SAFETY_PROMPT } from "@/lib/breaks/contentSafety";
 
 let _openai: OpenAI | null = null;
 function getClient(): OpenAI {
@@ -220,6 +223,9 @@ export async function generateCurriculum(
     userRole?: string;
     userGoal?: string;
     maxItems?: number;
+    userFunction?: ProfessionalFunction;
+    userFluency?: FluencyLevel;
+    secondaryFunctions?: ProfessionalFunction[];
   }
 ): Promise<LearningPath> {
   // 1. Search content lake for relevant material
@@ -325,8 +331,18 @@ export async function generateCurriculum(
       : null,
   }));
 
-  // 3. Build list of available tools
+  // 3. Build list of available tools (adapted for function if provided)
   const allToolSlugs = new Set<string>();
+
+  // If function is specified, prioritize function-preferred tools
+  const adaptation = options?.userFunction && options?.userFluency
+    ? buildAdaptedPromptContext(options.userFunction, options.userFluency, options.secondaryFunctions)
+    : null;
+
+  if (adaptation) {
+    adaptation.preferredToolSlugs.forEach((slug) => allToolSlugs.add(slug));
+  }
+
   filtered.forEach((item) => {
     if (item.scaffolding?.exercise?.tools) {
       const resolved = resolveTools(item.scaffolding.exercise.tools);
@@ -347,6 +363,7 @@ export async function generateCurriculum(
     `Topic: "${query}"`,
     options?.userRole ? `User role: ${options.userRole}` : null,
     options?.userGoal ? `User goal: ${options.userGoal}` : null,
+    adaptation ? `Learner profile: ${adaptation.functionContext.label} professional, ${adaptation.fluencyContext.label} fluency level` : null,
     "",
     `Available content items (${itemSummaries.length}):`,
     JSON.stringify(itemSummaries, null, 2),
@@ -364,13 +381,20 @@ export async function generateCurriculum(
     .filter(Boolean)
     .join("\n");
 
-  // 5. Call GPT-4o-mini
+  // 5. Build system prompt (with adaptation + safety if applicable)
+  let systemPrompt = SYSTEM_PROMPT;
+  if (adaptation) {
+    systemPrompt += "\n" + adaptation.adaptationBlock;
+  }
+  systemPrompt += "\n" + SAFETY_PROMPT;
+
+  // 6. Call GPT-4o-mini
   try {
     const openai = getClient();
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
       response_format: {
@@ -386,7 +410,7 @@ export async function generateCurriculum(
 
     const raw = JSON.parse(response.choices[0].message.content ?? "{}");
 
-    // 6. Post-process: validate content IDs, build full PathItem array
+    // 7. Post-process: validate content IDs, build full PathItem array
     return postProcessCurriculum(raw, filtered, query);
   } catch (error) {
     console.error(
@@ -713,27 +737,39 @@ function fallbackCurriculum(
  */
 export async function generateAndCacheCurriculum(
   query: string,
-  options?: { userRole?: string; userGoal?: string }
+  options?: {
+    userRole?: string;
+    userGoal?: string;
+    userFunction?: ProfessionalFunction;
+    userFluency?: FluencyLevel;
+    secondaryFunctions?: ProfessionalFunction[];
+  }
 ): Promise<LearningPath> {
   const curriculum = await generateCurriculum(query, options);
   const supabase = createAdminClient();
 
+  const insertData: Record<string, unknown> = {
+    title: curriculum.title,
+    description: curriculum.description,
+    goal: curriculum.goal,
+    query: curriculum.query,
+    topics: curriculum.topics,
+    primary_tools: curriculum.primary_tools,
+    difficulty_level: curriculum.difficulty_level,
+    estimated_duration_seconds: curriculum.estimated_duration_seconds,
+    items: curriculum.items as unknown,
+    modules: curriculum.modules as unknown,
+    source: curriculum.source,
+    is_cached: true,
+  };
+
+  // Store adaptation metadata for cache lookups
+  if (options?.userFunction) insertData.adapted_for_function = options.userFunction;
+  if (options?.userFluency) insertData.adapted_for_fluency = options.userFluency;
+
   const { data, error } = await supabase
     .from("fp_learning_paths")
-    .insert({
-      title: curriculum.title,
-      description: curriculum.description,
-      goal: curriculum.goal,
-      query: curriculum.query,
-      topics: curriculum.topics,
-      primary_tools: curriculum.primary_tools,
-      difficulty_level: curriculum.difficulty_level,
-      estimated_duration_seconds: curriculum.estimated_duration_seconds,
-      items: curriculum.items as unknown,
-      modules: curriculum.modules as unknown,
-      source: curriculum.source,
-      is_cached: true,
-    })
+    .insert(insertData)
     .select("id, created_at")
     .single();
 

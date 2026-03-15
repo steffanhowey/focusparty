@@ -10,8 +10,11 @@ import { WORLD_CONFIGS, type WorldKey } from "@/lib/worlds";
 
 // ─── Shared Constants ───────────────────────────────────────
 
-/** Minimum video duration in seconds (2 min). */
-export const MIN_DURATION = 120;
+/** Minimum video duration in seconds (4 min).
+ * Matches YouTube's "medium" duration filter (4-20 min).
+ * 3-minute shelf buckets use AI-identified segments with timestamps
+ * to cue into the best 3-minute window of a 4+ minute video. */
+export const MIN_DURATION = 240;
 /** Maximum video duration in seconds (15 min). */
 export const MAX_DURATION = 900;
 
@@ -52,6 +55,11 @@ export interface WorldBreakProfile {
   // ── Creator Authority ──────────────────────────────────
   /** Map of creator name (lowercase) → additive score boost (10–20). */
   creatorBoosts: Record<string, number>;
+
+  // ── Category Query Overrides ───────────────────────────
+  /** Extra queries per non-learning category, merged with the shared category pool.
+   * Differentiates content across worlds (e.g., vibe-coding/reset vs gentle-start/reset). */
+  categoryQueryOverrides?: Partial<Record<string, string[]>>;
 }
 
 // ─── Category-Specific Profiles ─────────────────────────────
@@ -89,11 +97,6 @@ export interface CategoryProfile {
 
 export const CATEGORY_PROFILES: Record<string, CategoryProfile> = {
   reset: {
-    sponsorLock: {
-      sourceName: "Headspace",
-      channelId: "UC3JhfsgFPLSLNEROQCdj-GQ",
-      badge: "Powered by Headspace",
-    },
     queries: [
       "guided breathing exercise short",
       "quick mindfulness reset technique",
@@ -103,12 +106,16 @@ export const CATEGORY_PROFILES: Record<string, CategoryProfile> = {
       "nature sounds with timer short",
       "progressive muscle relaxation quick",
       "calm down anxiety technique fast",
+      "focus reset technique for knowledge workers",
+      "quick stress relief for developers programmers",
     ],
     channels: [
       { channelId: "UC3JhfsgFPLSLNEROQCdj-GQ", label: "Headspace" },
-      { channelId: "UCzBibyEtmPMiM2Q8MR2FJSA", label: "Therapy in a Nutshell" },
       { channelId: "UCFKE7WVJfvaHW5q283SxchA", label: "Calm" },
+      { channelId: "UCzBibyEtmPMiM2Q8MR2FJSA", label: "Therapy in a Nutshell" },
       { channelId: "UCLQBPUbCk4AHf4drmk_FQ0A", label: "Great Meditation" },
+      { channelId: "UCjRMB-z6JN0cFBgTUoHVSZg", label: "The Honest Guys", query: "guided relaxation" },
+      { channelId: "UC2Nx-sP2r6OQzTEa0LR_mXg", label: "Michael Sealey", query: "breathing relaxation" },
     ],
     contentGoal:
       "Find short guided breathing, mindfulness, or calming decompression content that helps a focused person reset their mental state during a work break.",
@@ -282,6 +289,11 @@ export const WORLD_BREAK_PROFILES: Record<WorldKey, WorldBreakProfile> = {
       { channelId: "UCIaH-gZIVC432YRjNVvnyCA", label: "Cal Newport", query: "deep work productivity" },
     ],
     publishedAfterMonths: 18,
+    categoryQueryOverrides: {
+      reset: ["focus reset breathing technique for knowledge workers", "mental clarity break between tasks"],
+      reflect: ["daily reflection habit for tech professionals", "goal review framework engineer"],
+      move: ["standing desk exercises for focus", "quick energy boost movement break office"],
+    },
     persona: {
       name: "Guide",
       voicePrompt:
@@ -335,6 +347,11 @@ export const WORLD_BREAK_PROFILES: Record<WorldKey, WorldBreakProfile> = {
       { channelId: "UC2Qw1dzXDBAZPwS7zm37g8g", label: "Theo", query: "developer tools" },
     ],
     publishedAfterMonths: 12,
+    categoryQueryOverrides: {
+      reset: ["developer meditation coding break", "programmer stress relief technique", "screen break exercises for coders"],
+      reflect: ["developer career reflection journaling", "engineering retrospective personal", "coder growth mindset review"],
+      move: ["programmer desk stretches wrist", "developer posture reset exercise", "coding break body movement"],
+    },
     persona: {
       name: "Syntax",
       voicePrompt:
@@ -393,6 +410,11 @@ export const WORLD_BREAK_PROFILES: Record<WorldKey, WorldBreakProfile> = {
       { channelId: "UCvmINlrCLBXnin1YdHks44Q", label: "Tim Ferriss", query: "writing" },
     ],
     publishedAfterMonths: 18,
+    categoryQueryOverrides: {
+      reset: ["writer mental reset creative block", "mindfulness for writers focus"],
+      reflect: ["writer's block journaling prompts", "creative reflection practice writing", "writing mindfulness exercise"],
+      move: ["desk stretches for writers", "creative energy movement break", "writer posture exercises"],
+    },
     persona: {
       name: "Quill",
       voicePrompt:
@@ -445,6 +467,11 @@ export const WORLD_BREAK_PROFILES: Record<WorldKey, WorldBreakProfile> = {
       { channelId: "UCxIJaCMEptJjxmmQgGFsnCg", label: "YC Startup School", query: "startup" },
     ],
     publishedAfterMonths: 18,
+    categoryQueryOverrides: {
+      reset: ["founder stress management technique", "entrepreneur mental reset quick"],
+      reflect: ["founder journaling practice", "startup reflection weekly review", "founder mental health check-in"],
+      move: ["startup founder desk exercises", "quick energy boost for entrepreneurs", "founder fitness movement break"],
+    },
     persona: {
       name: "Atlas",
       voicePrompt:
@@ -496,6 +523,11 @@ export const WORLD_BREAK_PROFILES: Record<WorldKey, WorldBreakProfile> = {
       { channelId: "UCIaH-gZIVC432YRjNVvnyCA", label: "Cal Newport", query: "deep work sustainable" },
     ],
     publishedAfterMonths: 18,
+    categoryQueryOverrides: {
+      reset: ["gentle calming reset burnout recovery", "self-compassion break technique", "nervous system regulation quick"],
+      reflect: ["gentle self-reflection burnout recovery", "low energy journaling prompts", "mindful check-in exercise"],
+      move: ["gentle morning stretches low energy", "low impact desk exercises beginners", "mindful movement for burnout recovery"],
+    },
     persona: {
       name: "Bloom",
       voicePrompt:
@@ -597,8 +629,8 @@ export function getCreatorBoost(
 }
 
 /**
- * Pick `count` random queries. For non-learning categories, uses the
- * category profile queries instead of the world profile.
+ * Pick `count` random queries. For non-learning categories, merges
+ * the shared category queries with world-specific overrides for variety.
  */
 export function pickQueries(
   profile: WorldBreakProfile,
@@ -606,7 +638,14 @@ export function pickQueries(
   category = "learning",
 ): string[] {
   const catProfile = getCategoryProfile(category);
-  const source = catProfile ? catProfile.queries : profile.queries;
+  let source: string[];
+  if (catProfile) {
+    // Merge shared category queries with world-specific overrides
+    const overrides = profile.categoryQueryOverrides?.[category] ?? [];
+    source = [...catProfile.queries, ...overrides];
+  } else {
+    source = profile.queries;
+  }
   const shuffled = [...source].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(count, shuffled.length));
 }

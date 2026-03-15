@@ -2,6 +2,7 @@ import { NextResponse, after } from "next/server";
 import { createClient as createAdminClient } from "@/lib/supabase/admin";
 import { generateAndCachePath, mapPathRow } from "@/lib/learn/pathGenerator";
 import type { LearningPath } from "@/lib/types";
+import type { ProfessionalFunction, FluencyLevel } from "@/lib/onboarding/types";
 
 // ─── In-memory generation tracking ──────────────────────────
 
@@ -41,6 +42,9 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     const body = await request.json();
     const query = (body.query as string)?.trim();
+    const userFunction = (body.function as ProfessionalFunction) ?? null;
+    const userFluency = (body.fluency as FluencyLevel) ?? null;
+    const secondaryFunctions = (body.secondary_functions as ProfessionalFunction[]) ?? undefined;
 
     if (!query) {
       return NextResponse.json(
@@ -52,9 +56,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     sweepStale();
 
     const normalizedQuery = query.toLowerCase();
+    // Include function+fluency in dedup key so same query generates different paths per profile
+    const dedupKey = userFunction && userFluency
+      ? `${normalizedQuery}__${userFunction}__${userFluency}`
+      : normalizedQuery;
 
-    // Dedup: if already generating for this query, return existing ID
-    const existingId = queryToId.get(normalizedQuery);
+    // Dedup: if already generating for this query+profile, return existing ID
+    const existingId = queryToId.get(dedupKey);
     if (existingId && generations.get(existingId)?.status === "generating") {
       return NextResponse.json(
         { generation_id: existingId, query: normalizedQuery },
@@ -72,13 +80,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     };
 
     generations.set(id, state);
-    queryToId.set(normalizedQuery, id);
+    queryToId.set(dedupKey, id);
 
     // Fire-and-forget promise handles generation.
     // after() keeps the Vercel serverless function alive so the promise can resolve.
-    console.log(`[learn/search/generate] Starting generation for "${query}" (id: ${id})`);
+    const adaptationLabel = userFunction && userFluency ? ` [${userFunction}/${userFluency}]` : "";
+    console.log(`[learn/search/generate] Starting generation for "${query}"${adaptationLabel} (id: ${id})`);
 
-    const generationPromise = generateAndCachePath(query)
+    const generationPromise = generateAndCachePath(query, {
+      userFunction: userFunction ?? undefined,
+      userFluency: userFluency ?? undefined,
+      secondaryFunctions,
+    })
       .then((path) => {
         const entry = generations.get(id);
         if (!entry) return;
@@ -102,7 +115,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         }
       })
       .finally(() => {
-        queryToId.delete(normalizedQuery);
+        queryToId.delete(dedupKey);
       });
 
     // after() keeps the serverless function alive until the promise settles.

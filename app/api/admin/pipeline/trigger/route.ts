@@ -17,6 +17,9 @@ const JOB_ENDPOINTS: Record<PipelineJobType, string> = {
   synthetic_tick: "/api/synthetics/tick",
   analytics_aggregation: "/api/analytics/aggregate",
   score_calibration: "/api/analytics/calibrate",
+  pipeline_unified: "/api/pipeline/run",
+  article_ingestion: "/api/learn/ingest-articles",
+  path_discovery: "/api/learn/discover",
 };
 
 /**

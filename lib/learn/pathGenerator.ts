@@ -7,6 +7,7 @@ import type {
   LearningProgress,
   CurriculumModule,
 } from "@/lib/types";
+import type { ProfessionalFunction, FluencyLevel } from "@/lib/onboarding/types";
 import { generateAndCacheCurriculum } from "@/lib/learn/curriculumGenerator";
 
 // ─── Shared Helpers ──────────────────────────────────────────
@@ -82,10 +83,15 @@ export function mapProgressRow(
  * Returns null if not enough content exists.
  */
 export async function generateAndCachePath(
-  query: string
+  query: string,
+  options?: {
+    userFunction?: ProfessionalFunction;
+    userFluency?: FluencyLevel;
+    secondaryFunctions?: ProfessionalFunction[];
+  }
 ): Promise<LearningPath | null> {
   try {
-    return await generateAndCacheCurriculum(query);
+    return await generateAndCacheCurriculum(query, options);
   } catch (error) {
     console.error("[learn/pathGenerator] generation failed:", error);
     return null;

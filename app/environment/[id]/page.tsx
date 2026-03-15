@@ -294,7 +294,13 @@ export default function EnvironmentPage() {
     contentItemId: breakActive ? (breakContent?.id ?? null) : null,
   }), [breakActive, breakCategory, breakContent?.id]);
   const notes = useNotes(partyId, sessionId, breakContext);
-  const handleToggleNotesPopover = useCallback(() => setNotesPopoverOpen((prev) => !prev), []);
+  const handleToggleNotesPopover = useCallback(() => {
+    if (phase === "break") {
+      setFloatingNotesOpen((prev) => !prev);
+    } else {
+      setNotesPopoverOpen((prev) => !prev);
+    }
+  }, [phase]);
   const handleCloseNotesPopover = useCallback(() => setNotesPopoverOpen(false), []);
   const handleToggleNotes = useCallback(() => {
     // Used by BreakVideoOverlay — open floating notes directly during breaks
@@ -1952,7 +1958,7 @@ export default function EnvironmentPage() {
                 onToggleBreakPopover={handleToggleBreakPopover}
                 onCloseBreakPopover={handleCloseBreakPopover}
                 onSelectBreakCategory={handleSelectBreakCategory}
-                notesPopover={sessionId ? {
+                notesPopover={{
                   open: notesPopoverOpen,
                   onToggle: handleToggleNotesPopover,
                   text: notes.text,
@@ -1965,7 +1971,7 @@ export default function EnvironmentPage() {
                   },
                   onClose: handleCloseNotesPopover,
                   notesButtonRef,
-                } : undefined}
+                }}
               />
             )}
       </div>

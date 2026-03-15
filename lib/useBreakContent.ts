@@ -49,18 +49,23 @@ function itemsToClips(items: BreakContentItem[]): BreakClip[] {
         });
       }
     } else {
-      // Fallback: single clip at best_duration or heuristic
-      const duration = (item.best_duration ?? durationFromLength(videoLen)) as BreakDuration;
-      const dedup = `${videoKey}:${duration}`;
-      if (seen.has(dedup)) continue;
-      seen.add(dedup);
-      clips.push({
-        clipId: item.id,
-        label: item.title,
-        duration,
-        startSeconds: 0,
-        sourceItem: item,
-      });
+      // Generate clips for ALL durations the video can support.
+      // A 12-minute video can serve 3, 5, and 10-min clips.
+      // Prefer best_duration as the primary clip; add others as fallbacks.
+      const primary = (item.best_duration ?? durationFromLength(videoLen)) as BreakDuration;
+      for (const d of VALID_DURATIONS) {
+        if (videoLen > 0 && videoLen < d * 60) continue;
+        const dedup = `${videoKey}:${d}`;
+        if (seen.has(dedup)) continue;
+        seen.add(dedup);
+        clips.push({
+          clipId: `${item.id}:${d}`,
+          label: item.title,
+          duration: d,
+          startSeconds: 0,
+          sourceItem: item,
+        });
+      }
     }
   }
 

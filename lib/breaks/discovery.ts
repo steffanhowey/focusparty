@@ -206,42 +206,82 @@ export async function discoverCandidates(
 // manual process and the 12-24 hour delay between discovery and
 // content appearing on the shelf.
 
-interface PipelineResult {
-  discovery: DiscoveryResult;
-  evaluation: { evaluated: number; rejected: number; errors: number };
-  shelf: ShelfRefreshResult;
+export interface PipelineResult {
+  worldKey: string;
+  category: string;
+  discovered: number;
+  evaluated: number;
+  promoted: number;
+  errors: string[];
 }
 
 /**
- * Full pipeline for a single world + category: discover → evaluate → shelf refresh.
- * Use this for manual triggers and POST requests so content appears
- * immediately instead of waiting for separate cron jobs.
+ * Full pipeline for a single world: discover → evaluate → shelf refresh.
+ * Processes all categories (or a specific one). Each stage is independent:
+ * if discovery fails, evaluation still runs on existing pending candidates;
+ * if evaluation fails, shelf refresh still runs to expire stale content.
  */
 export async function discoverAndPromote(
   worldKey: string,
-  category = "learning",
+  category?: string,
 ): Promise<PipelineResult> {
-  const discovery = await discoverCandidates(worldKey, category);
-  const evaluation = await evaluatePendingCandidates(worldKey, 30);
-  const shelf = await refreshShelf(worldKey, category);
-  return { discovery, evaluation, shelf };
+  const categories = category ? [category] : [...ALL_CATEGORIES];
+  const errors: string[] = [];
+  let discovered = 0;
+  let evaluated = 0;
+  let promoted = 0;
+
+  for (const cat of categories) {
+    try {
+      const disc = await discoverCandidates(worldKey, cat);
+      discovered += disc.candidatesInserted;
+    } catch (e) {
+      errors.push(`Discovery failed for ${worldKey}/${cat}: ${e}`);
+      console.error(`[pipeline] Discovery failed for ${worldKey}/${cat}:`, e);
+    }
+
+    try {
+      const evalResult = await evaluatePendingCandidates(worldKey, 100, cat);
+      evaluated += evalResult.evaluated;
+    } catch (e) {
+      errors.push(`Evaluation failed for ${worldKey}/${cat}: ${e}`);
+      console.error(`[pipeline] Evaluation failed for ${worldKey}/${cat}:`, e);
+    }
+
+    try {
+      const shelfResult = await refreshShelf(worldKey, cat);
+      promoted += shelfResult.promoted;
+    } catch (e) {
+      errors.push(`Shelf refresh failed for ${worldKey}/${cat}: ${e}`);
+      console.error(`[pipeline] Shelf refresh failed for ${worldKey}/${cat}:`, e);
+    }
+  }
+
+  return { worldKey, category: category ?? "all", discovered, evaluated, promoted, errors };
 }
 
 /**
  * Run the full pipeline for ALL worlds × ALL categories sequentially.
  * Used by bootstrap-all and manual "nuke and rebuild" workflows.
+ * Respects a timeout to avoid hitting Vercel's 60s limit.
  */
-export async function discoverAndPromoteAll(): Promise<PipelineResult[]> {
+export async function discoverAndPromoteAll(
+  timeoutMs = 55_000,
+): Promise<PipelineResult[]> {
   const worldKeys = Object.keys(WORLD_BREAK_PROFILES);
   const results: PipelineResult[] = [];
+  const startTime = Date.now();
+
   for (const worldKey of worldKeys) {
-    for (const category of ALL_CATEGORIES) {
-      try {
-        const result = await discoverAndPromote(worldKey, category);
-        results.push(result);
-      } catch (err) {
-        console.error(`[breaks/discover] pipeline error for ${worldKey}/${category}:`, err);
-      }
+    if (Date.now() - startTime > timeoutMs) {
+      console.log(`[pipeline] Timeout after ${results.length} worlds, stopping`);
+      break;
+    }
+    try {
+      const result = await discoverAndPromote(worldKey);
+      results.push(result);
+    } catch (err) {
+      console.error(`[pipeline] error for ${worldKey}:`, err);
     }
   }
   return results;
