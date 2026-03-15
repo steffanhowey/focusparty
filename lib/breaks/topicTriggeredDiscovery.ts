@@ -322,7 +322,7 @@ export async function discoverForHotTopics(options?: {
  * Generate YouTube search queries for a specific topic.
  * Uses topic name, aliases, and category-specific patterns.
  */
-function generateSearchQueries(topic: {
+export function generateSearchQueries(topic: {
   slug: string;
   name: string;
   category: Topic["category"];
