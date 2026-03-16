@@ -93,10 +93,32 @@ export type {
 export type { ToastType } from "./ui";
 export type { ToastItem } from "./ui";
 
+export type {
+  TrendDirection,
+  InsightType,
+  InsightStatus,
+  TopicSkillRelationship,
+} from "./intelligence";
+export type {
+  TopicSkillMapping,
+  HeatHistoryEntry,
+  SkillMarketState,
+  PractitionerSnapshot,
+  InsightEvidence,
+  InsightRecommendation,
+  SkillIntelligence,
+  SkillRanking,
+  IndexFinding,
+  SkillIndexEntry,
+} from "./intelligence";
+
 export type { SkillFluency } from "./skills";
 export type {
   SkillDomain,
   Skill,
   SkillTag,
   SkillWithDomain,
+  UserSkill,
+  SkillReceiptEntry,
+  SkillReceipt,
 } from "./skills";

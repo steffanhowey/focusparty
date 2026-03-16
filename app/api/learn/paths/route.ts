@@ -108,5 +108,17 @@ export async function GET(): Promise<NextResponse> {
     }
   }
 
+  // ── Populate skill tags ──────────────────────────────────────
+  const allPaths = [...inProgress, ...completed].map((item) => item.path);
+  if (allPaths.length > 0) {
+    const { loadSkillTagsForPaths } = await import(
+      "@/lib/skills/pathSkillTags"
+    );
+    const tagMap = await loadSkillTagsForPaths(allPaths.map((p) => p.id));
+    for (const p of allPaths) {
+      p.skill_tags = tagMap.get(p.id) ?? [];
+    }
+  }
+
   return NextResponse.json({ in_progress: inProgress, completed });
 }

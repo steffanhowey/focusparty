@@ -51,6 +51,26 @@
     {
       "path": "/api/learn/discover",
       "schedule": "0 5,17 * * *"
+    },
+    {
+      "path": "/api/intelligence/practitioner-aggregate",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/intelligence/skill-heat",
+      "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/intelligence/synthesize",
+      "schedule": "0 6 * * 1"
+    },
+    {
+      "path": "/api/intelligence/generate-index",
+      "schedule": "0 7 * * 1"
+    },
+    {
+      "path": "/api/intelligence/cleanup",
+      "schedule": "0 4 * * 0"
     }
   ]
 }

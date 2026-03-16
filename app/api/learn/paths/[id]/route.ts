@@ -5,6 +5,7 @@ import { mapPathRow, mapProgressRow } from "@/lib/learn/pathGenerator";
 import type { LearningProgress } from "@/lib/types";
 import { evaluateSubmission, type SubmissionEvaluation } from "@/lib/learn/evaluator";
 import { UpdateProgressSchema, parseBody } from "@/lib/learn/validation";
+import type { SkillReceipt } from "@/lib/types/skills";
 
 /**
  * GET /api/learn/paths/[id]
@@ -59,6 +60,15 @@ export async function GET(
     if (progressRow) {
       progress = mapProgressRow(progressRow);
     }
+  }
+
+  // Load skill tags (with user fluency if authenticated)
+  const { loadSkillTagsWithUser, loadSkillTagsForPaths } = await import("@/lib/skills/pathSkillTags");
+  if (user) {
+    path.skill_tags = await loadSkillTagsWithUser(id, user.id);
+  } else {
+    const tagMap = await loadSkillTagsForPaths([id]);
+    path.skill_tags = tagMap.get(id) ?? [];
   }
 
   return NextResponse.json({ path, progress });
@@ -177,6 +187,7 @@ export async function PATCH(
   }
 
   let evaluation: SubmissionEvaluation | null = null;
+  let skillReceipt: SkillReceipt | null = null;
 
   if (body.item_completed) {
     const itemStates = (existing.item_states as Record<string, unknown>) ?? {};
@@ -252,6 +263,26 @@ export async function PATCH(
           share_slug: shareSlug,
         })
         .then(() => {});
+
+      // Calculate skill receipt (writes fp_user_skills, returns before/after)
+      const { calculateSkillReceipt } = await import(
+        "@/lib/skills/receiptCalculator"
+      );
+      skillReceipt = await calculateSkillReceipt({
+        userId: user.id,
+        pathId: id,
+        pathTitle: pathRow.title as string,
+        completedAt: updates.completed_at as string,
+        itemStates: updates.item_states as Record<
+          string,
+          { completed?: boolean; evaluation?: Record<string, unknown> }
+        >,
+        pathItems: pathItems as Array<{
+          item_id?: string;
+          task_type?: string;
+          mission?: { objective?: string };
+        }>,
+      });
     }
   }
 
@@ -273,6 +304,7 @@ export async function PATCH(
   return NextResponse.json({
     progress: mapProgressRow(updated!),
     ...(evaluation ? { evaluation } : {}),
+    ...(skillReceipt ? { skill_receipt: skillReceipt } : {}),
   });
 }
 

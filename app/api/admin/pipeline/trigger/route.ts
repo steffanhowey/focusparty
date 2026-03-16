@@ -20,6 +20,10 @@ const JOB_ENDPOINTS: Record<PipelineJobType, string> = {
   pipeline_unified: "/api/pipeline/run",
   article_ingestion: "/api/learn/ingest-articles",
   path_discovery: "/api/learn/discover",
+  practitioner_aggregation: "/api/intelligence/practitioner-aggregate",
+  skill_heat_computation: "/api/intelligence/skill-heat",
+  intelligence_synthesis: "/api/intelligence/synthesize",
+  skill_index_generation: "/api/intelligence/generate-index",
 };
 
 /**

@@ -90,6 +90,7 @@ export async function generateAndCachePath(
     userFunction?: ProfessionalFunction;
     userFluency?: FluencyLevel;
     secondaryFunctions?: ProfessionalFunction[];
+    userSkills?: Array<{ slug: string; name: string; fluency_level: string; paths_completed: number }>;
   }
 ): Promise<LearningPath | null> {
   try {

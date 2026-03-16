@@ -22,7 +22,11 @@ export type PipelineJobType =
   | "score_calibration"
   | "pipeline_unified"
   | "article_ingestion"
-  | "path_discovery";
+  | "path_discovery"
+  | "practitioner_aggregation"
+  | "skill_heat_computation"
+  | "intelligence_synthesis"
+  | "skill_index_generation";
 
 export interface PipelineEventHandle {
   eventId: string;
@@ -94,6 +98,10 @@ const EXPECTED_FREQUENCIES: Record<PipelineJobType, number> = {
   pipeline_unified: 180,
   article_ingestion: 360,
   path_discovery: 720,
+  practitioner_aggregation: 1440,
+  skill_heat_computation: 1440,
+  intelligence_synthesis: 10080,
+  skill_index_generation: 43200,
 };
 
 const JOB_NAMES: Record<PipelineJobType, string> = {
@@ -113,6 +121,10 @@ const JOB_NAMES: Record<PipelineJobType, string> = {
   pipeline_unified: "Unified Pipeline Run",
   article_ingestion: "Article Ingestion",
   path_discovery: "Learning Path Discovery",
+  practitioner_aggregation: "Practitioner Aggregation",
+  skill_heat_computation: "Skill Heat Computation",
+  intelligence_synthesis: "Intelligence Synthesis",
+  skill_index_generation: "Skills Index Generation",
 };
 
 // ─── Core ───────────────────────────────────────────────────

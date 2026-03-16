@@ -18,6 +18,7 @@ import { Card } from "@/components/ui/Card";
 import { ContentViewer } from "@/components/learn/ContentViewer";
 import { PathSidebar } from "@/components/learn/PathSidebar";
 import { PathCard } from "@/components/learn/PathCard";
+import { SkillReceipt } from "@/components/learn/SkillReceipt";
 import { useLearnProgress } from "@/lib/useLearnProgress";
 import { useProfile } from "@/lib/useProfile";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -205,6 +206,7 @@ export default function LearnPathPage() {
     completeItem,
     advanceToItem,
     isCompleted,
+    skillReceipt,
   } = useLearnProgress(pathId);
 
   const { user } = useAuth();
@@ -262,16 +264,35 @@ export default function LearnPathPage() {
     }
   }, [path, progress]);
 
-  // Fetch recommended paths when path is completed
+  // Fetch recommended paths when path is completed (skill-aware with topic fallback)
   useEffect(() => {
     if (!isCompleted || !path) return;
-    fetch(`/api/learn/search?q=${encodeURIComponent(path.topics[0] ?? path.query)}&limit=4`)
-      .then((r) => r.json())
+
+    // Try skill-aware recommendations first
+    fetch("/api/learn/recommendations?limit=4")
+      .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        const recs = (data.discovery ?? []).filter(
-          (p: LearningPath) => p.id !== pathId
-        );
-        setRecommendedPaths(recs.slice(0, 2));
+        if (data?.recommendations?.length) {
+          const recPaths = (data.recommendations as Array<{ paths: LearningPath[] }>)
+            .flatMap((r) => r.paths)
+            .filter((p) => p.id !== pathId)
+            .slice(0, 2);
+          if (recPaths.length > 0) {
+            setRecommendedPaths(recPaths);
+            return;
+          }
+        }
+        // Fallback to topic-based recommendations
+        return fetch(
+          `/api/learn/search?q=${encodeURIComponent(path.topics[0] ?? path.query)}&limit=4`
+        )
+          .then((r) => r.json())
+          .then((fallback) => {
+            const recs = (fallback.discovery ?? []).filter(
+              (p: LearningPath) => p.id !== pathId
+            );
+            setRecommendedPaths(recs.slice(0, 2));
+          });
       })
       .catch(() => {});
   }, [isCompleted, path, pathId]);
@@ -447,10 +468,13 @@ export default function LearnPathPage() {
                 />
               </div>
 
+              {/* Skill Receipt */}
+              {skillReceipt && <SkillReceipt receipt={skillReceipt} />}
+
               {/* Share + Continue buttons */}
               <div
                 className="flex flex-col sm:flex-row items-center gap-3 animate-fade-in"
-                style={{ animationDelay: "400ms" }}
+                style={{ animationDelay: "600ms" }}
               >
                 <div className="relative">
                   <Button
@@ -504,7 +528,7 @@ export default function LearnPathPage() {
               {recommendedPaths.length > 0 && (
                 <div
                   className="w-full max-w-2xl space-y-4 animate-fade-in"
-                  style={{ animationDelay: "600ms" }}
+                  style={{ animationDelay: "800ms" }}
                 >
                   <div className="h-px bg-[var(--color-border-default)]" />
                   <p className="text-sm font-semibold text-[var(--color-text-secondary)]">

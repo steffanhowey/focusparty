@@ -7,6 +7,7 @@ interface PathCardProps {
   path: LearningPath;
   progress?: LearningProgress | null;
   onClick: (pathId: string) => void;
+  onSkillClick?: (skillSlug: string, skillName: string) => void;
 }
 
 const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
@@ -27,7 +28,7 @@ function formatDuration(seconds: number): string {
  * Learning path card for the Learn page grid.
  * Uses PathCover for branded thumbnail treatment.
  */
-export function PathCard({ path, progress, onClick }: PathCardProps) {
+export function PathCard({ path, progress, onClick, onSkillClick }: PathCardProps) {
   const percentComplete = progress
     ? progress.items_total > 0
       ? Math.round(
@@ -86,6 +87,29 @@ export function PathCard({ path, progress, onClick }: PathCardProps) {
             {formatDuration(path.estimated_duration_seconds)}
             {percentComplete !== null && ` · ${percentComplete}% complete`}
           </p>
+          {path.skill_tags && path.skill_tags.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {path.skill_tags
+                .filter((t) => t.relevance === "primary")
+                .slice(0, 2)
+                .map((tag) => (
+                  <span
+                    key={tag.skill_slug}
+                    className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium cursor-pointer transition-colors hover:bg-[var(--color-bg-active)] hover:text-[var(--color-text-primary)]"
+                    style={{
+                      background: "var(--color-bg-hover)",
+                      color: "var(--color-text-secondary)",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSkillClick?.(tag.skill_slug, tag.skill_name);
+                    }}
+                  >
+                    {tag.skill_name}
+                  </span>
+                ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

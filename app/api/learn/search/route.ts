@@ -154,6 +154,13 @@ export async function GET(request: Request): Promise<NextResponse> {
       discovery = [...discovery, ...general].slice(0, limit);
     }
 
+    // Merge skill tags onto paths
+    const { loadSkillTagsForPaths } = await import("@/lib/skills/pathSkillTags");
+    const discPathIds = [...discovery, ...inProgress.map((ip) => ip.path)].map((p) => p.id);
+    const tagMap = await loadSkillTagsForPaths(discPathIds);
+    for (const p of discovery) { p.skill_tags = tagMap.get(p.id) ?? []; }
+    for (const ip of inProgress) { ip.path.skill_tags = tagMap.get(ip.path.id) ?? []; }
+
     return NextResponse.json({
       discovery,
       in_progress: inProgress,
@@ -281,6 +288,13 @@ export async function GET(request: Request): Promise<NextResponse> {
       );
       addResults(popular);
     }
+
+    // Merge skill tags onto search results
+    const { loadSkillTagsForPaths } = await import("@/lib/skills/pathSkillTags");
+    const searchPathIds = [...results, ...inProgress.map((ip) => ip.path)].map((p) => p.id);
+    const searchTagMap = await loadSkillTagsForPaths(searchPathIds);
+    for (const p of results) { p.skill_tags = searchTagMap.get(p.id) ?? []; }
+    for (const ip of inProgress) { ip.path.skill_tags = searchTagMap.get(ip.path.id) ?? []; }
 
     return NextResponse.json({
       discovery: results,

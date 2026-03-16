@@ -15,6 +15,7 @@ import { FunctionMigrationModal } from "@/components/onboarding/FunctionMigratio
 const PAGE_TITLES: Record<string, string> = {
   "/practice": "Practice",
   "/learn": "Learn",
+  "/skills": "Skills",
   "/goals": "Goals",
   "/stats": "Stats",
   "/settings": "Settings",
@@ -48,6 +49,10 @@ const LazyLearnPage = lazy(() =>
   import("@/components/learn/LearnPage").then((m) => ({ default: m.LearnPage }))
 );
 
+const LazySkillProfilePage = lazy(() =>
+  import("@/components/skills/SkillProfilePage").then((m) => ({ default: m.SkillProfilePage }))
+);
+
 function renderTabContent(tab: string): ReactNode {
   switch (tab) {
     case "/practice":
@@ -63,6 +68,14 @@ function renderTabContent(tab: string): ReactNode {
         <main className="flex-1">
           <Suspense fallback={null}>
             <LazyLearnPage />
+          </Suspense>
+        </main>
+      );
+    case "/skills":
+      return (
+        <main className="flex-1">
+          <Suspense fallback={null}>
+            <LazySkillProfilePage />
           </Suspense>
         </main>
       );

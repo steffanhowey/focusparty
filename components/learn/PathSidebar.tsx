@@ -13,6 +13,8 @@ import {
   MessageSquare,
 } from "lucide-react";
 import type { LearningPath, LearningProgress, PathItem, CurriculumModule } from "@/lib/types";
+import { FluencyBadge } from "@/components/skills/FluencyBadge";
+import type { SkillFluency } from "@/lib/types/skills";
 
 interface PathSidebarProps {
   path: LearningPath;
@@ -129,6 +131,36 @@ export function PathSidebar({
           </div>
         )}
       </div>
+
+      {/* Skills */}
+      {path.skill_tags && path.skill_tags.length > 0 && (
+        <div className="px-4 pb-3">
+          <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            Skills
+          </p>
+          <div className="space-y-1.5">
+            {path.skill_tags
+              .filter((t) => t.relevance === "primary")
+              .slice(0, 3)
+              .map((tag) => (
+                <div
+                  key={tag.skill_slug}
+                  className="flex items-center justify-between"
+                >
+                  <span className="text-xs text-[var(--color-text-secondary)]">
+                    {tag.skill_name}
+                  </span>
+                  {tag.user_fluency && (
+                    <FluencyBadge
+                      level={tag.user_fluency as SkillFluency}
+                      size="sm"
+                    />
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* Sections */}
       {orderedSections.map(({ key, items }) => {

@@ -35,7 +35,8 @@ export interface AdaptationContext {
 export function buildAdaptedPromptContext(
   fn: ProfessionalFunction,
   fluency: FluencyLevel,
-  secondaryFunctions?: ProfessionalFunction[]
+  secondaryFunctions?: ProfessionalFunction[],
+  userSkills?: Array<{ slug: string; name: string; fluency_level: string; paths_completed: number }>,
 ): AdaptationContext {
   const functionCtx = FUNCTION_CONTEXTS[fn];
   const fluencyCtx = FLUENCY_CONTEXTS[fluency];
@@ -52,6 +53,47 @@ export function buildAdaptedPromptContext(
     if (labels.length > 0) {
       secondaryNote = `\nThe learner also works in: ${labels.join(", ")}. When relevant, draw connections to these domains, but keep the primary focus on ${functionCtx.label}.`;
     }
+  }
+
+  // Build skill context if user has demonstrated skills
+  let skillContextBlock = "";
+  if (userSkills && userSkills.length > 0) {
+    const fluencyOrder: Record<string, number> = { advanced: 3, proficient: 2, practicing: 1, exploring: 0 };
+    const sorted = [...userSkills]
+      .sort((a, b) => (fluencyOrder[b.fluency_level] ?? 0) - (fluencyOrder[a.fluency_level] ?? 0))
+      .slice(0, 10);
+
+    const skillLines = sorted
+      .map(s => `- ${s.name}: ${s.fluency_level} (${s.paths_completed} path${s.paths_completed !== 1 ? "s" : ""} completed)`)
+      .join("\n");
+
+    const strongSkills = sorted.filter(s => s.fluency_level !== "exploring");
+    const developingSkills = sorted.filter(s => s.fluency_level === "exploring");
+
+    const guidanceLines: string[] = [];
+    if (strongSkills.length > 0) {
+      guidanceLines.push(
+        `- BUILD ON existing ${strongSkills.map(s => s.name).join(", ")} skills — reference concepts they already know, skip introductory explanations for these`
+      );
+    }
+    if (developingSkills.length > 0) {
+      guidanceLines.push(
+        `- FOCUS missions on developing ${developingSkills.map(s => s.name).join(", ")} — these are growth areas`
+      );
+    }
+    guidanceLines.push(
+      "- CONNECT new concepts to skills they've already demonstrated when possible",
+      "- DO NOT re-teach fundamentals of skills they're Practicing or above",
+      "- CALIBRATE difficulty: missions should stretch their current level, not repeat it"
+    );
+
+    skillContextBlock = `
+
+SKILL CONTEXT — THE LEARNER'S CURRENT CAPABILITIES:
+${skillLines}
+
+When designing this path:
+${guidanceLines.join("\n")}`;
   }
 
   const adaptationBlock = `
@@ -76,6 +118,7 @@ ${fluencyCtx.promptGuidance}
 
 LEARNER BACKGROUND:
 ${fluencyCtx.expectedPriorKnowledge}
+${skillContextBlock}
 
 PREFERRED TOOLS (use these in missions when possible):
 ${toolNames.length > 0 ? toolNames.map((n, i) => `${i + 1}. ${n}`).join("\n") : "Use any appropriate AI tool."}

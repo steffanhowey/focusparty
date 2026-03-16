@@ -24,10 +24,10 @@ export function ContinueLearning({ paths }: ContinueLearningProps) {
           Continue Learning
         </h2>
         <Link
-          href="/profile"
+          href="/skills"
           className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-accent-primary)] transition-colors flex items-center gap-1"
         >
-          View profile
+          View skills
           <ArrowRight size={10} />
         </Link>
       </div>

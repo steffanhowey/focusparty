@@ -52,6 +52,7 @@ export async function generateCurriculum(
     userFunction?: ProfessionalFunction;
     userFluency?: FluencyLevel;
     secondaryFunctions?: ProfessionalFunction[];
+    userSkills?: Array<{ slug: string; name: string; fluency_level: string; paths_completed: number }>;
   }
 ): Promise<GenerateCurriculumResult> {
   // 1. Search content lake + load skills in parallel
@@ -164,7 +165,7 @@ export async function generateCurriculum(
 
   // If function is specified, prioritize function-preferred tools
   const adaptation = options?.userFunction && options?.userFluency
-    ? buildAdaptedPromptContext(options.userFunction, options.userFluency, options.secondaryFunctions)
+    ? buildAdaptedPromptContext(options.userFunction, options.userFluency, options.secondaryFunctions, options.userSkills)
     : null;
 
   if (adaptation) {
@@ -611,6 +612,7 @@ export async function generateAndCacheCurriculum(
     userFunction?: ProfessionalFunction;
     userFluency?: FluencyLevel;
     secondaryFunctions?: ProfessionalFunction[];
+    userSkills?: Array<{ slug: string; name: string; fluency_level: string; paths_completed: number }>;
   }
 ): Promise<LearningPath> {
   const { path: curriculum, loadedSkills } = await generateCurriculum(query, options);

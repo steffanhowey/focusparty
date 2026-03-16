@@ -1,9 +1,11 @@
 import { NextResponse, after } from "next/server";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@/lib/supabase/admin";
 import { generateAndCachePath, mapPathRow } from "@/lib/learn/pathGenerator";
 import type { LearningPath } from "@/lib/types";
 import type { ProfessionalFunction, FluencyLevel } from "@/lib/onboarding/types";
 import { GeneratePathSchema, parseBody } from "@/lib/learn/validation";
+import { getSkills } from "@/lib/skills/taxonomy";
 
 // ─── In-memory dedup (per-instance optimization only) ──────
 // Prevents duplicate generation starts on the same Lambda instance.
@@ -33,6 +35,39 @@ export async function POST(request: Request): Promise<NextResponse> {
     const userFunction = (parsed.data.function ?? null) as ProfessionalFunction | null;
     const userFluency = (parsed.data.fluency ?? null) as FluencyLevel | null;
     const secondaryFunctions = parsed.data.secondary_functions as ProfessionalFunction[] | undefined;
+
+    // Load user's skill profile for personalization (optional — fails silently)
+    let userSkills: Array<{ slug: string; name: string; fluency_level: string; paths_completed: number }> = [];
+    try {
+      const supabase = await createServerClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const adminForSkills = createAdminClient();
+        const { data: skillRows } = await adminForSkills
+          .from("fp_user_skills")
+          .select("fluency_level, paths_completed, skill_id")
+          .eq("user_id", user.id);
+
+        if (skillRows?.length) {
+          const allSkills = await getSkills();
+          const skillMap = new Map(allSkills.map(s => [s.id, s]));
+          userSkills = skillRows
+            .map((row: Record<string, unknown>) => {
+              const skill = skillMap.get(row.skill_id as string);
+              if (!skill) return null;
+              return {
+                slug: skill.slug,
+                name: skill.name,
+                fluency_level: row.fluency_level as string,
+                paths_completed: row.paths_completed as number,
+              };
+            })
+            .filter(Boolean) as typeof userSkills;
+        }
+      }
+    } catch {
+      // Silent fail — personalization is enhancement, not critical
+    }
 
     const normalizedQuery = query.toLowerCase();
     const dedupKey = userFunction && userFluency
@@ -106,6 +141,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       userFunction: userFunction ?? undefined,
       userFluency: userFluency ?? undefined,
       secondaryFunctions,
+      userSkills,
     })
       .then(async (path: LearningPath | null) => {
         if (path) {

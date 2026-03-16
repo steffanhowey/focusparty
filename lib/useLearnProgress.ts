@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { LearningPath, LearningProgress, ItemState } from "./types";
+import type { LearningPath, LearningProgress, ItemState, SkillReceipt } from "./types";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -15,6 +15,7 @@ interface UseLearnProgressReturn {
   advanceToItem: (index: number) => Promise<void>;
   isCompleted: boolean;
   percentComplete: number;
+  skillReceipt: SkillReceipt | null;
 }
 
 // ─── Hook ───────────────────────────────────────────────────
@@ -29,6 +30,7 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [skillReceipt, setSkillReceipt] = useState<SkillReceipt | null>(null);
   const timeAccum = useRef(0);
   const timeInterval = useRef<ReturnType<typeof setInterval>>(undefined);
 
@@ -45,6 +47,16 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
         if (data.progress) {
           setProgress(data.progress);
           setCurrentItemIndex(data.progress.current_item_index);
+
+          // Fetch skill receipt for completed paths (for page refreshes)
+          if (data.progress.status === "completed") {
+            fetch(`/api/learn/skill-receipt/${pathId}`)
+              .then((r) => r.json())
+              .then((d) => {
+                if (d.skill_receipt) setSkillReceipt(d.skill_receipt);
+              })
+              .catch(() => {}); // Silent fail — receipt is enhancement, not critical
+          }
         }
       })
       .catch((err) => setError(err.message))
@@ -145,6 +157,7 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
         });
         const data = await res.json();
         if (data.progress) setProgress(data.progress);
+        if (data.skill_receipt) setSkillReceipt(data.skill_receipt);
       } catch {
         // Optimistic update already applied
       }
@@ -184,5 +197,6 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
     isCompleted: progress?.status === "completed",
     percentComplete:
       itemsTotal > 0 ? Math.round((itemsCompleted / itemsTotal) * 100) : 0,
+    skillReceipt,
   };
 }

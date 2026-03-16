@@ -183,6 +183,25 @@ function ResultRow({
           {formatDuration(path.estimated_duration_seconds)}
           {moduleCount > 0 && ` · ${moduleCount} modules`}
         </p>
+        {path.skill_tags && path.skill_tags.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {path.skill_tags
+              .filter((t) => t.relevance === "primary")
+              .slice(0, 2)
+              .map((tag) => (
+                <span
+                  key={tag.skill_slug}
+                  className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                  style={{
+                    background: "var(--color-bg-hover)",
+                    color: "var(--color-text-tertiary)",
+                  }}
+                >
+                  {tag.skill_name}
+                </span>
+              ))}
+          </div>
+        )}
       </div>
 
       {/* Navigate arrow */}

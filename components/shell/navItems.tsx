@@ -5,7 +5,7 @@
  * Practice is the app home. Icons: Users (practice), Target (goals), BarChart3 (stats), Settings.
  */
 
-import { BarChart3, BookOpen, Target, Settings, Users, type LucideIcon } from "lucide-react";
+import { BarChart3, BookOpen, Sparkles, Target, Settings, Users, type LucideIcon } from "lucide-react";
 
 const NAV_ICON_SIZE = 20;
 
@@ -16,6 +16,7 @@ export const NAV_ITEMS: Array<{
   icon: LucideIcon;
 }> = [
   { id: "learn", href: "/learn", label: "Learn", icon: BookOpen },
+  { id: "skills", href: "/skills", label: "Skills", icon: Sparkles },
   { id: "practice", href: "/practice", label: "Practice", icon: Users },
   { id: "goals", href: "/goals", label: "Goals", icon: Target },
   { id: "stats", href: "/stats", label: "Stats", icon: BarChart3 },

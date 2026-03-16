@@ -2,14 +2,18 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Search, ChevronDown, Loader2, X } from "lucide-react";
+import { Search, ChevronDown, Loader2, X, TrendingUp } from "lucide-react";
 import { useLearnSearch } from "@/lib/useLearnSearch";
 import { usePathGeneration, GENERATION_STEPS } from "@/lib/usePathGeneration";
 import type { UsePathGenerationReturn } from "@/lib/usePathGeneration";
+import { useSkillRecommendations } from "@/lib/useSkillRecommendations";
+import { useSkillMarketState } from "@/lib/useSkillMarketState";
 import { PathCard } from "./PathCard";
 import { PathCardSkeletonGrid } from "./PathCardSkeleton";
 import { TopicFilters } from "./TopicFilters";
 import { SearchDropdown } from "./SearchDropdown";
+import { SkillRecommendations } from "./SkillRecommendations";
+import { WeeklyDigestCard } from "./WeeklyDigestCard";
 import type { LearningPath, LearningProgress } from "@/lib/types";
 
 // Popular topics shown as quick-search triggers in the hero
@@ -229,15 +233,21 @@ export function LearnPage() {
   } = useLearnSearch();
 
   const generation = usePathGeneration();
+  const { recommendations } = useSkillRecommendations();
+  const { trending } = useSkillMarketState();
 
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState<SortOption>("recommended");
+  const [skillFilter, setSkillFilter] = useState<{ slug: string; name: string } | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
   const [generationQuery, setGenerationQuery] = useState("");
 
   // Navigation is now handled inside GenerationOverlay after the "ready" moment
+
+  // Clear skill filter when category or query changes
+  useEffect(() => { setSkillFilter(null); }, [category, query]);
 
   // Build a progress lookup map from in-progress paths
   const progressMap = useMemo(() => {
@@ -256,12 +266,21 @@ export function LearnPage() {
     return [...inProgressPathObjs, ...otherPaths];
   }, [discoveryPaths, inProgressPaths]);
 
-  // Apply category filter
+  // Apply category + skill filter
   const filteredPaths = useMemo(() => {
-    if (category === "all") return allPaths;
-    if (category === "in-progress") return allPaths.filter((p) => progressMap.has(p.id));
-    return allPaths.filter((p) => pathMatchesCategory(p, category));
-  }, [allPaths, category, progressMap]);
+    let paths = allPaths;
+    if (category === "in-progress") {
+      paths = paths.filter((p) => progressMap.has(p.id));
+    } else if (category !== "all") {
+      paths = paths.filter((p) => pathMatchesCategory(p, category));
+    }
+    if (skillFilter) {
+      paths = paths.filter((p) =>
+        p.skill_tags?.some((t) => t.skill_slug === skillFilter.slug)
+      );
+    }
+    return paths;
+  }, [allPaths, category, progressMap, skillFilter]);
 
   // Apply sort
   const sortedPaths = useMemo(() => {
@@ -311,6 +330,13 @@ export function LearnPage() {
   const handleCardClick = useCallback(
     (pathId: string) => {
       window.location.href = `/learn/paths/${pathId}`;
+    },
+    [],
+  );
+
+  const handleSkillClick = useCallback(
+    (slug: string, name: string) => {
+      setSkillFilter((prev) => (prev?.slug === slug ? null : { slug, name }));
     },
     [],
   );
@@ -483,6 +509,69 @@ export function LearnPage() {
         </p>
       )}
 
+      {/* Skill-based recommendations (discovery mode only) */}
+      {!query && recommendations.length > 0 && (
+        <SkillRecommendations recommendations={recommendations} />
+      )}
+
+      {/* Weekly digest card (discovery mode only) */}
+      {!query && <WeeklyDigestCard />}
+
+      {/* Trending skills pills (discovery mode only) */}
+      {!query && trending.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <span className="text-xs text-[var(--color-text-tertiary)] shrink-0">
+            Trending:
+          </span>
+          {trending.slice(0, 5).map((ms) => {
+            const name = ms.skill_slug
+              .split("-")
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" ");
+            const isActive = skillFilter?.slug === ms.skill_slug;
+            return (
+              <button
+                key={ms.skill_slug}
+                type="button"
+                onClick={() => handleSkillClick(ms.skill_slug, name)}
+                className="inline-flex items-center gap-1 shrink-0 rounded-full px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer"
+                style={{
+                  background: isActive
+                    ? "var(--color-amber-600)"
+                    : "var(--color-bg-hover)",
+                  color: isActive
+                    ? "var(--color-text-inverse)"
+                    : "var(--color-text-secondary)",
+                }}
+              >
+                <TrendingUp size={10} />
+                {name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Skill filter chip */}
+      {skillFilter && (
+        <div className="mb-3 flex items-center gap-2">
+          <span className="text-xs text-[var(--color-text-tertiary)]">
+            Filtered by:
+          </span>
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors hover:bg-[var(--color-bg-active)]"
+            style={{
+              background: "var(--color-bg-hover)",
+              color: "var(--color-text-secondary)",
+            }}
+            onClick={() => setSkillFilter(null)}
+          >
+            {skillFilter.name}
+            <X size={12} />
+          </span>
+        </div>
+      )}
+
       {/* Section header + grid */}
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
@@ -541,6 +630,7 @@ export function LearnPage() {
               path={path}
               progress={progressMap.get(path.id) ?? null}
               onClick={handleCardClick}
+              onSkillClick={handleSkillClick}
             />
           ))}
         </div>

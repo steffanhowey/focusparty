@@ -229,6 +229,8 @@ export interface LearningPath {
     skill_name: string;
     domain_name: string;
     relevance: "primary" | "secondary";
+    /** User's current fluency (populated only in path detail for authenticated users) */
+    user_fluency?: string;
   }>;
 }
 
