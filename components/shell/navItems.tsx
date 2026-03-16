@@ -15,8 +15,8 @@ export const NAV_ITEMS: Array<{
   label: string;
   icon: LucideIcon;
 }> = [
-  { id: "practice", href: "/practice", label: "Practice", icon: Users },
   { id: "learn", href: "/learn", label: "Learn", icon: BookOpen },
+  { id: "practice", href: "/practice", label: "Practice", icon: Users },
   { id: "goals", href: "/goals", label: "Goals", icon: Target },
   { id: "stats", href: "/stats", label: "Stats", icon: BarChart3 },
   { id: "settings", href: "/settings", label: "Settings", icon: Settings },

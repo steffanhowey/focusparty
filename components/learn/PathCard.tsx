@@ -10,10 +10,10 @@ interface PathCardProps {
   onClick: (pathId: string) => void;
 }
 
-const DIFFICULTY_COLORS: Record<string, string> = {
-  beginner: "var(--color-green-700)",
-  intermediate: "var(--color-cyan-700)",
-  advanced: "var(--color-coral-700)",
+const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
+  beginner: { label: "Beginner", color: "var(--color-green-700)" },
+  intermediate: { label: "Intermediate", color: "var(--color-cyan-700)" },
+  advanced: { label: "Advanced", color: "var(--color-coral-700)" },
 };
 
 function formatDuration(seconds: number): string {
@@ -77,17 +77,17 @@ export function PathCard({ path, progress, onClick }: PathCardProps) {
           </div>
         )}
 
-        {/* Difficulty badge */}
+        {/* Difficulty badge — matches FeaturedRoom overlay badge pattern */}
         <span
-          className="absolute top-2 left-2 rounded px-2 py-0.5 text-xs font-medium"
+          className="absolute top-3 left-3 rounded-full px-2.5 py-1 text-2xs font-semibold backdrop-blur-md"
           style={{
-            background:
-              DIFFICULTY_COLORS[path.difficulty_level] ??
+            background: "rgba(0,0,0,0.5)",
+            color:
+              DIFFICULTY_CONFIG[path.difficulty_level]?.color ??
               "var(--color-cyan-700)",
-            color: "white",
           }}
         >
-          {path.difficulty_level}
+          {DIFFICULTY_CONFIG[path.difficulty_level]?.label ?? path.difficulty_level}
         </span>
 
         {/* Progress bar overlay at bottom */}

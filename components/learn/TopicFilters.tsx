@@ -20,14 +20,13 @@ export function TopicFilters({ topics, selected, onToggle }: TopicFiltersProps) 
           <button
             key={slug}
             onClick={() => onToggle(slug)}
-            className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
+            className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-md transition-colors"
             style={{
               background: isActive
                 ? "var(--color-accent-primary)"
-                : "var(--color-bg-hover)",
-              color: isActive
-                ? "white"
-                : "var(--color-text-secondary)",
+                : "rgba(0,0,0,0.35)",
+              color: isActive ? "white" : "rgba(255,255,255,0.8)",
+              border: `1px solid ${isActive ? "transparent" : "rgba(255,255,255,0.15)"}`,
             }}
           >
             {slug}

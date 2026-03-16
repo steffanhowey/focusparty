@@ -328,38 +328,38 @@ export function LearnPage() {
           className="object-cover"
           priority
         />
-        {/* Dark overlay for text readability */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ background: "rgba(0,0,0,0.65)" }}
-        />
-
         <div className="relative w-full space-y-4 px-4 md:space-y-6 md:px-10">
-          {/* Title + subtitle */}
+          {/* Title + subtitle — text shadow for legibility on any image */}
           <div className="text-center space-y-2 md:space-y-3">
-            <h1 className="text-2xl font-bold text-white md:text-4xl">
+            <h1
+              className="text-2xl font-bold text-white md:text-4xl"
+              style={{ textShadow: "0 2px 12px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.5)" }}
+            >
               What do you want to learn?
             </h1>
-            <p className="text-xs text-white/50 md:text-base">
+            <p
+              className="text-xs text-white/80 md:text-base"
+              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.7), 0 1px 2px rgba(0,0,0,0.5)" }}
+            >
               AI-curated learning paths from the best creators across the internet
             </p>
           </div>
 
-          {/* Search Input */}
+          {/* Search Input — frosted glass so image shows through */}
           <div className="relative max-w-2xl mx-auto">
             <Search
               size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60"
             />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search topics, skills, or keywords..."
-              className="w-full pl-11 pr-4 py-2.5 md:py-3 rounded-xl text-sm border text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
+              className="w-full pl-11 pr-4 py-2.5 md:py-3 rounded-xl text-sm border text-white placeholder:text-white/50 backdrop-blur-md focus:outline-none focus:border-white/30 transition-colors"
               style={{
-                background: "rgba(255,255,255,0.06)",
-                borderColor: "rgba(255,255,255,0.1)",
+                background: "rgba(0,0,0,0.35)",
+                borderColor: "rgba(255,255,255,0.2)",
               }}
             />
             {isLoading && (
