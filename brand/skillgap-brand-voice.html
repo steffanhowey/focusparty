@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillGap.ai — Brand Voice &amp; Positioning</title>
+<style>
+/* ═══════════════ TOKENS ═══════════════ */
+:root {
+  --sg-forest-900: #0F1D15;
+  --sg-forest-800: #162B1E;
+  --sg-forest-700: #1E3A2C;
+  --sg-forest-600: #2A5340;
+  --sg-forest-500: #3A7D53;
+  --sg-forest-400: #4A9D66;
+  --sg-forest-300: #6BBF87;
+  --sg-forest-200: #A8DDB8;
+  --sg-forest-100: #D4F0DC;
+  --sg-forest-50:  #EFF9F2;
+
+  --sg-shell-900: #1A1A1A;
+  --sg-shell-800: #2E2E2E;
+  --sg-shell-700: #424242;
+  --sg-shell-600: #5C5C5C;
+  --sg-shell-500: #787878;
+  --sg-shell-400: #9E9E9E;
+  --sg-shell-300: #BFBFBF;
+  --sg-shell-200: #E0E0E0;
+  --sg-shell-100: #F0F0F0;
+  --sg-shell-50:  #F7F7F7;
+  --sg-shell-border: #E5E5E5;
+
+  --sg-sage-900: #1A1F1B;
+  --sg-sage-700: #2E3830;
+  --sg-sage-500: #6B7C6F;
+  --sg-sage-300: #A8B5AB;
+  --sg-sage-100: #E8EDE9;
+
+  --sg-radius-sm: 6px;
+  --sg-radius-md: 10px;
+  --sg-radius-lg: 14px;
+}
+
+/* ═══════════════ BASE ═══════════════ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--sg-shell-50);
+  color: var(--sg-shell-900);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════ LAYOUT ═══════════════ */
+.doc-header {
+  background: var(--sg-forest-700);
+  color: white;
+  padding: 64px 48px 56px;
+}
+.doc-header .logo {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 32px;
+  letter-spacing: -0.01em;
+}
+.doc-header .logo span { color: var(--sg-forest-300); }
+.doc-header h1 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+.doc-header .subtitle {
+  font-size: 17px;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+  max-width: 600px;
+}
+.doc-header .meta {
+  margin-top: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.35);
+}
+
+.content {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+
+/* ═══════════════ SECTIONS ═══════════════ */
+.section {
+  margin-bottom: 64px;
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sg-forest-500);
+  margin-bottom: 8px;
+}
+.section h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+.section h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  margin-top: 32px;
+}
+.section p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--sg-shell-700);
+  margin-bottom: 16px;
+}
+.section p strong { color: var(--sg-shell-900); }
+
+/* ═══════════════ POSITIONING STATEMENT ═══════════════ */
+.positioning-block {
+  background: var(--sg-forest-700);
+  color: white;
+  border-radius: var(--sg-radius-lg);
+  padding: 40px 36px;
+  margin: 24px 0 32px;
+}
+.positioning-block .label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 16px;
+}
+.positioning-block .statement {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 22px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.positioning-block .statement em {
+  font-style: italic;
+  color: var(--sg-forest-200);
+}
+
+/* ═══════════════ VOICE TRAITS ═══════════════ */
+.traits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 24px 0 32px;
+}
+.trait-card {
+  background: white;
+  border: 1px solid var(--sg-shell-border);
+  border-radius: var(--sg-radius-md);
+  padding: 24px;
+}
+.trait-card .trait-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--sg-shell-900);
+}
+.trait-card .trait-sub {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sg-forest-500);
+  margin-bottom: 10px;
+}
+.trait-card .trait-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sg-shell-600);
+}
+
+/* ═══════════════ SPECTRUM ═══════════════ */
+.spectrum-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.spectrum-row .pole {
+  width: 120px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--sg-shell-500);
+  flex-shrink: 0;
+}
+.spectrum-row .pole:last-child {
+  text-align: left;
+}
+.spectrum-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--sg-shell-100);
+  border-radius: 4px;
+  position: relative;
+}
+.spectrum-bar .marker {
+  position: absolute;
+  top: -4px;
+  width: 16px;
+  height: 16px;
+  background: var(--sg-forest-500);
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* ═══════════════ DO / DON'T ═══════════════ */
+.examples-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0 28px;
+}
+.example-col {
+  border-radius: var(--sg-radius-md);
+  padding: 20px;
+}
+.example-col.do {
+  background: var(--sg-forest-50);
+  border: 1px solid var(--sg-forest-100);
+}
+.example-col.dont {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+}
+.example-col .col-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+.example-col.do .col-label { color: var(--sg-forest-500); }
+.example-col.dont .col-label { color: #DC2626; }
+
+.example-item {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sg-shell-700);
+  margin-bottom: 12px;
+  padding-left: 16px;
+  position: relative;
+}
+.example-item:last-child { margin-bottom: 0; }
+.example-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.example-col.do .example-item::before { background: var(--sg-forest-400); }
+.example-col.dont .example-item::before { background: #EF4444; }
+
+/* ═══════════════ CONTEXT TABLE ═══════════════ */
+.context-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0 28px;
+  font-size: 14px;
+}
+.context-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sg-shell-500);
+  padding: 10px 16px;
+  border-bottom: 2px solid var(--sg-shell-200);
+}
+.context-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--sg-shell-100);
+  vertical-align: top;
+  line-height: 1.5;
+  color: var(--sg-shell-700);
+}
+.context-table td:first-child {
+  font-weight: 600;
+  color: var(--sg-shell-900);
+  white-space: nowrap;
+}
+
+/* ═══════════════ VOCABULARY ═══════════════ */
+.vocab-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0 28px;
+}
+.vocab-col {
+  background: white;
+  border: 1px solid var(--sg-shell-border);
+  border-radius: var(--sg-radius-md);
+  padding: 20px;
+}
+.vocab-col .vocab-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+.vocab-col.use .vocab-label { color: var(--sg-forest-500); }
+.vocab-col.avoid .vocab-label { color: #DC2626; }
+
+.vocab-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--sg-shell-100);
+  font-size: 14px;
+}
+.vocab-item:last-child { border-bottom: none; }
+.vocab-item .word { font-weight: 600; color: var(--sg-shell-900); }
+.vocab-item .note { font-size: 12px; color: var(--sg-shell-500); }
+
+/* ═══════════════ QUOTE BLOCK ═══════════════ */
+.voice-sample {
+  background: white;
+  border: 1px solid var(--sg-shell-border);
+  border-left: 3px solid var(--sg-forest-500);
+  border-radius: 0 var(--sg-radius-md) var(--sg-radius-md) 0;
+  padding: 20px 24px;
+  margin: 16px 0;
+}
+.voice-sample .sample-context {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sg-forest-500);
+  margin-bottom: 8px;
+}
+.voice-sample .sample-text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--sg-shell-800);
+}
+
+/* ═══════════════ DIVIDER ═══════════════ */
+.divider {
+  height: 1px;
+  background: var(--sg-shell-200);
+  margin: 48px 0;
+}
+
+/* ═══════════════ CALLOUT ═══════════════ */
+.callout {
+  background: var(--sg-sage-100);
+  border-radius: var(--sg-radius-md);
+  padding: 20px 24px;
+  margin: 20px 0 28px;
+}
+.callout .callout-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sg-sage-700);
+  margin-bottom: 6px;
+}
+.callout .callout-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sg-sage-700);
+}
+
+/* ═══════════════ NUMBERED LIST ═══════════════ */
+.numbered-list {
+  counter-reset: list-counter;
+  margin: 16px 0 24px;
+}
+.numbered-item {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 16px;
+  counter-increment: list-counter;
+}
+.numbered-item::before {
+  content: counter(list-counter);
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: var(--sg-forest-50);
+  color: var(--sg-forest-600);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.numbered-item .item-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--sg-shell-700);
+  padding-top: 2px;
+}
+.numbered-item .item-content strong { color: var(--sg-shell-900); }
+
+/* ═══════════════ TONE DIAL ═══════════════ */
+.tone-context {
+  background: white;
+  border: 1px solid var(--sg-shell-border);
+  border-radius: var(--sg-radius-md);
+  padding: 20px 24px;
+  margin-bottom: 12px;
+}
+.tone-context .tone-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sg-shell-900);
+  margin-bottom: 4px;
+}
+.tone-context .tone-desc {
+  font-size: 13px;
+  color: var(--sg-shell-500);
+  line-height: 1.5;
+}
+.tone-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.tone-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--sg-forest-50);
+  color: var(--sg-forest-600);
+}
+
+/* ═══════════════ CANVAS GRID ═══════════════ */
+.canvas-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+.canvas-card {
+  background: white;
+  border: 1px solid var(--sg-shell-border);
+  border-radius: var(--sg-radius-md);
+  padding: 18px 20px;
+}
+.canvas-card-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sg-shell-900);
+  margin-bottom: 6px;
+}
+.canvas-card-body {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--sg-shell-600);
+}
+.canvas-card-body p { font-size: 13.5px; color: var(--sg-shell-600); }
+.canvas-grid .canvas-card:nth-child(5) {
+  grid-column: 1 / -1;
+}
+
+/* ═══════════════ RESPONSIVE ═══════════════ */
+@media (max-width: 680px) {
+  .doc-header { padding: 40px 24px 36px; }
+  .doc-header h1 { font-size: 30px; }
+  .content { padding: 32px 20px 64px; }
+  .traits-grid, .examples-grid, .vocab-grid, .canvas-grid { grid-template-columns: 1fr; }
+  .canvas-grid .canvas-card:nth-child(5) { grid-column: auto; }
+  .spectrum-row .pole { width: 80px; font-size: 11px; }
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- HEADER                                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="doc-header">
+  <div class="logo">Skill<span>Gap</span>.ai</div>
+  <h1>Brand Voice &amp; Positioning</h1>
+  <div class="subtitle">How SkillGap sounds, feels, and speaks — across every surface, to every audience, in every context.</div>
+  <div class="meta">Living document · v1.0 · March 2026</div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 00. POSITIONING CANVAS (DUNFORD METHOD)        -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">00 · Positioning Canvas</div>
+  <h2>The strategic inputs that drive everything below</h2>
+
+  <p>Voice is an output of positioning. Before deciding how to sound, you need clarity on what you're saying, to whom, and against what. This canvas follows <strong>April Dunford's positioning framework</strong> — competitive alternatives first, then unique attributes, value themes, best-fit customer, and market category. Every voice decision in this document derives from these inputs.</p>
+
+  <div class="callout">
+    <div class="callout-title">Why the order matters</div>
+    <div class="callout-body">Dunford's insight is that positioning components are interdependent and must be worked in sequence. Your differentiation only matters relative to what customers would do instead. Your value only matters to customers who care about that specific differentiation. And the market category you choose determines the expectations buyers bring — which determines how your voice needs to land.</div>
+  </div>
+
+  <h3>1. Competitive alternatives</h3>
+  <p><em>What would our best-fit customers do if SkillGap didn't exist?</em></p>
+  <p>Not "who are our competitors" — the real question is what behavior we're replacing. Our best-fit customer's actual alternatives are:</p>
+
+  <div class="canvas-grid">
+    <div class="canvas-card">
+      <div class="canvas-card-label">DIY YouTube rabbit holes</div>
+      <div class="canvas-card-body">Open YouTube, search "learn Cursor," get 47 results of wildly varying quality, watch 3, close the tab. No structure, no practice, no feedback. The most common alternative — and the one that most often ends in nothing changing.</div>
+    </div>
+    <div class="canvas-card">
+      <div class="canvas-card-label">Follow the timeline</div>
+      <div class="canvas-card-body">Scroll Twitter/LinkedIn, click whatever AI thread is trending, read it, feel temporarily informed, forget it by Friday. Passive absorption that feels like learning but produces no capability.</div>
+    </div>
+    <div class="canvas-card">
+      <div class="canvas-card-label">Ask a friend who's ahead</div>
+      <div class="canvas-card-body">DM the colleague who seems to have figured this out. Get a few tool recommendations and a link to a tutorial. Works once, doesn't scale, depends on having the right friend.</div>
+    </div>
+    <div class="canvas-card">
+      <div class="canvas-card-label">Buy a course and never finish it</div>
+      <div class="canvas-card-body">Enroll in a Udemy/Coursera course. Watch 20% of it. Hit a wall where you'd need to actually do something. Close the tab. The $30 purchase feels like progress, but nothing changes.</div>
+    </div>
+    <div class="canvas-card">
+      <div class="canvas-card-label">Do nothing and hope</div>
+      <div class="canvas-card-body">The most dangerous alternative. Tell yourself you'll get to it next week. Rationalize that your current skills are "probably fine." Watch the gap grow quietly. This is the default — and the one we're most often competing against.</div>
+    </div>
+  </div>
+
+  <p><strong>The pattern across all alternatives:</strong> they either lack structure (YouTube, timeline), lack practice (courses, articles), lack accountability (everything solo), or lack currency (courses outdated in months). SkillGap's positioning needs to land against <em>all five failure modes</em> simultaneously.</p>
+
+  <h3>2. Unique attributes</h3>
+  <p><em>What can we do that those alternatives genuinely cannot?</em></p>
+
+  <div class="canvas-grid">
+    <div class="canvas-card">
+      <div class="canvas-card-label">Always-current intelligence engine</div>
+      <div class="canvas-card-body">Monitors AI landscape across YouTube, Reddit, HN, RSS feeds 24/7. Detects what's trending, surfaces what matters, generates learning paths from this week's best content. A course published 4 months ago can't do this. YouTube's algorithm doesn't prioritize quality for your specific role.</div>
+    </div>
+    <div class="canvas-card">
+      <div class="canvas-card-label">Task-first, role-adapted paths</div>
+      <div class="canvas-card-body">30–60 min experiences where 70% is doing, not watching. Missions use real tools (Cursor, Claude, ChatGPT — not simulations). Adapted by function and fluency level. The same topic produces different paths for a marketer vs. an engineer. No course platform dynamically adapts like this.</div>
+    </div>
+    <div class="canvas-card">
+      <div class="canvas-card-label">Verified skill graph</div>
+      <div class="canvas-card-body">A personal, portable record of capabilities — built by doing, not self-reporting. Every skill is backed by completed missions with AI-evaluated proficiency. Shows adjacencies: the shortest bridges to new capabilities based on what you've already demonstrated. LinkedIn endorsements can't do this. Certificates don't capture fluency levels.</div>
+    </div>
+    <div class="canvas-card">
+      <div class="canvas-card-label">Live practice rooms</div>
+      <div class="canvas-card-body">Persistent spaces where professionals sprint together. AI hosts that connect people working on related problems. The social accountability that makes the hard thing easier. YouTube is lonely. Courses are lonely. Rooms break the isolation.</div>
+    </div>
+    <div class="canvas-card">
+      <div class="canvas-card-label">Editorial curation with a point of view</div>
+      <div class="canvas-card-body">We reject more than we accept. Trusted creators, quality-scored content, human-crafted taste profiles. The restraint is the product. YouTube's algorithm optimizes for clicks. We optimize for "was this worth 38 minutes of a professional's time."</div>
+    </div>
+  </div>
+
+  <h3>3. Value themes</h3>
+  <p><em>Each unique attribute produces a "so what?" — a measurable outcome the customer cares about.</em></p>
+
+  <table class="context-table">
+    <thead>
+      <tr>
+        <th>Unique Attribute</th>
+        <th>Value to the Customer</th>
+        <th>Messaging Pillar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Intelligence engine</td>
+        <td>You never learn something outdated. There's a path ready before you search.</td>
+        <td><strong>We show you what matters right now.</strong></td>
+      </tr>
+      <tr>
+        <td>Task-first paths</td>
+        <td>You can actually do the thing after 40 minutes — not just describe it.</td>
+        <td><strong>You learn by doing, not watching.</strong></td>
+      </tr>
+      <tr>
+        <td>Role-adapted + time-bound</td>
+        <td>Fits your real schedule. Relevant to your actual job. No wasted time on generic content.</td>
+        <td><strong>40 minutes is enough.</strong></td>
+      </tr>
+      <tr>
+        <td>Verified skill graph</td>
+        <td>You can see and prove your progress. Your skills are portable across employers.</td>
+        <td><strong>Your skills are yours.</strong></td>
+      </tr>
+      <tr>
+        <td>Live practice rooms</td>
+        <td>Social accountability breaks the isolation. Other people doing the hard thing makes it easier.</td>
+        <td><strong>You're not learning alone.</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Notice:</strong> the five messaging pillars in this document aren't aspirational slogans. They're the direct value translations of SkillGap's unique attributes, mapped against what the competitive alternatives fail to deliver. This is why they work — they're structurally true, not just emotionally appealing.</p>
+
+  <h3>4. Best-fit customer</h3>
+  <p><em>Who cares most about these specific value themes? What makes them different from the general market?</em></p>
+
+  <div class="canvas-card" style="margin: 16px 0 24px; max-width: 100%;">
+    <div class="canvas-card-label">The "closed-tab professional"</div>
+    <div class="canvas-card-body">
+      <p style="margin-bottom: 12px;">They've already tried to learn AI on their own and hit a wall. They opened YouTube, got overwhelmed by quantity and inconsistent quality, and closed the tab. They bought a course and watched 20%. They read the threads and felt informed for a day. <strong>They've experienced the failure of every competitive alternative firsthand.</strong></p>
+      <p style="margin-bottom: 12px;">This matters because they don't need to be convinced that the problem exists — they've lived it. They need to be convinced that <em>this time</em> will be different. Our messaging doesn't need to create urgency. It needs to earn trust from someone who's been let down by learning products before.</p>
+      <p style="margin-bottom: 0;">Characteristics: mid-career (5–15 years experience), employed, competent in their domain, company expects AI adoption but hasn't provided structured training. They have budget authority for a $20–50/mo tool. They're more likely to be in marketing, product, or data than in deep engineering (engineers have more organic paths to AI tools).</p>
+    </div>
+  </div>
+
+  <h3>5. Market category</h3>
+  <p><em>What frame of reference puts our strengths at the center?</em></p>
+
+  <p>"Online learning" is a death sentence — we'd be a rounding error against Coursera, LinkedIn Learning, and Udemy, and the category carries expectations (long courses, passive video, certificates of completion) that actively work against our positioning. "Corporate training" triggers procurement cycles and L&D jargon. "AI tools directory" misses the learning entirely.</p>
+
+  <div class="examples-grid">
+    <div class="example-col dont">
+      <div class="col-label">Categories that hurt us</div>
+      <div class="example-item"><strong>Online learning platform</strong> — expectations of long courses, passive video, completion certificates. We'd be compared to Coursera and lose.</div>
+      <div class="example-item"><strong>Corporate training / L&D</strong> — triggers procurement language, slow sales cycles, and the exact jargon our audience hates.</div>
+      <div class="example-item"><strong>AI tools directory / newsletter</strong> — positions us as a content aggregator, not a learning system. No defensibility.</div>
+    </div>
+    <div class="example-col do">
+      <div class="col-label">Categories that help us</div>
+      <div class="example-item"><strong>AI fluency system</strong> — new category, sets our own expectations. "Fluency" implies practice and progression, not passive consumption. "System" implies it works for you, not just at you.</div>
+      <div class="example-item"><strong>Professional practice platform</strong> — emphasizes doing over watching, professional context over student context. Risk: might sound too abstract for cold audiences.</div>
+      <div class="example-item"><strong>AI skills gym</strong> — visceral, clear metaphor. You go to a gym to practice, not to watch someone else lift. Risk: might sound too casual for enterprise expansion.</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Current recommendation</div>
+    <div class="callout-body"><strong>"AI fluency system for working professionals"</strong> — used in positioning contexts where we need a category descriptor. In consumer-facing copy, we don't need to name the category explicitly. We describe what we do: "Where working professionals build AI fluency." The category is implicit in the description. Dunford would say: you only need to name the category when the audience needs a frame of reference to understand what you are. Our best-fit customer doesn't need a category name — they need to hear the value.</div>
+  </div>
+
+  <h3>How this canvas drives voice</h3>
+
+  <p>Every voice decision below derives from these five inputs:</p>
+
+  <div class="numbered-list">
+    <div class="numbered-item">
+      <div class="item-content"><strong>We sound like a calm guide</strong> because our best-fit customer has been overwhelmed by noise (competitive alternative: YouTube rabbit holes) and let down by hype (competitive alternative: courses they didn't finish). They need steadiness, not more excitement.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>We sound direct and specific</strong> because vague promises are what courses use ("master AI!"), and our differentiation is concrete: 38 minutes, 4 missions, Prompt Engineering at Practicing level. Specificity <em>is</em> our trust signal.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>We sound warm but not cute</strong> because our audience is mid-career professionals with real competence and real anxiety. Cute undermines their intelligence. Cold ignores their vulnerability. Warmth respects both.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>We say "the gap is growing" without apology</strong> because our market point of view — AI fluency is a widening gap with real professional consequences — is the insight that makes our product necessary. Dunford calls this the "setup": teaching the customer how to think about the market before you pitch the solution. The gap framing isn't fear. It's our honest read on reality.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>"Close the gap" works as a tagline</strong> because it names the tension the customer already feels, just like Figma's "Nothing great is made alone" names a truth its audience already believes. The best positioning doesn't create a new feeling — it articulates one the customer couldn't quite put words to.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 1. POSITIONING                                 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">01 · Positioning Statement</div>
+  <h2>What we are, and what we're not</h2>
+
+  <p>SkillGap.ai is where working professionals build AI fluency. Not a course catalog. Not a tutorial library. Not a certification mill. A system that watches the AI landscape, turns what matters into hands-on learning you can finish in a lunch break, and puts you in rooms with other professionals doing the same hard thing.</p>
+
+  <p>We exist because the gap between "AI-curious" and "AI-fluent" is growing every week — and the people in the middle are busy, smart, and underserved. They don't need more content. They need the <em>right</em> content, a push to actually use the tools, and the company of people who understand the urgency.</p>
+
+  <div class="positioning-block">
+    <div class="label">Positioning Statement</div>
+    <div class="statement">For working professionals who see AI transforming their field and feel the urgency to keep up, <em>SkillGap.ai</em> is the learning system that turns that urgency into fluency — through curated, task-first experiences you can finish in 40 minutes, practiced alongside other professionals who share your drive.</div>
+  </div>
+
+  <p>Unlike static courses that are outdated before you finish them, SkillGap's intelligence engine stays current automatically — so there's a learning path ready before you search for it, built from this week's best content, adapted to your role and fluency level.</p>
+
+  <h3>The one-line pitch</h3>
+  <p><strong>"Close the gap."</strong> Three words. Four meanings. Personal (I feel behind, I want to catch up), professional (there's a measurable gap between where I am and where my field demands), structural (the economy is shifting from roles to skills), and visible (here's my skill portfolio, here's exactly where I'm behind).</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 2. WHO WE'RE TALKING TO                        -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">02 · Audience</div>
+  <h2>Who we're talking to</h2>
+
+  <p>Mid-career professionals — engineers, marketers, designers, PMs, data analysts, operators, founders — who are already good at what they do, but feel the ground shifting. They're not beginners. They're not hobbyists. They have 40 minutes, not 40 hours. They've watched the tutorials and still can't do the thing.</p>
+
+  <p>Our audience shares a specific emotional state: <strong>competent anxiety.</strong> They're not panicking. They're not clueless. They're quietly aware that the distance between where they are and where their field is heading is growing — and that awareness is what drives them to act.</p>
+
+  <div class="callout">
+    <div class="callout-title">The internal monologue we're responding to</div>
+    <div class="callout-body">"I know I need to learn this. I just don't know where to start, I don't have all day, and I'm tired of watching tutorials that don't actually teach me to do anything. I want someone to cut through the noise and show me what matters — then push me to actually use it."</div>
+  </div>
+
+  <p>This is not an audience that responds to hype. They've seen enough LinkedIn posts about "10x productivity." They want substance, not sizzle. Respect their intelligence. Earn their trust by being useful, not loud.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 3. VOICE PERSONALITY                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">03 · Voice Personality</div>
+  <h2>Who we sound like</h2>
+
+  <p>SkillGap's voice is <strong>the calm guide</strong> — warm, knowledgeable, and steady. Not a teacher lecturing from a stage. Not a peer yelling from a Slack channel. The person you'd actually trust to tell you what to focus on and what to skip. Someone who respects your pace but won't let you drift.</p>
+
+  <p>Think: the best mentor you've ever had. They never talked down to you. They never rushed you. They made complex things feel approachable without dumbing them down. They had a point of view, but they held it lightly. And most importantly — when they told you something mattered, you believed them, because they'd earned that trust by being right before.</p>
+
+  <div class="traits-grid">
+    <div class="trait-card">
+      <div class="trait-name">Warm, not cute</div>
+      <div class="trait-sub">Approachable</div>
+      <div class="trait-desc">We're friendly without trying hard. No mascots, no forced excitement, no exclamation marks doing emotional labor. Warmth comes from the way we respect you — acknowledging where you are, meeting you there, and making the next step feel manageable.</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-name">Honest, not blunt</div>
+      <div class="trait-sub">Direct</div>
+      <div class="trait-desc">We say what we mean. Short sentences when short sentences work. We don't hide behind jargon or hedge with qualifiers. But directness isn't coldness — we say hard things ("the gap is growing") with care, not alarm.</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-name">Opinionated, not preachy</div>
+      <div class="trait-sub">Confident</div>
+      <div class="trait-desc">We have a point of view about what matters and what's noise. That editorial confidence is the product. But we hold our opinions lightly — we'll tell you what we think, not insist you agree. We curate. We don't lecture.</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-name">Grounded, not hype</div>
+      <div class="trait-sub">Substantive</div>
+      <div class="trait-desc">We never oversell. No "revolutionize your workflow." No "unlock your potential." We talk about specific skills, concrete outcomes, and real time commitments. If something takes 38 minutes, we say 38 minutes — not "quick" or "easy."</div>
+    </div>
+  </div>
+
+  <h3>The reference blend</h3>
+  <p>Our voice sits at the intersection of <strong>Skillshare's creative encouragement</strong> and <strong>Figma's practitioner energy</strong>. From Skillshare: the genuine belief that anyone can learn this, the warmth, the sense that you're joining a community not enrolling in an institution. From Figma: the peer-to-peer respect, the assumption that you're a practitioner not a student, the builder energy that values doing over discussing.</p>
+
+  <p>What we take from neither: Skillshare's occasional "follow your creative dreams" softness (our audience has careers, not dreams), or Figma's occasional insider-ism (we're accessible to people who haven't started yet, not just people already deep in).</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 4. TONE SPECTRUM                               -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">04 · Tone Spectrum</div>
+  <h2>Where we sit</h2>
+
+  <p>Voice is constant. Tone flexes by context. These spectrums define where SkillGap lands — not dead center on anything, but deliberately placed.</p>
+
+  <div style="margin: 28px 0;">
+    <div class="spectrum-row">
+      <div class="pole">Formal</div>
+      <div class="spectrum-bar"><div class="marker" style="left: 28%;"></div></div>
+      <div class="pole">Casual</div>
+    </div>
+    <div class="spectrum-row">
+      <div class="pole">Serious</div>
+      <div class="spectrum-bar"><div class="marker" style="left: 35%;"></div></div>
+      <div class="pole">Playful</div>
+    </div>
+    <div class="spectrum-row">
+      <div class="pole">Authoritative</div>
+      <div class="spectrum-bar"><div class="marker" style="left: 40%;"></div></div>
+      <div class="pole">Approachable</div>
+    </div>
+    <div class="spectrum-row">
+      <div class="pole">Direct</div>
+      <div class="spectrum-bar"><div class="marker" style="left: 30%;"></div></div>
+      <div class="pole">Diplomatic</div>
+    </div>
+    <div class="spectrum-row">
+      <div class="pole">Aspirational</div>
+      <div class="spectrum-bar"><div class="marker" style="left: 55%;"></div></div>
+      <div class="pole">Practical</div>
+    </div>
+  </div>
+
+  <p>We lean slightly casual over formal, slightly serious over playful. We're more direct than diplomatic — but never sharp. We skew practical over aspirational, except in brand moments (milestone emails, credential shares) where we earn the right to be briefly elevated.</p>
+
+  <h3>Tone by context</h3>
+
+  <div class="tone-context">
+    <div class="tone-label">Marketing site &amp; landing pages</div>
+    <div class="tone-desc">Our most confident voice. Clear value propositions, short sentences, grounded claims. We can be slightly more elevated here — this is where we earn first impressions. But never hype. Let the specificity do the selling.</div>
+    <div class="tone-tags">
+      <span class="tone-tag">Confident</span>
+      <span class="tone-tag">Specific</span>
+      <span class="tone-tag">Warm</span>
+    </div>
+  </div>
+
+  <div class="tone-context">
+    <div class="tone-label">Product UI &amp; microcopy</div>
+    <div class="tone-desc">Our most minimal voice. Get out of the way. Guide without narrating. Short, clear, invisible when it's working well. Personality comes through in moments of delight (empty states, completion moments), not in every label.</div>
+    <div class="tone-tags">
+      <span class="tone-tag">Minimal</span>
+      <span class="tone-tag">Clear</span>
+      <span class="tone-tag">Invisible</span>
+    </div>
+  </div>
+
+  <div class="tone-context">
+    <div class="tone-label">Emails</div>
+    <div class="tone-desc">Our warmest voice. Conversational, personal, like a message from someone who knows your name and remembers what you were working on. Transactional emails are brief and functional. Lifecycle emails earn the right to have a point of view.</div>
+    <div class="tone-tags">
+      <span class="tone-tag">Personal</span>
+      <span class="tone-tag">Conversational</span>
+      <span class="tone-tag">Concise</span>
+    </div>
+  </div>
+
+  <div class="tone-context">
+    <div class="tone-label">Room host &amp; AI interactions</div>
+    <div class="tone-desc">Our most peer-like voice. Casual, encouraging, brief. The AI host sounds like a thoughtful facilitator — never a chatbot. It notices, connects, and nudges without being overbearing. Contractions always. First names when possible.</div>
+    <div class="tone-tags">
+      <span class="tone-tag">Peer</span>
+      <span class="tone-tag">Encouraging</span>
+      <span class="tone-tag">Brief</span>
+    </div>
+  </div>
+
+  <div class="tone-context">
+    <div class="tone-label">Social media &amp; community</div>
+    <div class="tone-desc">Our most opinionated voice. We take stances on what matters in AI learning. We share what's worth your time and what's noise. Not snarky — thoughtful. We're the account you follow because it says something useful, not because it entertains.</div>
+    <div class="tone-tags">
+      <span class="tone-tag">Opinionated</span>
+      <span class="tone-tag">Useful</span>
+      <span class="tone-tag">Grounded</span>
+    </div>
+  </div>
+
+  <div class="tone-context">
+    <div class="tone-label">Milestone &amp; achievement moments</div>
+    <div class="tone-desc">Our most elevated voice. This is where we allow ourselves to be briefly aspirational. Completing a path, earning a credential, hitting a streak — these are real accomplishments. We mark them with weight and warmth, not confetti and exclamation marks.</div>
+    <div class="tone-tags">
+      <span class="tone-tag">Elevated</span>
+      <span class="tone-tag">Earned</span>
+      <span class="tone-tag">Warm</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 5. THE FOUR ANTI-PATTERNS                      -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">05 · Anti-Patterns</div>
+  <h2>What we never sound like</h2>
+
+  <p>These three anti-patterns are the clearest boundaries of our voice. If copy drifts toward any of them, it's off-brand — regardless of how "well-written" it might be.</p>
+
+  <h3>1. Corporate L&amp;D</h3>
+  <div class="examples-grid">
+    <div class="example-col dont">
+      <div class="col-label">Never</div>
+      <div class="example-item">"Upskill your workforce with our comprehensive learning solutions."</div>
+      <div class="example-item">"Leverage AI-powered insights to optimize your professional development journey."</div>
+      <div class="example-item">"Our platform enables organizations to accelerate digital transformation outcomes."</div>
+    </div>
+    <div class="example-col do">
+      <div class="col-label">Instead</div>
+      <div class="example-item">"Your team builds AI fluency by actually using the tools — not watching videos about them."</div>
+      <div class="example-item">"See which skills your team has, where the gaps are, and what to focus on next."</div>
+      <div class="example-item">"40-minute paths. Real tools. Skills your team can use Monday morning."</div>
+    </div>
+  </div>
+  <p><strong>Why this matters:</strong> Our audience has been subjected to corporate learning speak for their entire careers. It triggers immediate distrust. The moment we sound like an enterprise vendor pitching to procurement, we've lost the practitioner.</p>
+
+  <h3>2. Hustle / guru energy</h3>
+  <div class="examples-grid">
+    <div class="example-col dont">
+      <div class="col-label">Never</div>
+      <div class="example-item">"10x your productivity with AI — starting TODAY!"</div>
+      <div class="example-item">"The AI revolution is here. Are you ready? 🚀"</div>
+      <div class="example-item">"Join 50,000+ professionals who've TRANSFORMED their careers."</div>
+    </div>
+    <div class="example-col do">
+      <div class="col-label">Instead</div>
+      <div class="example-item">"Learn to use Cursor in 38 minutes. Build something real by the end."</div>
+      <div class="example-item">"AI tools are changing fast. We watch so you don't have to."</div>
+      <div class="example-item">"Practiced by 12,000 professionals this week."</div>
+    </div>
+  </div>
+  <p><strong>Why this matters:</strong> Our audience is allergic to hype. They've seen the LinkedIn posts. They've heard the promises. Breathless urgency doesn't inspire them — it makes them suspicious. We earn trust by being specific, not loud.</p>
+
+  <h3>3. Academic / dry</h3>
+  <div class="examples-grid">
+    <div class="example-col dont">
+      <div class="col-label">Never</div>
+      <div class="example-item">"This module covers the foundational principles of prompt engineering."</div>
+      <div class="example-item">"Upon completion of this learning path, participants will have demonstrated..."</div>
+      <div class="example-item">"The curriculum has been designed to progressively scaffold competencies."</div>
+    </div>
+    <div class="example-col do">
+      <div class="col-label">Instead</div>
+      <div class="example-item">"You'll write prompts that actually work — and understand why."</div>
+      <div class="example-item">"By the end, you'll have built something real and gotten feedback on it."</div>
+      <div class="example-item">"Start with us showing you how. End with you doing it solo."</div>
+    </div>
+  </div>
+  <p><strong>Why this matters:</strong> Our audience left school years ago. Copy that reads like a syllabus makes them feel like students, not professionals. We respect their experience by talking like a colleague, not a lecturer.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 6. WRITING RULES                               -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">06 · Writing Rules</div>
+  <h2>How we write</h2>
+
+  <p>These rules turn personality into practice. They're the specific, enforceable guidelines that keep our voice consistent across every surface — whether a human or AI is writing.</p>
+
+  <h3>Sentence structure</h3>
+  <div class="numbered-list">
+    <div class="numbered-item">
+      <div class="item-content"><strong>Short sentences are the default.</strong> If a sentence has a comma and a conjunction, see if it works as two sentences. Most of the time, it does.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>Lead with the point.</strong> Don't build up to the important thing. Say it first, then explain if needed. "Your path is ready" not "After analyzing your interests and current skill level, we've generated a personalized path."</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>Use contractions.</strong> Always. "You'll" not "You will." "We're" not "We are." "It's" not "It is." The only exception is when you want emphasis: "This is not a course."</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>Vary rhythm.</strong> Three short sentences in a row sounds robotic. A long sentence followed by a short one creates emphasis. Use the contrast intentionally.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>One idea per paragraph.</strong> In UI copy, one idea per line. If you're explaining two things, use two blocks.</div>
+    </div>
+  </div>
+
+  <h3>Word choice</h3>
+  <div class="numbered-list">
+    <div class="numbered-item">
+      <div class="item-content"><strong>Concrete over abstract.</strong> "38 minutes" not "quick." "4 missions" not "hands-on activities." "Prompt Engineering at Practicing level" not "improved skills."</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>Verbs over nouns.</strong> "You'll build" not "You'll engage in the building process." "We curate" not "We provide curation." Kill nominalizations on sight.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>Second person default.</strong> "You" not "users" or "learners" or "professionals." We're talking to a person, not describing a cohort. First person plural ("we") when SkillGap is the actor.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>Active voice, almost always.</strong> "You completed 3 missions" not "3 missions were completed." Passive voice is fine for the occasional soft delivery: "Your credential is ready" (not "we generated your credential").</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>No filler words.</strong> Cut "just," "really," "very," "actually," "basically," "simply." If the sentence works without it, the word doesn't belong.</div>
+    </div>
+  </div>
+
+  <h3>Formatting</h3>
+  <div class="numbered-list">
+    <div class="numbered-item">
+      <div class="item-content"><strong>Sentence case everywhere.</strong> Headlines, buttons, labels, subject lines — all sentence case. Title Case Feels Like A Press Release. We don't write press releases.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>No exclamation marks in body copy.</strong> If the content is exciting, the words will carry it. Exclamation marks are allowed (sparingly) in: room host greetings, achievement toasts, and social media replies. One per message maximum.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>Em dashes for asides.</strong> We like em dashes — they add rhythm without the formality of parentheses. But limit to one per paragraph.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>Numbers, not words.</strong> "3 paths" not "three paths." "40 minutes" not "forty minutes." Exception: "one" when it means "a single" ("one thing matters here").</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 7. VOCABULARY                                  -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">07 · Vocabulary</div>
+  <h2>Words we use, words we don't</h2>
+
+  <p>Language shapes perception. These lists define the specific words that are on-brand and off-brand — not because some words are inherently bad, but because they carry connotations that either reinforce or undermine our positioning.</p>
+
+  <div class="vocab-grid">
+    <div class="vocab-col use">
+      <div class="vocab-label">Use freely</div>
+      <div class="vocab-item"><span class="word">fluency</span> <span class="note">our core concept</span></div>
+      <div class="vocab-item"><span class="word">path / learning path</span> <span class="note">not course, program</span></div>
+      <div class="vocab-item"><span class="word">mission</span> <span class="note">the hands-on task</span></div>
+      <div class="vocab-item"><span class="word">skill</span> <span class="note">specific, atomic capability</span></div>
+      <div class="vocab-item"><span class="word">build / built</span> <span class="note">the outcome verb</span></div>
+      <div class="vocab-item"><span class="word">practice / practiced</span> <span class="note">what you do here</span></div>
+      <div class="vocab-item"><span class="word">sprint</span> <span class="note">timed focus session in rooms</span></div>
+      <div class="vocab-item"><span class="word">gap</span> <span class="note">the thing we close</span></div>
+      <div class="vocab-item"><span class="word">close the gap</span> <span class="note">tagline, usable as verb</span></div>
+      <div class="vocab-item"><span class="word">curated</span> <span class="note">editorial quality signal</span></div>
+      <div class="vocab-item"><span class="word">credential</span> <span class="note">verified proof of skill</span></div>
+      <div class="vocab-item"><span class="word">skill graph</span> <span class="note">personal portfolio visual</span></div>
+      <div class="vocab-item"><span class="word">real tools</span> <span class="note">not simulations</span></div>
+    </div>
+    <div class="vocab-col avoid">
+      <div class="vocab-label">Avoid</div>
+      <div class="vocab-item"><span class="word">upskill / reskill</span> <span class="note">corporate L&D speak</span></div>
+      <div class="vocab-item"><span class="word">course / class</span> <span class="note">implies passive lecture</span></div>
+      <div class="vocab-item"><span class="word">learner</span> <span class="note">infantilizing; say "you"</span></div>
+      <div class="vocab-item"><span class="word">content</span> <span class="note">too generic; say what it is</span></div>
+      <div class="vocab-item"><span class="word">leverage / utilize</span> <span class="note">corporate jargon; say "use"</span></div>
+      <div class="vocab-item"><span class="word">unlock</span> <span class="note">gamification cliché</span></div>
+      <div class="vocab-item"><span class="word">revolutionize</span> <span class="note">hustle speak</span></div>
+      <div class="vocab-item"><span class="word">empower</span> <span class="note">overused, vague</span></div>
+      <div class="vocab-item"><span class="word">transform / transformation</span> <span class="note">enterprise buzzword</span></div>
+      <div class="vocab-item"><span class="word">journey</span> <span class="note">"learning journey" = cliché</span></div>
+      <div class="vocab-item"><span class="word">comprehensive</span> <span class="note">means nothing specific</span></div>
+      <div class="vocab-item"><span class="word">cutting-edge / next-level</span> <span class="note">hype words</span></div>
+      <div class="vocab-item"><span class="word">solution</span> <span class="note">say what it actually is</span></div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">The vocabulary test</div>
+    <div class="callout-body">If a word could appear unchanged in a Gartner report, an MLM pitch, or a university brochure — it probably doesn't belong in our copy. Our vocabulary should feel like something a smart colleague would say out loud.</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 8. VOICE IN ACTION                             -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">08 · Voice in Action</div>
+  <h2>Applied examples</h2>
+
+  <p>The same message, across different surfaces. These examples show how the voice flexes while staying recognizably SkillGap.</p>
+
+  <h3>Describing a learning path</h3>
+
+  <div class="voice-sample">
+    <div class="sample-context">Marketing site — path card</div>
+    <div class="sample-text">Prompt Engineering for Marketers<br>Learn to write prompts that produce usable copy — not generic slop. 4 missions, 38 min.<br><em>Skill: Prompt Engineering · Practicing level</em></div>
+  </div>
+
+  <div class="voice-sample">
+    <div class="sample-context">Email — first path nudge</div>
+    <div class="sample-text">Your first path is waiting. It's built for your role, and it takes about 38 minutes. You'll use real tools, build something real, and get feedback on what you made.</div>
+  </div>
+
+  <div class="voice-sample">
+    <div class="sample-context">Product UI — path intro screen</div>
+    <div class="sample-text">4 modules · 38 min · Prompt Engineering<br>Watch a short demo. Then open the tool and try it yourself. By the end, you'll do it solo.</div>
+  </div>
+
+  <h3>Encouraging someone who's stuck</h3>
+
+  <div class="voice-sample">
+    <div class="sample-context">Room host — mid-sprint check-in</div>
+    <div class="sample-text">Hitting a wall is part of the process. If the prompt isn't working, try being more specific about what you want — not about how to get there. Sometimes less instruction gives better results.</div>
+  </div>
+
+  <div class="voice-sample">
+    <div class="sample-context">Email — lapsed user</div>
+    <div class="sample-text">The gap is growing quietly. Since you were last here, 6 new tools launched that affect marketing workflows. Prompt Engineering jumped 23% in demand. Your skills are still at Exploring — the market average moved to Practicing.</div>
+  </div>
+
+  <h3>Celebrating progress</h3>
+
+  <div class="voice-sample">
+    <div class="sample-context">Email — first path completion</div>
+    <div class="sample-text">You just proved something. Not "completed a module." Not "earned points." You sat down, used real tools, built something, and got evaluated. That's how fluency starts.</div>
+  </div>
+
+  <div class="voice-sample">
+    <div class="sample-context">Product UI — achievement toast</div>
+    <div class="sample-text">Path complete. Prompt Engineering: Practicing level earned.</div>
+  </div>
+
+  <div class="voice-sample">
+    <div class="sample-context">Credential card — sharable</div>
+    <div class="sample-text">SkillGap.ai · Verified Credential<br>Prompt Engineering for Marketers<br>Skills: Prompt Engineering (Practicing) · Writing &amp; Communication (Explored)<br>4 missions completed · AI-evaluated</div>
+  </div>
+
+  <h3>Explaining the product to someone new</h3>
+
+  <div class="voice-sample">
+    <div class="sample-context">Marketing site — hero section</div>
+    <div class="sample-text">AI fluency for working professionals.<br>Learn by doing, not watching. 40-minute paths. Real tools. Practiced alongside people who share your urgency.<br><em>Close the gap.</em></div>
+  </div>
+
+  <div class="voice-sample">
+    <div class="sample-context">Social media — bio / about</div>
+    <div class="sample-text">Where working professionals build AI fluency. Task-first learning paths. Live practice rooms. Skills you can prove. 40 minutes at a time.</div>
+  </div>
+
+  <div class="voice-sample">
+    <div class="sample-context">Elevator pitch — one paragraph</div>
+    <div class="sample-text">SkillGap watches the AI landscape, turns what matters into hands-on learning you can finish in a lunch break, and puts you in rooms with other professionals doing the same work. You don't watch tutorials — you use real tools, build real things, and get feedback. Every path develops specific skills. Every completion adds to your verified skill portfolio. 40 minutes, and the gap is smaller than it was.</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 9. MESSAGING PILLARS                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">09 · Messaging Pillars</div>
+  <h2>The five things we always say</h2>
+
+  <p>Every piece of marketing copy, every landing page, every campaign should reinforce one or more of these pillars. They're not taglines — they're the underlying truths that our copy expresses in different ways across different contexts.</p>
+
+  <div class="numbered-list">
+    <div class="numbered-item">
+      <div class="item-content"><strong>You learn by doing, not watching.</strong> The central promise. Every path pushes you into real tools with real tasks. Practice is 70% of the experience. Watching is support material. This is what separates us from every tutorial, course, and video library.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>We show you what matters right now.</strong> The intelligence promise. Our engine watches the AI landscape so you don't have to. When something is worth your time, we have a path ready. When something is hype, we skip it. We're your editorial filter.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>40 minutes is enough.</strong> The time promise. You don't need a bootcamp. You don't need a weekend. One focused session, one specific skill, one real thing you built. Designed for the time you actually have, not the time you wish you had.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>You're not learning alone.</strong> The community promise. Live rooms, sprint partners, shared urgency. The presence of other professionals doing the same hard thing makes the hard thing easier. The isolation breaks.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>Your skills are yours.</strong> The portfolio promise. A verified, portable skill graph you build by doing. Not a certificate — proof. What you know, at what level, backed by work you submitted and feedback you received. It follows you.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 10. TONE ADAPTATION TABLE                      -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">10 · Tone Adaptation</div>
+  <h2>Context matrix</h2>
+
+  <p>Same voice, different dials. This table shows how specific attributes shift across contexts.</p>
+
+  <table class="context-table">
+    <thead>
+      <tr>
+        <th>Context</th>
+        <th>Warmth</th>
+        <th>Authority</th>
+        <th>Specificity</th>
+        <th>Personality</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Marketing site</td>
+        <td>Medium</td>
+        <td>High</td>
+        <td>High</td>
+        <td>Medium</td>
+      </tr>
+      <tr>
+        <td>Product UI</td>
+        <td>Low</td>
+        <td>Low</td>
+        <td>Very high</td>
+        <td>Minimal</td>
+      </tr>
+      <tr>
+        <td>Onboarding</td>
+        <td>High</td>
+        <td>Medium</td>
+        <td>Medium</td>
+        <td>Medium</td>
+      </tr>
+      <tr>
+        <td>Email — lifecycle</td>
+        <td>High</td>
+        <td>Medium</td>
+        <td>High</td>
+        <td>High</td>
+      </tr>
+      <tr>
+        <td>Email — transactional</td>
+        <td>Low</td>
+        <td>Low</td>
+        <td>Very high</td>
+        <td>Minimal</td>
+      </tr>
+      <tr>
+        <td>Room host</td>
+        <td>Very high</td>
+        <td>Low</td>
+        <td>Medium</td>
+        <td>High</td>
+      </tr>
+      <tr>
+        <td>AI feedback</td>
+        <td>Medium</td>
+        <td>Medium</td>
+        <td>Very high</td>
+        <td>Low</td>
+      </tr>
+      <tr>
+        <td>Social media</td>
+        <td>Medium</td>
+        <td>High</td>
+        <td>Medium</td>
+        <td>High</td>
+      </tr>
+      <tr>
+        <td>Achievement moments</td>
+        <td>Very high</td>
+        <td>Medium</td>
+        <td>High</td>
+        <td>Medium</td>
+      </tr>
+      <tr>
+        <td>Error / empty states</td>
+        <td>Medium</td>
+        <td>Low</td>
+        <td>Very high</td>
+        <td>Low-Medium</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 11. AI WRITING PROMPT                          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">11 · AI Writing Prompt</div>
+  <h2>System prompt for AI-generated copy</h2>
+
+  <p>Use this as a system prompt (or append to one) when using Claude, GPT, or any LLM to write SkillGap copy. It encodes the voice rules in a format AI models can follow reliably.</p>
+
+  <div style="background: var(--sg-sage-900); color: var(--sg-sage-300); border-radius: var(--sg-radius-md); padding: 24px; margin: 20px 0; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 13px; line-height: 1.7; white-space: pre-wrap; overflow-x: auto;">You are writing as SkillGap.ai — a learning platform where working professionals build AI fluency.
+
+VOICE: Calm guide. Warm but not cute. Direct but not blunt. Opinionated but not preachy. Grounded, never hype. You sound like the best mentor someone ever had — knowledgeable, patient, and honest.
+
+AUDIENCE: Mid-career professionals (engineers, marketers, designers, PMs, data analysts) who are already competent but feel AI changing their field. They have 40 minutes, not 40 hours. They've watched tutorials and can't do the thing. They want substance, not sizzle.
+
+RULES:
+- Short sentences by default. Lead with the point.
+- Always use contractions (you'll, we're, it's).
+- "You" not "users" or "learners." "We" when SkillGap is the actor.
+- Active voice. Concrete numbers over vague adjectives.
+- Sentence case for all headlines, buttons, labels.
+- No exclamation marks in body copy.
+- One em dash per paragraph maximum.
+- Numbers as digits: "3 paths" not "three paths."
+
+NEVER USE: upskill, reskill, learner, leverage, utilize, unlock, revolutionize, empower, transform, journey, comprehensive, cutting-edge, next-level, solution, content (as a generic noun).
+
+PREFER: fluency, path, mission, skill, build, practice, sprint, gap, curated, credential, real tools, skill graph.
+
+TONE VARIES BY CONTEXT:
+- Marketing: confident, specific, warm
+- Product UI: minimal, clear, invisible
+- Email: personal, conversational, concise
+- Room host: peer-like, encouraging, brief
+- Social: opinionated, useful, grounded
+- Achievements: elevated, earned, warm
+
+PILLARS (reinforce at least one):
+1. You learn by doing, not watching.
+2. We show you what matters right now.
+3. 40 minutes is enough.
+4. You're not learning alone.
+5. Your skills are yours.</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 12. GOVERNANCE                                 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">12 · Governance</div>
+  <h2>Keeping the voice alive</h2>
+
+  <h3>The three-read test</h3>
+  <p>Before publishing any customer-facing copy, read it three times with three different lenses:</p>
+  <div class="numbered-list">
+    <div class="numbered-item">
+      <div class="item-content"><strong>The vocabulary scan.</strong> Circle any word from the "Avoid" list. Check for corporate jargon, filler words, and abstract nouns. If you find more than one, rewrite.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>The out-loud test.</strong> Read it aloud. Does it sound like something a smart colleague would say in conversation? Or does it sound like it was written by a committee? If you wouldn't say it to someone over coffee, rewrite it.</div>
+    </div>
+    <div class="numbered-item">
+      <div class="item-content"><strong>The anti-pattern check.</strong> Could this sentence appear in a Gartner report (Corporate L&D)? A LinkedIn influencer post (Hustle)? A university syllabus (Academic)? If yes to any, rewrite.</div>
+    </div>
+  </div>
+
+  <h3>When to revisit this document</h3>
+  <p>This is a living document. Revisit it when: a new surface or channel launches (e.g., a podcast, a new social platform), user research reveals a mismatch between how we sound and how we're perceived, the product evolves in a way that changes who we're talking to, or a new team member joins who'll be writing customer-facing copy.</p>
+
+  <p>The voice should evolve slowly and deliberately — never reactively. If something feels off, check it against the personality traits and anti-patterns before changing the rules. Most of the time, the rules are right and the copy needs adjusting — not the other way around.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- FOOTER                                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div style="margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--sg-shell-200); font-size: 12px; color: var(--sg-shell-400); text-align: center;">
+  SkillGap.ai · Brand Voice &amp; Positioning · v1.0 · March 2026<br>
+  Internal document. Review quarterly.
+</div>
+
+</div><!-- /content -->
+
+</body>
+</html>
