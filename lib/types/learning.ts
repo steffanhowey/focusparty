@@ -163,6 +163,10 @@ export interface PathItem {
   thumbnail_url: string | null;
   /** Quality score from content lake (watch tasks only) */
   quality_score: number | null;
+  /** Clip start time in seconds — play from here instead of 0 (watch tasks only) */
+  clip_start_seconds: number | null;
+  /** Clip end time in seconds — stop here instead of video end (watch tasks only) */
+  clip_end_seconds: number | null;
 
   // ── Do task fields (only present when task_type === 'do') ──
   /** Mission briefing for tool practice (do tasks only) */
@@ -219,6 +223,13 @@ export interface LearningPath {
   start_count: number;
   completion_count: number;
   created_at: string;
+  /** Skills this path develops (populated from fp_skill_tags) */
+  skill_tags?: Array<{
+    skill_slug: string;
+    skill_name: string;
+    domain_name: string;
+    relevance: "primary" | "secondary";
+  }>;
 }
 
 /** Per-item progress state */

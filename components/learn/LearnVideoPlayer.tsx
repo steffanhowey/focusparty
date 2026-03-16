@@ -11,6 +11,17 @@ interface LearnVideoPlayerProps {
   isCompleted: boolean;
   onPlayStateChange?: (playing: boolean) => void;
   togglePlayRef?: React.MutableRefObject<(() => void) | null>;
+  /** Clip start time in seconds — play from here instead of 0 */
+  clipStartSeconds?: number | null;
+  /** Clip end time in seconds — stop here instead of video end */
+  clipEndSeconds?: number | null;
+}
+
+/** Format seconds to m:ss display */
+function formatTimestamp(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 /**
@@ -39,7 +50,12 @@ export function LearnVideoPlayer({
   isCompleted,
   onPlayStateChange,
   togglePlayRef,
+  clipStartSeconds,
+  clipEndSeconds,
 }: LearnVideoPlayerProps) {
+  const clipStart = clipStartSeconds ?? 0;
+  const clipEnd = clipEndSeconds ?? null;
+  const isClipped = clipStart > 0 || clipEnd !== null;
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const ytId = extractYouTubeId(sourceUrl);
@@ -96,13 +112,18 @@ export function LearnVideoPlayer({
       const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       if (!playerRef.current) return;
       try {
-        const dur = playerRef.current.getDuration();
-        if (dur > 0) playerRef.current.seekTo(ratio * dur, true);
+        const totalDur = playerRef.current.getDuration();
+        if (totalDur <= 0) return;
+        // Seek within clip bounds
+        const effectiveStart = clipStart;
+        const effectiveEnd = clipEnd ?? totalDur;
+        const seekTo = effectiveStart + ratio * (effectiveEnd - effectiveStart);
+        playerRef.current.seekTo(seekTo, true);
       } catch {
         /* player not ready */
       }
     },
-    []
+    [clipStart, clipEnd]
   );
 
   useEffect(() => {
@@ -158,6 +179,8 @@ export function LearnVideoPlayer({
           modestbranding: 1,
           rel: 0,
           playsinline: 1,
+          ...(clipStart > 0 ? { start: clipStart } : {}),
+          ...(clipEnd ? { end: clipEnd } : {}),
         },
         events: {
           onStateChange: handleStateChange,
@@ -179,21 +202,29 @@ export function LearnVideoPlayer({
     if (!playerRef.current) return;
   }, [handleStateChange]);
 
-  // Progress polling — matches rooms experience (250ms interval)
+  // Progress polling — clip-aware (250ms interval)
   useEffect(() => {
     if (!ytId) return;
     const id = setInterval(() => {
       const p = playerRef.current;
       if (!p) return;
       try {
-        const dur = p.getDuration();
-        if (dur > 0) setProgress(p.getCurrentTime() / dur);
+        const currentTime = p.getCurrentTime();
+        const totalDur = p.getDuration();
+        if (totalDur <= 0) return;
+        // Calculate progress relative to clip bounds
+        const effectiveStart = clipStart;
+        const effectiveEnd = clipEnd ?? totalDur;
+        const clipDuration = effectiveEnd - effectiveStart;
+        if (clipDuration > 0) {
+          setProgress(Math.min(1, Math.max(0, (currentTime - effectiveStart) / clipDuration)));
+        }
       } catch {
         /* player not ready */
       }
     }, 250);
     return () => clearInterval(id);
-  }, [ytId]);
+  }, [ytId, clipStart, clipEnd]);
 
   if (!ytId) {
     return (
@@ -248,6 +279,21 @@ export function LearnVideoPlayer({
             >
               <Play size={32} className="text-white ml-1" />
             </div>
+            {/* Clip time range badge */}
+            {isClipped && (
+              <div
+                className="absolute bottom-3 right-3 px-2 py-1 rounded text-[10px] font-medium tabular-nums"
+                style={{
+                  background: "rgba(0, 0, 0, 0.7)",
+                  color: "var(--color-text-secondary)",
+                  backdropFilter: "blur(4px)",
+                }}
+              >
+                {formatTimestamp(clipStart)}
+                {" – "}
+                {clipEnd ? formatTimestamp(clipEnd) : "end"}
+              </div>
+            )}
           </button>
         )}
 

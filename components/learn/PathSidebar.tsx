@@ -296,6 +296,9 @@ export function PathSidebar({
                       </p>
                       <span className="text-[10px] text-[var(--color-text-tertiary)]">
                         {formatDuration(item.duration_seconds)}
+                        {(item.clip_start_seconds != null && item.clip_start_seconds > 0) || item.clip_end_seconds != null
+                          ? " · clip"
+                          : ""}
                       </span>
                     </div>
                   </button>

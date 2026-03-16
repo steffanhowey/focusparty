@@ -75,6 +75,8 @@ export function ContentViewer({
           isCompleted={isCompleted}
           onPlayStateChange={onPlayStateChange}
           togglePlayRef={togglePlayRef}
+          clipStartSeconds={item.clip_start_seconds}
+          clipEndSeconds={item.clip_end_seconds}
         />
       </div>
     );

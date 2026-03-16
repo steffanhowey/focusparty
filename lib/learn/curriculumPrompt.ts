@@ -40,11 +40,16 @@ PROGRESSIVE SCAFFOLDING:
 - Late do tasks: provide goal only, user writes own prompts (guidance_level: "independent")
 - Final do task: open-ended challenge, no prompt, no steps (guidance_level: "solo")
 
-CONTENT SELECTION:
+CONTENT SELECTION & CLIPPING:
 - Only select content items that directly support a task
 - Prefer shorter videos (3-8 min) — they're support material, not the main event
 - Use content_id from the available items to reference specific content
 - If a module doesn't need a video (e.g., the solo challenge), don't force one in
+- For longer videos (>8 min), clip to the most relevant segment using clip_start_seconds and clip_end_seconds. Aim for 3-8 minute clips that focus on what matters for the task that follows
+- For short videos (≤8 min), set both clip fields to null to play the full video
+- clip_start_seconds: the second to start playback (e.g., 180 for 3:00)
+- clip_end_seconds: the second to stop playback (e.g., 660 for 11:00)
+- duration_seconds for watch tasks should reflect the CLIP length, not the full video length
 
 GOAL STATEMENT:
 - Write a clear goal: what the user will be able to DO when they finish
@@ -59,6 +64,16 @@ MISSIONS (for do tasks):
 - starter_code: Include if the task needs a starting point (code, template, etc.)
 - guidance_level: One of guided/scaffolded/independent/solo
 - submission_type: "text" (paste code/output), "screenshot" (visual proof), or "either"
+
+SKILL TAGGING:
+Every path develops 2-4 specific skills. Tag each path with the skills it develops.
+- "primary": The main skill(s) this path is designed to build (1-2 max)
+- "secondary": Skills that are practiced but not the main focus (1-2 max)
+
+Available skill slugs:
+[SKILL_SLUGS_PLACEHOLDER]
+
+Select skills that match what the learner will actually DO in the missions, not just what they'll read about.
 
 OUTPUT: Return a JSON object following the strict schema provided.`;
 
@@ -102,6 +117,8 @@ export const CURRICULUM_SCHEMA = {
                 connective_text: { type: "string" as const },
                 duration_seconds: { type: "number" as const },
                 content_id: { type: ["string", "null"] as const },
+                clip_start_seconds: { type: ["number", "null"] as const },
+                clip_end_seconds: { type: ["number", "null"] as const },
                 mission: {
                   type: ["object", "null"] as const,
                   properties: {
@@ -173,6 +190,8 @@ export const CURRICULUM_SCHEMA = {
                 "connective_text",
                 "duration_seconds",
                 "content_id",
+                "clip_start_seconds",
+                "clip_end_seconds",
                 "mission",
                 "check",
                 "reflection",
@@ -185,6 +204,21 @@ export const CURRICULUM_SCHEMA = {
         additionalProperties: false,
       },
     },
+    skills: {
+      type: "array" as const,
+      items: {
+        type: "object" as const,
+        properties: {
+          skill_slug: { type: "string" as const },
+          relevance: {
+            type: "string" as const,
+            enum: ["primary", "secondary"],
+          },
+        },
+        required: ["skill_slug", "relevance"] as const,
+        additionalProperties: false,
+      },
+    },
   },
   required: [
     "title",
@@ -193,6 +227,7 @@ export const CURRICULUM_SCHEMA = {
     "difficulty_level",
     "primary_tools",
     "modules",
+    "skills",
   ] as const,
   additionalProperties: false,
 };

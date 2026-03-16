@@ -11,213 +11,150 @@ interface PathWithProgress {
   progress: LearningProgress;
 }
 
-type GenerationStatus = "idle" | "generating" | "complete" | "failed";
-
 interface UseLearnSearchReturn {
   query: string;
   setQuery: (q: string) => void;
+
+  // Discovery grid (no-query state)
   discoveryPaths: LearningPath[];
   inProgressPaths: PathWithProgress[];
+  /** True only on initial load (no results yet). Use for skeleton grid. */
   isLoading: boolean;
+
+  // Dropdown search (with-query state)
+  searchResults: LearningPath[];
+  /** True during any search fetch. Use for spinner. */
+  isSearching: boolean;
+  hasSearched: boolean;
+  /** True when cache is thin — UI should show "Build Path" option */
+  shouldOfferGeneration: boolean;
+
   error: string | null;
   message: string | null;
-  hasSearched: boolean;
   setQueryFromTopic: (slug: string) => void;
-  generationStatus: GenerationStatus;
-  retryGeneration: () => void;
 }
 
-const MAX_POLLS = 30;
-const POLL_INTERVAL_MS = 2000;
+const DEBOUNCE_MS = 200;
+const DEBOUNCE_INSTANT = 0;
 
 // ─── Hook ───────────────────────────────────────────────────
 
 /**
- * Manages Learn search state with two-phase pattern:
- * Phase 1: Instant cache lookup via /api/learn/search
- * Phase 2: Background generation + polling if cache is thin
+ * Manages Learn search state.
+ * Returns discovery paths for the grid (no query) and
+ * search results for the dropdown (with query).
+ * Generation is NOT triggered here — see usePathGeneration.
  */
 export function useLearnSearch(): UseLearnSearchReturn {
   const { profile } = useProfile();
+
+  // Stabilize profile values to prevent callback/effect churn
   const userFunction = profile?.primary_function ?? null;
   const userFluency = profile?.fluency_level ?? null;
-  const secondaryFunctions = profile?.secondary_functions ?? null;
+  const userFunctionRef = useRef(userFunction);
+  const userFluencyRef = useRef(userFluency);
+  userFunctionRef.current = userFunction;
+  userFluencyRef.current = userFluency;
 
   const [query, setQuery] = useState("");
   const [discoveryPaths, setDiscoveryPaths] = useState<LearningPath[]>([]);
+  const [searchResults, setSearchResults] = useState<LearningPath[]>([]);
   const [inProgressPaths, setInProgressPaths] = useState<PathWithProgress[]>(
-    []
+    [],
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const [generationStatus, setGenerationStatus] =
-    useState<GenerationStatus>("idle");
+  const [shouldOfferGeneration, setShouldOfferGeneration] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const pollRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const abortRef = useRef<AbortController>(undefined);
-  const currentQueryRef = useRef("");
+  const searchAbortRef = useRef<AbortController>(undefined);
+  // When true, next search fires immediately (0ms debounce)
+  const instantRef = useRef(false);
 
   const setQueryFromTopic = useCallback((slug: string) => {
     const readable = slug.replace(/-/g, " ");
+    instantRef.current = true;
     setQuery(readable);
   }, []);
 
-  /** Cancel any in-flight generation polling */
-  const cancelGeneration = useCallback(() => {
-    if (pollRef.current) {
-      clearTimeout(pollRef.current);
-      pollRef.current = undefined;
-    }
-    if (abortRef.current) {
-      abortRef.current.abort();
-      abortRef.current = undefined;
-    }
-    setGenerationStatus("idle");
-  }, []);
-
-  /** Fetch search results (Phase 1) */
+  /** Fetch search results from the API */
   const fetchSearch = useCallback(
-    async (q: string, signal?: AbortSignal): Promise<boolean> => {
+    async (q: string, signal: AbortSignal): Promise<void> => {
+      const fn = userFunctionRef.current;
+      const flu = userFluencyRef.current;
+
       const params = new URLSearchParams();
       if (q) params.set("q", q);
-      if (userFunction) params.set("function", userFunction);
-      if (userFluency) params.set("fluency", userFluency);
+      if (fn) params.set("function", fn);
+      if (flu) params.set("fluency", flu);
 
       const res = await fetch(`/api/learn/search?${params}`, { signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
-      setDiscoveryPaths(data.discovery ?? []);
+      if (signal.aborted) return;
+
+      if (q) {
+        // With query → populate dropdown search results
+        setSearchResults(data.discovery ?? []);
+        setShouldOfferGeneration(data.should_generate === true);
+        setHasSearched(true);
+      } else {
+        // No query → populate discovery grid
+        setDiscoveryPaths(data.discovery ?? []);
+        setSearchResults([]);
+        setShouldOfferGeneration(false);
+      }
+
       setInProgressPaths(data.in_progress ?? []);
       if (data.message) setMessage(data.message);
       else setMessage(null);
-      if (q) setHasSearched(true);
-
-      return data.should_generate === true;
     },
-    [userFunction, userFluency]
+    [], // stable — reads from refs
   );
-
-  /** Start background generation + polling (Phase 2) */
-  const startGeneration = useCallback(
-    async (q: string) => {
-      cancelGeneration();
-
-      const abort = new AbortController();
-      abortRef.current = abort;
-      setGenerationStatus("generating");
-
-      try {
-        // POST to start generation (include function/fluency for adapted paths)
-        const generateBody: Record<string, unknown> = { query: q };
-        if (userFunction) generateBody.function = userFunction;
-        if (userFluency) generateBody.fluency = userFluency;
-        if (secondaryFunctions?.length) generateBody.secondary_functions = secondaryFunctions;
-
-        const postRes = await fetch("/api/learn/search/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(generateBody),
-          signal: abort.signal,
-        });
-
-        if (!postRes.ok) {
-          setGenerationStatus("failed");
-          return;
-        }
-
-        const { generation_id, query: normalizedQuery } = await postRes.json();
-        let attempts = 0;
-
-        // Recursive setTimeout polling
-        const poll = async () => {
-          if (abort.signal.aborted || attempts >= MAX_POLLS) {
-            if (!abort.signal.aborted) setGenerationStatus("failed");
-            return;
-          }
-
-          attempts++;
-
-          try {
-            const params = new URLSearchParams({
-              generation_id,
-              query: normalizedQuery,
-            });
-            const res = await fetch(
-              `/api/learn/search/generate?${params}`,
-              { signal: abort.signal }
-            );
-            const data = await res.json();
-
-            if (data.status === "complete") {
-              // Re-fetch search to get the new path in results
-              setGenerationStatus("complete");
-              try {
-                await fetchSearch(q, abort.signal);
-              } catch {
-                // Search re-fetch failed — still mark generation done
-              }
-              setGenerationStatus("idle");
-              return;
-            }
-
-            if (data.status === "failed") {
-              setGenerationStatus("failed");
-              return;
-            }
-
-            // Still generating — poll again
-            pollRef.current = setTimeout(poll, POLL_INTERVAL_MS);
-          } catch {
-            if (!abort.signal.aborted) setGenerationStatus("failed");
-          }
-        };
-
-        pollRef.current = setTimeout(poll, POLL_INTERVAL_MS);
-      } catch {
-        if (!abort.signal.aborted) setGenerationStatus("failed");
-      }
-    },
-    [cancelGeneration, fetchSearch, userFunction, userFluency, secondaryFunctions]
-  );
-
-  /** Retry generation with the current query */
-  const retryGeneration = useCallback(() => {
-    const q = currentQueryRef.current;
-    if (q) startGeneration(q);
-  }, [startGeneration]);
 
   // ─── Debounced search effect ──────────────────────────────
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    cancelGeneration();
+
+    // Abort any previous in-flight search fetch
+    if (searchAbortRef.current) {
+      searchAbortRef.current.abort();
+    }
 
     const trimmed = query.trim();
-    currentQueryRef.current = trimmed;
-    const delay = trimmed ? 500 : 0;
+
+    // Use instant (0ms) for: empty query, topic pill clicks
+    const useInstant = instantRef.current || !trimmed;
+    instantRef.current = false;
+    const delay = useInstant ? DEBOUNCE_INSTANT : DEBOUNCE_MS;
+
+    // On first load (no results yet), show full skeletons.
+    const hasResults = discoveryPaths.length > 0 || inProgressPaths.length > 0;
 
     debounceRef.current = setTimeout(() => {
-      setIsLoading(true);
+      if (!hasResults) setIsLoading(true);
+      setIsSearching(true);
       setError(null);
       setMessage(null);
 
       const abort = new AbortController();
+      searchAbortRef.current = abort;
 
       fetchSearch(trimmed, abort.signal)
-        .then((shouldGenerate) => {
+        .then(() => {
+          if (abort.signal.aborted) return;
           setIsLoading(false);
-          // Phase 2: trigger background generation if needed
-          if (shouldGenerate && trimmed) {
-            startGeneration(trimmed);
-          }
+          setIsSearching(false);
         })
         .catch((err) => {
           if (!abort.signal.aborted) {
             setError(err.message);
             setIsLoading(false);
+            setIsSearching(false);
           }
         });
     }, delay);
@@ -225,14 +162,14 @@ export function useLearnSearch(): UseLearnSearchReturn {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, cancelGeneration, fetchSearch, startGeneration]);
+  }, [query, fetchSearch]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      cancelGeneration();
+      if (searchAbortRef.current) searchAbortRef.current.abort();
     };
-  }, [cancelGeneration]);
+  }, []);
 
   return {
     query,
@@ -240,11 +177,12 @@ export function useLearnSearch(): UseLearnSearchReturn {
     discoveryPaths,
     inProgressPaths,
     isLoading,
+    searchResults,
+    isSearching,
+    hasSearched,
+    shouldOfferGeneration,
     error,
     message,
-    hasSearched,
     setQueryFromTopic,
-    generationStatus,
-    retryGeneration,
   };
 }

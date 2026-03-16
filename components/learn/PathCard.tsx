@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import { Layers } from "lucide-react";
 import type { LearningPath, LearningProgress } from "@/lib/types";
+import { PathCover } from "./PathCover";
 
 interface PathCardProps {
   path: LearningPath;
@@ -26,13 +25,9 @@ function formatDuration(seconds: number): string {
 
 /**
  * Learning path card for the Learn page grid.
- * Styled identically to RoomCard (persistent) — image + title + meta line below.
+ * Uses PathCover for branded thumbnail treatment.
  */
 export function PathCard({ path, progress, onClick }: PathCardProps) {
-  const thumbnail = path.items.find(
-    (i) => i.content_type === "video" && i.thumbnail_url
-  )?.thumbnail_url;
-
   const percentComplete = progress
     ? progress.items_total > 0
       ? Math.round(
@@ -49,33 +44,10 @@ export function PathCard({ path, progress, onClick }: PathCardProps) {
     >
       {/* Image card */}
       <div
-        className="group/card relative h-[200px] w-full overflow-hidden rounded-md border shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)]"
+        className="group/card relative w-full overflow-hidden rounded-md border shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)]"
         style={{ borderColor: "var(--color-border-default)" }}
       >
-        {thumbnail ? (
-          <Image
-            src={thumbnail}
-            alt={path.title}
-            fill
-            sizes="(max-width: 640px) 100vw, 400px"
-            className="object-cover"
-          />
-        ) : (
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--color-bg-secondary), var(--color-bg-hover))",
-            }}
-          >
-            <div className="flex h-full w-full items-center justify-center">
-              <Layers
-                size={32}
-                className="text-[var(--color-text-tertiary)]"
-              />
-            </div>
-          </div>
-        )}
+        <PathCover path={path} height="h-[200px]" />
 
         {/* Difficulty badge — matches FeaturedRoom overlay badge pattern */}
         <span
@@ -92,7 +64,7 @@ export function PathCard({ path, progress, onClick }: PathCardProps) {
 
         {/* Progress bar overlay at bottom */}
         {percentComplete !== null && percentComplete > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-10">
             <div
               className="h-full transition-all"
               style={{
@@ -104,7 +76,7 @@ export function PathCard({ path, progress, onClick }: PathCardProps) {
         )}
       </div>
 
-      {/* Text + meta outside card — identical to RoomCard layout */}
+      {/* Title + meta below card */}
       <div className="flex items-center gap-2 px-1 pt-2">
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-sm font-semibold text-white">

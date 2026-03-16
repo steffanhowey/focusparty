@@ -92,3 +92,11 @@ export type {
 
 export type { ToastType } from "./ui";
 export type { ToastItem } from "./ui";
+
+export type { SkillFluency } from "./skills";
+export type {
+  SkillDomain,
+  Skill,
+  SkillTag,
+  SkillWithDomain,
+} from "./skills";

@@ -28,6 +28,8 @@ export function mapPathRow(row: Record<string, unknown>): LearningPath {
     source_url: item.source_url ?? null,
     thumbnail_url: item.thumbnail_url ?? null,
     quality_score: item.quality_score ?? null,
+    clip_start_seconds: item.clip_start_seconds ?? null,
+    clip_end_seconds: item.clip_end_seconds ?? null,
   }));
 
   return {

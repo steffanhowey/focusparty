@@ -1,0 +1,291 @@
+"use client";
+
+import { useRef, useEffect } from "react";
+import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import type { UsePathGenerationReturn } from "@/lib/usePathGeneration";
+import type { LearningPath } from "@/lib/types";
+import { PathCover } from "./PathCover";
+
+// ─── Shared helpers ─────────────────────────────────────────
+
+const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
+  beginner: { label: "Beginner", color: "var(--color-green-700)" },
+  intermediate: { label: "Intermediate", color: "var(--color-cyan-700)" },
+  advanced: { label: "Advanced", color: "var(--color-coral-700)" },
+};
+
+function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  if (m < 60) return `~${m}min`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  return rm ? `~${h}h ${rm}m` : `~${h}h`;
+}
+
+// ─── Props ──────────────────────────────────────────────────
+
+interface SearchDropdownProps {
+  query: string;
+  results: LearningPath[];
+  isSearching: boolean;
+  shouldOfferGeneration: boolean;
+  generation: UsePathGenerationReturn;
+  onSelectPath: (pathId: string) => void;
+  onStartGeneration: (query: string) => void;
+  onClose: () => void;
+}
+
+// ─── Component ──────────────────────────────────────────────
+
+/**
+ * Dropdown overlay below the search input showing matching paths
+ * and an explicit "Build Path" action row.
+ */
+export function SearchDropdown({
+  query,
+  results,
+  isSearching,
+  shouldOfferGeneration,
+  generation,
+  onSelectPath,
+  onStartGeneration,
+  onClose,
+}: SearchDropdownProps) {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  // Always show Build Path — dropdown is the only search surface
+  const showBuildRow = true;
+
+  const hasContent = results.length > 0 || showBuildRow || isSearching;
+  if (!hasContent) return null;
+
+  return (
+    <div
+      ref={dropdownRef}
+      className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border shadow-lg"
+      style={{
+        background: "var(--color-bg-elevated)",
+        borderColor: "var(--color-border-default)",
+      }}
+      // Prevent input blur so clicks inside the dropdown (Build Path, result rows)
+      // register before the dropdown closes
+      onMouseDown={(e) => e.preventDefault()}
+    >
+      <div className="max-h-[60vh] overflow-y-auto">
+        {/* Loading state */}
+        {isSearching && results.length === 0 && (
+          <div className="flex items-center gap-2 px-4 py-3">
+            <Loader2
+              size={14}
+              className="animate-spin text-[var(--color-text-tertiary)]"
+            />
+            <span className="text-xs text-[var(--color-text-tertiary)]">
+              Searching...
+            </span>
+          </div>
+        )}
+
+        {/* Build Path row — top spot: the exact match for their query */}
+        {showBuildRow && (
+          <BuildPathRow
+            query={query}
+            generation={generation}
+            onSelectPath={onSelectPath}
+            onStartGeneration={onStartGeneration}
+          />
+        )}
+
+        {/* Divider between Build Path and related results */}
+        {results.length > 0 && showBuildRow && (
+          <div
+            className="border-t"
+            style={{ borderColor: "var(--color-border-default)" }}
+          />
+        )}
+
+        {/* Related results */}
+        {results.length > 0 && (
+          <div className="px-3 pt-2 pb-1">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+              Related paths
+            </p>
+          </div>
+        )}
+        {results.slice(0, 5).map((path) => (
+          <ResultRow
+            key={path.id}
+            path={path}
+            onSelect={() => onSelectPath(path.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Result Row ─────────────────────────────────────────────
+
+function ResultRow({
+  path,
+  onSelect,
+}: {
+  path: LearningPath;
+  onSelect: () => void;
+}) {
+  const difficulty = DIFFICULTY_CONFIG[path.difficulty_level];
+  const moduleCount = path.modules?.length ?? 0;
+
+  return (
+    <button
+      type="button"
+      className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-[var(--color-bg-hover)] cursor-pointer"
+      onClick={onSelect}
+    >
+      {/* Thumbnail — branded cover at small size */}
+      <div
+        className="relative shrink-0 overflow-hidden rounded-md border"
+        style={{
+          width: 96,
+          height: 64,
+          borderColor: "var(--color-border-default)",
+        }}
+      >
+        <PathCover path={path} height="h-full" sizes="96px" />
+      </div>
+
+      {/* Title + meta */}
+      <div className="min-w-0 flex-1">
+        {difficulty && (
+          <span
+            className="inline-block rounded px-1.5 py-0.5 text-[10px] font-medium leading-none mb-1"
+            style={{
+              background: "var(--color-bg-hover)",
+              color: difficulty.color,
+            }}
+          >
+            {difficulty.label}
+          </span>
+        )}
+        <p className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
+          {path.title}
+        </p>
+        <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
+          {formatDuration(path.estimated_duration_seconds)}
+          {moduleCount > 0 && ` · ${moduleCount} modules`}
+        </p>
+      </div>
+
+      {/* Navigate arrow */}
+      <div
+        className="shrink-0 flex items-center justify-center rounded-full"
+        style={{
+          width: 28,
+          height: 28,
+          background: "var(--color-bg-hover)",
+        }}
+      >
+        <ArrowRight
+          size={14}
+          className="text-[var(--color-text-tertiary)]"
+        />
+      </div>
+    </button>
+  );
+}
+
+// ─── Thumbnail placeholder (shared by Build Path states) ────
+
+function BuildPathThumbnail() {
+  return (
+    <div
+      className="relative shrink-0 overflow-hidden rounded-md border flex items-center justify-center"
+      style={{
+        width: 96,
+        height: 64,
+        borderColor: "var(--color-border-default)",
+        background: "var(--color-bg-secondary)",
+      }}
+    >
+      <Sparkles size={20} className="text-[var(--color-text-tertiary)]" />
+    </div>
+  );
+}
+
+// ─── Build Path Row ─────────────────────────────────────────
+
+function BuildPathRow({
+  query,
+  generation,
+  onSelectPath,
+  onStartGeneration,
+}: {
+  query: string;
+  generation: UsePathGenerationReturn;
+  onSelectPath: (pathId: string) => void;
+  onStartGeneration: (query: string) => void;
+}) {
+  const { status, generatedPath, retry } = generation;
+
+  // Completed state — show the generated path as a result row
+  if (status === "complete" && generatedPath) {
+    return (
+      <ResultRow
+        path={generatedPath}
+        onSelect={() => onSelectPath(generatedPath.id)}
+      />
+    );
+  }
+
+  // Failed state — same row structure as ResultRow
+  if (status === "failed") {
+    return (
+      <div className="flex w-full items-center gap-3 px-3 py-2.5">
+        <BuildPathThumbnail />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+            Couldn&apos;t build path
+          </p>
+          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+            Not enough content available yet
+          </p>
+        </div>
+        <Button variant="ghost" size="xs" onClick={retry}>
+          Try again
+        </Button>
+      </div>
+    );
+  }
+
+  // Idle — show the Start Learning button
+  return (
+    <div className="flex w-full items-center gap-3 px-3 py-2.5">
+      <BuildPathThumbnail />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
+          {query}
+        </p>
+        <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
+          Custom AI-curated path
+        </p>
+      </div>
+      <Button
+        variant="outline"
+        size="xs"
+        onClick={() => onStartGeneration(query)}
+        className="!border-[var(--color-green-700)] !text-[var(--color-green-700)] hover:!bg-[var(--color-green-700)]/10"
+      >
+        Start Learning
+      </Button>
+    </div>
+  );
+}

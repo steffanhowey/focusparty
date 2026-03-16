@@ -23,6 +23,7 @@ import {
   CURRICULUM_SYSTEM_PROMPT,
   CURRICULUM_SCHEMA,
 } from "@/lib/learn/curriculumPrompt";
+import { getSkills } from "@/lib/skills/taxonomy";
 
 let _openai: OpenAI | null = null;
 function getClient(): OpenAI {
@@ -37,6 +38,11 @@ function getClient(): OpenAI {
  * Generate a curriculum-based learning path from a query.
  * Searches content lake, then asks AI to design a task-driven curriculum.
  */
+interface GenerateCurriculumResult {
+  path: LearningPath;
+  loadedSkills: Array<{ id: string; slug: string; name: string; domain_id: string }>;
+}
+
 export async function generateCurriculum(
   query: string,
   options?: {
@@ -47,9 +53,12 @@ export async function generateCurriculum(
     userFluency?: FluencyLevel;
     secondaryFunctions?: ProfessionalFunction[];
   }
-): Promise<LearningPath> {
-  // 1. Search content lake for relevant material
-  const embedding = await generateEmbedding(query);
+): Promise<GenerateCurriculumResult> {
+  // 1. Search content lake + load skills in parallel
+  const [embedding, allSkills] = await Promise.all([
+    generateEmbedding(query),
+    getSkills().catch(() => []),
+  ]);
   const contentItems = await searchContentLake(embedding, {
     limit: options?.maxItems ?? 20,
   });
@@ -68,18 +77,17 @@ export async function generateCurriculum(
         "@/lib/breaks/youtubeClient"
       );
 
-      // Search with multiple query variations for better coverage
+      // Search with query variations (2 queries = 200 quota units vs 300)
       const queries = [
         `${query} tutorial`,
         `${query} explained`,
-        `learn ${query}`,
       ];
       const allVideoIds = new Set<string>();
 
       const searchResults = await Promise.allSettled(
         queries.map((q) =>
           searchVideos(q, {
-            maxResults: 8,
+            maxResults: 5,
             videoDuration: "medium",
             order: "relevance",
           })
@@ -95,7 +103,7 @@ export async function generateCurriculum(
 
       if (allVideoIds.size > 0) {
         const videos = await getVideoDetails(
-          [...allVideoIds].slice(0, 15)
+          [...allVideoIds].slice(0, 10)
         );
         const validVideos = videos.filter(
           (v: { durationSeconds: number }) =>
@@ -186,10 +194,10 @@ export async function generateCurriculum(
     adaptation ? `Learner profile: ${adaptation.functionContext.label} professional, ${adaptation.fluencyContext.label} fluency level` : null,
     "",
     `Available content items (${itemSummaries.length}):`,
-    JSON.stringify(itemSummaries, null, 2),
+    JSON.stringify(itemSummaries),
     "",
     "Available AI tools:",
-    JSON.stringify(availableTools, null, 2),
+    JSON.stringify(availableTools),
     "",
     "Design a curriculum of 3-5 modules with progressive tasks. Remember:",
     "- Tasks are the primary unit, not videos",
@@ -201,8 +209,25 @@ export async function generateCurriculum(
     .filter(Boolean)
     .join("\n");
 
-  // 5. Build system prompt (with adaptation + safety if applicable)
+  // 5. Build system prompt (with adaptation + safety + skill taxonomy)
   let systemPrompt = CURRICULUM_SYSTEM_PROMPT;
+
+  // Inject available skill slugs for tagging (allSkills already loaded in parallel above)
+  if (allSkills.length > 0) {
+    const skillSlugList = allSkills
+      .map((s) => `${s.slug} (${s.name})`)
+      .join(", ");
+    systemPrompt = systemPrompt.replace(
+      "[SKILL_SLUGS_PLACEHOLDER]",
+      skillSlugList,
+    );
+  } else {
+    systemPrompt = systemPrompt.replace(
+      "[SKILL_SLUGS_PLACEHOLDER]",
+      "prompt-engineering, ai-code-generation, ai-assisted-writing, research-synthesis",
+    );
+  }
+
   if (adaptation) {
     systemPrompt += "\n" + adaptation.adaptationBlock;
   }
@@ -231,13 +256,13 @@ export async function generateCurriculum(
     const raw = JSON.parse(response.choices[0].message.content ?? "{}");
 
     // 7. Post-process: validate content IDs, build full PathItem array
-    return postProcessCurriculum(raw, filtered, query);
+    return { path: postProcessCurriculum(raw, filtered, query), loadedSkills: allSkills };
   } catch (error) {
     console.error(
       "Curriculum generation failed, falling back to simple path:",
       error
     );
-    return fallbackCurriculum(query, filtered);
+    return { path: fallbackCurriculum(query, filtered), loadedSkills: allSkills };
   }
 }
 
@@ -281,6 +306,8 @@ function postProcessCurriculum(
         source_url: null,
         thumbnail_url: null,
         quality_score: null,
+        clip_start_seconds: (task.clip_start_seconds as number) ?? null,
+        clip_end_seconds: (task.clip_end_seconds as number) ?? null,
         // Do/Check/Reflect fields
         mission: null,
         check: null,
@@ -394,6 +421,24 @@ function postProcessCurriculum(
     0
   );
 
+  // Extract skill tags from AI output
+  const rawSkills = (raw.skills ?? []) as Array<{
+    skill_slug: string;
+    relevance: string;
+  }>;
+  const skill_tags = rawSkills
+    .filter(
+      (s) =>
+        s.skill_slug &&
+        (s.relevance === "primary" || s.relevance === "secondary"),
+    )
+    .map((s) => ({
+      skill_slug: s.skill_slug,
+      skill_name: "",  // Resolved later when writing to DB
+      domain_name: "", // Resolved later when writing to DB
+      relevance: s.relevance as "primary" | "secondary",
+    }));
+
   return {
     id: "", // Set by caller on DB insert
     title: (raw.title as string) ?? `Learning: ${query}`,
@@ -408,6 +453,7 @@ function postProcessCurriculum(
     estimated_duration_seconds: totalDuration,
     items: allItems,
     modules,
+    skill_tags: skill_tags.length > 0 ? skill_tags : undefined,
     source: "search",
     view_count: 0,
     start_count: 0,
@@ -512,6 +558,8 @@ function fallbackCurriculum(
       source_url: content.source_url,
       thumbnail_url: content.thumbnail_url,
       quality_score: content.quality_score,
+      clip_start_seconds: null,
+      clip_end_seconds: null,
       mission: null,
       check: null,
       reflection: null,
@@ -565,7 +613,7 @@ export async function generateAndCacheCurriculum(
     secondaryFunctions?: ProfessionalFunction[];
   }
 ): Promise<LearningPath> {
-  const curriculum = await generateCurriculum(query, options);
+  const { path: curriculum, loadedSkills } = await generateCurriculum(query, options);
   const supabase = createAdminClient();
 
   const insertData: Record<string, unknown> = {
@@ -598,7 +646,48 @@ export async function generateAndCacheCurriculum(
     throw error;
   }
 
-  return { ...curriculum, id: data.id, created_at: data.created_at };
+  const pathId = data.id as string;
+
+  // Write skill tags to fp_skill_tags (reuse pre-loaded skills, no extra DB call)
+  if (curriculum.skill_tags && curriculum.skill_tags.length > 0 && loadedSkills.length > 0) {
+    try {
+      const skillMap = new Map(loadedSkills.map((s) => [s.slug, s]));
+      const tagRows: Array<{
+        path_id: string;
+        skill_id: string;
+        relevance: string;
+      }> = [];
+
+      for (const tag of curriculum.skill_tags) {
+        const skill = skillMap.get(tag.skill_slug);
+        if (skill) {
+          tagRows.push({
+            path_id: pathId,
+            skill_id: skill.id,
+            relevance: tag.relevance,
+          });
+          tag.skill_name = skill.name;
+        }
+      }
+
+      if (tagRows.length > 0) {
+        const { error: tagError } = await supabase
+          .from("fp_skill_tags")
+          .insert(tagRows);
+        if (tagError) {
+          console.error("[curriculum] Failed to write skill tags:", tagError);
+        } else {
+          console.log(
+            `[curriculum] Tagged path "${curriculum.title}" with ${tagRows.length} skills`,
+          );
+        }
+      }
+    } catch (err) {
+      console.error("[curriculum] Skill tagging failed:", err);
+    }
+  }
+
+  return { ...curriculum, id: pathId, created_at: data.created_at };
 }
 
 // ─── YouTube Adapter ─────────────────────────────────────────
@@ -678,9 +767,8 @@ async function backgroundIndexVideos(
   const { scoreForLearning } = await import("@/lib/learn/seedScorer");
   const supabase = (await import("@/lib/supabase/admin")).createClient();
 
-  let indexed = 0;
-  for (const video of videos) {
-    try {
+  const results = await Promise.allSettled(
+    videos.map(async (video) => {
       const score = await scoreForLearning({
         title: video.title,
         description: video.description,
@@ -689,7 +777,7 @@ async function backgroundIndexVideos(
         viewCount: video.viewCount,
       });
 
-      if (score.rejected || score.quality_score < 40) continue;
+      if (score.rejected || score.quality_score < 40) return false;
 
       const searchText = buildSearchText({
         title: video.title,
@@ -731,15 +819,17 @@ async function backgroundIndexVideos(
         },
         { onConflict: "content_type,external_id" }
       );
-      indexed++;
-    } catch (err) {
-      console.error(
-        `[curriculum] Background index failed for "${video.title}":`,
-        err
-      );
-    }
-  }
+      return true;
+    })
+  );
 
+  const indexed = results.filter(
+    (r) => r.status === "fulfilled" && r.value === true
+  ).length;
+  const failed = results.filter((r) => r.status === "rejected").length;
+  if (failed > 0) {
+    console.warn(`[curriculum] Background indexing: ${failed}/${videos.length} failed`);
+  }
   console.log(
     `[curriculum] Background indexing complete for "${query}": ${indexed}/${videos.length} indexed`
   );
