@@ -2,10 +2,10 @@
 
 /**
  * Shared nav config for Hub sidebar and session menu drawer.
- * Rooms is the app home. Icons: DoorOpen (rooms), Target (goals), BarChart3 (stats), Settings.
+ * Practice is the app home. Icons: Users (practice), Target (goals), BarChart3 (stats), Settings.
  */
 
-import { BarChart3, BookOpen, DoorOpen, Target, Settings, type LucideIcon } from "lucide-react";
+import { BarChart3, BookOpen, Target, Settings, Users, type LucideIcon } from "lucide-react";
 
 const NAV_ICON_SIZE = 20;
 
@@ -15,7 +15,7 @@ export const NAV_ITEMS: Array<{
   label: string;
   icon: LucideIcon;
 }> = [
-  { id: "rooms", href: "/rooms", label: "Rooms", icon: DoorOpen },
+  { id: "practice", href: "/practice", label: "Practice", icon: Users },
   { id: "learn", href: "/learn", label: "Learn", icon: BookOpen },
   { id: "goals", href: "/goals", label: "Goals", icon: Target },
   { id: "stats", href: "/stats", label: "Stats", icon: BarChart3 },

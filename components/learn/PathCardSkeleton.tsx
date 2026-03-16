@@ -1,39 +1,24 @@
 "use client";
 
-import { Card } from "@/components/ui/Card";
-
 /**
- * Loading skeleton for PathCard. Matches PathCard dimensions.
+ * Loading skeleton for PathCard. Matches the simplified layout:
+ * h-[200px] image card + title + one meta line below.
  */
 export function PathCardSkeleton() {
   return (
-    <Card className="overflow-hidden">
-      {/* Thumbnail placeholder */}
-      <div className="aspect-video bg-[var(--color-bg-hover)] animate-pulse" />
+    <div>
+      {/* Image placeholder */}
+      <div
+        className="h-[200px] w-full animate-pulse rounded-md border bg-[var(--color-bg-hover)]"
+        style={{ borderColor: "var(--color-border-default)" }}
+      />
 
-      {/* Content placeholder */}
-      <div className="p-3 space-y-2.5">
-        {/* Title */}
-        <div className="h-4 w-4/5 rounded bg-[var(--color-bg-hover)] animate-pulse" />
-        <div className="h-4 w-3/5 rounded bg-[var(--color-bg-hover)] animate-pulse" />
-
-        {/* Description */}
-        <div className="h-3 w-full rounded bg-[var(--color-bg-hover)] animate-pulse" />
-
-        {/* Meta row */}
-        <div className="flex items-center gap-2">
-          <div className="h-3 w-16 rounded bg-[var(--color-bg-hover)] animate-pulse" />
-          <div className="h-3 w-20 rounded bg-[var(--color-bg-hover)] animate-pulse" />
-        </div>
-
-        {/* Topic pills */}
-        <div className="flex gap-1">
-          <div className="h-4 w-14 rounded bg-[var(--color-bg-hover)] animate-pulse" />
-          <div className="h-4 w-10 rounded bg-[var(--color-bg-hover)] animate-pulse" />
-          <div className="h-4 w-16 rounded bg-[var(--color-bg-hover)] animate-pulse" />
-        </div>
+      {/* Text placeholder below */}
+      <div className="space-y-1.5 px-1 pt-2">
+        <div className="h-4 w-4/5 animate-pulse rounded bg-[var(--color-bg-hover)]" />
+        <div className="h-3 w-2/5 animate-pulse rounded bg-[var(--color-bg-hover)]" />
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -42,7 +27,7 @@ export function PathCardSkeleton() {
  */
 export function PathCardSkeletonGrid({ count = 3 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: count }, (_, i) => (
         <PathCardSkeleton key={i} />
       ))}

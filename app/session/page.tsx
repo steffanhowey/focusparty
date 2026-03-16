@@ -443,7 +443,7 @@ export default function SessionPage() {
     if (partyId && !party?.persistent) {
       updatePartyStatus(partyId, "completed").catch((err) => console.error("Failed to update party status:", err));
     }
-    router.push("/rooms");
+    router.push("/practice");
   }, [router, persistence, hostTriggers, partyId, userId, party?.persistent]);
 
   const handleReflectionComplete = useCallback(

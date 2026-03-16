@@ -160,7 +160,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
   // ─── Computed sprint info ─────────────────────────────────
   const durationSec = freshDuration * 60;
 
-  const buttonLabel = "Join Room";
+  const buttonLabel = "Join Session";
 
   // ─── Handlers ──────────────────────────────────────────────
 
@@ -274,7 +274,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
       ref={overlayRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Join room"
+      aria-label="Join session"
       className="fixed inset-0 flex items-center justify-center p-4"
       style={{ zIndex: 40 }}
     >

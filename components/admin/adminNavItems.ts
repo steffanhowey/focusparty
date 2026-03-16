@@ -3,7 +3,6 @@
 import {
   LayoutDashboard,
   Users,
-  DoorOpen,
   Image,
   Activity,
   Bot,
@@ -25,7 +24,7 @@ export const ADMIN_NAV_ITEMS: Array<{
 }> = [
   { id: "dashboard", href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { id: "users", href: "/admin/users", label: "Users", icon: Users },
-  { id: "rooms", href: "/admin/rooms", label: "Rooms", icon: DoorOpen },
+  { id: "practice", href: "/admin/rooms", label: "Practice", icon: Users },
   { id: "pipeline", href: "/admin/pipeline", label: "Pipeline", icon: Gauge },
   { id: "review", href: "/admin/review", label: "Review Queue", icon: ClipboardCheck },
   { id: "topics", href: "/admin/topics", label: "Topics", icon: Flame },

@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { ReactNode, useState, useEffect, useCallback, lazy, Suspense } from "react";
-import { DoorOpen, Plus, Menu } from "lucide-react";
+import { Users, Plus, Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { Sidebar } from "./Sidebar";
@@ -13,7 +13,7 @@ import { FunctionMigrationModal } from "@/components/onboarding/FunctionMigratio
 
 
 const PAGE_TITLES: Record<string, string> = {
-  "/rooms": "Rooms",
+  "/practice": "Practice",
   "/learn": "Learn",
   "/goals": "Goals",
   "/stats": "Stats",
@@ -21,7 +21,7 @@ const PAGE_TITLES: Record<string, string> = {
 };
 
 function getTitleForPath(pathname: string): string {
-  return PAGE_TITLES[pathname] ?? "Rooms";
+  return PAGE_TITLES[pathname] ?? "Practice";
 }
 
 const LazyPartyList = lazy(() =>
@@ -50,7 +50,7 @@ const LazyLearnPage = lazy(() =>
 
 function renderTabContent(tab: string): ReactNode {
   switch (tab) {
-    case "/rooms":
+    case "/practice":
       return (
         <main className="flex-1">
           <Suspense fallback={null}>
@@ -169,7 +169,7 @@ export function HubShell({ children }: { children: ReactNode }) {
         className="min-w-0 flex-1 flex flex-col overflow-hidden"
         style={{ background: "var(--color-bg-primary)" }}
       >
-        {effectivePath !== "/rooms" && (
+        {effectivePath !== "/practice" && effectivePath !== "/learn" && (
           <div className="flex h-16 shrink-0 items-center justify-between gap-4 px-4 md:px-5 lg:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <IconButton
@@ -196,20 +196,20 @@ export function HubShell({ children }: { children: ReactNode }) {
               </Button>
             ) : (
               <a
-                href="/rooms"
+                href="/practice"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleNavClick("/rooms");
+                  handleNavClick("/practice");
                 }}
                 className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 sm:px-5"
                 style={{
                   background: "var(--color-accent-primary)",
                   color: "white",
                 }}
-                aria-label="Join room"
+                aria-label="Join session"
               >
-                <DoorOpen size={18} strokeWidth={1.8} className="shrink-0" />
-                <span className="hidden text-sm font-semibold sm:inline">Join Room</span>
+                <Users size={18} strokeWidth={1.8} className="shrink-0" />
+                <span className="hidden text-sm font-semibold sm:inline">Join Session</span>
               </a>
             )}
           </div>

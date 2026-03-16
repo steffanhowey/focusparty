@@ -244,9 +244,9 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     if (!userId) return;
     try {
       await leaveParty(partyId, userId);
-      router.push("/rooms");
+      router.push("/practice");
     } catch {
-      router.push("/rooms");
+      router.push("/practice");
     }
   };
 
@@ -280,7 +280,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
           This room may have ended or doesn&apos;t exist.
         </p>
         <Link
-          href="/rooms"
+          href="/practice"
           className="mt-4 text-sm font-medium text-[var(--color-accent-primary)] hover:underline"
         >
           Back to rooms
@@ -297,7 +297,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
           This room has already completed.
         </p>
         <Link
-          href="/rooms"
+          href="/practice"
           className="mt-4 text-sm font-medium text-[var(--color-accent-primary)] hover:underline"
         >
           Back to rooms
@@ -312,7 +312,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     <div className={ROOM_STATE_CLASS[roomState]}>
       {/* Back link */}
       <Link
-        href="/rooms"
+        href="/practice"
         className="mb-5 inline-flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] hover:text-white"
       >
         <ArrowLeft size={16} />
@@ -403,7 +403,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
             onClick={handleJoin}
             disabled={joiningRoom}
           >
-            {joiningRoom ? "Joining..." : "Join Room"}
+            {joiningRoom ? "Joining..." : "Join Session"}
           </Button>
         )}
         {isParticipant && party.status === "active" && (

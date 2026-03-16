@@ -10,7 +10,7 @@ import { useAdminData } from "@/lib/admin/useAdminData";
 const PAGE_TITLES: Record<string, string> = {
   "/admin": "Dashboard",
   "/admin/users": "Users",
-  "/admin/rooms": "Rooms",
+  "/admin/rooms": "Practice",
   "/admin/pipeline": "Pipeline",
   "/admin/review": "Review Queue",
   "/admin/topics": "Topics",

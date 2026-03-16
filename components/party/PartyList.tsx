@@ -15,7 +15,7 @@ import { ChevronDown } from "lucide-react";
 type RoomFilter = "all" | "most-active" | "coding" | "writing" | "calm";
 
 const FILTER_OPTIONS: { value: RoomFilter; label: string }[] = [
-  { value: "all", label: "All Rooms" },
+  { value: "all", label: "All Sessions" },
   { value: "most-active", label: "Most Active" },
   { value: "coding", label: "Coding & Building" },
   { value: "writing", label: "Writing & Focus" },
@@ -116,7 +116,7 @@ export function PartyList() {
               <section>
                 <div className="mb-6 flex items-center justify-between">
                   <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                    Rooms
+                    Practice
                   </h2>
                   <div className="relative">
                     <select

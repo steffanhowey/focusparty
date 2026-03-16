@@ -169,7 +169,7 @@ export function EnvironmentHeader({
           style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.08)" }}
           aria-expanded={switcherOpen}
           aria-haspopup="listbox"
-          aria-label="Switch room"
+          aria-label="Switch session"
         >
           <DoorOpen size={15} strokeWidth={2} />
           {roomName}
@@ -198,11 +198,11 @@ export function EnvironmentHeader({
               transformOrigin: "top left",
             }}
             role="listbox"
-            aria-label="Switch room"
+            aria-label="Switch session"
           >
             {/* Section title */}
             <p className="px-3 pt-2.5 pb-1 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-              Available Rooms
+              Available Sessions
             </p>
 
             {/* Loading skeleton — matches party row layout for zero shift */}

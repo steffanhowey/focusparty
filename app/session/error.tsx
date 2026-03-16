@@ -20,7 +20,7 @@ export default function SessionError({
       </h2>
       <p className="max-w-sm text-sm text-[var(--color-text-secondary)]">
         Something went wrong during your focus session. You can try to resume or
-        head back to Rooms.
+        head back to Practice.
       </p>
       <div className="flex gap-3">
         <button
@@ -31,11 +31,11 @@ export default function SessionError({
           Resume session
         </button>
         <a
-          href="/rooms"
+          href="/practice"
           className="rounded-full border px-5 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
           style={{ borderColor: "var(--color-border-default)" }}
         >
-          Back to Rooms
+          Back to Practice
         </a>
       </div>
     </div>

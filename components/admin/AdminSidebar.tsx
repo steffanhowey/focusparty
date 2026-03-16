@@ -77,7 +77,7 @@ export function AdminSidebar({ activeId, onNavClick, badges }: AdminSidebarProps
       {/* Back to App */}
       <div className="mt-auto pb-5 px-3">
         <Link
-          href="/rooms"
+          href="/practice"
           className="flex items-center gap-3 rounded-lg py-2 px-2 text-sm font-medium text-[var(--color-text-tertiary)] transition-colors hover:bg-white/[0.03] hover:text-[var(--color-text-secondary)]"
         >
           <ArrowLeft size={18} strokeWidth={1.8} className="shrink-0" />
