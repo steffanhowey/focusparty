@@ -18,10 +18,10 @@ export function ToggleCard({
   return (
     <button
       type="button"
-      className={`cursor-pointer rounded-md border px-3 py-2.5 text-left transition-all duration-150 ${
+      className={`cursor-pointer rounded-[var(--sg-radius-md)] border px-3 py-2.5 text-left transition-all duration-150 ${
         selected
-          ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-primary)]/10"
-          : "border-[var(--color-border-default)] hover:border-[var(--color-border-focus)]"
+          ? "border-forest-500 bg-forest-500/10"
+          : "border-shell-border hover:border-forest-400"
       } ${className}`}
       {...props}
     >

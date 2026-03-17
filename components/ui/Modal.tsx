@@ -68,18 +68,18 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       onKeyDown={handleKeyDown}
     >
       <div
-        className="absolute inset-0 bg-[var(--color-navy-700)]/60 backdrop-blur-[8px]"
+        className="absolute inset-0 bg-shell-900/40 backdrop-blur-[8px]"
         aria-hidden
         onClick={onClose}
       />
       <div
-        className="relative max-h-[90vh] w-full max-w-[480px] overflow-auto rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-8 shadow-xl"
+        className="relative max-h-[90vh] w-full max-w-[480px] overflow-auto rounded-[var(--sg-radius-lg)] border border-shell-border bg-white p-8 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
           <h2
             id="modal-title"
-            className="mb-4 text-xl font-bold text-white"
+            className="mb-4 text-xl font-bold text-shell-900"
           >
             {title}
           </h2>
@@ -88,7 +88,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-2 top-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-[var(--color-text-tertiary)] hover:text-white"
+          className="absolute right-2 top-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-shell-500 hover:text-shell-900"
           aria-label="Close"
         >
           <span className="text-xl leading-none">&times;</span>

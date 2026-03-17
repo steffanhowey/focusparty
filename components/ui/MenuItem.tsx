@@ -32,15 +32,15 @@ export function MenuItem({
   ...props
 }: MenuItemProps) {
   const stateStyles = danger
-    ? "text-[var(--color-coral-700)] hover:bg-[var(--color-coral-700)]/10"
+    ? "text-sg-coral-500 hover:bg-sg-coral-500/10"
     : active
-      ? "bg-[var(--color-accent-primary)]/20 text-white ring-1 ring-[var(--color-accent-primary)]/40"
-      : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] hover:text-white";
+      ? "bg-forest-500/20 text-shell-900 ring-1 ring-forest-500/40"
+      : "text-shell-600 hover:bg-shell-100 hover:text-shell-900";
 
   return (
     <button
       type="button"
-      className={`flex w-full cursor-pointer items-center rounded-lg px-3 py-2 text-left font-medium transition-colors ${sizeStyles[size]} ${stateStyles} ${className}`}
+      className={`flex w-full cursor-pointer items-center rounded-[var(--sg-radius-md)] px-3 py-2 text-left font-medium transition-colors ${sizeStyles[size]} ${stateStyles} ${className}`}
       {...props}
     >
       {icon && <span className="shrink-0">{icon}</span>}

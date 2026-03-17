@@ -6,8 +6,6 @@ import { Users, Plus, Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { Sidebar } from "./Sidebar";
-import { useTheme } from "@/components/providers/ThemeProvider";
-import { CHARACTERS } from "@/lib/constants";
 import { CLIENT_NAV_HREFS } from "./navItems";
 import { FunctionMigrationModal } from "@/components/onboarding/FunctionMigrationModal";
 
@@ -111,8 +109,6 @@ function renderTabContent(tab: string): ReactNode {
 
 export function HubShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { characterAccent } = useTheme();
-  const c = CHARACTERS[characterAccent];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [clientTab, setClientTab] = useState<string | null>(null);
@@ -169,7 +165,7 @@ export function HubShell({ children }: { children: ReactNode }) {
         <div className="fixed inset-0 z-50 md:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-shell-900/40 backdrop-blur-sm"
             onClick={toggleMobileMenu}
             aria-label="Close menu"
           />
@@ -180,7 +176,7 @@ export function HubShell({ children }: { children: ReactNode }) {
       )}
       <div
         className="min-w-0 flex-1 flex flex-col overflow-hidden"
-        style={{ background: "var(--color-bg-primary)" }}
+        style={{ background: "var(--sg-white)" }}
       >
         {effectivePath !== "/practice" && effectivePath !== "/learn" && (
           <div className="flex h-16 shrink-0 items-center justify-between gap-4 px-4 md:px-5 lg:px-6">
@@ -193,7 +189,7 @@ export function HubShell({ children }: { children: ReactNode }) {
                 className="shrink-0 rounded-lg md:hidden"
                 aria-label="Open menu"
               />
-              <span className="truncate text-lg font-semibold text-[var(--color-text-primary)]">
+              <span className="truncate text-lg font-semibold text-shell-900">
                 {title}
               </span>
             </div>
@@ -214,11 +210,7 @@ export function HubShell({ children }: { children: ReactNode }) {
                   e.preventDefault();
                   handleNavClick("/practice");
                 }}
-                className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 sm:px-5"
-                style={{
-                  background: "var(--color-accent-primary)",
-                  color: "white",
-                }}
+                className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-[var(--sg-radius-btn)] bg-forest-500 px-4 text-white sm:px-5"
                 aria-label="Join session"
               >
                 <Users size={18} strokeWidth={1.8} className="shrink-0" />

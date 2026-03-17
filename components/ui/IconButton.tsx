@@ -19,11 +19,11 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<IconButtonVariant, string> = {
   ghost:
-    "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] hover:text-white",
+    "text-shell-600 hover:bg-shell-100 hover:text-shell-900",
   outline:
-    "border border-[var(--color-border-default)] text-[var(--color-text-tertiary)] hover:bg-white/[0.04]",
+    "border border-shell-border text-shell-500 hover:bg-shell-100",
   danger:
-    "text-[var(--color-coral-700)] hover:bg-[var(--color-coral-700)]/10",
+    "text-sg-coral-500 hover:bg-sg-coral-500/10",
 };
 
 const sizeStyles: Record<IconButtonSize, string> = {
@@ -32,7 +32,7 @@ const sizeStyles: Record<IconButtonSize, string> = {
   default: "h-10 w-10 [&_svg]:h-[18px] [&_svg]:w-[18px]",
 };
 
-const ACTIVE_STYLES = "bg-white/15 text-white";
+const ACTIVE_STYLES = "bg-shell-200 text-shell-900";
 
 export function IconButton({
   variant = "ghost",

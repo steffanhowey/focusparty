@@ -22,19 +22,19 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "rounded-full bg-[var(--color-accent-primary)] text-white transition-all duration-150 hover:opacity-85 active:opacity-75",
+    "rounded-[var(--sg-radius-btn)] bg-forest-500 text-white transition-all duration-150 hover:opacity-85 active:opacity-75",
   secondary:
-    "rounded-full border border-[var(--color-accent-primary)] bg-transparent text-[var(--color-accent-primary)] transition-colors duration-150 hover:bg-[var(--color-accent-primary)]/10",
+    "rounded-[var(--sg-radius-btn)] border border-forest-500 bg-transparent text-forest-500 transition-colors duration-150 hover:bg-forest-500/10",
   outline:
-    "rounded-full border border-[var(--color-border-default)] bg-transparent text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-border-focus)] hover:text-white",
+    "rounded-[var(--sg-radius-btn)] border border-shell-border bg-transparent text-shell-600 transition-colors duration-150 hover:border-forest-400 hover:text-shell-900",
   ghost:
-    "rounded-full bg-transparent text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-[var(--color-bg-hover)]",
+    "rounded-[var(--sg-radius-btn)] bg-transparent text-shell-600 transition-colors duration-150 hover:bg-shell-100",
   danger:
-    "rounded-full bg-transparent text-[var(--color-coral-700)] transition-colors duration-150 hover:bg-[var(--color-coral-700)]/10",
+    "rounded-[var(--sg-radius-btn)] bg-transparent text-sg-coral-500 transition-colors duration-150 hover:bg-sg-coral-500/10",
   cta:
-    "rounded-full bg-[var(--color-accent-primary)] font-semibold text-white transition-all duration-150 hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] active:opacity-75",
+    "rounded-[var(--sg-radius-btn)] bg-forest-500 font-semibold text-white transition-all duration-150 hover:opacity-85 hover:scale-[1.02] active:scale-[0.98] active:opacity-75",
   link:
-    "bg-transparent text-[var(--color-accent-primary)] transition-colors duration-150 hover:underline",
+    "bg-transparent text-forest-500 transition-colors duration-150 hover:underline",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

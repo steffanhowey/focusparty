@@ -10,11 +10,11 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ variant = "default", className = "", ...props }, ref) => {
     const base =
-      "text-white outline-none transition-[border-color] duration-150 placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]";
+      "text-shell-900 outline-none transition-[border-color] duration-150 placeholder:text-shell-500 focus:border-forest-400";
     const defaultStyles =
-      "h-11 rounded-md border border-[var(--color-border-default)] bg-white/[0.06] px-4 focus:shadow-[0_0_0_1px_var(--color-border-focus)]";
+      "h-11 rounded-[var(--sg-radius-md)] border border-shell-border bg-shell-50 px-4 focus:shadow-[var(--sg-shadow-focus)]";
     const sessionStyles =
-      "h-10 rounded-full border border-[var(--color-border-default)] bg-white/[0.08] px-4";
+      "h-10 rounded-full border border-shell-border bg-shell-100 px-4";
 
     const styleClass =
       variant === "session" ? sessionStyles : defaultStyles;

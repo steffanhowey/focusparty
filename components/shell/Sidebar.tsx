@@ -28,8 +28,8 @@ interface SidebarProps {
 }
 
 const PROFILE_MENU_STYLE = {
-  background: "var(--color-bg-elevated)",
-  border: "1px solid var(--color-border-default)",
+  background: "var(--sg-white)",
+  border: "1px solid var(--sg-shell-border)",
 };
 
 export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: SidebarProps) {
@@ -69,7 +69,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
         onClick={() => {
           setColorMode(colorMode === "dark" ? "light" : "dark");
         }}
-        className="text-[var(--color-text-primary)]"
+        className="text-shell-900"
       >
         {colorMode === "dark" ? "Light mode" : "Dark mode"}
       </MenuItem>
@@ -80,7 +80,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
           setProfileMenuOpen(false);
           if (onNavClick) onNavClick("/settings");
         }}
-        className="text-[var(--color-text-primary)]"
+        className="text-shell-900"
       >
         Plans & Billing
       </MenuItem>
@@ -91,7 +91,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
           setProfileMenuOpen(false);
           if (onNavClick) onNavClick("/settings");
         }}
-        className="text-[var(--color-text-primary)]"
+        className="text-shell-900"
       >
         Settings
       </MenuItem>
@@ -111,7 +111,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
         <Link
           href="/login"
           onClick={() => setProfileMenuOpen(false)}
-          className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--color-accent-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
+          className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-forest-500 transition-colors hover:bg-shell-100"
         >
           <LogIn size={18} strokeWidth={1.8} />
           <span>Sign in</span>
@@ -125,7 +125,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
     : `${SIDEBAR_WIDTH_EXPANDED} relative z-[var(--z-card)] flex h-screen flex-shrink-0 flex-col overflow-visible transition-[width] duration-200 ease-out`;
 
   return (
-    <aside className={`${asideClass} backdrop-blur-xl`} style={{ background: "rgba(10, 10, 10, 0.7)", borderRight: "1px solid rgba(255,255,255,0.06)" }}>
+    <aside className={`${asideClass}`} style={{ background: "var(--sg-shell-50)", borderRight: "1px solid var(--sg-shell-border)" }}>
       {collapsed ? (
         <div className={`flex min-h-0 flex-1 flex-col ${RAILS_INSET_X} pt-4`}>
           <nav className={`flex shrink-0 flex-col items-center ${NAV_ITEM_GAP}`}>
@@ -141,9 +141,9 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                       onNavClick(item.href);
                     }
                   }}
-                  className={`flex h-10 min-h-10 w-10 min-w-10 shrink-0 items-center justify-center rounded-lg border-l-2 transition-all duration-150 ${isActive ? "border-[var(--color-accent-error)] bg-white/[0.06] backdrop-blur-sm" : "border-transparent"}`}
+                  className={`flex h-10 min-h-10 w-10 min-w-10 shrink-0 items-center justify-center rounded-lg border-l-2 transition-all duration-150 ${isActive ? "border-forest-500 bg-forest-500/8" : "border-transparent"}`}
                   style={{
-                    color: isActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
+                    color: isActive ? "var(--sg-shell-900)" : "var(--sg-shell-500)",
                   }}
                   aria-current={isActive ? "page" : undefined}
                   title={item.label}
@@ -177,15 +177,15 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                   src={avatarUrl}
                   alt=""
                   className="h-9 w-9 shrink-0 rounded-full object-cover"
-                  style={{ border: "1px solid var(--color-border-default)" }}
+                  style={{ border: "1px solid var(--sg-shell-border)" }}
                 />
               ) : (
                 <div
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-semibold"
                   style={{
-                    background: "var(--color-bg-elevated)",
-                    border: "1px solid var(--color-border-default)",
-                    color: "var(--color-text-primary)",
+                    background: "var(--sg-shell-100)",
+                    border: "1px solid var(--sg-shell-border)",
+                    color: "var(--sg-shell-900)",
                     fontSize: 14,
                   }}
                 >
@@ -213,9 +213,9 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                       onNavClick(item.href);
                     }
                   }}
-                  className={`-mx-3 flex h-12 items-center gap-3 border-l-2 px-[calc(0.75rem+0.625rem)] transition-all duration-150 ${isActive ? "border-[var(--color-accent-error)] bg-white/[0.06]" : "border-transparent"}`}
+                  className={`-mx-3 flex h-12 items-center gap-3 border-l-2 px-[calc(0.75rem+0.625rem)] transition-all duration-150 ${isActive ? "border-forest-500 bg-forest-500/8" : "border-transparent"}`}
                   style={{
-                    color: isActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
+                    color: isActive ? "var(--sg-shell-900)" : "var(--sg-shell-500)",
                   }}
                   aria-current={isActive ? "page" : undefined}
                 >
@@ -250,15 +250,15 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                   src={avatarUrl}
                   alt=""
                   className="h-9 w-9 shrink-0 rounded-full object-cover"
-                  style={{ border: "1px solid var(--color-border-default)" }}
+                  style={{ border: "1px solid var(--sg-shell-border)" }}
                 />
               ) : (
                 <div
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-semibold"
                   style={{
-                    background: "var(--color-bg-elevated)",
-                    border: "1px solid var(--color-border-default)",
-                    color: "var(--color-text-primary)",
+                    background: "var(--sg-shell-100)",
+                    border: "1px solid var(--sg-shell-border)",
+                    color: "var(--sg-shell-900)",
                     fontSize: 14,
                   }}
                 >
@@ -266,14 +266,14 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                 </div>
               )}
               <div className="min-w-0 flex-1 text-left">
-                <p className="truncate text-sm font-medium text-[var(--color-text-primary)]">
+                <p className="truncate text-sm font-medium text-shell-900">
                   {displayName}
                 </p>
-                <p className="truncate text-xs font-medium text-[var(--color-text-tertiary)]">
+                <p className="truncate text-xs font-medium text-shell-500">
                   {username ? `@${username}` : planLabel}
                 </p>
               </div>
-              <span className="shrink-0 text-[var(--color-text-tertiary)]">
+              <span className="shrink-0 text-shell-500">
                 {profileMenuOpen ? <ChevronUp size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
               </span>
             </button>

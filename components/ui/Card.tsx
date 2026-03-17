@@ -1,44 +1,36 @@
 "use client";
 
 import { HTMLAttributes, ReactNode } from "react";
-import type { CharacterId } from "@/lib/types";
-import { CHARACTERS } from "@/lib/constants";
 
 type CardVariant = "default" | "session" | "character";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: CardVariant;
-  character?: CharacterId;
+  /** @deprecated Character theming retired */
+  character?: string;
   children: ReactNode;
   className?: string;
 }
 
 const variantStyles: Record<CardVariant, string> = {
   default:
-    "rounded-md border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] transition-shadow hover:border-[var(--color-border-default)]",
+    "rounded-[var(--sg-radius-md)] border border-shell-border bg-white shadow-sm transition-shadow",
   session:
-    "rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)]",
+    "rounded-[var(--sg-radius-lg)] border border-shell-border bg-shell-50",
+  /** @deprecated Alias for default — character theming retired */
   character:
-    "rounded-lg border-b-4 border-transparent bg-[var(--color-bg-hover)]",
+    "rounded-[var(--sg-radius-md)] border border-shell-border bg-shell-100",
 };
 
 export function Card({
   variant = "default",
-  character,
   children,
   className = "",
-  style: styleProp,
   ...rest
 }: CardProps) {
-  const style =
-    variant === "character" && character
-      ? { ...styleProp, borderBottomColor: CHARACTERS[character].primary }
-      : styleProp;
-
   return (
     <div
       className={`${variantStyles[variant]} ${className}`}
-      style={style}
       {...rest}
     >
       {children}
