@@ -13,7 +13,7 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DataTable, type Column } from "@/components/admin/DataTable";
 import { SearchInput } from "@/components/admin/SearchInput";
 import { Pagination } from "@/components/admin/Pagination";
-import { GREEN_700, PRIORITY_MEDIUM } from "@/lib/palette";
+import { FOREST_300, PRIORITY_MEDIUM } from "@/lib/palette";
 
 interface ContentItem {
   id: string;
@@ -76,10 +76,10 @@ export function ContentView() {
       label: "Title",
       render: (row) => (
         <div className="max-w-xs">
-          <p className="truncate font-medium text-[var(--color-text-primary)]">
+          <p className="truncate font-medium text-[var(--sg-white)]">
             {row.title}
           </p>
-          <p className="truncate text-xs text-[var(--color-text-tertiary)]">
+          <p className="truncate text-xs text-[var(--sg-shell-500)]">
             {row.channel_name}
           </p>
         </div>
@@ -101,10 +101,10 @@ export function ContentView() {
         const score = scores[0].taste_score;
         const color =
           score >= 70
-            ? GREEN_700
+            ? FOREST_300
             : score >= 55
               ? PRIORITY_MEDIUM
-              : "var(--color-text-tertiary)";
+              : "var(--sg-shell-500)";
         return (
           <span className="font-mono font-semibold" style={{ color }}>
             {score}
@@ -124,7 +124,7 @@ export function ContentView() {
         row.scaffolding_status ? (
           <StatusBadge status={row.scaffolding_status} />
         ) : (
-          <span className="text-xs text-[var(--color-text-tertiary)]">—</span>
+          <span className="text-xs text-[var(--sg-shell-500)]">—</span>
         ),
     },
     {
@@ -134,10 +134,10 @@ export function ContentView() {
         if (row.engagement_score == null) return "—";
         const color =
           row.engagement_score >= 0.7
-            ? GREEN_700
+            ? FOREST_300
             : row.engagement_score >= 0.4
               ? PRIORITY_MEDIUM
-              : "var(--color-text-tertiary)";
+              : "var(--sg-shell-500)";
         return (
           <span className="font-mono text-xs font-semibold" style={{ color }}>
             {row.engagement_score.toFixed(3)}
@@ -171,13 +171,13 @@ export function ContentView() {
           label="Scaffolded"
           value={funnel?.scaffolded ?? "—"}
           icon={BookOpen}
-          color={GREEN_700}
+          color={FOREST_300}
         />
         <StatCard
           label="On Shelf"
           value={funnel?.onShelf ?? "—"}
           icon={Library}
-          color={GREEN_700}
+          color={FOREST_300}
         />
       </div>
 
@@ -199,7 +199,7 @@ export function ContentView() {
             setStatusFilter(e.target.value);
             setPage(1);
           }}
-          className="h-9 rounded-lg border border-[var(--color-border-default)] bg-transparent px-3 text-sm text-[var(--color-text-secondary)] focus:border-[var(--color-border-focus)] focus:outline-none"
+          className="h-9 rounded-lg border border-white/[0.08] bg-transparent px-3 text-sm text-[var(--sg-shell-300)] focus:border-[var(--sg-forest-400)] focus:outline-none"
         >
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>

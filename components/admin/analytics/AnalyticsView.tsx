@@ -15,7 +15,7 @@ import { StatCard } from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DataTable, type Column } from "@/components/admin/DataTable";
 import { Button } from "@/components/ui/Button";
-import { GREEN_700, CORAL_700, PRIORITY_MEDIUM, PURPLE_700 } from "@/lib/palette";
+import { FOREST_300, CORAL_500, PRIORITY_MEDIUM, FOREST_500 } from "@/lib/palette";
 import type { ContentPerformance, ScoreCalibration, AutoApprovalConfig, AutoApprovalLogEntry } from "@/lib/types";
 
 // ─── Data interfaces ────────────────────────────────────────
@@ -119,7 +119,7 @@ export function AnalyticsView() {
       key: "videoId",
       label: "Video ID",
       render: (row) => (
-        <span className="font-mono text-xs text-[var(--color-text-secondary)]">
+        <span className="font-mono text-xs text-[var(--sg-shell-300)]">
           {row.videoId.slice(0, 11)}
         </span>
       ),
@@ -131,8 +131,8 @@ export function AnalyticsView() {
         <span
           className="rounded-full px-2.5 py-1 text-xs font-medium capitalize"
           style={{
-            background: "var(--color-bg-active)",
-            color: "var(--color-text-secondary)",
+            background: "rgba(255,255,255,0.08)",
+            color: "var(--sg-shell-300)",
           }}
         >
           {row.worldKey}
@@ -145,10 +145,10 @@ export function AnalyticsView() {
       render: (row) => {
         const color =
           row.engagementScore >= 0.7
-            ? GREEN_700
+            ? FOREST_300
             : row.engagementScore >= 0.4
               ? PRIORITY_MEDIUM
-              : CORAL_700;
+              : CORAL_500;
         return (
           <span className="font-mono text-sm font-semibold" style={{ color }}>
             {row.engagementScore.toFixed(3)}
@@ -176,19 +176,19 @@ export function AnalyticsView() {
           label="Avg Completion Rate"
           value={overview ? `${(overview.avgCompletionRate * 100).toFixed(1)}%` : "—"}
           icon={BarChart3}
-          color={GREEN_700}
+          color={FOREST_300}
         />
         <StatCard
           label="Avg Engagement"
           value={overview ? overview.avgEngagementScore.toFixed(3) : "—"}
           icon={TrendingUp}
-          color={PURPLE_700}
+          color={FOREST_500}
         />
         <StatCard
           label="Auto-Approvals Today"
           value={stats?.approved ?? 0}
           icon={ShieldCheck}
-          color={stats && stats.approved > 0 ? GREEN_700 : "var(--color-text-tertiary)"}
+          color={stats && stats.approved > 0 ? FOREST_300 : "var(--sg-shell-500)"}
         />
         <StatCard
           label="Last Calibration"
@@ -199,7 +199,7 @@ export function AnalyticsView() {
 
       {/* Score Calibration Panel */}
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-[var(--color-text-primary)]">
+        <h3 className="mb-3 text-sm font-semibold text-[var(--sg-white)]">
           Score Calibrations
         </h3>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -214,11 +214,11 @@ export function AnalyticsView() {
             return (
               <div
                 key={type}
-                className="rounded-xl border border-[var(--color-border-default)] p-4"
-                style={{ background: "var(--color-bg-elevated)" }}
+                className="rounded-xl border border-white/[0.08] p-4"
+                style={{ background: "rgba(20,20,20,0.6)" }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                  <span className="text-sm font-medium text-[var(--sg-white)]">
                     {label}
                   </span>
                   {cal && (
@@ -237,7 +237,7 @@ export function AnalyticsView() {
                   <div className="mt-3 space-y-2 text-xs text-[var(--color-text-tertiary)]">
                     <div className="flex justify-between">
                       <span>Sample size</span>
-                      <span className="text-[var(--color-text-secondary)]">{cal.sampleSize}</span>
+                      <span className="text-[var(--sg-shell-300)]">{cal.sampleSize}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Correlation</span>
@@ -246,10 +246,10 @@ export function AnalyticsView() {
                         style={{
                           color:
                             Math.abs(cal.correlation) >= 0.5
-                              ? GREEN_700
+                              ? FOREST_300
                               : Math.abs(cal.correlation) >= 0.3
                                 ? PRIORITY_MEDIUM
-                                : CORAL_700,
+                                : CORAL_500,
                         }}
                       >
                         {cal.correlation.toFixed(4)}
@@ -257,7 +257,7 @@ export function AnalyticsView() {
                     </div>
                     <div className="flex justify-between">
                       <span>Recommendations</span>
-                      <span className="text-[var(--color-text-secondary)]">
+                      <span className="text-[var(--sg-shell-300)]">
                         {cal.recommendations.length}
                       </span>
                     </div>
@@ -295,11 +295,11 @@ export function AnalyticsView() {
 
       {/* Auto-Approval Panel */}
       <div
-        className="rounded-xl border border-[var(--color-border-default)] p-5"
-        style={{ background: "var(--color-bg-elevated)" }}
+        className="rounded-xl border border-white/[0.08] p-5"
+        style={{ background: "rgba(20,20,20,0.6)" }}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+          <h3 className="text-sm font-semibold text-[var(--sg-white)]">
             Auto-Approval Engine
           </h3>
           <Button
@@ -325,11 +325,11 @@ export function AnalyticsView() {
         {stats && (
           <div className="mt-4 flex gap-6 text-xs text-[var(--color-text-tertiary)]">
             <span className="flex items-center gap-1.5">
-              <CheckCircle size={12} style={{ color: GREEN_700 }} />
+              <CheckCircle size={12} style={{ color: FOREST_300 }} />
               {stats.approved} approved
             </span>
             <span className="flex items-center gap-1.5">
-              <XCircle size={12} style={{ color: CORAL_700 }} />
+              <XCircle size={12} style={{ color: CORAL_500 }} />
               {stats.skipped} skipped
             </span>
             <span className="flex items-center gap-1.5">
@@ -341,7 +341,7 @@ export function AnalyticsView() {
 
         {/* Recent log entries */}
         {logEntries.length > 0 && (
-          <div className="mt-4 max-h-48 overflow-y-auto rounded-lg border border-[var(--color-border-default)] p-3 space-y-1">
+          <div className="mt-4 max-h-48 overflow-y-auto rounded-lg border border-white/[0.08] p-3 space-y-1">
             {logEntries.map((entry) => (
               <div
                 key={entry.id}
@@ -351,7 +351,7 @@ export function AnalyticsView() {
                   {new Date(entry.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}
                 </span>
                 <StatusBadge status={entry.decision} />
-                <span className="min-w-0 flex-1 truncate text-[var(--color-text-secondary)]">
+                <span className="min-w-0 flex-1 truncate text-[var(--sg-shell-300)]">
                   {entry.reason}
                 </span>
               </div>
@@ -362,7 +362,7 @@ export function AnalyticsView() {
 
       {/* Top Performing Content */}
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-[var(--color-text-primary)]">
+        <h3 className="mb-3 text-sm font-semibold text-[var(--sg-white)]">
           Top Performing Content
         </h3>
         <DataTable
@@ -375,7 +375,7 @@ export function AnalyticsView() {
 
       {/* Underperforming Content */}
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-[var(--color-text-primary)]">
+        <h3 className="mb-3 text-sm font-semibold text-[var(--sg-white)]">
           Underperforming Content
         </h3>
         <DataTable
@@ -393,9 +393,9 @@ export function AnalyticsView() {
 
 function CriteriaCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[var(--color-border-subtle)] px-3 py-2">
+    <div className="rounded-lg border border-white/[0.04] px-3 py-2">
       <p className="text-xs text-[var(--color-text-tertiary)]">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-[var(--sg-white)]">{value}</p>
     </div>
   );
 }

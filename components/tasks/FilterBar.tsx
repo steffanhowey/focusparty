@@ -31,14 +31,14 @@ function FilterSelect({
       <select
         value={value}
         onChange={onChange}
-        className="cursor-pointer appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+        className="cursor-pointer appearance-none rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 py-2 pr-8 text-sm text-[var(--sg-shell-600)] transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
       >
         {children}
       </select>
       <ChevronDown
         size={14}
         strokeWidth={1.5}
-        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--sg-shell-400)]"
       />
     </div>
   );

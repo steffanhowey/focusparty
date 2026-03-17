@@ -69,9 +69,9 @@ function SectionToast({
       <div
         className="px-4 py-2.5 rounded-lg text-sm font-medium shadow-lg"
         style={{
-          background: "var(--color-bg-secondary)",
-          color: "var(--color-text-primary)",
-          border: "1px solid var(--color-border-default)",
+          background: "var(--sg-shell-50)",
+          color: "var(--sg-shell-900)",
+          border: "1px solid var(--sg-shell-border)",
         }}
       >
         {message}
@@ -98,8 +98,8 @@ function AchievementCard({
       className="w-full max-w-md rounded-xl overflow-hidden"
       style={{
         background:
-          "linear-gradient(145deg, var(--color-bg-secondary), var(--color-bg-primary))",
-        border: "1px solid var(--color-border-default)",
+          "linear-gradient(145deg, var(--sg-shell-50), var(--sg-white))",
+        border: "1px solid var(--sg-shell-border)",
         boxShadow: "var(--shadow-float, 0 8px 32px rgba(0,0,0,0.3))",
       }}
     >
@@ -108,7 +108,7 @@ function AchievementCard({
         className="h-1"
         style={{
           background:
-            "linear-gradient(to right, var(--color-accent-primary), var(--color-cyan-700))",
+            "linear-gradient(to right, var(--sg-forest-500), var(--sg-teal-600))",
         }}
       />
 
@@ -117,11 +117,11 @@ function AchievementCard({
         <div className="space-y-1">
           <p
             className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--color-accent-primary)" }}
+            style={{ color: "var(--sg-forest-500)" }}
           >
             Path Complete
           </p>
-          <h3 className="text-lg font-bold text-[var(--color-text-primary)] leading-snug">
+          <h3 className="text-lg font-bold text-[var(--sg-shell-900)] leading-snug">
             {path.title}
           </h3>
         </div>
@@ -129,24 +129,24 @@ function AchievementCard({
         {/* Divider */}
         <div
           className="h-px"
-          style={{ background: "var(--color-border-default)" }}
+          style={{ background: "var(--sg-shell-border)" }}
         />
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
-            <p className="text-[var(--color-text-tertiary)] text-xs">
+            <p className="text-[var(--sg-shell-500)] text-xs">
               Resources
             </p>
-            <p className="text-[var(--color-text-primary)] font-medium">
+            <p className="text-[var(--sg-shell-900)] font-medium">
               {itemsCompleted} completed
             </p>
           </div>
           <div>
-            <p className="text-[var(--color-text-tertiary)] text-xs">
+            <p className="text-[var(--sg-shell-500)] text-xs">
               Time invested
             </p>
-            <p className="text-[var(--color-text-primary)] font-medium">
+            <p className="text-[var(--sg-shell-900)] font-medium">
               {formatDuration(timeInvested)}
             </p>
           </div>
@@ -155,12 +155,12 @@ function AchievementCard({
         {/* Topics */}
         {path.topics.length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-[var(--color-text-tertiary)] text-xs">Topics</p>
+            <p className="text-[var(--sg-shell-500)] text-xs">Topics</p>
             <div className="flex flex-wrap gap-1.5">
               {path.topics.slice(0, 5).map((t) => (
                 <span
                   key={t}
-                  className="px-2 py-0.5 rounded text-xs bg-[var(--color-bg-hover)] text-[var(--color-text-secondary)]"
+                  className="px-2 py-0.5 rounded text-xs bg-[var(--sg-sage-100)] text-[var(--sg-shell-600)]"
                 >
                   {t}
                 </span>
@@ -171,12 +171,12 @@ function AchievementCard({
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-1">
-          <span className="text-xs text-[var(--color-text-tertiary)]">
+          <span className="text-xs text-[var(--sg-shell-500)]">
             Completed {formatDate(completedAt)}
           </span>
           <span
             className="text-xs font-medium"
-            style={{ color: "var(--color-text-tertiary)" }}
+            style={{ color: "var(--sg-shell-500)" }}
           >
             SkillGap.ai
           </span>
@@ -383,16 +383,16 @@ export default function LearnPathPage() {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
-        <div className="w-6 h-6 border-2 border-[var(--color-text-tertiary)] border-t-transparent rounded-full animate-spin" />
+      <div className="h-screen flex items-center justify-center bg-[var(--sg-white)]">
+        <div className="w-6 h-6 border-2 border-[var(--sg-shell-500)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (error || !path) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-[var(--color-bg-primary)] gap-4">
-        <p className="text-sm text-[var(--color-text-tertiary)]">
+      <div className="h-screen flex flex-col items-center justify-center bg-[var(--sg-white)] gap-4">
+        <p className="text-sm text-[var(--sg-shell-500)]">
           {error || "Learning path not found."}
         </p>
         <Button variant="ghost" onClick={() => router.push("/learn")}>
@@ -403,7 +403,7 @@ export default function LearnPathPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[var(--color-bg-primary)]">
+    <div className="h-screen flex flex-col bg-[var(--sg-white)]">
       {/* Top Bar — matches rooms experience: transparent, no borders */}
       <header className="relative z-10 flex items-center gap-3 py-4 px-4 shrink-0">
         <button
@@ -447,11 +447,11 @@ export default function LearnPathPage() {
               <div className="text-center space-y-2 animate-fade-in">
                 <p
                   className="text-sm font-semibold uppercase tracking-widest"
-                  style={{ color: "var(--color-accent-primary)" }}
+                  style={{ color: "var(--sg-forest-500)" }}
                 >
                   Path Complete
                 </p>
-                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
+                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--sg-shell-900)]">
                   Congratulations!
                 </h2>
               </div>
@@ -488,27 +488,27 @@ export default function LearnPathPage() {
                     <div
                       className="absolute top-full mt-2 left-1/2 -translate-x-1/2 rounded-lg shadow-lg py-1 z-10 min-w-[180px]"
                       style={{
-                        background: "var(--color-bg-secondary)",
-                        border: "1px solid var(--color-border-default)",
+                        background: "var(--sg-white)",
+                        border: "1px solid var(--sg-shell-border)",
                       }}
                     >
                       <button
                         onClick={handleCopyLink}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[var(--sg-shell-600)] hover:bg-[var(--sg-sage-50)] transition-colors"
                       >
                         <Copy size={12} />
                         Copy link
                       </button>
                       <button
                         onClick={handleShareLinkedIn}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[var(--sg-shell-600)] hover:bg-[var(--sg-sage-50)] transition-colors"
                       >
                         <Link2 size={12} />
                         Share to LinkedIn
                       </button>
                       <button
                         onClick={handleShareTwitter}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[var(--sg-shell-600)] hover:bg-[var(--sg-sage-50)] transition-colors"
                       >
                         <Link2 size={12} />
                         Share to X
@@ -530,8 +530,8 @@ export default function LearnPathPage() {
                   className="w-full max-w-2xl space-y-4 animate-fade-in"
                   style={{ animationDelay: "800ms" }}
                 >
-                  <div className="h-px bg-[var(--color-border-default)]" />
-                  <p className="text-sm font-semibold text-[var(--color-text-secondary)]">
+                  <div className="h-px bg-[var(--sg-shell-border)]" />
+                  <p className="text-sm font-semibold text-[var(--sg-shell-600)]">
                     Recommended next
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -550,7 +550,7 @@ export default function LearnPathPage() {
             /* ─── Transition Card ────────────────────────────── */
             <div className="flex flex-col items-center justify-center h-full gap-6 p-8 animate-fade-in">
               <Card className="p-6 max-w-md space-y-4 text-center">
-                <p className="text-xs text-[var(--color-text-tertiary)] uppercase tracking-wide">
+                <p className="text-xs text-[var(--sg-shell-500)] uppercase tracking-wide">
                   Up Next
                 </p>
 
@@ -559,34 +559,34 @@ export default function LearnPathPage() {
                   {nextItem.content_type === "practice" ? (
                     <Pencil
                       size={16}
-                      style={{ color: "var(--color-amber-700)" }}
+                      style={{ color: "var(--sg-gold-600)" }}
                     />
                   ) : nextItem.content_type === "video" ? (
                     <Play
                       size={16}
-                      style={{ color: "var(--color-coral-700)" }}
+                      style={{ color: "var(--sg-coral-500)" }}
                     />
                   ) : (
                     <FileText
                       size={16}
-                      style={{ color: "var(--color-cyan-700)" }}
+                      style={{ color: "var(--sg-teal-600)" }}
                     />
                   )}
-                  <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                  <h3 className="text-lg font-semibold text-[var(--sg-shell-900)]">
                     {nextItem.title}
                   </h3>
                 </div>
 
                 {/* Connective text */}
                 {nextItem.connective_text && (
-                  <p className="text-sm text-[var(--color-text-tertiary)] italic">
+                  <p className="text-sm text-[var(--sg-shell-500)] italic">
                     {nextItem.connective_text}
                   </p>
                 )}
 
                 {/* Meta */}
                 {nextItem.content_type !== "practice" && (
-                  <div className="flex items-center justify-center gap-2 text-xs text-[var(--color-text-tertiary)]">
+                  <div className="flex items-center justify-center gap-2 text-xs text-[var(--sg-shell-500)]">
                     <span>{nextItem.creator_name}</span>
                     <span>&middot;</span>
                     <span>
@@ -633,7 +633,7 @@ export default function LearnPathPage() {
           style={{ width: sidebarOpen ? 380 : 0, overflow: "hidden" }}
         >
           <aside
-            className="flex flex-col rounded-xl border border-[var(--color-border-default)]"
+            className="flex flex-col rounded-xl border border-[var(--sg-shell-border)]"
             style={{
               width: 364,
               height: "calc(100% - 32px)",

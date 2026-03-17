@@ -121,7 +121,7 @@ export function BlueprintDetailModal({
               onClick={() => setActiveTab(tab)}
               className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab
-                  ? "border-[var(--color-accent-primary)] text-[var(--color-text-primary)]"
+                  ? "border-[var(--sg-forest-500)] text-[var(--color-text-primary)]"
                   : "border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
               }`}
             >

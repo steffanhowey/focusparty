@@ -232,11 +232,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
     return (
       <div
         className="flex h-screen items-center justify-center"
-        style={{ background: "var(--color-bg-primary)" }}
+        style={{ background: "var(--sg-forest-900)" }}
       >
         <div
           className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"
-          style={{ color: "var(--color-text-tertiary)" }}
+          style={{ color: "var(--sg-shell-500)" }}
         />
       </div>
     );
@@ -267,7 +267,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {/* Main content */}
       <div
         className="min-w-0 flex-1 flex flex-col overflow-hidden"
-        style={{ background: "var(--color-bg-primary)" }}
+        style={{ background: "var(--sg-forest-900)" }}
       >
         {/* Header */}
         <div className="flex h-16 shrink-0 items-center justify-between gap-4 px-4 md:px-5 lg:px-6">
@@ -275,12 +275,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={toggleMobileMenu}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-active)] hover:text-[var(--color-text-primary)] md:hidden"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--sg-shell-500)] transition-colors hover:bg-[rgba(255,255,255,0.08)] hover:text-[var(--sg-white)] md:hidden"
               aria-label="Open menu"
             >
               <Menu size={20} strokeWidth={1.8} />
             </button>
-            <span className="truncate text-lg font-semibold text-[var(--color-text-primary)]">
+            <span className="truncate text-lg font-semibold text-[var(--sg-white)]">
               {title}
             </span>
           </div>

@@ -33,21 +33,21 @@ export function DataTable<T>({
   rowKey,
 }: DataTableProps<T>) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-[var(--color-border-default)]">
+    <div className="overflow-x-auto rounded-lg border border-white/[0.08]">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-[var(--color-border-default)] bg-white/[0.02]">
+          <tr className="border-b border-white/[0.08] bg-white/[0.02]">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]"
+                className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]"
                 style={{ width: col.width }}
               >
                 {col.sortable && onSort ? (
                   <button
                     type="button"
                     onClick={() => onSort(col.key)}
-                    className="flex items-center gap-1 transition-colors hover:text-[var(--color-text-secondary)]"
+                    className="flex items-center gap-1 transition-colors hover:text-[var(--sg-shell-300)]"
                   >
                     {col.label}
                     {sortKey === col.key ? (
@@ -72,7 +72,7 @@ export function DataTable<T>({
             <tr>
               <td
                 colSpan={columns.length}
-                className="px-4 py-12 text-center text-[var(--color-text-tertiary)]"
+                className="px-4 py-12 text-center text-[var(--sg-shell-500)]"
               >
                 {emptyMessage}
               </td>
@@ -82,7 +82,7 @@ export function DataTable<T>({
               <tr
                 key={rowKey(row)}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={`border-b border-[var(--color-border-subtle)] transition-colors last:border-b-0 ${
+                className={`border-b border-white/[0.04] transition-colors last:border-b-0 ${
                   onRowClick
                     ? "cursor-pointer hover:bg-white/[0.03]"
                     : ""
@@ -91,7 +91,7 @@ export function DataTable<T>({
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className="px-4 py-3 text-[var(--color-text-secondary)]"
+                    className="px-4 py-3 text-[var(--sg-shell-300)]"
                   >
                     {col.render(row)}
                   </td>

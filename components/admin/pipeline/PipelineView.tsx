@@ -14,7 +14,7 @@ import { StatCard } from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DataTable, type Column } from "@/components/admin/DataTable";
 import { Button } from "@/components/ui/Button";
-import { GREEN_700, CORAL_700, PRIORITY_MEDIUM } from "@/lib/palette";
+import { FOREST_300, CORAL_500, PRIORITY_MEDIUM } from "@/lib/palette";
 
 interface JobSummary {
   jobType: string;
@@ -129,7 +129,7 @@ export function PipelineView() {
       key: "jobName",
       label: "Job",
       render: (row) => (
-        <span className="font-medium text-[var(--color-text-primary)]">
+        <span className="font-medium text-[var(--sg-white)]">
           {row.jobName}
         </span>
       ),
@@ -196,23 +196,23 @@ export function PipelineView() {
           icon={Activity}
           color={
             health?.overallHealth === "healthy"
-              ? GREEN_700
+              ? FOREST_300
               : health?.overallHealth === "degraded"
                 ? PRIORITY_MEDIUM
-                : CORAL_700
+                : CORAL_500
           }
         />
         <StatCard
           label="Jobs Healthy"
           value={`${healthyCount}/${jobs.length}`}
           icon={CheckCircle}
-          color={GREEN_700}
+          color={FOREST_300}
         />
         <StatCard
           label="Active Alerts"
           value={alerts.length}
           icon={AlertTriangle}
-          color={alerts.length > 0 ? CORAL_700 : GREEN_700}
+          color={alerts.length > 0 ? CORAL_500 : FOREST_300}
         />
         <StatCard
           label="Avg Duration"
@@ -226,11 +226,11 @@ export function PipelineView() {
         <div
           className="rounded-xl border p-4 space-y-2"
           style={{
-            borderColor: "var(--color-coral-700)",
-            background: "var(--color-coral-700)" + "08",
+            borderColor: "var(--sg-coral-500)",
+            background: "var(--sg-coral-500)" + "08",
           }}
         >
-          <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+          <h3 className="text-sm font-semibold text-[var(--sg-white)]">
             Alerts
           </h3>
           {alerts.map((alert, i) => (
@@ -239,11 +239,11 @@ export function PipelineView() {
               className="flex items-center gap-3 text-sm"
             >
               {alert.severity === "critical" ? (
-                <XCircle size={16} style={{ color: "var(--color-coral-700)" }} />
+                <XCircle size={16} style={{ color: "var(--sg-coral-500)" }} />
               ) : (
                 <AlertTriangle size={16} style={{ color: PRIORITY_MEDIUM }} />
               )}
-              <span className="text-[var(--color-text-secondary)]">
+              <span className="text-[var(--sg-shell-300)]">
                 {alert.message}
               </span>
               <Button
@@ -262,7 +262,7 @@ export function PipelineView() {
 
       {/* Job status table */}
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-[var(--color-text-primary)]">
+        <h3 className="mb-3 text-sm font-semibold text-[var(--sg-white)]">
           Job Status
         </h3>
         <DataTable
@@ -275,12 +275,12 @@ export function PipelineView() {
 
       {/* Recent events */}
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-[var(--color-text-primary)]">
+        <h3 className="mb-3 text-sm font-semibold text-[var(--sg-white)]">
           Recent Events
         </h3>
-        <div className="max-h-96 space-y-1 overflow-y-auto rounded-lg border border-[var(--color-border-default)] p-3">
+        <div className="max-h-96 space-y-1 overflow-y-auto rounded-lg border border-white/[0.08] p-3">
           {events.length === 0 ? (
-            <p className="py-8 text-center text-sm text-[var(--color-text-tertiary)]">
+            <p className="py-8 text-center text-sm text-[var(--sg-shell-500)]">
               No events in the last 24 hours
             </p>
           ) : (
@@ -289,20 +289,20 @@ export function PipelineView() {
                 key={event.id}
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-white/[0.02]"
               >
-                <span className="w-20 shrink-0 text-xs text-[var(--color-text-tertiary)]">
+                <span className="w-20 shrink-0 text-xs text-[var(--sg-shell-500)]">
                   {new Date(event.startedAt).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
                 </span>
                 <StatusBadge status={event.status} />
-                <span className="min-w-0 flex-1 truncate text-[var(--color-text-secondary)]">
+                <span className="min-w-0 flex-1 truncate text-[var(--sg-shell-300)]">
                   {event.jobName}
                 </span>
-                <span className="text-xs text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-[var(--sg-shell-500)]">
                   {event.itemsProcessed > 0 && `${event.itemsProcessed} items`}
                 </span>
-                <span className="text-xs text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-[var(--sg-shell-500)]">
                   {event.durationMs != null && formatMs(event.durationMs)}
                 </span>
               </div>

@@ -4,41 +4,41 @@ import {
   STATUS_TODO,
   STATUS_IN_PROGRESS,
   STATUS_DONE,
-  NAVY_500,
-  NAVY_400,
-  GREEN_700,
-  CORAL_700,
+  SHELL_500,
+  SHELL_300,
+  FOREST_300,
+  CORAL_500,
   PRIORITY_MEDIUM,
 } from "@/lib/palette";
 
 const STATUS_COLORS: Record<string, string> = {
-  active: GREEN_700,
+  active: FOREST_300,
   waiting: PRIORITY_MEDIUM,
-  completed: NAVY_500,
+  completed: SHELL_500,
   candidate: PRIORITY_MEDIUM,
-  approved: GREEN_700,
-  archived: NAVY_500,
+  approved: FOREST_300,
+  archived: SHELL_500,
   todo: STATUS_TODO,
   in_progress: STATUS_IN_PROGRESS,
   done: STATUS_DONE,
   // Pipeline & review statuses
   pending: PRIORITY_MEDIUM,
-  rejected: CORAL_700,
-  failed: CORAL_700,
-  running: GREEN_700,
+  rejected: CORAL_500,
+  failed: CORAL_500,
+  running: FOREST_300,
   partial: PRIORITY_MEDIUM,
-  expired: NAVY_500,
+  expired: SHELL_500,
   // Topic heat statuses
-  hot: CORAL_700,
+  hot: CORAL_500,
   emerging: PRIORITY_MEDIUM,
-  cooling: NAVY_400,
-  cold: NAVY_500,
+  cooling: SHELL_300,
+  cold: SHELL_500,
   // Blueprint draft
-  draft: NAVY_400,
+  draft: SHELL_300,
   // Health
-  healthy: GREEN_700,
+  healthy: FOREST_300,
   degraded: PRIORITY_MEDIUM,
-  critical: CORAL_700,
+  critical: CORAL_500,
 };
 
 interface StatusBadgeProps {
@@ -47,7 +47,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, label }: StatusBadgeProps) {
-  const color = STATUS_COLORS[status] ?? NAVY_500;
+  const color = STATUS_COLORS[status] ?? SHELL_500;
   const displayLabel = label ?? status.replace(/_/g, " ");
 
   return (

@@ -53,7 +53,7 @@ export const KanbanColumn = memo(function KanbanColumn({
   const taskIds = tasks.map((t) => t.id);
 
   return (
-    <div className="flex min-w-0 flex-1 basis-0 flex-col rounded-md bg-[var(--color-bg-secondary)] p-3">
+    <div className="flex min-w-0 flex-1 basis-0 flex-col rounded-md bg-[var(--sg-shell-100)] p-3">
       {/* Column header */}
       <div className="mb-3 flex items-center gap-2">
         <span
@@ -62,7 +62,7 @@ export const KanbanColumn = memo(function KanbanColumn({
         >
           {cfg.label}
         </span>
-        <span className="text-xs text-[var(--color-text-tertiary)]">
+        <span className="text-xs text-[var(--sg-shell-400)]">
           {tasks.length}
         </span>
       </div>
@@ -71,7 +71,7 @@ export const KanbanColumn = memo(function KanbanColumn({
       <div
         ref={setNodeRef}
         className={`flex min-h-[80px] flex-1 flex-col gap-2 rounded-lg transition-colors ${
-          isOver ? "bg-[var(--color-bg-hover)]" : ""
+          isOver ? "bg-[var(--sg-shell-200)]" : ""
         }`}
       >
         <SortableContext
@@ -92,7 +92,7 @@ export const KanbanColumn = memo(function KanbanColumn({
           <>
             {showAddInput ? (
               <div className="flex items-center gap-2 px-2 py-3">
-                <Plus size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
+                <Plus size={14} strokeWidth={1.5} className="shrink-0 text-[var(--sg-shell-400)]" />
                 <input
                   ref={addInputRef}
                   type="text"
@@ -114,10 +114,10 @@ export const KanbanColumn = memo(function KanbanColumn({
                     }
                   }}
                   placeholder="New task..."
-                  className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-[var(--sg-shell-600)] placeholder:text-[var(--sg-shell-400)] outline-none"
                 />
                 {newTaskText.trim() && (
-                  <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
+                  <span className="shrink-0 text-2xs text-[var(--sg-shell-400)]">
                     ↵
                   </span>
                 )}
@@ -126,7 +126,7 @@ export const KanbanColumn = memo(function KanbanColumn({
               <button
                 type="button"
                 onClick={() => setShowAddInput(true)}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-600)]"
               >
                 <Plus size={14} strokeWidth={1.5} />
                 Add task

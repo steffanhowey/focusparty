@@ -7,7 +7,7 @@ import { StatCard } from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DataTable, type Column } from "@/components/admin/DataTable";
 import { SearchInput } from "@/components/admin/SearchInput";
-import { CORAL_700, PRIORITY_MEDIUM } from "@/lib/palette";
+import { CORAL_500, PRIORITY_MEDIUM } from "@/lib/palette";
 
 interface Topic {
   slug: string;
@@ -49,7 +49,7 @@ export function TopicsView() {
       label: "Topic",
       sortable: true,
       render: (row) => (
-        <span className="font-medium text-[var(--color-text-primary)]">
+        <span className="font-medium text-[var(--sg-white)]">
           {row.name}
         </span>
       ),
@@ -61,8 +61,8 @@ export function TopicsView() {
         <span
           className="rounded-full px-2.5 py-1 text-xs font-medium capitalize"
           style={{
-            background: "var(--color-bg-active)",
-            color: "var(--color-text-secondary)",
+            background: "rgba(255,255,255,0.08)",
+            color: "var(--sg-shell-300)",
           }}
         >
           {row.category}
@@ -76,10 +76,10 @@ export function TopicsView() {
       render: (row) => {
         const color =
           row.heat_score >= 0.8
-            ? CORAL_700
+            ? CORAL_500
             : row.heat_score >= 0.5
               ? PRIORITY_MEDIUM
-              : "var(--color-text-tertiary)";
+              : "var(--sg-shell-500)";
         return (
           <span className="font-mono text-sm font-semibold" style={{ color }}>
             {row.heat_score.toFixed(2)}
@@ -134,7 +134,7 @@ export function TopicsView() {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Hot Topics" value={hotCount} icon={Flame} color={CORAL_700} />
+        <StatCard label="Hot Topics" value={hotCount} icon={Flame} color={CORAL_500} />
         <StatCard
           label="Emerging"
           value={emergingCount}
@@ -152,7 +152,7 @@ export function TopicsView() {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="h-9 rounded-lg border border-[var(--color-border-default)] bg-transparent px-3 text-sm text-[var(--color-text-secondary)] focus:border-[var(--color-border-focus)] focus:outline-none"
+          className="h-9 rounded-lg border border-white/[0.08] bg-transparent px-3 text-sm text-[var(--sg-shell-300)] focus:border-[var(--sg-forest-400)] focus:outline-none"
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
@@ -164,7 +164,7 @@ export function TopicsView() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-9 rounded-lg border border-[var(--color-border-default)] bg-transparent px-3 text-sm text-[var(--color-text-secondary)] focus:border-[var(--color-border-focus)] focus:outline-none"
+          className="h-9 rounded-lg border border-white/[0.08] bg-transparent px-3 text-sm text-[var(--sg-shell-300)] focus:border-[var(--sg-forest-400)] focus:outline-none"
         >
           <option value="">All Statuses</option>
           <option value="hot">Hot</option>

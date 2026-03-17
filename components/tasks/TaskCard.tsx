@@ -42,12 +42,12 @@ export const TaskCard = memo(function TaskCard({
       {...listeners}
       onClick={() => onClick?.(task)}
       aria-label={`Task: ${task.title}`}
-      className="group w-full rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 text-left transition-shadow hover:shadow-[var(--shadow-sm)] md:cursor-grab md:touch-none md:active:cursor-grabbing"
+      className="group w-full rounded-sm border border-[var(--sg-shell-border)] bg-white p-3 text-left transition-shadow hover:shadow-sm md:cursor-grab md:touch-none md:active:cursor-grabbing"
     >
       <div className="flex items-start gap-2">
         {/* Drag handle icon — desktop only */}
         <div
-          className="hidden h-5 shrink-0 items-center justify-center text-[var(--color-text-tertiary)] md:flex"
+          className="hidden h-5 shrink-0 items-center justify-center text-[var(--sg-shell-400)] md:flex"
           aria-hidden
         >
           <Grip size={14} strokeWidth={1.5} />
@@ -57,8 +57,8 @@ export const TaskCard = memo(function TaskCard({
           <p
             className={`break-words text-sm leading-snug ${
               isDone
-                ? "text-[var(--color-text-tertiary)] line-through"
-                : "text-[var(--color-text-primary)]"
+                ? "text-[var(--sg-shell-400)] line-through"
+                : "text-[var(--sg-shell-900)]"
             }`}
           >
             {task.title}
@@ -68,7 +68,7 @@ export const TaskCard = memo(function TaskCard({
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             {task.project && (
               <span
-                className="inline-flex items-center gap-1 text-xs text-[var(--color-text-tertiary)]"
+                className="inline-flex items-center gap-1 text-xs text-[var(--sg-shell-500)]"
               >
                 <Folder size={11} strokeWidth={1.5} />
                 {task.project.name}

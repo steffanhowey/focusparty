@@ -100,7 +100,7 @@ function MobileKanban({
   return (
     <div className="flex flex-1 flex-col">
       {/* Tab bar */}
-      <div className="flex gap-1 rounded-md bg-[var(--color-bg-secondary)] p-1">
+      <div className="flex gap-1 rounded-md bg-[var(--sg-shell-100)] p-1">
         {STATUS_COLUMNS.map((status) => {
           const cfg = STATUS_CONFIG[status];
           const count = tasksByStatus[status].length;
@@ -112,8 +112,8 @@ function MobileKanban({
               onClick={() => setActiveStatus(status)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded-sm py-2.5 text-xs font-medium transition-colors ${
                 isActive
-                  ? "bg-[var(--color-bg-elevated)] shadow-sm"
-                  : "text-[var(--color-text-tertiary)]"
+                  ? "bg-white shadow-sm"
+                  : "text-[var(--sg-shell-500)]"
               }`}
               style={isActive ? { color: cfg.color } : undefined}
             >
@@ -121,8 +121,8 @@ function MobileKanban({
               <span
                 className={`text-2xs ${
                   isActive
-                    ? "text-[var(--color-text-secondary)]"
-                    : "text-[var(--color-text-tertiary)]"
+                    ? "text-[var(--sg-shell-600)]"
+                    : "text-[var(--sg-shell-400)]"
                 }`}
               >
                 {count}
@@ -135,7 +135,7 @@ function MobileKanban({
       {/* Task list */}
       <div className="mt-3 flex flex-1 flex-col gap-2">
         {activeTasks.length === 0 && !showAddInput && (
-          <p className="py-8 text-center text-sm text-[var(--color-text-tertiary)]">
+          <p className="py-8 text-center text-sm text-[var(--sg-shell-400)]">
             No tasks
           </p>
         )}
@@ -145,13 +145,13 @@ function MobileKanban({
             key={task.id}
             type="button"
             onClick={() => onTaskClick?.(task)}
-            className="rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 text-left transition-shadow active:shadow-[var(--shadow-sm)]"
+            className="rounded-sm border border-[var(--sg-shell-border)] bg-white p-3 text-left transition-shadow active:shadow-sm"
           >
             <p
               className={`break-words text-sm leading-snug ${
                 isDone
-                  ? "text-[var(--color-text-tertiary)] line-through"
-                  : "text-[var(--color-text-primary)]"
+                  ? "text-[var(--sg-shell-400)] line-through"
+                  : "text-[var(--sg-shell-900)]"
               }`}
             >
               {task.title}
@@ -159,7 +159,7 @@ function MobileKanban({
             {(task.project || (task.labels && task.labels.length > 0)) && (
               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                 {task.project && (
-                  <span className="inline-flex items-center gap-1 text-xs text-[var(--color-text-tertiary)]">
+                  <span className="inline-flex items-center gap-1 text-xs text-[var(--sg-shell-500)]">
                     <Folder size={11} strokeWidth={1.5} />
                     {task.project.name}
                   </span>
@@ -180,7 +180,7 @@ function MobileKanban({
                 <Plus
                   size={14}
                   strokeWidth={1.5}
-                  className="shrink-0 text-[var(--color-text-tertiary)]"
+                  className="shrink-0 text-[var(--sg-shell-400)]"
                 />
                 <input
                   ref={addInputRef}
@@ -201,10 +201,10 @@ function MobileKanban({
                     if (!newTaskText.trim()) setShowAddInput(false);
                   }}
                   placeholder="New task..."
-                  className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-[var(--sg-shell-600)] placeholder:text-[var(--sg-shell-400)] outline-none"
                 />
                 {newTaskText.trim() && (
-                  <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
+                  <span className="shrink-0 text-2xs text-[var(--sg-shell-400)]">
                     ↵
                   </span>
                 )}
@@ -213,7 +213,7 @@ function MobileKanban({
               <button
                 type="button"
                 onClick={() => setShowAddInput(true)}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-600)]"
               >
                 <Plus size={14} strokeWidth={1.5} />
                 Add task
@@ -377,8 +377,8 @@ export function KanbanBoard({
 
       <DragOverlay dropAnimation={null}>
         {draggedTask ? (
-          <div className="w-[280px] rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 shadow-lg">
-            <p className="text-sm text-[var(--color-text-primary)]">
+          <div className="w-[280px] rounded-sm border border-[var(--sg-shell-border)] bg-white p-3 shadow-lg">
+            <p className="text-sm text-[var(--sg-shell-900)]">
               {draggedTask.title}
             </p>
           </div>

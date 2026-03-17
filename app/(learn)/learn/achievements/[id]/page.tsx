@@ -109,8 +109,8 @@ export default async function AchievementPage({
 
   if (!achievement) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
-        <p className="text-sm text-[var(--color-text-tertiary)]">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--sg-white)]">
+        <p className="text-sm text-[var(--sg-shell-500)]">
           Achievement not found.
         </p>
       </div>
@@ -120,9 +120,9 @@ export default async function AchievementPage({
   const userName = await fetchUserName(achievement.user_id);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-bg-primary)] p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--sg-white)] p-6">
       {/* Attribution */}
-      <p className="text-sm text-[var(--color-text-tertiary)] mb-6">
+      <p className="text-sm text-[var(--sg-shell-500)] mb-6">
         {userName} completed this learning path
       </p>
 
@@ -131,9 +131,9 @@ export default async function AchievementPage({
         className="w-full max-w-md rounded-xl overflow-hidden"
         style={{
           background:
-            "linear-gradient(145deg, var(--color-bg-secondary), var(--color-bg-primary))",
-          border: "1px solid var(--color-border-default)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+            "linear-gradient(145deg, var(--sg-shell-50), var(--sg-white))",
+          border: "1px solid var(--sg-shell-border)",
+          boxShadow: "var(--shadow-float, 0 8px 32px rgba(0,0,0,0.12))",
         }}
       >
         {/* Accent bar */}
@@ -141,7 +141,7 @@ export default async function AchievementPage({
           className="h-1"
           style={{
             background:
-              "linear-gradient(to right, var(--color-accent-primary), var(--color-cyan-700))",
+              "linear-gradient(to right, var(--sg-forest-500), var(--sg-teal-600))",
           }}
         />
 
@@ -150,11 +150,11 @@ export default async function AchievementPage({
           <div className="space-y-1">
             <p
               className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "var(--color-accent-primary)" }}
+              style={{ color: "var(--sg-forest-500)" }}
             >
               Path Complete
             </p>
-            <h1 className="text-lg font-bold text-[var(--color-text-primary)] leading-snug">
+            <h1 className="text-lg font-bold text-[var(--sg-shell-900)] leading-snug">
               {achievement.path_title}
             </h1>
           </div>
@@ -162,24 +162,24 @@ export default async function AchievementPage({
           {/* Divider */}
           <div
             className="h-px"
-            style={{ background: "var(--color-border-default)" }}
+            style={{ background: "var(--sg-shell-border)" }}
           />
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-[var(--color-text-tertiary)] text-xs">
+              <p className="text-[var(--sg-shell-500)] text-xs">
                 Resources
               </p>
-              <p className="text-[var(--color-text-primary)] font-medium">
+              <p className="text-[var(--sg-shell-900)] font-medium">
                 {achievement.items_completed} completed
               </p>
             </div>
             <div>
-              <p className="text-[var(--color-text-tertiary)] text-xs">
+              <p className="text-[var(--sg-shell-500)] text-xs">
                 Time invested
               </p>
-              <p className="text-[var(--color-text-primary)] font-medium">
+              <p className="text-[var(--sg-shell-900)] font-medium">
                 {formatDuration(achievement.time_invested_seconds)}
               </p>
             </div>
@@ -188,14 +188,14 @@ export default async function AchievementPage({
           {/* Topics */}
           {achievement.path_topics.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-[var(--color-text-tertiary)] text-xs">
+              <p className="text-[var(--sg-shell-500)] text-xs">
                 Topics
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {achievement.path_topics.slice(0, 5).map((t) => (
                   <span
                     key={t}
-                    className="px-2 py-0.5 rounded text-xs bg-[var(--color-bg-hover)] text-[var(--color-text-secondary)]"
+                    className="px-2 py-0.5 rounded text-xs bg-[var(--sg-sage-100)] text-[var(--sg-shell-600)]"
                   >
                     {t}
                   </span>
@@ -206,10 +206,10 @@ export default async function AchievementPage({
 
           {/* Footer */}
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs text-[var(--color-text-tertiary)]">
+            <span className="text-xs text-[var(--sg-shell-500)]">
               Completed {formatDate(achievement.completed_at)}
             </span>
-            <span className="text-xs font-medium text-[var(--color-text-tertiary)]">
+            <span className="text-xs font-medium text-[var(--sg-shell-500)]">
               SkillGap.ai
             </span>
           </div>
@@ -220,7 +220,7 @@ export default async function AchievementPage({
       <a
         href="/learn"
         className="mt-8 text-sm font-medium transition-colors"
-        style={{ color: "var(--color-accent-primary)" }}
+        style={{ color: "var(--sg-forest-500)" }}
       >
         Start learning on SkillGap.ai
       </a>

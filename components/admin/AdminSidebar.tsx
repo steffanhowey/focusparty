@@ -22,7 +22,7 @@ export function AdminSidebar({ activeId, onNavClick, badges }: AdminSidebarProps
     >
       {/* Header */}
       <div className="flex h-14 shrink-0 items-center gap-2.5 px-4">
-        <Shield size={18} strokeWidth={1.8} className="shrink-0 text-[var(--color-accent-primary)]" />
+        <Shield size={18} strokeWidth={1.8} className="shrink-0 text-[var(--sg-forest-500)]" />
         <span
           className="text-sm font-bold tracking-wide text-[var(--color-text-primary)]"
         >
@@ -46,7 +46,7 @@ export function AdminSidebar({ activeId, onNavClick, badges }: AdminSidebarProps
               }}
               className={`-mx-3 flex h-12 items-center gap-3 border-l-2 px-[calc(0.75rem+0.625rem)] transition-all duration-150 ${
                 isActive
-                  ? "border-[var(--color-accent-primary)] bg-white/[0.06]"
+                  ? "border-[var(--sg-forest-500)] bg-white/[0.06]"
                   : "border-transparent hover:bg-white/[0.03]"
               }`}
               style={{
@@ -62,8 +62,8 @@ export function AdminSidebar({ activeId, onNavClick, badges }: AdminSidebarProps
                 <span
                   className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none"
                   style={{
-                    background: "var(--color-accent-primary)",
-                    color: "var(--color-bg-primary)",
+                    background: "var(--sg-forest-500)",
+                    color: "var(--sg-white)",
                   }}
                 >
                   {badges[item.id]}

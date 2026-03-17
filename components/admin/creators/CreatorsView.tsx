@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DataTable, type Column } from "@/components/admin/DataTable";
 import { SearchInput } from "@/components/admin/SearchInput";
 import { Pagination } from "@/components/admin/Pagination";
-import { GREEN_700, CORAL_700, PRIORITY_MEDIUM } from "@/lib/palette";
+import { FOREST_300, CORAL_500, PRIORITY_MEDIUM } from "@/lib/palette";
 
 interface Creator {
   id: string;
@@ -56,7 +56,7 @@ export function CreatorsView() {
       key: "channel_name",
       label: "Channel",
       render: (row) => (
-        <span className="font-medium text-[var(--color-text-primary)]">
+        <span className="font-medium text-[var(--sg-white)]">
           {row.channel_name}
         </span>
       ),
@@ -81,14 +81,14 @@ export function CreatorsView() {
               className="rounded-full px-2 py-0.5 text-[10px] font-medium"
               style={{
                 background: "var(--color-bg-active)",
-                color: "var(--color-text-secondary)",
+                color: "var(--sg-shell-300)",
               }}
             >
               {t}
             </span>
           ))}
           {(row.topics ?? []).length > 3 && (
-            <span className="text-[10px] text-[var(--color-text-tertiary)]">
+            <span className="text-[10px] text-[var(--sg-shell-500)]">
               +{row.topics.length - 3}
             </span>
           )}
@@ -112,10 +112,10 @@ export function CreatorsView() {
         if (row.avg_engagement == null) return "—";
         const color =
           row.avg_engagement >= 0.7
-            ? GREEN_700
+            ? FOREST_300
             : row.avg_engagement >= 0.4
               ? PRIORITY_MEDIUM
-              : "var(--color-text-tertiary)";
+              : "var(--sg-shell-500)";
         return (
           <span className="font-mono text-xs font-semibold" style={{ color }}>
             {row.avg_engagement.toFixed(3)}
@@ -139,13 +139,13 @@ export function CreatorsView() {
           label="Active Partners"
           value={activePartners}
           icon={Star}
-          color={GREEN_700}
+          color={FOREST_300}
         />
         <StatCard
           label="Opted Out"
           value={optedOut}
           icon={UserX}
-          color={CORAL_700}
+          color={CORAL_500}
         />
       </div>
 
@@ -167,7 +167,7 @@ export function CreatorsView() {
             setStatusFilter(e.target.value);
             setPage(1);
           }}
-          className="h-9 rounded-lg border border-[var(--color-border-default)] bg-transparent px-3 text-sm text-[var(--color-text-secondary)] focus:border-[var(--color-border-focus)] focus:outline-none"
+          className="h-9 rounded-lg border border-[var(--color-border-default)] bg-transparent px-3 text-sm text-[var(--sg-shell-300)] focus:border-[var(--color-border-focus)] focus:outline-none"
         >
           <option value="">All Statuses</option>
           <option value="partner">Partner</option>

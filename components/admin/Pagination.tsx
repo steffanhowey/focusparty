@@ -14,7 +14,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
 
   return (
     <div className="flex items-center justify-between pt-4">
-      <span className="text-xs text-[var(--color-text-tertiary)]">
+      <span className="text-xs text-[var(--sg-shell-500)]">
         Page {page} of {totalPages}
       </span>
       <div className="flex items-center gap-2">

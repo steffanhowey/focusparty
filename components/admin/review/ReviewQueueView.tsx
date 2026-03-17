@@ -107,7 +107,7 @@ export function ReviewQueueView() {
           ))}
         </div>
         {autoStats?.stats && autoStats.stats.approved > 0 && (
-          <span className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium" style={{ background: "var(--color-accent-primary)" + "18", color: "var(--color-accent-primary)" }}>
+          <span className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium" style={{ background: "var(--sg-forest-500)" + "18", color: "var(--sg-forest-500)" }}>
             <ShieldCheck size={12} />
             {autoStats.stats.approved} auto-approved today
           </span>
@@ -162,8 +162,8 @@ export function ReviewQueueView() {
                 <span
                   className="rounded-full px-2.5 py-1 font-medium"
                   style={{
-                    background: "var(--color-accent-primary)" + "18",
-                    color: "var(--color-accent-primary)",
+                    background: "var(--sg-forest-500)" + "18",
+                    color: "var(--sg-forest-500)",
                   }}
                 >
                   {bp.topic}

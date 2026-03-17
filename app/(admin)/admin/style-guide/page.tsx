@@ -38,7 +38,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-4">
-      <p className="mb-2 text-xs font-medium text-[var(--color-text-tertiary)]">{label}</p>
+      <p className="mb-2 text-xs font-medium text-[var(--sg-shell-500)]">{label}</p>
       <div className="flex flex-wrap items-center gap-3">{children}</div>
     </div>
   );
@@ -54,7 +54,7 @@ export default function StyleGuidePage() {
       >
         Button Style Guide
       </h1>
-      <p className="mb-8 text-sm text-[var(--color-text-secondary)]">
+      <p className="mb-8 text-sm text-[var(--sg-shell-600)]">
         All interactive button components in the SkillGap design system.
       </p>
 
@@ -134,7 +134,7 @@ export default function StyleGuidePage() {
       <Section title="MenuItem">
         <div className="flex gap-8">
           <div className="w-64">
-            <p className="mb-2 text-xs font-medium text-[var(--color-text-tertiary)]">Size: sm (popovers)</p>
+            <p className="mb-2 text-xs font-medium text-[var(--sg-shell-500)]">Size: sm (popovers)</p>
             <div
               className="overflow-hidden rounded-xl py-1"
               style={{
@@ -149,7 +149,7 @@ export default function StyleGuidePage() {
           </div>
 
           <div className="w-64">
-            <p className="mb-2 text-xs font-medium text-[var(--color-text-tertiary)]">Size: default (sidebar)</p>
+            <p className="mb-2 text-xs font-medium text-[var(--sg-shell-500)]">Size: default (sidebar)</p>
             <div
               className="overflow-hidden rounded-xl py-1"
               style={{
@@ -178,7 +178,7 @@ export default function StyleGuidePage() {
                 selected={isSelected}
                 onClick={() => setSelectedToggle(isSelected ? null : label)}
                 className={`flex flex-col items-center gap-1.5 px-4 py-3 ${
-                  isSelected ? "text-white" : "text-[var(--color-text-tertiary)]"
+                  isSelected ? "text-white" : "text-[var(--sg-shell-500)]"
                 }`}
               >
                 <Icon size={20} strokeWidth={1.6} />
@@ -190,17 +190,17 @@ export default function StyleGuidePage() {
 
         <Row label="Content Cards">
           <ToggleCard selected={false} className="flex items-start gap-2.5 w-48">
-            <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--color-text-tertiary)]" />
+            <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--sg-shell-500)]" />
             <div>
-              <p className="text-xs font-semibold text-[var(--color-text-secondary)]">Completed</p>
-              <p className="text-2xs text-[var(--color-text-tertiary)]">Finished what I set out to do</p>
+              <p className="text-xs font-semibold text-[var(--sg-shell-600)]">Completed</p>
+              <p className="text-2xs text-[var(--sg-shell-500)]">Finished what I set out to do</p>
             </div>
           </ToggleCard>
           <ToggleCard selected={true} className="flex items-start gap-2.5 w-48">
-            <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--color-accent-primary)]" />
+            <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--sg-forest-500)]" />
             <div>
               <p className="text-xs font-semibold text-white">Selected Card</p>
-              <p className="text-2xs text-[var(--color-text-tertiary)]">This one is selected</p>
+              <p className="text-2xs text-[var(--sg-shell-500)]">This one is selected</p>
             </div>
           </ToggleCard>
         </Row>
@@ -208,16 +208,16 @@ export default function StyleGuidePage() {
 
       {/* ── Contextual Patterns ── */}
       <Section title="Contextual Patterns (Not Componentized)">
-        <div className="rounded-xl border border-[var(--color-border-default)] p-4 text-sm text-[var(--color-text-secondary)]">
+        <div className="rounded-xl border border-[var(--sg-shell-border)] p-4 text-sm text-[var(--sg-shell-600)]">
           <p className="mb-2 font-medium text-white">These patterns are intentionally left inline:</p>
-          <ul className="list-inside list-disc space-y-1 text-xs text-[var(--color-text-tertiary)]">
-            <li><strong className="text-[var(--color-text-secondary)]">ActionBar toolbar buttons</strong> — frosted-glass icon buttons in the session action bar</li>
-            <li><strong className="text-[var(--color-text-secondary)]">TopBar overlay buttons</strong> — video overlay with drop-shadow context</li>
-            <li><strong className="text-[var(--color-text-secondary)]">EnvironmentActionBar</strong> — glass toolbar with labeled icon buttons</li>
-            <li><strong className="text-[var(--color-text-secondary)]">RoomCard vibe check</strong> — animated glassmorphism overlay</li>
-            <li><strong className="text-[var(--color-text-secondary)]">DurationPills</strong> — selection pill pattern</li>
-            <li><strong className="text-[var(--color-text-secondary)]">World picker cards</strong> — dynamic accent color on hover</li>
-            <li><strong className="text-[var(--color-text-secondary)]">DataTable sort headers</strong> — table header interactive elements</li>
+          <ul className="list-inside list-disc space-y-1 text-xs text-[var(--sg-shell-500)]">
+            <li><strong className="text-[var(--sg-shell-600)]">ActionBar toolbar buttons</strong> — frosted-glass icon buttons in the session action bar</li>
+            <li><strong className="text-[var(--sg-shell-600)]">TopBar overlay buttons</strong> — video overlay with drop-shadow context</li>
+            <li><strong className="text-[var(--sg-shell-600)]">EnvironmentActionBar</strong> — glass toolbar with labeled icon buttons</li>
+            <li><strong className="text-[var(--sg-shell-600)]">RoomCard vibe check</strong> — animated glassmorphism overlay</li>
+            <li><strong className="text-[var(--sg-shell-600)]">DurationPills</strong> — selection pill pattern</li>
+            <li><strong className="text-[var(--sg-shell-600)]">World picker cards</strong> — dynamic accent color on hover</li>
+            <li><strong className="text-[var(--sg-shell-600)]">DataTable sort headers</strong> — table header interactive elements</li>
           </ul>
         </div>
       </Section>

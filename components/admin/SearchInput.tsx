@@ -42,20 +42,20 @@ export function SearchInput({
     <div className="relative">
       <Search
         size={16}
-        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)]"
       />
       <input
         type="text"
         value={localValue}
         onChange={(e) => handleChange(e.target.value)}
         placeholder={placeholder}
-        className="h-10 w-full rounded-full border border-[var(--color-border-default)] bg-white/[0.04] pl-9 pr-9 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] outline-none transition-colors focus:border-[var(--color-border-focus)]"
+        className="h-10 w-full rounded-full border border-white/[0.08] bg-white/[0.04] pl-9 pr-9 text-sm text-[var(--sg-white)] placeholder-[var(--sg-shell-500)] outline-none transition-colors focus:border-[var(--sg-forest-400)]"
       />
       {localValue && (
         <button
           type="button"
           onClick={() => handleChange("")}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-300)]"
         >
           <X size={14} />
         </button>

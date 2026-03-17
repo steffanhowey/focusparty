@@ -148,7 +148,7 @@ export function UserDetailModal({
               className="flex h-5 w-9 items-center rounded-full px-0.5 transition-colors"
               style={{
                 background: isAdmin
-                  ? "var(--color-accent-primary)"
+                  ? "var(--sg-forest-500)"
                   : "var(--color-bg-hover)",
               }}
             >

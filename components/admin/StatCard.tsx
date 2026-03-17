@@ -13,20 +13,20 @@ export function StatCard({
   label,
   value,
   icon: Icon,
-  color = "var(--color-accent-primary)",
+  color = "var(--sg-forest-500)",
 }: StatCardProps) {
   return (
     <div
-      className="rounded-xl border border-[var(--color-border-default)] p-5"
-      style={{ background: "var(--color-bg-elevated)" }}
+      className="rounded-xl border border-white/[0.08] p-5"
+      style={{ background: "rgba(20,20,20,0.6)" }}
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          <p className="text-xs font-medium uppercase tracking-wider text-[var(--sg-shell-500)]">
             {label}
           </p>
           <p
-            className="mt-2 text-3xl font-bold text-[var(--color-text-primary)]"
+            className="mt-2 text-3xl font-bold text-[var(--sg-white)]"
           >
             {value}
           </p>

@@ -59,7 +59,7 @@ export function DashboardView() {
       <div className="flex items-center justify-center py-20">
         <div
           className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"
-          style={{ color: "var(--color-text-tertiary)" }}
+          style={{ color: "var(--sg-shell-500)" }}
         />
       </div>
     );
@@ -73,38 +73,38 @@ export function DashboardView() {
           label="Total Users"
           value={stats?.totalUsers ?? 0}
           icon={Users}
-          color="var(--color-cyan-700)"
+          color="var(--sg-teal-600)"
         />
         <StatCard
           label="Active Sessions"
           value={stats?.activeSessionsNow ?? 0}
           icon={Zap}
-          color="var(--color-green-700)"
+          color="var(--sg-forest-300)"
         />
         <StatCard
           label="Sessions Today"
           value={stats?.sessionsToday ?? 0}
           icon={Calendar}
-          color="var(--color-gold-700)"
+          color="var(--sg-gold-600)"
         />
         <StatCard
           label="Active Parties"
           value={stats?.activeParties ?? 0}
           icon={PartyPopper}
-          color="var(--color-indigo-700)"
+          color="var(--sg-teal-600)"
         />
       </div>
 
       {/* Quick Actions */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
           Quick Actions
         </h2>
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
             onClick={() => handleQuickAction("rotate")}
-            className="flex items-center gap-2 rounded-full border border-[var(--color-border-default)] px-4 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.04]"
+            className="flex items-center gap-2 rounded-full border border-white/[0.08] px-4 py-2.5 text-sm font-medium text-[var(--sg-shell-300)] transition-colors hover:bg-white/[0.04]"
           >
             <Image size={16} strokeWidth={1.8} />
             Rotate Backgrounds
@@ -112,7 +112,7 @@ export function DashboardView() {
           <button
             type="button"
             onClick={() => handleQuickAction("tick")}
-            className="flex items-center gap-2 rounded-full border border-[var(--color-border-default)] px-4 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.04]"
+            className="flex items-center gap-2 rounded-full border border-white/[0.08] px-4 py-2.5 text-sm font-medium text-[var(--sg-shell-300)] transition-colors hover:bg-white/[0.04]"
           >
             <Bot size={16} strokeWidth={1.8} />
             Trigger Synthetic Tick
@@ -120,7 +120,7 @@ export function DashboardView() {
           <button
             type="button"
             onClick={() => fetchData()}
-            className="flex items-center gap-2 rounded-full border border-[var(--color-border-default)] px-4 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.04]"
+            className="flex items-center gap-2 rounded-full border border-white/[0.08] px-4 py-2.5 text-sm font-medium text-[var(--sg-shell-300)] transition-colors hover:bg-white/[0.04]"
           >
             <RefreshCw size={16} strokeWidth={1.8} />
             Refresh
@@ -130,15 +130,15 @@ export function DashboardView() {
 
       {/* Recent Activity */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
           Recent Activity
         </h2>
         <div
-          className="rounded-xl border border-[var(--color-border-default)] divide-y divide-[var(--color-border-subtle)]"
-          style={{ background: "var(--color-bg-elevated)" }}
+          className="rounded-xl border border-white/[0.08] divide-y divide-white/[0.04]"
+          style={{ background: "rgba(20,20,20,0.6)" }}
         >
           {events.length === 0 ? (
-            <div className="px-4 py-12 text-center text-sm text-[var(--color-text-tertiary)]">
+            <div className="px-4 py-12 text-center text-sm text-[var(--sg-shell-500)]">
               No recent activity
             </div>
           ) : (
@@ -156,12 +156,12 @@ export function DashboardView() {
                     className="shrink-0"
                     style={{ color: rendered.color }}
                   />
-                  <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-secondary)]">
+                  <span className="min-w-0 flex-1 truncate text-sm text-[var(--sg-shell-300)]">
                     {rendered.label}
                   </span>
                   <div className="flex shrink-0 items-center gap-2">
                     <StatusBadge status={event.actor_type} />
-                    <span className="text-xs text-[var(--color-text-tertiary)]">
+                    <span className="text-xs text-[var(--sg-shell-500)]">
                       {relativeTime(event.created_at)}
                     </span>
                   </div>

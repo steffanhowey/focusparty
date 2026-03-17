@@ -353,11 +353,11 @@ export function BackgroundsView() {
                   style={{
                     background:
                       genCount === n
-                        ? "var(--color-accent-primary)"
+                        ? "var(--sg-forest-500)"
                         : "transparent",
                     borderColor:
                       genCount === n
-                        ? "var(--color-accent-primary)"
+                        ? "var(--sg-forest-500)"
                         : "var(--color-border-default)",
                     color:
                       genCount === n
