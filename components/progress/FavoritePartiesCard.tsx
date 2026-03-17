@@ -13,7 +13,7 @@ export function FavoritePartiesCard({ parties }: FavoritePartiesCardProps) {
   if (parties.length === 0) {
     return (
       <Card variant="default" className="p-5">
-        <p className="text-center text-sm text-[var(--color-text-tertiary)]">
+        <p className="text-center text-sm text-[var(--sg-shell-500)]">
           Join a party and complete a session to see your favorites
         </p>
       </Card>
@@ -39,10 +39,10 @@ export function FavoritePartiesCard({ parties }: FavoritePartiesCardProps) {
                 <FlameIcon character={charId} size={20} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-white">
+                <p className="truncate text-sm font-medium text-[var(--sg-shell-900)]">
                   {p.partyName}
                 </p>
-                <p className="text-xs text-[var(--color-text-tertiary)]">
+                <p className="text-xs text-[var(--sg-shell-500)]">
                   {p.sessionCount} session{p.sessionCount !== 1 ? "s" : ""}
                 </p>
               </div>

@@ -57,8 +57,6 @@ export function FunctionMigrationModal() {
 
     if (!user) return;
     const supabase = createClient();
-    // Increment dismissal count via raw RPC isn't available,
-    // so read + write the count
     const current = profile?.function_prompt_dismissed_count ?? 0;
     await supabase
       .from("fp_profiles")
@@ -102,29 +100,23 @@ export function FunctionMigrationModal() {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 animate-fade-in"
-        style={{ background: "rgba(0,0,0,0.6)" }}
+        className="absolute inset-0 animate-fade-in bg-[var(--sg-shell-900)]/40"
         onClick={dismiss}
       />
 
       {/* Modal */}
       <div
-        className="relative z-10 mx-4 w-full max-w-md animate-scale-in overflow-hidden rounded-2xl"
-        style={{
-          background: "var(--color-bg-elevated)",
-          border: "1px solid var(--color-border-default)",
-          boxShadow: "var(--shadow-xl)",
-        }}
+        className="relative z-10 mx-4 w-full max-w-md animate-scale-in overflow-hidden rounded-2xl border border-[var(--sg-shell-border)] bg-white shadow-xl"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--color-border-default)] px-6 py-4">
+        <div className="flex items-center justify-between border-b border-[var(--sg-shell-border)] px-6 py-4">
           <div>
-            <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
+            <h2 className="text-base font-semibold text-[var(--sg-shell-900)]">
               {step === 0
                 ? "We\u2019ve added something new"
                 : "One more thing"}
             </h2>
-            <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
+            <p className="mt-0.5 text-xs text-[var(--sg-shell-600)]">
               {step === 0
                 ? "Tell us what you do and we\u2019ll personalize everything."
                 : "This helps us calibrate your experience."}
@@ -132,7 +124,7 @@ export function FunctionMigrationModal() {
           </div>
           <button
             onClick={dismiss}
-            className="rounded-full p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-secondary)]"
+            className="rounded-full p-1.5 text-[var(--sg-shell-400)] transition-colors hover:bg-[var(--sg-shell-100)] hover:text-[var(--sg-shell-600)]"
           >
             <X size={16} strokeWidth={2} />
           </button>
@@ -145,7 +137,7 @@ export function FunctionMigrationModal() {
             <>
               <FluencyStep onSelect={handleFluencySelect} />
               {saving && (
-                <p className="mt-3 text-center text-xs text-[var(--color-text-tertiary)]">
+                <p className="mt-3 text-center text-xs text-[var(--sg-shell-500)]">
                   Saving...
                 </p>
               )}

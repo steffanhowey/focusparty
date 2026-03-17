@@ -39,13 +39,7 @@ export function FirstPathTooltip() {
     <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 animate-fade-in">
       <button
         onClick={() => setVisible(false)}
-        className="rounded-lg px-4 py-2.5 text-sm font-medium shadow-lg"
-        style={{
-          background: "var(--color-bg-elevated)",
-          color: "var(--color-text-primary)",
-          border: "1px solid var(--color-border-default)",
-          boxShadow: "var(--shadow-float)",
-        }}
+        className="rounded-lg border border-[var(--sg-shell-border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--sg-shell-900)] shadow-lg"
       >
         Your first module takes about 8 minutes
       </button>
@@ -78,32 +72,25 @@ export function AdjustAnytimeBanner() {
 
   return (
     <div className="fixed top-20 left-1/2 z-40 w-full max-w-sm -translate-x-1/2 animate-fade-in px-4">
-      <div
-        className="relative flex items-center gap-3 rounded-lg px-4 py-3"
-        style={{
-          background: "var(--color-bg-elevated)",
-          border: "1px solid var(--color-border-default)",
-          boxShadow: "var(--shadow-float)",
-        }}
-      >
+      <div className="relative flex items-center gap-3 rounded-lg border border-[var(--sg-shell-border)] bg-white px-4 py-3 shadow-lg">
         <Settings
           size={16}
           strokeWidth={1.8}
-          className="shrink-0 text-[var(--color-text-tertiary)]"
+          className="shrink-0 text-[var(--sg-shell-400)]"
         />
-        <p className="text-xs text-[var(--color-text-secondary)]">
-          We set your level to <strong className="text-[var(--color-text-primary)]">Practicing</strong>.
+        <p className="text-xs text-[var(--sg-shell-600)]">
+          We set your level to <strong className="text-[var(--sg-shell-900)]">Practicing</strong>.
           You can adjust anytime in{" "}
           <a
             href="/settings"
-            className="font-medium text-[var(--color-accent-primary)] underline underline-offset-2"
+            className="font-medium text-[var(--sg-forest-500)] underline underline-offset-2"
           >
             Settings
           </a>.
         </p>
         <button
           onClick={dismiss}
-          className="shrink-0 rounded-full p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+          className="shrink-0 rounded-full p-1 text-[var(--sg-shell-400)] transition-colors hover:text-[var(--sg-shell-600)]"
         >
           <X size={12} strokeWidth={2} />
         </button>
@@ -132,42 +119,28 @@ export function MissionCelebration({ onDismiss }: MissionCelebrationProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 animate-fade-in"
-        style={{ background: "rgba(0,0,0,0.5)" }}
+        className="absolute inset-0 animate-fade-in bg-[var(--sg-shell-900)]/40"
         onClick={onDismiss}
       />
 
       {/* Card */}
-      <div
-        className="relative z-10 mx-4 max-w-sm animate-scale-in rounded-2xl p-8 text-center"
-        style={{
-          background: "var(--color-bg-elevated)",
-          border: "1px solid var(--color-border-default)",
-          boxShadow: "var(--shadow-xl)",
-        }}
-      >
-        <div
-          className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
-          style={{ background: "var(--color-accent-primary)", opacity: 0.15 }}
-        >
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-full"
-            style={{ background: "var(--color-accent-primary)" }}
-          >
+      <div className="relative z-10 mx-4 max-w-sm animate-scale-in rounded-2xl border border-[var(--sg-shell-border)] bg-white p-8 text-center shadow-xl">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--sg-forest-100)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--sg-forest-500)]">
             <span className="text-lg text-white">&#10003;</span>
           </div>
         </div>
 
-        <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+        <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
           You just built something with AI
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-secondary)]">
+        <p className="mt-2 text-sm leading-relaxed text-[var(--sg-shell-600)]">
           This is how it starts. Every skill compounds from here.
         </p>
 
         <button
           onClick={onDismiss}
-          className="mt-6 text-sm font-medium text-[var(--color-accent-primary)] transition-opacity hover:opacity-80"
+          className="mt-6 text-sm font-medium text-[var(--sg-forest-500)] transition-opacity hover:opacity-80"
         >
           Keep going
         </button>
@@ -235,37 +208,27 @@ export function RoomBridge({
 
   return (
     <div className="fixed bottom-6 left-1/2 z-50 w-full max-w-sm -translate-x-1/2 animate-fade-in px-4">
-      <div
-        className="relative rounded-xl p-5"
-        style={{
-          background: "var(--color-bg-elevated)",
-          border: "1px solid var(--color-border-default)",
-          boxShadow: "var(--shadow-float)",
-        }}
-      >
+      <div className="relative rounded-xl border border-[var(--sg-shell-border)] bg-white p-5 shadow-lg">
         <button
           onClick={dismiss}
-          className="absolute right-3 top-3 rounded-full p-1 text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-secondary)]"
+          className="absolute right-3 top-3 rounded-full p-1 text-[var(--sg-shell-400)] transition-colors hover:bg-[var(--sg-shell-100)] hover:text-[var(--sg-shell-600)]"
         >
           <X size={14} strokeWidth={2} />
         </button>
 
         <div className="flex items-start gap-3">
-          <div
-            className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-            style={{ background: "var(--color-bg-active)" }}
-          >
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--sg-forest-100)]">
             <Users
               size={18}
               strokeWidth={1.8}
-              className="text-[var(--color-accent-primary)]"
+              className="text-[var(--sg-forest-500)]"
             />
           </div>
           <div>
-            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+            <p className="text-sm font-medium text-[var(--sg-shell-900)]">
               Want to practice with others?
             </p>
-            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+            <p className="mt-1 text-xs text-[var(--sg-shell-600)]">
               {activeCount > 0
                 ? `${activeCount} people are learning ${topicName} right now.`
                 : `Join others learning ${topicName} together.`}

@@ -9,10 +9,10 @@ import { fluencyLabel } from "@/lib/skills/assessment";
 import type { SkillFluency } from "@/lib/types/skills";
 
 const FLUENCY_COLORS: Record<SkillFluency, string> = {
-  exploring: "var(--color-text-tertiary)",
-  practicing: "var(--color-cyan-700)",
-  proficient: "var(--color-green-700)",
-  advanced: "var(--color-violet-700)",
+  exploring: "var(--sg-sage-500)",
+  practicing: "var(--sg-teal-500)",
+  proficient: "var(--sg-forest-400)",
+  advanced: "var(--sg-gold-600)",
 };
 
 interface FluencyBadgeProps {

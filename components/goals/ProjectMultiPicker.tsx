@@ -81,7 +81,7 @@ export function ProjectMultiPicker({
     if (!trimmed) return;
     const created = await onCreateProject({
       name: trimmed,
-      color: "var(--color-indigo-700)",
+      color: "var(--sg-teal-600)",
       emoji: "",
     });
     if (created) {
@@ -102,7 +102,7 @@ export function ProjectMultiPicker({
   const dropdown = open ? (
     <div
       ref={dropdownRef}
-      className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-dropdown)] p-1.5 shadow-lg backdrop-blur-[20px]"
+      className="rounded-lg border border-[var(--sg-shell-border)] bg-white p-1.5 shadow-lg"
       style={{
         position: "fixed",
         top: pos.top,
@@ -126,7 +126,7 @@ export function ProjectMultiPicker({
               }
             }}
             placeholder="Project name"
-            className="h-9 w-full rounded-full border border-[var(--color-border-default)] bg-white/[0.08] px-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)] focus:outline-none"
+            className="h-9 w-full rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-3 text-sm text-[var(--sg-shell-900)] placeholder:text-[var(--sg-shell-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
           />
           <div className="flex justify-end gap-2">
             <button
@@ -135,7 +135,7 @@ export function ProjectMultiPicker({
                 setCreating(false);
                 setNewName("");
               }}
-              className="rounded-full px-3 py-1.5 text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+              className="rounded-full px-3 py-1.5 text-xs text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-600)]"
             >
               Cancel
             </button>
@@ -144,7 +144,7 @@ export function ProjectMultiPicker({
               onClick={handleCreate}
               disabled={!newName.trim()}
               className="rounded-full px-3 py-1.5 text-xs font-medium text-white transition-colors disabled:opacity-40"
-              style={{ background: "var(--color-accent-primary)" }}
+              style={{ background: "var(--sg-forest-500)" }}
             >
               Create
             </button>
@@ -159,13 +159,13 @@ export function ProjectMultiPicker({
                 key={p.id}
                 type="button"
                 onClick={() => toggle(p.id)}
-                className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.06]"
+                className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-sm text-[var(--sg-shell-600)] transition-colors hover:bg-[var(--sg-shell-100)]"
               >
                 {selected ? (
                   <Check
                     size={14}
                     strokeWidth={2}
-                    className="shrink-0 text-[var(--color-accent-primary)]"
+                    className="shrink-0 text-[var(--sg-forest-500)]"
                   />
                 ) : (
                   <span className="w-[14px] shrink-0" />
@@ -173,21 +173,21 @@ export function ProjectMultiPicker({
                 <Folder
                   size={14}
                   strokeWidth={1.5}
-                  className="shrink-0 text-[var(--color-text-tertiary)]"
+                  className="shrink-0 text-[var(--sg-shell-500)]"
                 />
                 <span className="truncate">{p.name}</span>
               </button>
             );
           })}
 
-          <div className="my-1 h-px bg-[var(--color-border-default)]" />
+          <div className="my-1 h-px bg-[var(--sg-shell-border)]" />
           <button
             type="button"
             onClick={() => {
               setCreating(true);
               setNewName("");
             }}
-            className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-sm text-[var(--color-text-tertiary)] transition-colors hover:bg-white/[0.06] hover:text-[var(--color-text-secondary)]"
+            className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-sm text-[var(--sg-shell-500)] transition-colors hover:bg-[var(--sg-shell-100)] hover:text-[var(--sg-shell-600)]"
           >
             <Plus size={14} strokeWidth={2} className="shrink-0" />
             <span>Create project</span>
@@ -202,18 +202,18 @@ export function ProjectMultiPicker({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="relative flex h-10 w-full cursor-pointer items-center gap-2 rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 pr-9 text-sm transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+        className="relative flex h-10 w-full cursor-pointer items-center gap-2 rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 pr-9 text-sm transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
       >
         <Folder
           size={14}
           strokeWidth={1.5}
-          className="shrink-0 text-[var(--color-text-tertiary)]"
+          className="shrink-0 text-[var(--sg-shell-500)]"
         />
         <span
           className={
             value.length > 0
-              ? "truncate text-[var(--color-text-secondary)]"
-              : "text-[var(--color-text-tertiary)]"
+              ? "truncate text-[var(--sg-shell-600)]"
+              : "text-[var(--sg-shell-500)]"
           }
         >
           {label}
@@ -221,7 +221,7 @@ export function ProjectMultiPicker({
         <ChevronDown
           size={14}
           strokeWidth={1.5}
-          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)]"
         />
       </button>
 

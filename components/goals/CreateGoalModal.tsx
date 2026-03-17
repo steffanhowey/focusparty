@@ -58,7 +58,7 @@ export function CreateGoalModal({
         />
 
         <div>
-          <label className="mb-1.5 block text-xs text-[var(--color-text-tertiary)]">
+          <label className="mb-1.5 block text-xs text-[var(--sg-shell-500)]">
             Description (optional)
           </label>
           <textarea
@@ -66,12 +66,12 @@ export function CreateGoalModal({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add more context..."
             rows={2}
-            className="w-full resize-none rounded-md border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2.5 text-sm text-[var(--color-text-secondary)] placeholder-[var(--color-text-tertiary)] transition-colors focus:border-[var(--color-border-focus)] focus:outline-none"
+            className="w-full resize-none rounded-md border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 py-2.5 text-sm text-[var(--sg-shell-600)] placeholder-[var(--sg-shell-400)] transition-colors focus:border-[var(--sg-forest-400)] focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs text-[var(--color-text-tertiary)]">
+          <label className="mb-1.5 block text-xs text-[var(--sg-shell-500)]">
             Tasks (optional)
           </label>
           <TaskPicker

@@ -144,7 +144,7 @@ export function GoalDetailModal({
 
         {/* Status */}
         <div>
-          <label className="mb-1.5 block text-xs text-[var(--color-text-tertiary)]">
+          <label className="mb-1.5 block text-xs text-[var(--sg-shell-500)]">
             Status
           </label>
           <div className="relative">
@@ -153,7 +153,7 @@ export function GoalDetailModal({
               onChange={(e) =>
                 setStatus(e.target.value as "active" | "in_progress" | "completed")
               }
-              className="h-10 w-full cursor-pointer appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 pr-9 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+              className="h-10 w-full cursor-pointer appearance-none rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 pr-9 text-sm text-[var(--sg-shell-600)] transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
             >
               {EDITABLE_STATUSES.map((s) => (
                 <option key={s} value={s}>
@@ -164,14 +164,14 @@ export function GoalDetailModal({
             <ChevronDown
               size={14}
               strokeWidth={1.5}
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)]"
             />
           </div>
         </div>
 
         {/* Description */}
         <div>
-          <label className="mb-1.5 block text-xs text-[var(--color-text-tertiary)]">
+          <label className="mb-1.5 block text-xs text-[var(--sg-shell-500)]">
             Description
           </label>
           <textarea
@@ -179,13 +179,13 @@ export function GoalDetailModal({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add a description..."
             rows={2}
-            className="w-full resize-none rounded-md border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2.5 text-sm text-white placeholder:text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+            className="w-full resize-none rounded-md border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 py-2.5 text-sm text-[var(--sg-shell-900)] placeholder:text-[var(--sg-shell-400)] transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
           />
         </div>
 
         {/* Projects */}
         <div>
-          <label className="mb-1.5 block text-xs text-[var(--color-text-tertiary)]">
+          <label className="mb-1.5 block text-xs text-[var(--sg-shell-500)]">
             Projects
           </label>
           <ProjectMultiPicker
@@ -198,10 +198,10 @@ export function GoalDetailModal({
 
         {/* Tasks */}
         <div>
-          <label className="mb-1.5 block text-xs text-[var(--color-text-tertiary)]">
+          <label className="mb-1.5 block text-xs text-[var(--sg-shell-500)]">
             Tasks
           </label>
-          <div className="max-h-48 overflow-y-auto rounded-md border border-[var(--color-border-default)] bg-white/[0.02] px-1 py-1">
+          <div className="max-h-48 overflow-y-auto rounded-md border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-1 py-1">
             <GoalTaskList
               tasks={tasks}
               goalId={goal.id}

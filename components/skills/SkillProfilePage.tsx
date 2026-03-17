@@ -24,10 +24,10 @@ const FLUENCY_BAR_SEGMENTS: {
   label: string;
   color: string;
 }[] = [
-  { key: "skills_at_advanced", level: "advanced", label: "Advanced", color: "var(--color-violet-700)" },
-  { key: "skills_at_proficient", level: "proficient", label: "Proficient", color: "var(--color-green-700)" },
-  { key: "skills_at_practicing", level: "practicing", label: "Practicing", color: "var(--color-cyan-700)" },
-  { key: "skills_at_exploring", level: "exploring", label: "Exploring", color: "var(--color-text-tertiary)" },
+  { key: "skills_at_advanced", level: "advanced", label: "Advanced", color: "var(--sg-gold-600)" },
+  { key: "skills_at_proficient", level: "proficient", label: "Proficient", color: "var(--sg-forest-400)" },
+  { key: "skills_at_practicing", level: "practicing", label: "Practicing", color: "var(--sg-teal-500)" },
+  { key: "skills_at_exploring", level: "exploring", label: "Exploring", color: "var(--sg-sage-500)" },
 ];
 
 // ─── Component ───────────────────────────────────────────────
@@ -42,7 +42,7 @@ export function SkillProfilePage() {
       <div className="flex items-center justify-center py-24">
         <Loader2
           size={24}
-          className="animate-spin text-[var(--color-text-tertiary)]"
+          className="animate-spin text-[var(--sg-shell-400)]"
         />
       </div>
     );
@@ -52,7 +52,7 @@ export function SkillProfilePage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-2">
-        <p className="text-sm text-[var(--color-text-tertiary)]">
+        <p className="text-sm text-[var(--sg-shell-500)]">
           Failed to load skill profile.
         </p>
       </div>
@@ -63,20 +63,17 @@ export function SkillProfilePage() {
   if (!summary || summary.total_skills_started === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-        <div
-          className="flex h-14 w-14 items-center justify-center rounded-full"
-          style={{ background: "var(--color-bg-hover)" }}
-        >
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--sg-shell-100)]">
           <Compass
             size={24}
-            className="text-[var(--color-text-tertiary)]"
+            className="text-[var(--sg-shell-500)]"
           />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+          <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
             Your skill profile starts here
           </h2>
-          <p className="mt-1 text-sm text-[var(--color-text-tertiary)] max-w-sm">
+          <p className="mt-1 text-sm text-[var(--sg-shell-500)] max-w-sm">
             Complete learning paths to develop verified AI skills and build your professional skill portfolio.
           </p>
         </div>
@@ -99,7 +96,7 @@ export function SkillProfilePage() {
   return (
     <div className="space-y-6">
       {/* Subtitle */}
-      <p className="text-sm text-[var(--color-text-tertiary)]">
+      <p className="text-sm text-[var(--sg-shell-500)]">
         Your AI skill portfolio
       </p>
 
@@ -134,10 +131,7 @@ export function SkillProfilePage() {
       {totalStarted >= 2 && (
         <div className="space-y-2">
           {/* Stacked bar */}
-          <div
-            className="flex h-3 w-full overflow-hidden rounded-full"
-            style={{ background: "var(--color-bg-hover)" }}
-          >
+          <div className="flex h-3 w-full overflow-hidden rounded-full bg-[var(--sg-shell-200)]">
             {FLUENCY_BAR_SEGMENTS.map(({ key, color }) => {
               const count = summary[key];
               if (count === 0) return null;
@@ -163,7 +157,7 @@ export function SkillProfilePage() {
                     className="inline-block h-2 w-2 rounded-full"
                     style={{ background: color }}
                   />
-                  <span className="text-xs text-[var(--color-text-tertiary)]">
+                  <span className="text-xs text-[var(--sg-shell-500)]">
                     {label} ({count})
                   </span>
                 </div>
@@ -174,7 +168,7 @@ export function SkillProfilePage() {
       )}
 
       {/* Domain sections */}
-      <div className="divide-y divide-[var(--color-border-default)]">
+      <div className="divide-y divide-[var(--sg-shell-border)]">
         {domains.map((domain, i) => (
           <SkillDomainSection
             key={domain.domain.slug}

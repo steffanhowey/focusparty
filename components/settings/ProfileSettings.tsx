@@ -15,17 +15,17 @@ import {
 } from "@/lib/onboarding/types";
 
 const inputClass =
-  "h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-4 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]";
+  "h-11 w-full rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 text-sm text-[var(--sg-shell-900)] outline-none placeholder:text-[var(--sg-shell-400)] focus:border-[var(--sg-forest-400)]";
 
 function UsernameStatusIcon({ status }: { status: UsernameStatus }) {
   switch (status) {
     case "checking":
-      return <Loader2 size={16} className="animate-spin text-[var(--color-text-tertiary)]" />;
+      return <Loader2 size={16} className="animate-spin text-[var(--sg-shell-400)]" />;
     case "available":
-      return <Check size={16} className="text-[var(--color-green-700)]" />;
+      return <Check size={16} className="text-[var(--sg-forest-400)]" />;
     case "taken":
     case "invalid":
-      return <X size={16} className="text-[var(--color-red-700)]" />;
+      return <X size={16} className="text-[var(--sg-coral-500)]" />;
     default:
       return null;
   }
@@ -105,7 +105,7 @@ export function ProfileSettings() {
   if (!profile) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-[var(--color-text-tertiary)]" />
+        <Loader2 size={24} className="animate-spin text-[var(--sg-shell-400)]" />
       </div>
     );
   }
@@ -113,19 +113,19 @@ export function ProfileSettings() {
   return (
     <div className="space-y-8 py-8">
       <div>
-        <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Profile</h2>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+        <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">Profile</h2>
+        <p className="mt-1 text-sm text-[var(--sg-shell-600)]">
           Manage your identity across SkillGap.
         </p>
       </div>
 
       {/* Avatar section */}
-      <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
-        <label className="mb-3 block text-xs font-medium text-[var(--color-text-secondary)]">
+      <div className="rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] p-6">
+        <label className="mb-3 block text-xs font-medium text-[var(--sg-shell-600)]">
           Avatar
         </label>
         <div className="flex items-center gap-5">
-          <div className="relative h-[88px] w-[88px] overflow-hidden rounded-full border-2 border-[var(--color-border-default)]">
+          <div className="relative h-[88px] w-[88px] overflow-hidden rounded-full border-2 border-[var(--sg-shell-border)]">
             {profile.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -134,12 +134,12 @@ export function ProfileSettings() {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg-active)] text-2xl font-bold text-[var(--color-text-secondary)]">
+              <div className="flex h-full w-full items-center justify-center bg-[var(--sg-shell-100)] text-2xl font-bold text-[var(--sg-shell-600)]">
                 {currentDisplayName.charAt(0).toUpperCase()}
               </div>
             )}
             {generating && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+              <div className="absolute inset-0 flex items-center justify-center bg-[var(--sg-shell-900)]/40">
                 <Loader2 size={24} className="animate-spin text-white" />
               </div>
             )}
@@ -155,10 +155,10 @@ export function ProfileSettings() {
               {generating ? "Generating..." : "Regenerate"}
             </Button>
             {genMessage && (
-              <p className="text-xs text-[var(--color-text-tertiary)]">{genMessage}</p>
+              <p className="text-xs text-[var(--sg-shell-500)]">{genMessage}</p>
             )}
             {!profile.username && (
-              <p className="text-xs text-[var(--color-text-tertiary)]">
+              <p className="text-xs text-[var(--sg-shell-500)]">
                 Set a username first to generate an avatar.
               </p>
             )}
@@ -167,8 +167,8 @@ export function ProfileSettings() {
       </div>
 
       {/* Display name */}
-      <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
-        <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+      <div className="rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] p-6">
+        <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
           Display name
         </label>
         <div className="flex gap-2">
@@ -183,7 +183,7 @@ export function ProfileSettings() {
             <button
               onClick={saveDisplayName}
               disabled={savingName || !currentDisplayName.trim()}
-              className="shrink-0 rounded-lg bg-[var(--color-accent-primary)] px-4 text-sm font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+              className="shrink-0 rounded-lg bg-[var(--sg-forest-500)] px-4 text-sm font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-50"
             >
               {savingName ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             </button>
@@ -192,13 +192,13 @@ export function ProfileSettings() {
       </div>
 
       {/* Username */}
-      <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
-        <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+      <div className="rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] p-6">
+        <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
           Username
         </label>
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-tertiary)]">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--sg-shell-400)]">
               @
             </span>
             <input
@@ -210,9 +210,9 @@ export function ProfileSettings() {
               style={{
                 borderColor:
                   username.status === "available"
-                    ? "var(--color-green-700)"
+                    ? "var(--sg-forest-400)"
                     : username.status === "taken" || username.status === "invalid"
-                      ? "var(--color-red-700)"
+                      ? "var(--sg-coral-500)"
                       : undefined,
               }}
             />
@@ -224,28 +224,28 @@ export function ProfileSettings() {
             <button
               onClick={saveUsername}
               disabled={savingUsername}
-              className="shrink-0 rounded-lg bg-[var(--color-accent-primary)] px-4 text-sm font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+              className="shrink-0 rounded-lg bg-[var(--sg-forest-500)] px-4 text-sm font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-50"
             >
               {savingUsername ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             </button>
           )}
         </div>
         {username.error && (
-          <p className="mt-1.5 text-xs text-[var(--color-red-700)]">{username.error}</p>
+          <p className="mt-1.5 text-xs text-[var(--sg-coral-500)]">{username.error}</p>
         )}
         {username.status === "available" && usernameChanged && (
-          <p className="mt-1.5 text-xs text-[var(--color-green-700)]">@{username.value} is available</p>
+          <p className="mt-1.5 text-xs text-[var(--sg-forest-500)]">@{username.value} is available</p>
         )}
         {profile.username && !usernameChanged && (
-          <p className="mt-1.5 text-xs text-[var(--color-text-tertiary)]">
+          <p className="mt-1.5 text-xs text-[var(--sg-shell-500)]">
             Your current handle: @{profile.username}
           </p>
         )}
       </div>
 
       {/* Email (read-only) */}
-      <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
-        <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+      <div className="rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] p-6">
+        <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
           Email
         </label>
         <input
@@ -306,24 +306,24 @@ function FunctionFluencySection({
   return (
     <>
       <div>
-        <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+        <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
           Personalization
         </h2>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+        <p className="mt-1 text-sm text-[var(--sg-shell-600)]">
           These shape your learning paths and recommendations.
         </p>
       </div>
 
-      <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6 space-y-5">
+      <div className="rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] p-6 space-y-5">
         {/* Function */}
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+          <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
             Professional function
           </label>
           <select
             value={fn ?? ""}
             onChange={(e) => setFn((e.target.value || null) as ProfessionalFunction | null)}
-            className="h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-3 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+            className="h-11 w-full rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-3 text-sm text-[var(--sg-shell-900)] outline-none focus:border-[var(--sg-forest-400)]"
           >
             <option value="">Select...</option>
             {FUNCTION_OPTIONS.map((o) => (
@@ -333,7 +333,7 @@ function FunctionFluencySection({
             ))}
           </select>
           {!hasChanges && (
-            <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+            <p className="mt-1 text-xs text-[var(--sg-shell-500)]">
               Current: {fnLabel}
             </p>
           )}
@@ -341,13 +341,13 @@ function FunctionFluencySection({
 
         {/* Fluency */}
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+          <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
             AI fluency level
           </label>
           <select
             value={fl ?? ""}
             onChange={(e) => setFl((e.target.value || null) as FluencyLevel | null)}
-            className="h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-3 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+            className="h-11 w-full rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-3 text-sm text-[var(--sg-shell-900)] outline-none focus:border-[var(--sg-forest-400)]"
           >
             <option value="">Select...</option>
             {FLUENCY_OPTIONS.map((o) => (
@@ -357,7 +357,7 @@ function FunctionFluencySection({
             ))}
           </select>
           {!hasChanges && (
-            <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+            <p className="mt-1 text-xs text-[var(--sg-shell-500)]">
               Current: {flLabel}
             </p>
           )}

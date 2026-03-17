@@ -87,7 +87,7 @@ function ScopePicker({
 }) {
   if (scopes.length === 0) {
     return (
-      <p className="text-xs text-[var(--color-text-tertiary)]">
+      <p className="text-xs text-[var(--sg-shell-500)]">
         No scopes configured yet. Scopes will appear after the provider syncs available resources.
       </p>
     );
@@ -95,7 +95,7 @@ function ScopePicker({
 
   return (
     <div className="space-y-1.5">
-      <p className="text-xs font-medium text-[var(--color-text-secondary)]">
+      <p className="text-xs font-medium text-[var(--sg-shell-600)]">
         Connected resources
       </p>
       {scopes.map((scope) => (
@@ -103,20 +103,20 @@ function ScopePicker({
           key={scope.id}
           type="button"
           onClick={() => onToggle(scope.id, accountId, !scope.enabled)}
-          className="flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors hover:bg-[var(--color-bg-active)]"
+          className="flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors hover:bg-[var(--sg-shell-100)]"
           style={{
             background: scope.enabled
-              ? "rgba(255,255,255,0.04)"
+              ? "var(--sg-shell-50)"
               : "transparent",
-            border: "1px solid rgba(255,255,255,0.06)",
+            border: "1px solid var(--sg-shell-border)",
           }}
         >
           <span
             className="truncate"
             style={{
               color: scope.enabled
-                ? "var(--color-text-primary)"
-                : "var(--color-text-tertiary)",
+                ? "var(--sg-shell-900)"
+                : "var(--sg-shell-500)",
             }}
           >
             {scope.external_name}
@@ -124,12 +124,12 @@ function ScopePicker({
           {scope.enabled ? (
             <ToggleRight
               size={18}
-              className="shrink-0 text-[var(--color-green-700)]"
+              className="shrink-0 text-[var(--sg-forest-400)]"
             />
           ) : (
             <ToggleLeft
               size={18}
-              className="shrink-0 text-[var(--color-text-tertiary)]"
+              className="shrink-0 text-[var(--sg-shell-400)]"
             />
           )}
         </button>
@@ -176,11 +176,11 @@ function ProviderCard({
 
   return (
     <div
-      className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-5"
+      className="rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] p-5"
       style={{
         borderColor: isConnected
           ? `${provider.color}33`
-          : "var(--color-border-default)",
+          : "var(--sg-shell-border)",
       }}
     >
       <div className="flex items-center justify-between">
@@ -195,15 +195,15 @@ function ProviderCard({
             <Icon size={20} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+            <h3 className="text-sm font-semibold text-[var(--sg-shell-900)]">
               {provider.displayName}
             </h3>
-            <p className="text-xs text-[var(--color-text-tertiary)]">
+            <p className="text-xs text-[var(--sg-shell-500)]">
               {isConnected ? (
                 <span className="flex items-center gap-1">
                   <span
                     className="inline-block h-1.5 w-1.5 rounded-full"
-                    style={{ background: "var(--color-green-700)" }}
+                    style={{ background: "var(--sg-forest-400)" }}
                   />
                   {displayLabel ?? "Connected"}
                 </span>
@@ -249,7 +249,7 @@ function ProviderCard({
 
       {/* Scope picker (expanded) */}
       {isConnected && expanded && (
-        <div className="mt-4 border-t border-[var(--color-border-default)] pt-4">
+        <div className="mt-4 border-t border-[var(--sg-shell-border)] pt-4">
           <ScopePicker
             accountId={
               // We need the account ID for the scope picker
@@ -320,7 +320,7 @@ export function IntegrationSettings() {
       <div className="flex items-center justify-center py-12">
         <Loader2
           size={24}
-          className="animate-spin text-[var(--color-text-tertiary)]"
+          className="animate-spin text-[var(--sg-shell-400)]"
         />
       </div>
     );
@@ -329,10 +329,10 @@ export function IntegrationSettings() {
   return (
     <div className="space-y-8 py-8">
       <div>
-        <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+        <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
           Integrations
         </h2>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+        <p className="mt-1 text-sm text-[var(--sg-shell-600)]">
           Connect your tools to bring real work into focus sprints.
         </p>
       </div>
@@ -344,10 +344,12 @@ export function IntegrationSettings() {
           style={{
             background:
               statusMessage.type === "success"
-                ? "rgba(91, 198, 130, 0.12)"
-                : "rgba(239, 85, 85, 0.12)",
+                ? "var(--sg-forest-100)"
+                : "var(--sg-coral-100)",
             color:
-              statusMessage.type === "success" ? "var(--color-green-700)" : "var(--color-red-700)",
+              statusMessage.type === "success"
+                ? "var(--sg-forest-700)"
+                : "var(--sg-coral-600)",
           }}
         >
           {statusMessage.type === "success" ? (

@@ -19,14 +19,14 @@ export function StreakCard({ currentStreak, bestStreak }: StreakCardProps) {
           className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
           style={{
             background: isActive
-              ? "var(--color-bg-active)"
-              : "var(--color-bg-hover)",
+              ? "var(--sg-forest-100)"
+              : "var(--sg-shell-100)",
           }}
         >
           <Flame
             size={28}
             style={{
-              color: isActive ? "var(--color-text-secondary)" : "var(--color-text-tertiary)",
+              color: isActive ? "var(--sg-forest-500)" : "var(--sg-shell-400)",
             }}
           />
         </div>
@@ -34,16 +34,14 @@ export function StreakCard({ currentStreak, bestStreak }: StreakCardProps) {
         {/* Streak numbers */}
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-1.5">
-            <span
-              className="text-3xl font-bold text-white"
-            >
+            <span className="text-3xl font-bold text-[var(--sg-shell-900)]">
               {currentStreak}
             </span>
-            <span className="text-sm text-[var(--color-text-secondary)]">
+            <span className="text-sm text-[var(--sg-shell-600)]">
               day{currentStreak !== 1 ? "s" : ""}
             </span>
           </div>
-          <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">
+          <p className="mt-0.5 text-sm text-[var(--sg-shell-600)]">
             {isActive
               ? "Keep it going!"
               : "Start a session to build your streak"}
@@ -52,10 +50,8 @@ export function StreakCard({ currentStreak, bestStreak }: StreakCardProps) {
 
         {/* Best streak badge */}
         <div className="text-right">
-          <p className="text-xs text-[var(--color-text-tertiary)]">Best</p>
-          <p
-            className="text-lg font-semibold text-white"
-          >
+          <p className="text-xs text-[var(--sg-shell-500)]">Best</p>
+          <p className="text-lg font-semibold text-[var(--sg-shell-900)]">
             {bestStreak}
           </p>
         </div>

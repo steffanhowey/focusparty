@@ -12,7 +12,7 @@ export function RecentActivityList({ events }: RecentActivityListProps) {
   if (events.length === 0) {
     return (
       <Card variant="default" className="p-5">
-        <p className="text-center text-sm text-[var(--color-text-tertiary)]">
+        <p className="text-center text-sm text-[var(--sg-shell-500)]">
           No activity yet — complete a session to see your momentum
         </p>
       </Card>
@@ -35,10 +35,10 @@ export function RecentActivityList({ events }: RecentActivityListProps) {
                 <Icon size={13} style={{ color: rendered.color }} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm leading-snug text-[var(--color-text-secondary)]">
+                <p className="text-sm leading-snug text-[var(--sg-shell-600)]">
                   {rendered.label}
                 </p>
-                <p className="mt-0.5 text-2xs text-[var(--color-text-tertiary)]">
+                <p className="mt-0.5 text-2xs text-[var(--sg-shell-500)]">
                   {relativeTime(event.created_at)}
                 </p>
               </div>

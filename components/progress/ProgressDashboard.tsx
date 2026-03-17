@@ -18,7 +18,7 @@ export function ProgressDashboard() {
   if (progress.loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-text-tertiary)] border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--sg-shell-300)] border-t-[var(--sg-forest-500)]" />
       </div>
     );
   }
@@ -26,7 +26,7 @@ export function ProgressDashboard() {
   if (progress.error) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <p className="text-sm text-[var(--color-text-secondary)]">
+        <p className="text-sm text-[var(--sg-shell-600)]">
           {progress.error}
         </p>
       </div>
@@ -41,7 +41,7 @@ export function ProgressDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <p className="text-sm text-[var(--color-text-secondary)]">
+        <p className="text-sm text-[var(--sg-shell-600)]">
           Your focus journey at a glance
         </p>
       </div>
@@ -76,7 +76,7 @@ export function ProgressDashboard() {
 
       {/* Streak */}
       <div>
-        <h3 className="mb-2 text-sm font-medium text-[var(--color-text-secondary)]">
+        <h3 className="mb-2 text-sm font-medium text-[var(--sg-shell-600)]">
           Streak
         </h3>
         <StreakCard
@@ -88,17 +88,17 @@ export function ProgressDashboard() {
       {/* Activity chart */}
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">
+          <h3 className="text-sm font-medium text-[var(--sg-shell-600)]">
             Activity
           </h3>
-          <div className="flex gap-1 rounded-full bg-[var(--color-bg-hover)] p-0.5">
+          <div className="flex gap-1 rounded-full bg-[var(--sg-shell-100)] p-0.5">
             <button
               type="button"
               onClick={() => setChartRange("7d")}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 chartRange === "7d"
-                  ? "bg-[var(--color-bg-secondary)] text-white shadow-sm"
-                  : "text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+                  ? "bg-white text-[var(--sg-shell-900)] shadow-sm"
+                  : "text-[var(--sg-shell-500)] hover:text-[var(--sg-shell-600)]"
               }`}
             >
               7d
@@ -108,8 +108,8 @@ export function ProgressDashboard() {
               onClick={() => setChartRange("30d")}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 chartRange === "30d"
-                  ? "bg-[var(--color-bg-secondary)] text-white shadow-sm"
-                  : "text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+                  ? "bg-white text-[var(--sg-shell-900)] shadow-sm"
+                  : "text-[var(--sg-shell-500)] hover:text-[var(--sg-shell-600)]"
               }`}
             >
               30d
@@ -122,13 +122,13 @@ export function ProgressDashboard() {
       {/* Two-column: Recent activity + Favorite parties */}
       <div className="grid gap-4 md:grid-cols-3">
         <div className="md:col-span-2">
-          <h3 className="mb-2 text-sm font-medium text-[var(--color-text-secondary)]">
+          <h3 className="mb-2 text-sm font-medium text-[var(--sg-shell-600)]">
             Recent Activity
           </h3>
           <RecentActivityList events={progress.recentActivity} />
         </div>
         <div>
-          <h3 className="mb-2 text-sm font-medium text-[var(--color-text-secondary)]">
+          <h3 className="mb-2 text-sm font-medium text-[var(--sg-shell-600)]">
             Favorite Parties
           </h3>
           <FavoritePartiesCard parties={progress.favoriteParties} />

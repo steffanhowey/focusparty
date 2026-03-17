@@ -65,7 +65,7 @@ export function TaskPicker({ value, onChange, tasks }: TaskPickerProps) {
   const dropdown = open ? (
     <div
       ref={dropdownRef}
-      className="max-h-48 overflow-y-auto rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-dropdown)] p-1.5 shadow-lg backdrop-blur-[20px]"
+      className="max-h-48 overflow-y-auto rounded-lg border border-[var(--sg-shell-border)] bg-white p-1.5 shadow-lg"
       style={{
         position: "fixed",
         top: pos.top,
@@ -75,7 +75,7 @@ export function TaskPicker({ value, onChange, tasks }: TaskPickerProps) {
       }}
     >
       {tasks.length === 0 ? (
-        <p className="px-3 py-2 text-xs text-[var(--color-text-tertiary)]">
+        <p className="px-3 py-2 text-xs text-[var(--sg-shell-500)]">
           No unassigned tasks
         </p>
       ) : (
@@ -86,13 +86,13 @@ export function TaskPicker({ value, onChange, tasks }: TaskPickerProps) {
               key={t.id}
               type="button"
               onClick={() => toggle(t.id)}
-              className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.06]"
+              className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-sm text-[var(--sg-shell-600)] transition-colors hover:bg-[var(--sg-shell-100)]"
             >
               {selected ? (
                 <Check
                   size={14}
                   strokeWidth={2}
-                  className="shrink-0 text-[var(--color-accent-primary)]"
+                  className="shrink-0 text-[var(--sg-forest-500)]"
                 />
               ) : (
                 <span className="w-[14px] shrink-0" />
@@ -110,18 +110,18 @@ export function TaskPicker({ value, onChange, tasks }: TaskPickerProps) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="relative flex h-10 w-full cursor-pointer items-center gap-2 rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 pr-9 text-sm transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+        className="relative flex h-10 w-full cursor-pointer items-center gap-2 rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 pr-9 text-sm transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
       >
         <ListChecks
           size={14}
           strokeWidth={1.5}
-          className="shrink-0 text-[var(--color-text-tertiary)]"
+          className="shrink-0 text-[var(--sg-shell-500)]"
         />
         <span
           className={
             value.length > 0
-              ? "truncate text-[var(--color-text-secondary)]"
-              : "text-[var(--color-text-tertiary)]"
+              ? "truncate text-[var(--sg-shell-600)]"
+              : "text-[var(--sg-shell-500)]"
           }
         >
           {label}
@@ -129,7 +129,7 @@ export function TaskPicker({ value, onChange, tasks }: TaskPickerProps) {
         <ChevronDown
           size={14}
           strokeWidth={1.5}
-          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)]"
         />
       </button>
 

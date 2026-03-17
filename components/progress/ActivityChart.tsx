@@ -29,7 +29,7 @@ export function ActivityChart({ data, range }: ActivityChartProps) {
   if (data.length === 0) {
     return (
       <Card variant="default" className="p-5">
-        <p className="text-center text-sm text-[var(--color-text-tertiary)]">
+        <p className="text-center text-sm text-[var(--sg-shell-500)]">
           No activity data yet
         </p>
       </Card>
@@ -62,9 +62,9 @@ export function ActivityChart({ data, range }: ActivityChartProps) {
                   minHeight: d.sessions > 0 ? 6 : 2,
                   backgroundColor: d.sessions > 0
                     ? isToday
-                      ? "var(--color-accent-primary)"
-                      : "rgba(124, 92, 252, 0.5)"
-                    : "var(--color-bg-hover)",
+                      ? "var(--sg-forest-500)"
+                      : "var(--sg-teal-500)"
+                    : "var(--sg-shell-200)",
                   maxWidth: isCompact ? 8 : 28,
                 }}
               />
@@ -79,7 +79,7 @@ export function ActivityChart({ data, range }: ActivityChartProps) {
           {data.map((d) => (
             <div
               key={d.day}
-              className="flex-1 text-center text-2xs text-[var(--color-text-tertiary)]"
+              className="flex-1 text-center text-2xs text-[var(--sg-shell-500)]"
             >
               {formatDay(d.day, range)}
             </div>
@@ -89,10 +89,10 @@ export function ActivityChart({ data, range }: ActivityChartProps) {
 
       {isCompact && (
         <div className="mt-2 flex justify-between">
-          <span className="text-2xs text-[var(--color-text-tertiary)]">
+          <span className="text-2xs text-[var(--sg-shell-500)]">
             {formatDay(data[0].day, range)}
           </span>
-          <span className="text-2xs text-[var(--color-text-tertiary)]">
+          <span className="text-2xs text-[var(--sg-shell-500)]">
             Today
           </span>
         </div>

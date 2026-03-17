@@ -42,24 +42,21 @@ export function SkillDomainSection({ domain, index, onNavigate, marketStates }: 
         <span className="text-lg">{domain.domain.icon}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
+            <span className="text-sm font-semibold text-[var(--sg-shell-900)] truncate">
               {domain.domain.name}
             </span>
-            <span className="text-xs text-[var(--color-text-tertiary)] shrink-0">
+            <span className="text-xs text-[var(--sg-shell-500)] shrink-0">
               {domain.active_count}/{domain.total_count}
             </span>
           </div>
           {/* Mini progress bar */}
-          <div
-            className="mt-1 h-1 w-full rounded-full overflow-hidden"
-            style={{ background: "var(--color-bg-hover)" }}
-          >
+          <div className="mt-1 h-1 w-full rounded-full overflow-hidden bg-[var(--sg-shell-200)]">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${progressPct}%`,
                 background: hasActive
-                  ? "var(--color-accent-primary)"
+                  ? "var(--sg-forest-500)"
                   : "transparent",
               }}
             />
@@ -67,7 +64,7 @@ export function SkillDomainSection({ domain, index, onNavigate, marketStates }: 
         </div>
         <ChevronDown
           size={16}
-          className="shrink-0 text-[var(--color-text-tertiary)] transition-transform duration-200"
+          className="shrink-0 text-[var(--sg-shell-400)] transition-transform duration-200"
           style={{
             transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)",
           }}

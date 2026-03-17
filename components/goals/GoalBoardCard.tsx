@@ -68,12 +68,12 @@ export const GoalBoardCard = memo(function GoalBoardCard({
       {...listeners}
       onClick={onClick}
       aria-label={`Goal: ${goal.title}`}
-      className="group w-full rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 text-left transition-shadow hover:shadow-[var(--shadow-sm)] md:cursor-grab md:touch-none md:active:cursor-grabbing"
+      className="group w-full rounded-sm border border-[var(--sg-shell-border)] bg-white p-3 text-left transition-shadow hover:shadow-sm md:cursor-grab md:touch-none md:active:cursor-grabbing"
     >
       <div className="flex items-start gap-2">
         {/* Drag handle icon — desktop only */}
         <div
-          className="hidden h-5 shrink-0 items-center justify-center text-[var(--color-text-tertiary)] md:flex"
+          className="hidden h-5 shrink-0 items-center justify-center text-[var(--sg-shell-400)] md:flex"
           aria-hidden
         >
           <Grip size={14} strokeWidth={1.5} />
@@ -83,8 +83,8 @@ export const GoalBoardCard = memo(function GoalBoardCard({
           <p
             className={`break-words text-sm leading-snug ${
               isDoneColumn
-                ? "text-[var(--color-text-tertiary)] line-through"
-                : "text-[var(--color-text-primary)]"
+                ? "text-[var(--sg-shell-500)] line-through"
+                : "text-[var(--sg-shell-900)]"
             }`}
           >
             {goal.title}
@@ -94,19 +94,19 @@ export const GoalBoardCard = memo(function GoalBoardCard({
           <div className="mt-1.5 flex items-center gap-1.5">
             {progress.total > 0 && (
               <>
-                <span className="text-xs text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-[var(--sg-shell-500)]">
                   {progress.completed}/{progress.total} tasks
                 </span>
                 {/* Inline progress bar */}
-                <div className="h-1 w-16 overflow-hidden rounded-full bg-white/10">
+                <div className="h-1 w-16 overflow-hidden rounded-full bg-[var(--sg-shell-200)]">
                   <div
                     className="h-full rounded-full transition-all duration-300"
                     style={{
                       width: `${progress.percent}%`,
                       background:
                         progress.percent === 100
-                          ? "var(--color-green-700)"
-                          : "var(--color-accent-primary)",
+                          ? "var(--sg-forest-300)"
+                          : "var(--sg-forest-500)",
                     }}
                   />
                 </div>
@@ -129,7 +129,7 @@ export const GoalBoardCard = memo(function GoalBoardCard({
                     e.stopPropagation();
                     setMenuOpen(!menuOpen);
                   }}
-                  className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-[var(--color-text-tertiary)] opacity-0 transition-all group-hover:opacity-100 hover:bg-white/[0.08] hover:text-white"
+                  className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-[var(--sg-shell-500)] opacity-0 transition-all group-hover:opacity-100 hover:bg-[var(--sg-shell-100)] hover:text-[var(--sg-shell-900)]"
                   aria-label="Goal options"
                 >
                   <MoreHorizontal size={14} />
@@ -148,9 +148,9 @@ export const GoalBoardCard = memo(function GoalBoardCard({
                     <div
                       className="absolute right-0 top-full z-20 mt-1 w-40 overflow-hidden rounded-xl py-1 shadow-xl"
                       style={{
-                        background: "rgba(20,20,20,0.96)",
+                        background: "var(--sg-shell-white)",
                         backdropFilter: "blur(16px)",
-                        border: "1px solid rgba(255,255,255,0.08)",
+                        border: "1px solid var(--sg-shell-border)",
                       }}
                     >
                       <MenuItem

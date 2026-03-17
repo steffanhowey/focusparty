@@ -143,7 +143,7 @@ export function GoalsList() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--sg-shell-300)] border-t-[var(--sg-forest-500)]" />
       </div>
     );
   }
@@ -155,13 +155,13 @@ export function GoalsList() {
       {/* Empty state */}
       {isEmpty && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.06]">
-            <Target size={24} className="text-[var(--color-text-tertiary)]" />
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--sg-shell-100)]">
+            <Target size={24} className="text-[var(--sg-shell-500)]" />
           </div>
-          <h3 className="mb-1.5 text-base font-semibold text-white">
+          <h3 className="mb-1.5 text-base font-semibold text-[var(--sg-shell-900)]">
             No goals yet
           </h3>
-          <p className="mb-6 max-w-xs text-sm text-[var(--color-text-tertiary)]">
+          <p className="mb-6 max-w-xs text-sm text-[var(--sg-shell-500)]">
             Create a goal to organize your tasks around meaningful outcomes.
           </p>
           <Button variant="cta" size="sm" onClick={() => setShowCreateModal(true)}>
@@ -194,22 +194,22 @@ export function GoalsList() {
       {/* Loose tasks (no goal) */}
       {looseTasks.length > 0 && (
         <div className="mt-4">
-          <h4 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          <h4 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-[var(--sg-shell-500)]">
             Ungrouped tasks
           </h4>
-          <div className="space-y-0.5 rounded-xl border border-[var(--color-border-default)] px-3 py-2" style={{ background: "rgba(255,255,255,0.02)" }}>
+          <div className="space-y-0.5 rounded-xl border border-[var(--sg-shell-border)] bg-white px-3 py-2">
             {looseTasks.map((task) => (
               <div
                 key={task.id}
-                className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/[0.04]"
+                className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-[var(--sg-shell-100)]"
               >
                 <button
                   type="button"
                   onClick={() => completeTask(task.id)}
-                  className="flex h-4.5 w-4.5 shrink-0 cursor-pointer items-center justify-center rounded-xs border border-white/20 transition-colors hover:border-white/40 hover:bg-white/10"
+                  className="flex h-4.5 w-4.5 shrink-0 cursor-pointer items-center justify-center rounded-xs border border-[var(--sg-shell-300)] transition-colors hover:border-[var(--sg-forest-400)] hover:bg-[var(--sg-shell-100)]"
                   aria-label="Complete task"
                 />
-                <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-secondary)]">
+                <span className="min-w-0 flex-1 truncate text-sm text-[var(--sg-shell-600)]">
                   {task.title}
                 </span>
               </div>
@@ -224,7 +224,7 @@ export function GoalsList() {
           <button
             type="button"
             onClick={() => setShowCompleted(!showCompleted)}
-            className="mb-2 flex cursor-pointer items-center gap-1.5 px-1 text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)] transition-colors hover:text-white/60"
+            className="mb-2 flex cursor-pointer items-center gap-1.5 px-1 text-xs font-medium uppercase tracking-wider text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-600)]"
           >
             <ChevronDown
               size={12}
@@ -237,13 +237,12 @@ export function GoalsList() {
               {completedGoals.map((goal) => (
                 <div
                   key={goal.id}
-                  className="flex items-center gap-3 rounded-xl border border-[var(--color-border-default)] px-4 py-3"
-                  style={{ background: "rgba(255,255,255,0.02)" }}
+                  className="flex items-center gap-3 rounded-xl border border-[var(--sg-shell-border)] bg-white px-4 py-3"
                 >
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-green-700)]/20">
-                    <Target size={12} className="text-[var(--color-green-700)]" />
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--sg-forest-300)]/20">
+                    <Target size={12} className="text-[var(--sg-forest-300)]" />
                   </div>
-                  <span className="truncate text-sm text-[var(--color-text-secondary)] line-through">
+                  <span className="truncate text-sm text-[var(--sg-shell-600)] line-through">
                     {goal.title}
                   </span>
                 </div>

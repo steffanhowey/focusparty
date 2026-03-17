@@ -92,7 +92,7 @@ function MobileGoalBoard({
   return (
     <div className="flex flex-1 flex-col">
       {/* Tab bar */}
-      <div className="flex gap-1 rounded-md bg-[var(--color-bg-secondary)] p-1">
+      <div className="flex gap-1 rounded-md bg-[var(--sg-shell-100)] p-1">
         {GOAL_COLUMNS.map((status) => {
           const cfg = GOAL_STATUS_CONFIG[status];
           const count = goalsByStatus[status].length;
@@ -104,8 +104,8 @@ function MobileGoalBoard({
               onClick={() => setActiveStatus(status)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded-sm py-2.5 text-xs font-medium transition-colors ${
                 isActive
-                  ? "bg-[var(--color-bg-elevated)] shadow-sm"
-                  : "text-[var(--color-text-tertiary)]"
+                  ? "bg-white shadow-sm"
+                  : "text-[var(--sg-shell-500)]"
               }`}
               style={isActive ? { color: cfg.color } : undefined}
             >
@@ -113,8 +113,8 @@ function MobileGoalBoard({
               <span
                 className={`text-2xs ${
                   isActive
-                    ? "text-[var(--color-text-secondary)]"
-                    : "text-[var(--color-text-tertiary)]"
+                    ? "text-[var(--sg-shell-600)]"
+                    : "text-[var(--sg-shell-500)]"
                 }`}
               >
                 {count}
@@ -127,7 +127,7 @@ function MobileGoalBoard({
       {/* Goal list */}
       <div className="mt-3 flex flex-1 flex-col gap-2.5">
         {activeGoals.length === 0 && !showAddInput && (
-          <p className="py-8 text-center text-sm text-[var(--color-text-tertiary)]">
+          <p className="py-8 text-center text-sm text-[var(--sg-shell-500)]">
             No goals
           </p>
         )}
@@ -153,7 +153,7 @@ function MobileGoalBoard({
                 <Plus
                   size={14}
                   strokeWidth={1.5}
-                  className="shrink-0 text-[var(--color-text-tertiary)]"
+                  className="shrink-0 text-[var(--sg-shell-500)]"
                 />
                 <input
                   ref={addInputRef}
@@ -174,7 +174,7 @@ function MobileGoalBoard({
                     if (!newGoalTitle.trim()) setShowAddInput(false);
                   }}
                   placeholder="New goal..."
-                  className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-[var(--sg-shell-600)] placeholder:text-[var(--sg-shell-400)] outline-none"
                 />
               </div>
             ) : (
@@ -416,7 +416,7 @@ export function GoalBoard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--sg-shell-300)] border-t-[var(--sg-forest-500)]" />
       </div>
     );
   }
@@ -432,13 +432,13 @@ export function GoalBoard() {
     return (
       <>
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.06]">
-            <Target size={24} className="text-[var(--color-text-tertiary)]" />
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--sg-shell-100)]">
+            <Target size={24} className="text-[var(--sg-shell-500)]" />
           </div>
-          <h3 className="mb-1.5 text-base font-semibold text-white">
+          <h3 className="mb-1.5 text-base font-semibold text-[var(--sg-shell-900)]">
             No goals yet
           </h3>
-          <p className="mb-6 max-w-xs text-sm text-[var(--color-text-tertiary)]">
+          <p className="mb-6 max-w-xs text-sm text-[var(--sg-shell-500)]">
             Create a goal to organize your tasks around meaningful outcomes.
           </p>
           <Button variant="cta" size="sm" onClick={() => setShowCreateModal(true)}>
@@ -534,8 +534,8 @@ export function GoalBoard() {
 
         <DragOverlay dropAnimation={null}>
           {draggedGoal ? (
-            <div className="w-[280px] rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-3 shadow-lg">
-              <p className="text-sm text-[var(--color-text-primary)]">
+            <div className="w-[280px] rounded-sm border border-[var(--sg-shell-border)] bg-white p-3 shadow-lg">
+              <p className="text-sm text-[var(--sg-shell-900)]">
                 {draggedGoal.title}
               </p>
             </div>

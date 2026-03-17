@@ -53,15 +53,14 @@ export function GoalCard({
 
   return (
     <div
-      className="rounded-xl border border-[var(--color-border-default)] transition-colors hover:border-white/12"
-      style={{ background: "rgba(255,255,255,0.03)" }}
+      className="rounded-xl border border-[var(--sg-shell-border)] bg-white transition-colors hover:border-[var(--sg-shell-300)]"
     >
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3.5">
         <button
           type="button"
           onClick={onToggleExpand}
-          className="flex shrink-0 cursor-pointer items-center justify-center text-[var(--color-text-tertiary)] transition-colors hover:text-white"
+          className="flex shrink-0 cursor-pointer items-center justify-center text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-900)]"
           aria-label={expanded ? "Collapse" : "Expand"}
         >
           <ChevronIcon size={16} strokeWidth={2} />
@@ -72,11 +71,11 @@ export function GoalCard({
           onClick={onToggleExpand}
           className="min-w-0 flex-1 cursor-pointer text-left"
         >
-          <h3 className="truncate text-sm font-semibold text-white">
+          <h3 className="truncate text-sm font-semibold text-[var(--sg-shell-900)]">
             {goal.title}
           </h3>
           {goal.description && !expanded && (
-            <p className="mt-0.5 truncate text-xs text-[var(--color-text-tertiary)]">
+            <p className="mt-0.5 truncate text-xs text-[var(--sg-shell-500)]">
               {goal.description}
             </p>
           )}
@@ -86,18 +85,18 @@ export function GoalCard({
         <div className="flex shrink-0 items-center gap-2.5">
           {progress.total > 0 && (
             <>
-              <span className="text-xs text-[var(--color-text-tertiary)]">
+              <span className="text-xs text-[var(--sg-shell-500)]">
                 {progress.completed}/{progress.total}
               </span>
-              <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10">
+              <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[var(--sg-shell-200)]">
                 <div
                   className="h-full rounded-full transition-all duration-300"
                   style={{
                     width: `${progress.percent}%`,
                     background:
                       progress.percent === 100
-                        ? "var(--color-green-700)"
-                        : "var(--color-accent-primary)",
+                        ? "var(--sg-forest-300)"
+                        : "var(--sg-forest-500)",
                   }}
                 />
               </div>
@@ -109,7 +108,7 @@ export function GoalCard({
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition-colors hover:bg-white/[0.08] hover:text-white"
+              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg text-[var(--sg-shell-500)] transition-colors hover:bg-[var(--sg-shell-100)] hover:text-[var(--sg-shell-900)]"
               aria-label="Goal options"
             >
               <MoreHorizontal size={15} />
@@ -125,9 +124,9 @@ export function GoalCard({
                 <div
                   className="absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-xl py-1 shadow-xl"
                   style={{
-                    background: "rgba(20,20,20,0.96)",
+                    background: "var(--sg-shell-white)",
                     backdropFilter: "blur(16px)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    border: "1px solid var(--sg-shell-border)",
                   }}
                 >
                   <MenuItem
@@ -167,9 +166,9 @@ export function GoalCard({
 
       {/* Expanded: description + task list */}
       {expanded && (
-        <div className="border-t border-white/6 px-4 pb-3 pt-3">
+        <div className="border-t border-[var(--sg-shell-border)] px-4 pb-3 pt-3">
           {goal.description && (
-            <p className="mb-3 text-xs leading-relaxed text-[var(--color-text-tertiary)]">
+            <p className="mb-3 text-xs leading-relaxed text-[var(--sg-shell-500)]">
               {goal.description}
             </p>
           )}

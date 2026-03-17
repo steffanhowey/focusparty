@@ -61,13 +61,13 @@ export const GoalColumn = memo(function GoalColumn({
   const goalIds = goals.map((g) => g.id);
 
   return (
-    <div className="flex min-w-0 flex-1 basis-0 flex-col rounded-md bg-[rgba(255,255,255,0.035)] p-3">
+    <div className="flex min-w-0 flex-1 basis-0 flex-col rounded-md bg-[var(--sg-shell-100)] p-3">
       {/* Column header */}
       <div className="mb-3 flex items-center gap-2">
         <span className="text-sm font-medium" style={{ color: cfg.color }}>
           {cfg.label}
         </span>
-        <span className="text-xs text-[var(--color-text-tertiary)]">
+        <span className="text-xs text-[var(--sg-shell-500)]">
           {goals.length}
         </span>
       </div>
@@ -76,7 +76,7 @@ export const GoalColumn = memo(function GoalColumn({
       <div
         ref={setNodeRef}
         className={`flex min-h-[80px] flex-1 flex-col gap-2.5 rounded-lg transition-colors ${
-          isOver ? "bg-[var(--color-bg-hover)]" : ""
+          isOver ? "bg-[var(--sg-shell-200)]" : ""
         }`}
       >
         <SortableContext
@@ -105,7 +105,7 @@ export const GoalColumn = memo(function GoalColumn({
                 <Plus
                   size={14}
                   strokeWidth={1.5}
-                  className="shrink-0 text-[var(--color-text-tertiary)]"
+                  className="shrink-0 text-[var(--sg-shell-500)]"
                 />
                 <input
                   ref={addInputRef}
@@ -126,10 +126,10 @@ export const GoalColumn = memo(function GoalColumn({
                     if (!newGoalTitle.trim()) setShowAddInput(false);
                   }}
                   placeholder="New goal..."
-                  className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-[var(--sg-shell-600)] placeholder:text-[var(--sg-shell-400)] outline-none"
                 />
                 {newGoalTitle.trim() && (
-                  <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
+                  <span className="shrink-0 text-2xs text-[var(--sg-shell-500)]">
                     ↵
                   </span>
                 )}
@@ -138,7 +138,7 @@ export const GoalColumn = memo(function GoalColumn({
               <button
                 type="button"
                 onClick={() => setShowAddInput(true)}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-600)]"
               >
                 <Plus size={14} strokeWidth={1.5} />
                 New goal
