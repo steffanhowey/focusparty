@@ -42,7 +42,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
   return (
     <div className="px-4 py-3">
       {/* Section header */}
-      <p className="mb-1 text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
+      <p className="mb-1 text-xs font-semibold text-[var(--sg-shell-500)] uppercase tracking-wider">
         Goal Tasks
       </p>
 
@@ -56,7 +56,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
           <button
             type="button"
             onClick={() => onToggle(task.id)}
-            className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-[var(--color-border-default)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
+            className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-[var(--sg-shell-border)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
             aria-label={`Complete ${task.text}`}
           >
             <Check
@@ -67,7 +67,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
           </button>
 
           {/* Text */}
-          <span className="min-w-0 flex-1 text-sm leading-snug text-[var(--color-text-secondary)]">
+          <span className="min-w-0 flex-1 text-sm leading-snug text-[var(--sg-shell-600)]">
             {task.text}
           </span>
 
@@ -75,7 +75,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
           <button
             type="button"
             onClick={() => onDelete(task.id)}
-            className="flex h-4 w-4 shrink-0 items-center justify-center text-[var(--color-text-tertiary)] opacity-0 transition-opacity group-hover:opacity-100 hover:text-white"
+            className="flex h-4 w-4 shrink-0 items-center justify-center text-[var(--sg-shell-500)] opacity-0 transition-opacity group-hover:opacity-100 hover:text-white"
             aria-label={`Remove ${task.text}`}
           >
             <X size={12} strokeWidth={2} />
@@ -98,14 +98,14 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
             <Check size={10} strokeWidth={2.5} className="text-white" />
           </button>
 
-          <span className="min-w-0 flex-1 text-sm leading-snug text-[var(--color-text-tertiary)] line-through">
+          <span className="min-w-0 flex-1 text-sm leading-snug text-[var(--sg-shell-500)] line-through">
             {task.text}
           </span>
 
           <button
             type="button"
             onClick={() => onDelete(task.id)}
-            className="flex h-4 w-4 shrink-0 items-center justify-center text-[var(--color-text-tertiary)] opacity-0 transition-opacity group-hover:opacity-100 hover:text-white"
+            className="flex h-4 w-4 shrink-0 items-center justify-center text-[var(--sg-shell-500)] opacity-0 transition-opacity group-hover:opacity-100 hover:text-white"
             aria-label={`Remove ${task.text}`}
           >
             <X size={12} strokeWidth={2} />
@@ -119,7 +119,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
           <Plus
             size={14}
             strokeWidth={1.5}
-            className="shrink-0 text-[var(--color-text-tertiary)]"
+            className="shrink-0 text-[var(--sg-shell-500)]"
           />
           <input
             ref={inputRef}
@@ -140,10 +140,10 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
               if (!newText.trim()) setShowInput(false);
             }}
             placeholder="Add a step..."
-            className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
+            className="min-w-0 flex-1 bg-transparent text-sm text-[var(--sg-shell-600)] placeholder:text-[var(--sg-shell-500)] outline-none"
           />
           {newText.trim() && (
-            <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
+            <span className="shrink-0 text-2xs text-[var(--sg-shell-500)]">
               &crarr;
             </span>
           )}
@@ -152,7 +152,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
         <button
           type="button"
           onClick={() => setShowInput(true)}
-          className="mt-1 flex items-center gap-2.5 py-1.5 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+          className="mt-1 flex items-center gap-2.5 py-1.5 text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-600)]"
         >
           <Plus size={14} strokeWidth={1.5} />
           <span className="text-sm">Add step</span>

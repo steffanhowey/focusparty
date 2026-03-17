@@ -73,7 +73,7 @@ export function SyntheticsView() {
       <div className="flex items-center justify-center py-20">
         <div
           className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"
-          style={{ color: "var(--color-text-tertiary)" }}
+          style={{ color: "var(--sg-shell-500)" }}
         />
       </div>
     );
@@ -110,7 +110,7 @@ export function SyntheticsView() {
           <RefreshCw size={16} strokeWidth={1.8} className="mr-1" />
           Refresh
         </Button>
-        <span className="ml-auto self-center text-xs text-[var(--color-text-tertiary)]">
+        <span className="ml-auto self-center text-xs text-[var(--sg-shell-500)]">
           {synthetics.length} synthetics
         </span>
       </div>
@@ -120,7 +120,7 @@ export function SyntheticsView() {
         <div key={archetype}>
           <h3
             className="mb-3 text-sm font-semibold uppercase tracking-wider"
-            style={{ color: ARCHETYPE_COLORS[archetype] ?? "var(--color-text-tertiary)" }}
+            style={{ color: ARCHETYPE_COLORS[archetype] ?? "var(--sg-shell-500)" }}
           >
             {archetype}s ({synths.length})
           </h3>
@@ -128,31 +128,31 @@ export function SyntheticsView() {
             {synths.map((s) => (
               <div
                 key={s.id}
-                className="flex flex-col items-center gap-2 rounded-xl border border-[var(--color-border-default)] p-4 transition-colors hover:border-[var(--color-border-focus)]"
-                style={{ background: "var(--color-bg-elevated)" }}
+                className="flex flex-col items-center gap-2 rounded-xl border border-white/[0.08] p-4 transition-colors hover:border-[var(--sg-forest-400)]"
+                style={{ background: "rgba(20,20,20,0.6)" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={s.avatarUrl}
                   alt={s.displayName}
                   className="h-12 w-12 rounded-full object-cover"
-                  style={{ border: "1px solid var(--color-border-default)" }}
+                  style={{ border: "1px solid rgba(255,255,255,0.08)" }}
                 />
-                <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                <span className="text-sm font-medium text-[var(--sg-white)]">
                   {s.displayName}
                 </span>
-                <span className="text-xs text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-[var(--sg-shell-500)]">
                   @{s.handle}
                 </span>
                 {s.currentRoomId ? (
                   <StatusBadge status="active" label="In Room" />
                 ) : (
-                  <span className="text-xs text-[var(--color-text-tertiary)]">
+                  <span className="text-xs text-[var(--sg-shell-500)]">
                     Idle
                   </span>
                 )}
                 {s.recentEventCount > 0 && (
-                  <span className="text-xs text-[var(--color-text-tertiary)]">
+                  <span className="text-xs text-[var(--sg-shell-500)]">
                     {s.recentEventCount} recent events
                   </span>
                 )}

@@ -71,7 +71,7 @@ export function ActivityView() {
               setActorType(e.target.value);
               setPage(1);
             }}
-            className="h-9 appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-border-focus)]"
+            className="h-9 appearance-none rounded-full border border-white/[0.08] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--sg-shell-300)] outline-none focus:border-[var(--sg-forest-400)]"
           >
             <option value="">All Actors</option>
             {ACTOR_TYPES.map((t) => (
@@ -82,7 +82,7 @@ export function ActivityView() {
           </select>
           <ChevronDown
             size={14}
-            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)]"
           />
         </div>
         <div className="relative">
@@ -92,7 +92,7 @@ export function ActivityView() {
               setEventType(e.target.value);
               setPage(1);
             }}
-            className="h-9 appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-border-focus)]"
+            className="h-9 appearance-none rounded-full border border-white/[0.08] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--sg-shell-300)] outline-none focus:border-[var(--sg-forest-400)]"
           >
             <option value="">All Events</option>
             {EVENT_TYPES.map((t) => (
@@ -103,18 +103,18 @@ export function ActivityView() {
           </select>
           <ChevronDown
             size={14}
-            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)]"
           />
         </div>
         <button
           type="button"
           onClick={() => fetchActivity()}
-          className="flex h-9 items-center gap-1.5 rounded-full border border-[var(--color-border-default)] px-3 text-sm text-[var(--color-text-tertiary)] transition-colors hover:bg-white/[0.04]"
+          className="flex h-9 items-center gap-1.5 rounded-full border border-white/[0.08] px-3 text-sm text-[var(--sg-shell-500)] transition-colors hover:bg-white/[0.04]"
         >
           <RefreshCw size={14} />
           Refresh
         </button>
-        <span className="ml-auto text-xs text-[var(--color-text-tertiary)]">
+        <span className="ml-auto text-xs text-[var(--sg-shell-500)]">
           {total} events
         </span>
       </div>
@@ -124,16 +124,16 @@ export function ActivityView() {
         <div className="flex items-center justify-center py-20">
           <div
             className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"
-            style={{ color: "var(--color-text-tertiary)" }}
+            style={{ color: "var(--sg-shell-500)" }}
           />
         </div>
       ) : (
         <div
-          className="rounded-xl border border-[var(--color-border-default)] divide-y divide-[var(--color-border-subtle)]"
-          style={{ background: "var(--color-bg-elevated)" }}
+          className="rounded-xl border border-white/[0.08] divide-y divide-white/[0.04]"
+          style={{ background: "rgba(20,20,20,0.6)" }}
         >
           {events.length === 0 ? (
-            <div className="px-4 py-12 text-center text-sm text-[var(--color-text-tertiary)]">
+            <div className="px-4 py-12 text-center text-sm text-[var(--sg-shell-500)]">
               No events found
             </div>
           ) : (
@@ -151,14 +151,14 @@ export function ActivityView() {
                     className="shrink-0"
                     style={{ color: rendered.color }}
                   />
-                  <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-secondary)]">
+                  <span className="min-w-0 flex-1 truncate text-sm text-[var(--sg-shell-300)]">
                     {rendered.label}
                   </span>
                   <StatusBadge status={event.actor_type} />
-                  <span className="text-xs text-[var(--color-text-tertiary)]">
+                  <span className="text-xs text-[var(--sg-shell-500)]">
                     {event.event_type.replace(/_/g, " ")}
                   </span>
-                  <span className="shrink-0 text-xs text-[var(--color-text-tertiary)]">
+                  <span className="shrink-0 text-xs text-[var(--sg-shell-500)]">
                     {relativeTime(event.created_at)}
                   </span>
                 </div>

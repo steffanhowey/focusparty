@@ -88,13 +88,13 @@ export function LeaveConfirmModal({
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
           boxShadow: "var(--shadow-xl)",
-          "--color-bg-elevated": "var(--sg-forest-800)",
-          "--color-text-primary": "#ffffff",
-          "--color-text-secondary": "rgba(255,255,255,0.7)",
-          "--color-text-tertiary": "rgba(255,255,255,0.4)",
-          "--color-text-on-accent": "#ffffff",
-          "--color-border-default": "rgba(255, 255, 255, 0.08)",
-          "--color-border-focus": "var(--sg-forest-400)",
+          "--sg-shell-100": "var(--sg-forest-800)",
+          "--sg-shell-900": "#ffffff",
+          "--sg-shell-600": "rgba(255,255,255,0.7)",
+          "--sg-shell-500": "rgba(255,255,255,0.4)",
+          "--sg-white": "#ffffff",
+          "--sg-shell-border": "rgba(255, 255, 255, 0.08)",
+          "--sg-forest-400": "var(--sg-forest-400)",
         } as React.CSSProperties}
       >
         {/* ── Header ── */}

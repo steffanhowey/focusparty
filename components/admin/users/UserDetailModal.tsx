@@ -69,25 +69,25 @@ export function UserDetailModal({
               src={user.avatar_url}
               alt=""
               className="h-14 w-14 shrink-0 rounded-full object-cover"
-              style={{ border: "1px solid var(--color-border-default)" }}
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
             />
           ) : (
             <div
               className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-semibold"
               style={{
-                background: "var(--color-bg-elevated)",
-                border: "1px solid var(--color-border-default)",
-                color: "var(--color-text-primary)",
+                background: "rgba(20,20,20,0.6)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                color: "var(--sg-white)",
               }}
             >
               {(user.display_name || user.email || "?").charAt(0).toUpperCase()}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+            <p className="text-sm font-medium text-[var(--sg-white)]">
               {user.email}
             </p>
-            <p className="mt-0.5 truncate text-xs text-[var(--color-text-tertiary)]">
+            <p className="mt-0.5 truncate text-xs text-[var(--sg-shell-500)]">
               {user.id}
             </p>
           </div>
@@ -103,13 +103,13 @@ export function UserDetailModal({
             ].map((s) => (
               <div
                 key={s.label}
-                className="rounded-lg border border-[var(--color-border-default)] px-3 py-2 text-center"
-                style={{ background: "var(--color-bg-primary)" }}
+                className="rounded-lg border border-white/[0.08] px-3 py-2 text-center"
+                style={{ background: "var(--sg-forest-900)" }}
               >
-                <p className="text-lg font-bold text-[var(--color-text-primary)]">
+                <p className="text-lg font-bold text-[var(--sg-white)]">
                   {s.value}
                 </p>
-                <p className="text-xs text-[var(--color-text-tertiary)]">
+                <p className="text-xs text-[var(--sg-shell-500)]">
                   {s.label}
                 </p>
               </div>
@@ -120,25 +120,25 @@ export function UserDetailModal({
         {/* Editable Fields */}
         <div className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-tertiary)]">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-500)]">
               Display Name
             </label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="h-10 w-full rounded-full border border-[var(--color-border-default)] bg-white/[0.04] px-4 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+              className="h-10 w-full rounded-full border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--sg-white)] outline-none focus:border-[var(--sg-forest-400)]"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-tertiary)]">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-500)]">
               Username
             </label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="h-10 w-full rounded-full border border-[var(--color-border-default)] bg-white/[0.04] px-4 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+              className="h-10 w-full rounded-full border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--sg-white)] outline-none focus:border-[var(--sg-forest-400)]"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -149,7 +149,7 @@ export function UserDetailModal({
               style={{
                 background: isAdmin
                   ? "var(--sg-forest-500)"
-                  : "var(--color-bg-hover)",
+                  : "rgba(255,255,255,0.08)",
               }}
             >
               <span
@@ -159,7 +159,7 @@ export function UserDetailModal({
                 }}
               />
             </button>
-            <label className="text-sm text-[var(--color-text-secondary)]">
+            <label className="text-sm text-[var(--sg-shell-300)]">
               Admin
             </label>
           </div>

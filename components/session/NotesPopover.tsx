@@ -109,7 +109,7 @@ export const NotesPopover = memo(function NotesPopover({
   return (
     <div
       ref={popoverRef}
-      className="absolute bottom-full left-1/2 z-50 mb-3 w-72 rounded-xl border border-[var(--color-border-default)] shadow-lg"
+      className="absolute bottom-full left-1/2 z-50 mb-3 w-72 rounded-xl border border-[var(--sg-shell-border)] shadow-lg"
       style={{
         background: "rgba(15,35,24,0.85)",
         backdropFilter: "blur(24px)",
@@ -124,7 +124,7 @@ export const NotesPopover = memo(function NotesPopover({
         onPointerDown={handleHeaderPointerDown}
         style={{ touchAction: "none" }}
       >
-        <p className="text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">Notes</p>
+        <p className="text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">Notes</p>
 
         {/* Expand button */}
         <button

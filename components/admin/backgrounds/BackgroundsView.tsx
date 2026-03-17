@@ -137,7 +137,7 @@ export function BackgroundsView() {
             <select
               value={filter.value}
               onChange={(e) => filter.onChange(e.target.value)}
-              className="h-9 appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-border-focus)]"
+              className="h-9 appearance-none rounded-full border border-[var(--sg-shell-border)] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--sg-shell-600)] outline-none focus:border-[var(--sg-forest-400)]"
             >
               <option value="">{filter.label}</option>
               {filter.options.map((o) => (
@@ -148,12 +148,12 @@ export function BackgroundsView() {
             </select>
             <ChevronDown
               size={14}
-              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)]"
             />
           </div>
         ))}
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-[var(--color-text-tertiary)]">
+          <span className="text-xs text-[var(--sg-shell-500)]">
             {assets.length} assets
           </span>
           <Button
@@ -172,11 +172,11 @@ export function BackgroundsView() {
         <div className="flex items-center justify-center py-20">
           <div
             className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"
-            style={{ color: "var(--color-text-tertiary)" }}
+            style={{ color: "var(--sg-shell-500)" }}
           />
         </div>
       ) : assets.length === 0 ? (
-        <div className="py-20 text-center text-sm text-[var(--color-text-tertiary)]">
+        <div className="py-20 text-center text-sm text-[var(--sg-shell-500)]">
           No background assets found
         </div>
       ) : (
@@ -186,8 +186,8 @@ export function BackgroundsView() {
               key={asset.id}
               type="button"
               onClick={() => setSelectedAsset(asset)}
-              className="group relative overflow-hidden rounded-xl border border-[var(--color-border-default)] transition-all hover:border-[var(--color-border-focus)]"
-              style={{ background: "var(--color-bg-elevated)" }}
+              className="group relative overflow-hidden rounded-xl border border-[var(--sg-shell-border)] transition-all hover:border-[var(--sg-forest-400)]"
+              style={{ background: "var(--sg-shell-100)" }}
             >
               {/* Thumbnail */}
               <div className="relative aspect-video w-full overflow-hidden">
@@ -201,7 +201,7 @@ export function BackgroundsView() {
                   <StatusBadge status={asset.status} />
                 </div>
                 {asset.score_overall != null && (
-                  <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
+                  <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-shell-900/60 px-2 py-0.5 text-xs text-white">
                     <Star size={12} />
                     {asset.score_overall}
                   </div>
@@ -209,10 +209,10 @@ export function BackgroundsView() {
               </div>
               {/* Meta */}
               <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-xs font-medium text-[var(--color-text-secondary)]">
+                <span className="text-xs font-medium text-[var(--sg-shell-600)]">
                   {asset.world_key}
                 </span>
-                <span className="text-xs text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-[var(--sg-shell-500)]">
                   {asset.time_of_day_state}
                 </span>
               </div>
@@ -237,7 +237,7 @@ export function BackgroundsView() {
                 className="w-full"
               />
             </div>
-            <div className="flex flex-wrap gap-2 text-xs text-[var(--color-text-tertiary)]">
+            <div className="flex flex-wrap gap-2 text-xs text-[var(--sg-shell-500)]">
               <StatusBadge status={selectedAsset.status} />
               <span>World: {selectedAsset.world_key}</span>
               <span>Time: {selectedAsset.time_of_day_state}</span>
@@ -246,7 +246,7 @@ export function BackgroundsView() {
               )}
             </div>
             {selectedAsset.review_notes && (
-              <p className="text-sm text-[var(--color-text-secondary)]">
+              <p className="text-sm text-[var(--sg-shell-600)]">
                 {selectedAsset.review_notes}
               </p>
             )}
@@ -309,13 +309,13 @@ export function BackgroundsView() {
       >
         <div className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-tertiary)]">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-500)]">
               World
             </label>
             <select
               value={genWorld}
               onChange={(e) => setGenWorld(e.target.value)}
-              className="h-10 w-full appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.04] px-4 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+              className="h-10 w-full appearance-none rounded-full border border-[var(--sg-shell-border)] bg-white/[0.04] px-4 text-sm text-[var(--sg-shell-900)] outline-none focus:border-[var(--sg-forest-400)]"
             >
               <option value="default">Default</option>
               <option value="vibe-coding">Vibe Coding</option>
@@ -325,13 +325,13 @@ export function BackgroundsView() {
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-tertiary)]">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-500)]">
               Time of Day
             </label>
             <select
               value={genTimeOfDay}
               onChange={(e) => setGenTimeOfDay(e.target.value)}
-              className="h-10 w-full appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.04] px-4 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+              className="h-10 w-full appearance-none rounded-full border border-[var(--sg-shell-border)] bg-white/[0.04] px-4 text-sm text-[var(--sg-shell-900)] outline-none focus:border-[var(--sg-forest-400)]"
             >
               <option value="morning">Morning</option>
               <option value="afternoon">Afternoon</option>
@@ -340,7 +340,7 @@ export function BackgroundsView() {
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-tertiary)]">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-500)]">
               Count
             </label>
             <div className="flex gap-2">
@@ -358,11 +358,11 @@ export function BackgroundsView() {
                     borderColor:
                       genCount === n
                         ? "var(--sg-forest-500)"
-                        : "var(--color-border-default)",
+                        : "var(--sg-shell-border)",
                     color:
                       genCount === n
                         ? "white"
-                        : "var(--color-text-secondary)",
+                        : "var(--sg-shell-600)",
                   }}
                 >
                   {n}

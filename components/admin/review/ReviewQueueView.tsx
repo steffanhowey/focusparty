@@ -90,7 +90,7 @@ export function ReviewQueueView() {
     <div className="space-y-6">
       {/* Tab bar */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 rounded-lg border border-[var(--color-border-default)] p-1 w-fit">
+        <div className="flex items-center gap-1 rounded-lg border border-white/[0.08] p-1 w-fit">
           {TABS.map((tab) => (
             <button
               key={tab.key}
@@ -98,8 +98,8 @@ export function ReviewQueueView() {
               onClick={() => setActiveTab(tab.key)}
               className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === tab.key
-                  ? "bg-white/[0.08] text-[var(--color-text-primary)]"
-                  : "text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+                  ? "bg-white/[0.08] text-[var(--sg-white)]"
+                  : "text-[var(--sg-shell-500)] hover:text-[var(--sg-shell-300)]"
               }`}
             >
               {tab.label}
@@ -116,7 +116,7 @@ export function ReviewQueueView() {
 
       {/* Loading */}
       {loading && blueprints.length === 0 && (
-        <div className="py-12 text-center text-[var(--color-text-tertiary)]">
+        <div className="py-12 text-center text-[var(--sg-shell-500)]">
           Loading blueprints...
         </div>
       )}
@@ -127,9 +127,9 @@ export function ReviewQueueView() {
           <ClipboardCheck
             size={40}
             strokeWidth={1.2}
-            className="text-[var(--color-text-tertiary)]"
+            className="text-[var(--sg-shell-500)]"
           />
-          <p className="text-[var(--color-text-tertiary)]">
+          <p className="text-[var(--sg-shell-500)]">
             {activeTab === "pending"
               ? "No pending blueprints — auto-generator runs every 4 hours"
               : `No ${activeTab} blueprints`}
@@ -143,22 +143,22 @@ export function ReviewQueueView() {
           {blueprints.map((bp) => (
             <div
               key={bp.id}
-              className="rounded-xl border border-[var(--color-border-default)] p-5 transition-colors hover:border-[var(--color-border-focus)]"
-              style={{ background: "var(--color-bg-elevated)" }}
+              className="rounded-xl border border-white/[0.08] p-5 transition-colors hover:border-[var(--sg-forest-400)]"
+              style={{ background: "rgba(20,20,20,0.6)" }}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-base font-semibold text-[var(--color-text-primary)]">
+                  <h3 className="truncate text-base font-semibold text-[var(--sg-white)]">
                     {bp.room_name}
                   </h3>
-                  <p className="mt-1 line-clamp-2 text-sm text-[var(--color-text-tertiary)]">
+                  <p className="mt-1 line-clamp-2 text-sm text-[var(--sg-shell-500)]">
                     {bp.room_description}
                   </p>
                 </div>
                 <StatusBadge status={bp.review_status} />
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-tertiary)]">
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-[var(--sg-shell-500)]">
                 <span
                   className="rounded-full px-2.5 py-1 font-medium"
                   style={{

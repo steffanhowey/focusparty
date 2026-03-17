@@ -220,7 +220,7 @@ export const ActionBar = memo(function ActionBar({
   // icon shadow removed — glass pill provides enough context
   const btn =
     "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors";
-  const defaultBtn = `${btn} text-[var(--color-text-secondary)] hover:bg-white/10 hover:text-white`;
+  const defaultBtn = `${btn} text-[var(--sg-shell-600)] hover:bg-white/10 hover:text-white`;
   const activeBtn = `${btn} bg-white/15 text-white`;
 
   const timerWarning = seconds > 0 && seconds <= 5 * 60;
@@ -312,7 +312,7 @@ export const ActionBar = memo(function ActionBar({
                   size={18}
                   strokeWidth={2.5}
                   className={`transition-transform duration-200 ${goalCardOpen ? "" : "rotate-180"}`}
-                  style={{ color: isBreak ? "rgba(61,142,139,0.5)" : "var(--color-text-tertiary)" }}
+                  style={{ color: isBreak ? "rgba(61,142,139,0.5)" : "var(--sg-shell-500)" }}
                 />
               </button>
             )}
@@ -338,7 +338,7 @@ export const ActionBar = memo(function ActionBar({
           {/* Downward dropdown — sprint or break mode */}
           {goalCardOpen && !isBreak && !isJoining && !isResuming && currentDurationMin != null && onChangeDuration && onResetTimer && (
             <div
-              className="absolute top-full left-1/2 mt-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3"
+              className="absolute top-full left-1/2 mt-3 -translate-x-1/2 rounded-xl border border-[var(--sg-shell-border)] p-3"
               style={{
                 background: "rgba(15,35,24,0.80)",
                 backdropFilter: "blur(24px)",
@@ -348,7 +348,7 @@ export const ActionBar = memo(function ActionBar({
                 minWidth: 280,
               }}
             >
-              <p className="mb-2 text-xs font-medium text-[var(--color-text-secondary)]">Sprint duration</p>
+              <p className="mb-2 text-xs font-medium text-[var(--sg-shell-600)]">Sprint duration</p>
               <DurationPills value={currentDurationMin} onChange={onChangeDuration} />
               <div className="mt-2 flex justify-end">
                 <Button
@@ -386,8 +386,8 @@ export const ActionBar = memo(function ActionBar({
                       className="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150"
                       style={{
                         background: d === breakDurationMinutes ? "var(--sg-teal-600)" : "transparent",
-                        color: d === breakDurationMinutes ? "white" : "var(--color-text-tertiary)",
-                        border: d === breakDurationMinutes ? "1px solid transparent" : "1px solid var(--color-border-default)",
+                        color: d === breakDurationMinutes ? "white" : "var(--sg-shell-500)",
+                        border: d === breakDurationMinutes ? "1px solid transparent" : "1px solid var(--sg-shell-border)",
                       }}
                     >
                       {d}m
@@ -434,7 +434,7 @@ export const ActionBar = memo(function ActionBar({
           <button
             type="button"
             onClick={onToggleMic}
-            className={micActive ? defaultBtn : `${btn} text-[var(--color-coral-700)] hover:bg-white/10`}
+            className={micActive ? defaultBtn : `${btn} text-[var(--sg-coral-500)] hover:bg-white/10`}
             aria-label={micActive ? "Mute" : "Unmute"}
 
           >
@@ -446,7 +446,7 @@ export const ActionBar = memo(function ActionBar({
           <button
             type="button"
             onClick={onToggleCamera}
-            className={cameraActive ? defaultBtn : `${btn} text-[var(--color-coral-700)] hover:bg-white/10`}
+            className={cameraActive ? defaultBtn : `${btn} text-[var(--sg-coral-500)] hover:bg-white/10`}
             aria-label={cameraActive ? "Turn off camera" : "Turn on camera"}
 
           >
@@ -657,7 +657,7 @@ export const ActionBar = memo(function ActionBar({
           <button
             type="button"
             onClick={onEndSession}
-            className={`${btn} text-[var(--color-coral-700)] hover:bg-white/10`}
+            className={`${btn} text-[var(--sg-coral-500)] hover:bg-white/10`}
             aria-label="End session"
 
           >

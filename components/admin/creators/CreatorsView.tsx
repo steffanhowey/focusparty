@@ -80,7 +80,7 @@ export function CreatorsView() {
               key={t}
               className="rounded-full px-2 py-0.5 text-[10px] font-medium"
               style={{
-                background: "var(--color-bg-active)",
+                background: "rgba(255,255,255,0.08)",
                 color: "var(--sg-shell-300)",
               }}
             >
@@ -167,7 +167,7 @@ export function CreatorsView() {
             setStatusFilter(e.target.value);
             setPage(1);
           }}
-          className="h-9 rounded-lg border border-[var(--color-border-default)] bg-transparent px-3 text-sm text-[var(--sg-shell-300)] focus:border-[var(--color-border-focus)] focus:outline-none"
+          className="h-9 rounded-lg border border-white/[0.08] bg-transparent px-3 text-sm text-[var(--sg-shell-300)] focus:border-[var(--sg-forest-400)] focus:outline-none"
         >
           <option value="">All Statuses</option>
           <option value="partner">Partner</option>

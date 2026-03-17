@@ -121,7 +121,7 @@ export function TaskBoard({ goalId }: { goalId?: string }) {
   if (authLoading || tasksLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <span className="text-sm text-[var(--color-text-tertiary)]">
+        <span className="text-sm text-[var(--sg-shell-500)]">
           Loading tasks...
         </span>
       </div>

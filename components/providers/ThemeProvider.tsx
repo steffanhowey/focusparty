@@ -69,8 +69,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.setAttribute("data-theme", colorMode);
     const c = CHARACTERS[characterAccent];
     if (c) {
-      root.style.setProperty("--color-accent-primary", c.primary);
-      root.style.setProperty("--color-accent-secondary", c.secondary);
+      root.style.setProperty("--sg-forest-500", c.primary);
+      root.style.setProperty("--sg-teal-500", c.secondary);
     }
   }, [characterAccent, colorMode]);
 

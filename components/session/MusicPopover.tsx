@@ -68,7 +68,7 @@ export function MusicPopover({
 
   return (
     <div
-      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
+      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--sg-shell-border)] p-3 shadow-lg"
       style={{
         background: "rgba(15,35,24,0.65)",
         backdropFilter: "blur(24px)",
@@ -84,8 +84,8 @@ export function MusicPopover({
         /* Room-controlled: show vibe label as informational, no selector */
         activeVibeConfig && ActiveVibeIcon ? (
           <div className="mb-2.5 flex items-center gap-2.5 px-1">
-            <ActiveVibeIcon size={14} strokeWidth={1.8} className="flex-shrink-0 text-[var(--color-text-secondary)]" />
-            <span className="text-xs font-medium text-[var(--color-text-secondary)]">
+            <ActiveVibeIcon size={14} strokeWidth={1.8} className="flex-shrink-0 text-[var(--sg-shell-600)]" />
+            <span className="text-xs font-medium text-[var(--sg-shell-600)]">
               {activeVibeConfig.label}
             </span>
           </div>
@@ -93,7 +93,7 @@ export function MusicPopover({
       ) : (
         /* User-controlled: full vibe selector */
         <>
-          <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
             Vibe
           </p>
 
@@ -115,7 +115,7 @@ export function MusicPopover({
           </div>
 
           {/* Divider */}
-          <div className="my-2.5 border-t border-[var(--color-border-subtle)]" />
+          <div className="my-2.5 border-t border-[var(--sg-shell-200)]" />
         </>
       )}
 
@@ -158,14 +158,14 @@ export function MusicPopover({
           aria-label="Volume"
         />
 
-        <span className="w-7 text-right text-2xs tabular-nums text-[var(--color-text-tertiary)]">
+        <span className="w-7 text-right text-2xs tabular-nums text-[var(--sg-shell-500)]">
           {volume}
         </span>
       </div>
 
       {/* Error message */}
       {isError && (
-        <p className="mt-2 text-2xs text-[var(--color-coral-700)]">
+        <p className="mt-2 text-2xs text-[var(--sg-coral-500)]">
           {roomControlled
             ? "Unable to load audio. Try refreshing."
             : "Unable to load audio. Try another vibe."}

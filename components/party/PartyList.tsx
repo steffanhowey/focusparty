@@ -122,7 +122,7 @@ export function PartyList() {
                     <select
                       value={filter}
                       onChange={(e) => setFilter(e.target.value as RoomFilter)}
-                      className="cursor-pointer appearance-none rounded-full border border-shell-border bg-white/[0.06] px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
+                      className="cursor-pointer appearance-none rounded-full border border-shell-border bg-shell-50 px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
                     >
                       {FILTER_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>

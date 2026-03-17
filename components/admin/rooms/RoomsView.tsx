@@ -65,7 +65,7 @@ export function RoomsView() {
       key: "name",
       label: "Name",
       render: (row) => (
-        <span className="font-medium text-[var(--color-text-primary)]">
+        <span className="font-medium text-[var(--sg-white)]">
           {row.name}
         </span>
       ),
@@ -107,7 +107,7 @@ export function RoomsView() {
       key: "created_at",
       label: "Created",
       render: (row) => (
-        <span className="text-xs text-[var(--color-text-tertiary)]">
+        <span className="text-xs text-[var(--sg-shell-500)]">
           {relativeTime(row.created_at)}
         </span>
       ),
@@ -127,7 +127,7 @@ export function RoomsView() {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-border-focus)]"
+            className="h-9 appearance-none rounded-full border border-white/[0.08] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--sg-shell-300)] outline-none focus:border-[var(--sg-forest-400)]"
           >
             <option value="">All Statuses</option>
             <option value="waiting">Waiting</option>
@@ -136,7 +136,7 @@ export function RoomsView() {
           </select>
           <ChevronDown
             size={14}
-            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)]"
           />
         </div>
         <div className="relative">
@@ -146,7 +146,7 @@ export function RoomsView() {
               setWorldFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-border-focus)]"
+            className="h-9 appearance-none rounded-full border border-white/[0.08] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--sg-shell-300)] outline-none focus:border-[var(--sg-forest-400)]"
           >
             <option value="">All Worlds</option>
             <option value="default">Default</option>
@@ -157,10 +157,10 @@ export function RoomsView() {
           </select>
           <ChevronDown
             size={14}
-            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)]"
           />
         </div>
-        <span className="ml-auto text-xs text-[var(--color-text-tertiary)]">
+        <span className="ml-auto text-xs text-[var(--sg-shell-500)]">
           {total} rooms
         </span>
         <button
@@ -177,7 +177,7 @@ export function RoomsView() {
         <div className="flex items-center justify-center py-20">
           <div
             className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"
-            style={{ color: "var(--color-text-tertiary)" }}
+            style={{ color: "var(--sg-shell-500)" }}
           />
         </div>
       ) : (

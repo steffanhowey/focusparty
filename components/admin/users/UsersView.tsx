@@ -104,14 +104,14 @@ export function UsersView() {
             src={row.avatar_url}
             alt=""
             className="h-8 w-8 rounded-full object-cover"
-            style={{ border: "1px solid var(--color-border-default)" }}
+            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
           />
         ) : (
           <div
             className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
             style={{
-              background: "var(--color-bg-hover)",
-              color: "var(--color-text-tertiary)",
+              background: "rgba(255,255,255,0.08)",
+              color: "var(--sg-shell-500)",
             }}
           >
             {(row.display_name || row.email || "?").charAt(0).toUpperCase()}
@@ -123,7 +123,7 @@ export function UsersView() {
       label: "Username",
       sortable: true,
       render: (row) => (
-        <span className="text-[var(--color-text-primary)]">
+        <span className="text-[var(--sg-white)]">
           {row.username ? `@${row.username}` : "—"}
         </span>
       ),
@@ -149,7 +149,7 @@ export function UsersView() {
         row.is_admin ? (
           <StatusBadge status="active" label="Admin" />
         ) : (
-          <span className="text-xs text-[var(--color-text-tertiary)]">User</span>
+          <span className="text-xs text-[var(--sg-shell-500)]">User</span>
         ),
     },
     {
@@ -157,7 +157,7 @@ export function UsersView() {
       label: "Joined",
       sortable: true,
       render: (row) => (
-        <span className="text-xs text-[var(--color-text-tertiary)]">
+        <span className="text-xs text-[var(--sg-shell-500)]">
           {relativeTime(row.created_at)}
         </span>
       ),
@@ -179,7 +179,7 @@ export function UsersView() {
             placeholder="Search users..."
           />
         </div>
-        <span className="shrink-0 text-xs text-[var(--color-text-tertiary)]">
+        <span className="shrink-0 text-xs text-[var(--sg-shell-500)]">
           {total} users
         </span>
       </div>
@@ -188,7 +188,7 @@ export function UsersView() {
         <div className="flex items-center justify-center py-20">
           <div
             className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"
-            style={{ color: "var(--color-text-tertiary)" }}
+            style={{ color: "var(--sg-shell-500)" }}
           />
         </div>
       ) : (

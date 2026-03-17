@@ -24,7 +24,7 @@ export function AdminSidebar({ activeId, onNavClick, badges }: AdminSidebarProps
       <div className="flex h-14 shrink-0 items-center gap-2.5 px-4">
         <Shield size={18} strokeWidth={1.8} className="shrink-0 text-[var(--sg-forest-500)]" />
         <span
-          className="text-sm font-bold tracking-wide text-[var(--color-text-primary)]"
+          className="text-sm font-bold tracking-wide text-[var(--sg-shell-900)]"
         >
           Admin
         </span>
@@ -51,8 +51,8 @@ export function AdminSidebar({ activeId, onNavClick, badges }: AdminSidebarProps
               }`}
               style={{
                 color: isActive
-                  ? "var(--color-text-primary)"
-                  : "var(--color-text-tertiary)",
+                  ? "var(--sg-shell-900)"
+                  : "var(--sg-shell-500)",
               }}
               aria-current={isActive ? "page" : undefined}
             >
@@ -78,7 +78,7 @@ export function AdminSidebar({ activeId, onNavClick, badges }: AdminSidebarProps
       <div className="mt-auto pb-5 px-3">
         <Link
           href="/practice"
-          className="flex items-center gap-3 rounded-lg py-2 px-2 text-sm font-medium text-[var(--color-text-tertiary)] transition-colors hover:bg-white/[0.03] hover:text-[var(--color-text-secondary)]"
+          className="flex items-center gap-3 rounded-lg py-2 px-2 text-sm font-medium text-[var(--sg-shell-500)] transition-colors hover:bg-white/[0.03] hover:text-[var(--sg-shell-600)]"
         >
           <ArrowLeft size={18} strokeWidth={1.8} className="shrink-0" />
           <span>Back to App</span>

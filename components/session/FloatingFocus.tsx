@@ -100,7 +100,7 @@ export function FloatingFocus({
         onTransitionEnd={handleTransitionEnd}
       >
         <div
-          className="flex h-full flex-col border border-[var(--color-border-default)]"
+          className="flex h-full flex-col border border-[var(--sg-shell-border)]"
           style={{
             background: "rgba(15,35,24,0.65)",
             backdropFilter: "blur(24px)",
@@ -125,7 +125,7 @@ export function FloatingFocus({
       }}
     >
       <div
-        className="flex h-full flex-col overflow-hidden rounded-xl border border-[var(--color-border-default)]"
+        className="flex h-full flex-col overflow-hidden rounded-xl border border-[var(--sg-shell-border)]"
         style={{
           background: "rgba(15,35,24,0.65)",
           backdropFilter: "blur(24px)",
@@ -139,7 +139,7 @@ export function FloatingFocus({
           <button
             type="button"
             onClick={handleMinimize}
-            className="cursor-pointer rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
+            className="cursor-pointer rounded-lg p-1.5 text-[var(--sg-shell-500)] transition-colors hover:bg-white/10 hover:text-white"
             aria-label="Minimize focus panel"
           >
             <Minus size={18} strokeWidth={2} />

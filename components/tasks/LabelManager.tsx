@@ -73,27 +73,27 @@ export function LabelManager({
             {labels.map((l) => (
               <div
                 key={l.id}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-white/[0.04]"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[var(--sg-shell-50)]"
               >
                 <span
                   className="h-3 w-3 rounded-full"
                   style={{ background: l.color }}
                 />
-                <span className="flex-1 text-sm text-[var(--color-text-primary)]">
+                <span className="flex-1 text-sm text-[var(--sg-shell-900)]">
                   {l.name}
                 </span>
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => startEdit(l)}
-                    className="rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-primary)]"
+                    className="rounded p-1 text-[var(--sg-shell-400)] transition-colors hover:text-[var(--sg-shell-900)]"
                   >
                     <Pencil size={14} strokeWidth={1.5} />
                   </button>
                   <button
                     type="button"
                     onClick={() => onDeleteLabel(l.id)}
-                    className="rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-coral-700)]"
+                    className="rounded p-1 text-[var(--sg-shell-400)] transition-colors hover:text-[var(--sg-coral-500)]"
                   >
                     <Trash2 size={14} strokeWidth={1.5} />
                   </button>
@@ -105,7 +105,7 @@ export function LabelManager({
 
         {/* Create/Edit form */}
         {isEditing ? (
-          <div className="space-y-3 rounded-lg border border-[var(--color-border-default)] p-3">
+          <div className="space-y-3 rounded-lg border border-[var(--sg-shell-border)] p-3">
             <Input
               autoFocus
               value={name}
@@ -120,7 +120,7 @@ export function LabelManager({
 
             {/* Color picker */}
             <div>
-              <label className="mb-1 block text-xs text-[var(--color-text-tertiary)]">
+              <label className="mb-1 block text-xs text-[var(--sg-shell-500)]">
                 Color
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -130,7 +130,7 @@ export function LabelManager({
                     type="button"
                     onClick={() => setColor(c)}
                     className={`h-6 w-6 rounded-full transition-transform ${
-                      color === c ? "scale-125 ring-2 ring-white/40" : "hover:scale-110"
+                      color === c ? "scale-125 ring-2 ring-[var(--sg-shell-400)]" : "hover:scale-110"
                     }`}
                     style={{ background: c }}
                   />
@@ -156,7 +156,7 @@ export function LabelManager({
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="flex w-full items-center gap-2 rounded-lg border border-dashed border-[var(--color-border-default)] px-3 py-2.5 text-sm text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+            className="flex w-full items-center gap-2 rounded-lg border border-dashed border-[var(--sg-shell-border)] px-3 py-2.5 text-sm text-[var(--sg-shell-500)] transition-colors hover:border-[var(--sg-shell-400)] hover:text-[var(--sg-shell-600)]"
           >
             <Plus size={16} strokeWidth={1.5} />
             New label

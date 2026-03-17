@@ -87,8 +87,8 @@ export const SortableTaskRow = memo(function SortableTaskRow({
       style={style}
       className={`group flex items-start gap-2.5 px-2 py-3 last:border-b-0 ${
         isActive
-          ? "border-l-2 border-l-[var(--sg-forest-400)] border-b border-b-[var(--color-border-subtle)] bg-white/[0.04]"
-          : "border-l-2 border-l-transparent border-b border-b-[var(--color-border-subtle)]"
+          ? "border-l-2 border-l-[var(--sg-forest-400)] border-b border-b-[var(--sg-shell-200)] bg-white/[0.04]"
+          : "border-l-2 border-l-transparent border-b border-b-[var(--sg-shell-200)]"
       }`}
     >
       {/* Drag handle */}
@@ -96,7 +96,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
         type="button"
         {...attributes}
         {...listeners}
-        className="flex h-5 shrink-0 cursor-grab touch-none items-center justify-center text-[var(--color-text-tertiary)] active:cursor-grabbing"
+        className="flex h-5 shrink-0 cursor-grab touch-none items-center justify-center text-[var(--sg-shell-500)] active:cursor-grabbing"
         aria-label="Drag to reorder"
       >
         <Grip size={14} strokeWidth={1.5} />
@@ -126,10 +126,10 @@ export const SortableTaskRow = memo(function SortableTaskRow({
         <span
           className={`min-w-0 flex-1 cursor-text break-words text-sm leading-snug ${
             completed
-              ? "text-[var(--color-text-tertiary)] line-through"
+              ? "text-[var(--sg-shell-500)] line-through"
               : isActive
                 ? "text-white"
-                : "text-[var(--color-text-secondary)]"
+                : "text-[var(--sg-shell-600)]"
           }`}
           onClick={startEditing}
         >
@@ -145,7 +145,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
           className={`flex h-5 shrink-0 items-center justify-center transition-colors ${
             isActive
               ? "text-[var(--sg-forest-400)]"
-              : "text-[var(--color-text-tertiary)] opacity-0 group-hover:opacity-100 hover:text-white"
+              : "text-[var(--sg-shell-500)] opacity-0 group-hover:opacity-100 hover:text-white"
           }`}
           aria-label={isActive ? `Active: ${task.title}` : `Focus on ${task.title}`}
         >
@@ -172,7 +172,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
           <button
             type="button"
             onClick={() => onComplete(task.id)}
-            className="flex h-[18px] w-[18px] items-center justify-center rounded-xs border border-[var(--color-border-default)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
+            className="flex h-[18px] w-[18px] items-center justify-center rounded-xs border border-[var(--sg-shell-border)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
             aria-label={`Complete ${task.title}`}
           >
             <Check

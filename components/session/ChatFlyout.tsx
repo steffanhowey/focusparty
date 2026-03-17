@@ -51,7 +51,7 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
       <div className="fp-shell-scroll flex flex-1 flex-col overflow-y-auto px-4 py-3">
         {messages.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
-            <p className="text-center text-sm text-[var(--color-text-tertiary)]">
+            <p className="text-center text-sm text-[var(--sg-shell-500)]">
               Send a message to your<br />focus partner
             </p>
           </div>
@@ -66,7 +66,7 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
                   className={`max-w-[80%] px-3.5 py-2 text-sm leading-relaxed ${
                     msg.role === "user"
                       ? "rounded-lg rounded-br-sm bg-[var(--sg-forest-600)] text-white"
-                      : "rounded-lg rounded-bl-sm bg-white/[0.08] text-[var(--color-text-secondary)]"
+                      : "rounded-lg rounded-bl-sm bg-white/[0.08] text-[var(--sg-shell-600)]"
                   }`}
                 >
                   {msg.text}
@@ -80,7 +80,7 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
 
       {/* Input */}
       <div className="px-4 py-3">
-        <div className="flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-white/5 px-4 py-2">
+        <div className="flex items-center gap-2 rounded-full border border-[var(--sg-shell-200)] bg-white/5 px-4 py-2">
           <input
             ref={inputRef}
             type="text"
@@ -88,7 +88,7 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-[var(--color-text-tertiary)] outline-none"
+            className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-[var(--sg-shell-500)] outline-none"
           />
           <button
             type="button"
@@ -131,7 +131,7 @@ export function ChatFlyout({ onClose, messages, onSendMessage }: ChatFlyoutProps
         <button
           type="button"
           onClick={onClose}
-          className="cursor-pointer rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
+          className="cursor-pointer rounded-lg p-1.5 text-[var(--sg-shell-500)] transition-colors hover:bg-white/10 hover:text-white"
           aria-label="Close chat"
         >
           <X size={18} strokeWidth={2} />

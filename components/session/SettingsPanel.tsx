@@ -52,7 +52,7 @@ export const SettingsPanel = memo(function SettingsPanel({ onClose, settings, on
         </Accordion>
 
         <Accordion label="Background effects" isOpen={openSection === "background-effects"} onToggle={() => toggle("background-effects")}>
-          <p className="text-sm text-[var(--color-text-tertiary)]">Coming soon.</p>
+          <p className="text-sm text-[var(--sg-shell-500)]">Coming soon.</p>
         </Accordion>
       </div>
     </>
@@ -73,7 +73,7 @@ function Accordion({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-b border-[var(--color-border-subtle)]">
+    <div className="border-b border-[var(--sg-shell-200)]">
       <button
         type="button"
         onClick={onToggle}
@@ -83,7 +83,7 @@ function Accordion({
         <ChevronDown
           size={15}
           strokeWidth={2}
-          className={`text-[var(--color-text-tertiary)] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`text-[var(--sg-shell-500)] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
       {isOpen && <div className="px-4 pb-4">{children}</div>}
@@ -268,7 +268,7 @@ function DeviceSelector({
         <select
           value={selectedId}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
+          className="w-full appearance-none rounded-full border border-[var(--sg-shell-border)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--sg-shell-600)] transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
         >
           {devices.length === 0 && <option value="">No devices found</option>}
           {devices.map((d) => (
@@ -279,7 +279,7 @@ function DeviceSelector({
         </select>
         <ChevronDown
           size={14}
-          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--sg-shell-500)]"
         />
       </div>
     </div>
@@ -312,7 +312,7 @@ function UserPreferencesContent({
                     ? "border-current bg-white/[0.06]"
                     : "border-transparent hover:bg-white/[0.04]"
                 }`}
-                style={{ color: selected ? c.primary : "var(--color-text-tertiary)" }}
+                style={{ color: selected ? c.primary : "var(--sg-shell-500)" }}
               >
                 <FlameIcon character={id} size={24} />
                 <span className="text-xs font-medium">{c.name}</span>
@@ -348,7 +348,7 @@ function UserPreferencesContent({
               className={`flex-1 rounded-full border px-3 py-2 text-xs font-medium capitalize transition-all ${
                 settings.colorMode === mode
                   ? "border-[var(--sg-forest-400)] bg-[var(--sg-forest-400)]/10 text-white"
-                  : "border-[var(--color-border-subtle)] text-[var(--color-text-tertiary)] hover:bg-white/[0.04]"
+                  : "border-[var(--sg-shell-200)] text-[var(--sg-shell-500)] hover:bg-white/[0.04]"
               }`}
             >
               {mode}
@@ -365,7 +365,7 @@ function UserPreferencesContent({
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+      <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
         {label}
       </p>
       {children}
@@ -386,7 +386,7 @@ function Toggle({
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className="flex w-full items-center justify-between rounded-lg px-1 py-1.5 text-sm text-[var(--color-text-secondary)] transition-colors hover:text-white"
+      className="flex w-full items-center justify-between rounded-lg px-1 py-1.5 text-sm text-[var(--sg-shell-600)] transition-colors hover:text-white"
     >
       <span>{label}</span>
       <div

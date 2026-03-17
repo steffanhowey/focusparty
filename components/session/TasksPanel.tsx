@@ -155,7 +155,7 @@ export const TasksPanel = memo(function TasksPanel({
               <span className="min-w-0 flex-1 truncate text-xs font-semibold text-white">
                 {activeGoal.title}
               </span>
-              <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
+              <span className="shrink-0 text-2xs text-[var(--sg-shell-500)]">
                 {computeGoalProgress(goalTasks).completed}/{computeGoalProgress(goalTasks).total}
               </span>
             </div>
@@ -175,7 +175,7 @@ export const TasksPanel = memo(function TasksPanel({
                         className="flex h-3.5 w-3.5 shrink-0 cursor-pointer items-center justify-center rounded-xs border border-white/20 transition-colors hover:border-white/40"
                         aria-label="Complete"
                       />
-                      <span className="min-w-0 flex-1 truncate text-2xs text-[var(--color-text-secondary)]">
+                      <span className="min-w-0 flex-1 truncate text-2xs text-[var(--sg-shell-600)]">
                         {task.title}
                       </span>
                       {onSetSprintGoal && (
@@ -224,7 +224,7 @@ export const TasksPanel = memo(function TasksPanel({
             ))}
 
           {!hasTasks && !showAddInput && (
-            <p className="px-4 py-6 text-center text-xs text-[var(--color-text-tertiary)]">
+            <p className="px-4 py-6 text-center text-xs text-[var(--sg-shell-500)]">
               No items yet
             </p>
           )}
@@ -232,7 +232,7 @@ export const TasksPanel = memo(function TasksPanel({
           {/* Add task: toggle button or inline input */}
           {showAddInput ? (
             <div className="flex items-center gap-2 px-2 py-3">
-              <Plus size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
+              <Plus size={14} strokeWidth={1.5} className="shrink-0 text-[var(--sg-shell-500)]" />
               <input
                 ref={addInputRef}
                 type="text"
@@ -254,10 +254,10 @@ export const TasksPanel = memo(function TasksPanel({
                   }
                 }}
                 placeholder="What's next?"
-                className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
+                className="min-w-0 flex-1 bg-transparent text-sm text-[var(--sg-shell-600)] placeholder:text-[var(--sg-shell-500)] outline-none"
               />
               {newTaskText.trim() && (
-                <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
+                <span className="shrink-0 text-2xs text-[var(--sg-shell-500)]">
                   ↵
                 </span>
               )}
@@ -266,7 +266,7 @@ export const TasksPanel = memo(function TasksPanel({
             <button
               type="button"
               onClick={() => setShowAddInput(true)}
-              className="flex items-center gap-2 px-2 py-3 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+              className="flex items-center gap-2 px-2 py-3 text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-600)]"
             >
               <Plus size={14} strokeWidth={1.5} />
               <span className="text-sm">Add item</span>
@@ -275,11 +275,11 @@ export const TasksPanel = memo(function TasksPanel({
 
           {/* Completed section */}
           {completedTasks.length > 0 && (
-            <div className="mt-1 border-t border-[var(--color-border-subtle)] pt-1">
+            <div className="mt-1 border-t border-[var(--sg-shell-200)] pt-1">
               <button
                 type="button"
                 onClick={() => setShowCompleted((s) => !s)}
-                className="flex items-center gap-2 px-2 py-3 text-sm text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+                className="flex items-center gap-2 px-2 py-3 text-sm text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-600)]"
               >
                 Done ({completedTasks.length})
                 <ChevronRight

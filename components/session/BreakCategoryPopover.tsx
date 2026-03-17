@@ -46,7 +46,7 @@ export function BreakCategoryPopover({
 
   return (
     <div
-      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
+      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--sg-shell-border)] p-3 shadow-lg"
       style={{
         background: "rgba(15,35,24,0.85)",
         backdropFilter: "blur(24px)",
@@ -58,7 +58,7 @@ export function BreakCategoryPopover({
       role="dialog"
       aria-label="Break categories"
     >
-      <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+      <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
         Take a break
       </p>
 

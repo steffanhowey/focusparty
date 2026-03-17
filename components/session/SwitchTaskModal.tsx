@@ -52,7 +52,7 @@ export function SwitchTaskModal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-[6px]"
+        className="absolute inset-0 bg-shell-900/40 backdrop-blur-[6px]"
         aria-hidden
       />
 
@@ -63,7 +63,7 @@ export function SwitchTaskModal({
         >
           Switch task?
         </h3>
-        <p className="mb-5 text-sm text-[var(--color-text-secondary)]">
+        <p className="mb-5 text-sm text-[var(--sg-shell-600)]">
           You&apos;re working on{" "}
           <span className="text-white">&ldquo;{currentTaskText}&rdquo;</span>
         </p>

@@ -56,7 +56,7 @@ export function TimerDropdown({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="ml-1.5 rounded p-0.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
+        className="ml-1.5 rounded p-0.5 text-[var(--sg-shell-500)] transition-colors hover:bg-white/10 hover:text-white"
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Timer options"
@@ -71,7 +71,7 @@ export function TimerDropdown({
       {/* Dropdown panel */}
       {open && (
         <div
-          className="absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
+          className="absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-xl border border-[var(--sg-shell-border)] p-3 shadow-lg"
           style={{
             background: "rgba(15,35,24,0.95)",
             backdropFilter: "blur(20px)",
@@ -82,7 +82,7 @@ export function TimerDropdown({
           aria-label="Timer controls"
         >
           {/* Section label */}
-          <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
             Duration
           </p>
 
@@ -90,14 +90,14 @@ export function TimerDropdown({
           <DurationPills value={currentDurationMin} onChange={handleChangeDuration} />
 
           {/* Divider */}
-          <div className="my-2.5 border-t border-[var(--color-border-subtle)]" />
+          <div className="my-2.5 border-t border-[var(--sg-shell-200)]" />
 
           {/* Reset action */}
           <button
             type="button"
             role="menuitem"
             onClick={handleReset}
-            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.06] hover:text-white"
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-[var(--sg-shell-600)] transition-colors hover:bg-white/[0.06] hover:text-white"
           >
             <RotateCcw size={14} strokeWidth={2} />
             Reset timer

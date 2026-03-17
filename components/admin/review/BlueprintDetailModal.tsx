@@ -82,38 +82,38 @@ export function BlueprintDetailModal({
       style={{ zIndex: 50 }}
     >
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-shell-900/60 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
-        className="relative flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-[var(--color-border-default)] shadow-xl"
-        style={{ background: "var(--color-bg-secondary)" }}
+        className="relative flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-white/[0.08] shadow-xl"
+        style={{ background: "var(--sg-forest-900)" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 border-b border-[var(--color-border-default)] px-6 py-5">
+        <div className="flex items-start justify-between gap-4 border-b border-white/[0.08] px-6 py-5">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
-              <h2 className="truncate text-lg font-bold text-[var(--color-text-primary)]">
+              <h2 className="truncate text-lg font-bold text-[var(--sg-white)]">
                 {bp.room_name}
               </h2>
               <StatusBadge status={bp.review_status} />
             </div>
-            <p className="mt-1 text-sm text-[var(--color-text-tertiary)]">
+            <p className="mt-1 text-sm text-[var(--sg-shell-500)]">
               {bp.room_description}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-primary)]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-white)]"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-[var(--color-border-default)] px-6">
+        <div className="flex gap-1 border-b border-white/[0.08] px-6">
           {TABS.map((tab) => (
             <button
               key={tab}
@@ -121,8 +121,8 @@ export function BlueprintDetailModal({
               onClick={() => setActiveTab(tab)}
               className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab
-                  ? "border-[var(--sg-forest-500)] text-[var(--color-text-primary)]"
-                  : "border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+                  ? "border-[var(--sg-forest-500)] text-[var(--sg-white)]"
+                  : "border-transparent text-[var(--sg-shell-500)] hover:text-[var(--sg-shell-300)]"
               }`}
             >
               {tab}
@@ -135,21 +135,21 @@ export function BlueprintDetailModal({
           {activeTab === "Curriculum" && (
             <div className="space-y-3">
               {curriculum.length === 0 ? (
-                <p className="text-sm text-[var(--color-text-tertiary)]">No curriculum data</p>
+                <p className="text-sm text-[var(--sg-shell-500)]">No curriculum data</p>
               ) : (
                 curriculum.map((item, i) => (
                   <div
                     key={item.videoId ?? i}
-                    className="flex gap-4 rounded-lg border border-[var(--color-border-subtle)] p-4"
+                    className="flex gap-4 rounded-lg border border-white/[0.04] p-4"
                   >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-xs font-bold text-[var(--color-text-tertiary)]">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-xs font-bold text-[var(--sg-shell-500)]">
                       {item.position ?? i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                      <p className="text-sm font-medium text-[var(--sg-white)]">
                         {item.title}
                       </p>
-                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-tertiary)]">
+                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-[var(--sg-shell-500)]">
                         <span>{item.channelName}</span>
                         {item.durationSeconds > 0 && (
                           <span>{formatDuration(item.durationSeconds)}</span>
@@ -159,7 +159,7 @@ export function BlueprintDetailModal({
                         )}
                       </div>
                       {item.learningRationale && (
-                        <p className="mt-2 text-xs text-[var(--color-text-tertiary)] italic">
+                        <p className="mt-2 text-xs text-[var(--sg-shell-500)] italic">
                           {item.learningRationale}
                         </p>
                       )}
@@ -225,17 +225,17 @@ export function BlueprintDetailModal({
 
         {/* Footer */}
         {isPending && (
-          <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border-default)] px-6 py-4">
+          <div className="flex items-center justify-end gap-3 border-t border-white/[0.08] px-6 py-4">
             {showRejectDialog ? (
               <div className="flex flex-1 items-end gap-3">
                 <div className="flex-1">
-                  <label className="mb-1 block text-xs font-medium text-[var(--color-text-tertiary)]">
+                  <label className="mb-1 block text-xs font-medium text-[var(--sg-shell-500)]">
                     Rejection notes (optional)
                   </label>
                   <textarea
                     value={rejectNotes}
                     onChange={(e) => setRejectNotes(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--color-border-default)] bg-transparent px-3 py-2 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-border-focus)] focus:outline-none"
+                    className="w-full rounded-lg border border-white/[0.08] bg-transparent px-3 py-2 text-sm text-[var(--sg-white)] focus:border-[var(--sg-forest-400)] focus:outline-none"
                     rows={2}
                     placeholder="Why is this being rejected?"
                   />
@@ -287,10 +287,10 @@ export function BlueprintDetailModal({
 function MetadataRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex gap-4">
-      <span className="w-48 shrink-0 text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+      <span className="w-48 shrink-0 text-xs font-medium uppercase tracking-wider text-[var(--sg-shell-500)]">
         {label}
       </span>
-      <span className="text-sm text-[var(--color-text-secondary)]">{value}</span>
+      <span className="text-sm text-[var(--sg-shell-300)]">{value}</span>
     </div>
   );
 }

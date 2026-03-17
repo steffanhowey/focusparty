@@ -16,9 +16,9 @@ export function TimerDisplay({
   critical = false,
 }: TimerDisplayProps) {
   const colorClass = critical
-    ? "text-[var(--color-coral-700)]"
+    ? "text-[var(--sg-coral-500)]"
     : warning
-      ? "text-[var(--color-gold-500)]"
+      ? "text-[var(--sg-gold-500)]"
       : "text-white";
 
   const sizeClass =

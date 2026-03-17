@@ -74,7 +74,7 @@ export function CheckInMenu({
 
   return (
     <div
-      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
+      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--sg-shell-border)] p-3 shadow-lg"
       style={{
         background: "rgba(15,35,24,0.85)",
         backdropFilter: "blur(24px)",
@@ -86,27 +86,27 @@ export function CheckInMenu({
       role="dialog"
       aria-label="Check in"
     >
-      <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+      <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
         Check In
       </p>
 
       <div className="flex flex-col gap-0.5">
         <MenuItem
-          icon={<TrendingUp {...ICON} className="text-[var(--color-text-tertiary)]" />}
+          icon={<TrendingUp {...ICON} className="text-[var(--sg-shell-500)]" />}
           onClick={() => handleQuickAction("progress")}
         >
           Making progress
         </MenuItem>
 
         <MenuItem
-          icon={<Rocket {...ICON} className="text-[var(--color-text-tertiary)]" />}
+          icon={<Rocket {...ICON} className="text-[var(--sg-shell-500)]" />}
           onClick={() => handleQuickAction("ship")}
         >
           Shipped something
         </MenuItem>
 
         <MenuItem
-          icon={<RotateCcw {...ICON} className="text-[var(--color-text-tertiary)]" />}
+          icon={<RotateCcw {...ICON} className="text-[var(--sg-shell-500)]" />}
           onClick={() => handleQuickAction("reset")}
         >
           Need a reset
@@ -114,11 +114,11 @@ export function CheckInMenu({
       </div>
 
       {/* Divider */}
-      <div className="my-2 border-t border-[var(--color-border-subtle)]" />
+      <div className="my-2 border-t border-[var(--sg-shell-200)]" />
 
       {!showInput ? (
         <MenuItem
-          icon={<MessageSquare {...ICON} className="text-[var(--color-text-tertiary)]" />}
+          icon={<MessageSquare {...ICON} className="text-[var(--sg-shell-500)]" />}
           onClick={() => setShowInput(true)}
         >
           Share update
@@ -135,7 +135,7 @@ export function CheckInMenu({
             }}
             placeholder="What did you work on?"
             maxLength={120}
-            className="flex-1 rounded-lg border border-[var(--color-border-default)] bg-white/[0.06] px-2.5 py-1.5 text-xs text-white placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--sg-forest-500)]/50 focus:outline-none"
+            className="flex-1 rounded-lg border border-[var(--sg-shell-border)] bg-white/[0.06] px-2.5 py-1.5 text-xs text-white placeholder:text-[var(--sg-shell-500)] focus:border-[var(--sg-forest-500)]/50 focus:outline-none"
           />
           <Button
             variant="primary"

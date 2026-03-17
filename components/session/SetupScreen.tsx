@@ -34,14 +34,13 @@ const CARD_STYLE: React.CSSProperties = {
   backdropFilter: "blur(20px)",
   WebkitBackdropFilter: "blur(20px)",
   boxShadow: "var(--shadow-float)",
-  "--color-bg-elevated": "var(--sg-forest-800)",
-  "--color-text-primary": "#ffffff",
-  "--color-text-secondary": "rgba(255,255,255,0.7)",
-  "--color-text-tertiary": "rgba(255,255,255,0.4)",
-  "--color-text-on-accent": "#ffffff",
-  "--color-border-default": "rgba(255, 255, 255, 0.08)",
-  "--color-border-focus": "var(--sg-forest-400)",
-  "--color-bg-hover": "rgba(255, 255, 255, 0.08)",
+  "--sg-shell-100": "var(--sg-forest-800)",
+  "--sg-shell-900": "#ffffff",
+  "--sg-shell-600": "rgba(255,255,255,0.7)",
+  "--sg-shell-500": "rgba(255,255,255,0.4)",
+  "--sg-white": "#ffffff",
+  "--sg-shell-border": "rgba(255, 255, 255, 0.08)",
+  "--sg-forest-400": "var(--sg-forest-400)",
 } as React.CSSProperties;
 
 export function SetupScreen({
@@ -141,12 +140,12 @@ export function SetupScreen({
         {roomName && (
           <div className="mb-5">
             <h2
-              className="text-xl font-bold text-[var(--color-text-primary)]"
+              className="text-xl font-bold text-[var(--sg-shell-900)]"
             >
               {roomName}
             </h2>
             {roomSubtitle && (
-              <p className="mt-1 flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)]">
+              <p className="mt-1 flex items-center gap-1.5 text-sm text-[var(--sg-shell-600)]">
                 {hostAvatarUrl && (
                   <img
                     src={hostAvatarUrl}
@@ -165,10 +164,10 @@ export function SetupScreen({
         {/* Signals of life — only in room context */}
         {roomName && presenceParticipants && presenceParticipants.length > 0 && (
           <div className="mb-5 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
+            <div className="flex items-center gap-2 text-xs text-[var(--sg-shell-500)]">
               <span
                 className="inline-block h-2 w-2 rounded-full"
-                style={{ background: focusingCount > 0 ? "var(--color-green-700)" : "var(--color-amber-700)" }}
+                style={{ background: focusingCount > 0 ? "var(--sg-forest-300)" : "var(--sg-gold-600)" }}
               />
               <span>
                 {focusingCount > 0
@@ -176,7 +175,7 @@ export function SetupScreen({
                   : `${presenceParticipants.length} here now`}
               </span>
               {focusingCount > 0 && (
-                <span className="text-[var(--color-text-tertiary)]">&middot; Sprint in progress</span>
+                <span className="text-[var(--sg-shell-500)]">&middot; Sprint in progress</span>
               )}
               {roomStateIcon && roomStateLabel && (
                 <span style={{ color: roomStateColor }}>
@@ -195,7 +194,7 @@ export function SetupScreen({
 
         {!roomName && (
           <h2
-            className="mb-6 text-2xl font-bold text-[var(--color-text-primary)]"
+            className="mb-6 text-2xl font-bold text-[var(--sg-shell-900)]"
           >
             Ready to focus?
           </h2>
@@ -204,18 +203,18 @@ export function SetupScreen({
         <div className="space-y-5">
           {/* Task selector — inline dropdown */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
               What are you working on?
             </label>
             <div ref={dropdownRef} className="relative">
               <button
                 type="button"
                 onClick={() => setTaskPickerOpen((o) => !o)}
-                className="flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-5 py-3 text-left outline-none"
+                className="flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] px-5 py-3 text-left outline-none"
               >
                 <span
                   className={`truncate text-sm ${
-                    activeTask ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-tertiary)]"
+                    activeTask ? "text-[var(--sg-shell-900)]" : "text-[var(--sg-shell-500)]"
                   }`}
                 >
                   {activeTask ? activeTask.title : "Select or create a task"}
@@ -223,7 +222,7 @@ export function SetupScreen({
                 <ChevronDown
                   size={16}
                   strokeWidth={2}
-                  className={`shrink-0 text-[var(--color-text-tertiary)] transition-transform duration-200 ${
+                  className={`shrink-0 text-[var(--sg-shell-500)] transition-transform duration-200 ${
                     taskPickerOpen ? "rotate-180" : ""
                   }`}
                 />
@@ -232,7 +231,7 @@ export function SetupScreen({
               {/* Dropdown panel — matches TasksPanel design */}
               {taskPickerOpen && (
                 <div
-                  className="absolute top-full left-0 mt-2 w-full rounded-xl border border-[var(--color-border-default)]"
+                  className="absolute top-full left-0 mt-2 w-full rounded-xl border border-[var(--sg-shell-border)]"
                   style={{
                     background: "rgba(15,35,24,0.95)",
                     backdropFilter: "blur(20px)",
@@ -249,20 +248,20 @@ export function SetupScreen({
                           key={task.id}
                           type="button"
                           onClick={() => handleSelectTask(task.id)}
-                          className="flex w-full items-center gap-3 border-b border-[var(--color-border-subtle)] px-2 py-3 text-left last:border-b-0"
+                          className="flex w-full items-center gap-3 border-b border-[var(--sg-shell-200)] px-2 py-3 text-left last:border-b-0"
                         >
                           <span
                             className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${
                               isSelected
-                                ? "border-[var(--color-border-focus)] bg-[var(--color-border-focus)]"
-                                : "border-[var(--color-border-default)]"
+                                ? "border-[var(--sg-forest-400)] bg-[var(--sg-forest-400)]"
+                                : "border-[var(--sg-shell-border)]"
                             }`}
                           >
                             {isSelected && (
                               <span className="h-1.5 w-1.5 rounded-full bg-white" />
                             )}
                           </span>
-                          <span className="min-w-0 flex-1 cursor-pointer break-words text-sm leading-snug text-[var(--color-text-secondary)] transition-colors hover:text-white">
+                          <span className="min-w-0 flex-1 cursor-pointer break-words text-sm leading-snug text-[var(--sg-shell-600)] transition-colors hover:text-white">
                             {task.title}
                           </span>
                         </button>
@@ -271,7 +270,7 @@ export function SetupScreen({
 
                     {/* Empty state */}
                     {!hasTasks && !showAddInput && (
-                      <p className="px-2 py-6 text-center text-xs text-[var(--color-text-tertiary)]">
+                      <p className="px-2 py-6 text-center text-xs text-[var(--sg-shell-500)]">
                         No tasks yet
                       </p>
                     )}
@@ -279,7 +278,7 @@ export function SetupScreen({
                     {/* Add task — toggle or inline input */}
                     {showAddInput ? (
                       <div className="flex items-center gap-2 px-2 py-3">
-                        <Plus size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
+                        <Plus size={14} strokeWidth={1.5} className="shrink-0 text-[var(--sg-shell-500)]" />
                         <input
                           ref={addInputRef}
                           type="text"
@@ -301,10 +300,10 @@ export function SetupScreen({
                             }
                           }}
                           placeholder="New task..."
-                          className="min-w-0 flex-1 bg-transparent text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-tertiary)] outline-none"
+                          className="min-w-0 flex-1 bg-transparent text-sm text-[var(--sg-shell-600)] placeholder:text-[var(--sg-shell-500)] outline-none"
                         />
                         {newTaskText.trim() && (
-                          <span className="shrink-0 text-2xs text-[var(--color-text-tertiary)]">
+                          <span className="shrink-0 text-2xs text-[var(--sg-shell-500)]">
                             ↵
                           </span>
                         )}
@@ -313,7 +312,7 @@ export function SetupScreen({
                       <button
                         type="button"
                         onClick={() => setShowAddInput(true)}
-                        className="flex items-center gap-2 px-2 py-3 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+                        className="flex items-center gap-2 px-2 py-3 text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-600)]"
                       >
                         <Plus size={14} strokeWidth={1.5} />
                         <span className="text-sm">Add task</span>
@@ -328,7 +327,7 @@ export function SetupScreen({
 
           {/* Duration */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
               Sprint duration
             </label>
             <DurationPills value={duration} onChange={setDuration} />

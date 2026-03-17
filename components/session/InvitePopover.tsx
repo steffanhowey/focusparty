@@ -86,7 +86,7 @@ export function InvitePopover({
 
   return (
     <div
-      className={`absolute rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg ${
+      className={`absolute rounded-xl border border-[var(--sg-shell-border)] p-3 shadow-lg ${
         position === "below" ? "top-full mt-3" : "bottom-full mb-3"
       } ${align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"}`}
       style={{
@@ -102,16 +102,16 @@ export function InvitePopover({
     >
       {inviteCode && joinUrl ? (
         <>
-          <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
             Invite Link
           </p>
           <div className="flex gap-2">
             <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-white/[0.06] px-3 py-2">
               <Link2
                 size={14}
-                className="shrink-0 text-[var(--color-text-tertiary)]"
+                className="shrink-0 text-[var(--sg-shell-500)]"
               />
-              <span className="truncate text-xs text-[var(--color-text-secondary)]">
+              <span className="truncate text-xs text-[var(--sg-shell-600)]">
                 {typeof window !== "undefined" ? `${window.location.host}/i/${inviteCode}` : ""}
               </span>
             </div>
@@ -136,10 +136,10 @@ export function InvitePopover({
         </>
       ) : (
         <div className="py-2 text-center">
-          <p className="text-sm font-medium text-[var(--color-text-secondary)]">
+          <p className="text-sm font-medium text-[var(--sg-shell-600)]">
             No active party
           </p>
-          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+          <p className="mt-1 text-xs text-[var(--sg-shell-500)]">
             Create a party from the hub to invite friends.
           </p>
         </div>

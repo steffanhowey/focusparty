@@ -466,7 +466,7 @@ export function LearnPage() {
               placeholder="Search topics, skills, or keywords..."
               className="w-full pl-11 pr-4 py-2.5 md:py-3 text-sm rounded-xl border text-white placeholder:text-white/50 backdrop-blur-md focus:outline-none focus:border-white/30 transition-colors"
               style={{
-                background: "rgba(0,0,0,0.35)",
+                background: "rgba(15,35,24,0.55)",
                 borderColor: "rgba(255,255,255,0.2)",
               }}
             />
@@ -583,7 +583,7 @@ export function LearnPage() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="cursor-pointer appearance-none rounded-full border border-shell-border bg-white/[0.06] px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
+              className="cursor-pointer appearance-none rounded-full border border-shell-border bg-shell-50 px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
             >
               {visibleCategories.map((cat) => (
                 <option key={cat.value} value={cat.value}>
@@ -602,7 +602,7 @@ export function LearnPage() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOption)}
-              className="cursor-pointer appearance-none rounded-full border border-shell-border bg-white/[0.06] px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
+              className="cursor-pointer appearance-none rounded-full border border-shell-border bg-shell-50 px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>

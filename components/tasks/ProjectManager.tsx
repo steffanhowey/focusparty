@@ -78,7 +78,7 @@ export function ProjectManager({
             {projects.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-white/[0.04]"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[var(--sg-shell-50)]"
               >
                 <span
                   className="flex h-6 w-6 items-center justify-center rounded text-sm"
@@ -86,7 +86,7 @@ export function ProjectManager({
                 >
                   {p.emoji}
                 </span>
-                <span className="flex-1 text-sm text-[var(--color-text-primary)]">
+                <span className="flex-1 text-sm text-[var(--sg-shell-900)]">
                   {p.name}
                 </span>
                 {!p.is_default && (
@@ -94,14 +94,14 @@ export function ProjectManager({
                     <button
                       type="button"
                       onClick={() => startEdit(p)}
-                      className="rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-primary)]"
+                      className="rounded p-1 text-[var(--sg-shell-400)] transition-colors hover:text-[var(--sg-shell-900)]"
                     >
                       <Pencil size={14} strokeWidth={1.5} />
                     </button>
                     <button
                       type="button"
                       onClick={() => onDeleteProject(p.id)}
-                      className="rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-coral-700)]"
+                      className="rounded p-1 text-[var(--sg-shell-400)] transition-colors hover:text-[var(--sg-coral-500)]"
                     >
                       <Trash2 size={14} strokeWidth={1.5} />
                     </button>
@@ -114,7 +114,7 @@ export function ProjectManager({
 
         {/* Create/Edit form */}
         {isEditing ? (
-          <div className="space-y-3 rounded-lg border border-[var(--color-border-default)] p-3">
+          <div className="space-y-3 rounded-lg border border-[var(--sg-shell-border)] p-3">
             <Input
               autoFocus
               value={name}
@@ -129,7 +129,7 @@ export function ProjectManager({
 
             {/* Emoji picker */}
             <div>
-              <label className="mb-1 block text-xs text-[var(--color-text-tertiary)]">
+              <label className="mb-1 block text-xs text-[var(--sg-shell-500)]">
                 Emoji
               </label>
               <div className="flex flex-wrap gap-1">
@@ -140,8 +140,8 @@ export function ProjectManager({
                     onClick={() => setEmoji(e)}
                     className={`flex h-8 w-8 items-center justify-center rounded text-sm transition-colors ${
                       emoji === e
-                        ? "bg-white/10 ring-1 ring-white/30"
-                        : "hover:bg-white/[0.06]"
+                        ? "bg-[var(--sg-shell-100)] ring-1 ring-[var(--sg-shell-300)]"
+                        : "hover:bg-[var(--sg-shell-50)]"
                     }`}
                   >
                     {e}
@@ -152,7 +152,7 @@ export function ProjectManager({
 
             {/* Color picker */}
             <div>
-              <label className="mb-1 block text-xs text-[var(--color-text-tertiary)]">
+              <label className="mb-1 block text-xs text-[var(--sg-shell-500)]">
                 Color
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -162,7 +162,7 @@ export function ProjectManager({
                     type="button"
                     onClick={() => setColor(c)}
                     className={`h-6 w-6 rounded-full transition-transform ${
-                      color === c ? "scale-125 ring-2 ring-white/40" : "hover:scale-110"
+                      color === c ? "scale-125 ring-2 ring-[var(--sg-shell-400)]" : "hover:scale-110"
                     }`}
                     style={{ background: c }}
                   />
@@ -188,7 +188,7 @@ export function ProjectManager({
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="flex w-full items-center gap-2 rounded-lg border border-dashed border-[var(--color-border-default)] px-3 py-2.5 text-sm text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+            className="flex w-full items-center gap-2 rounded-lg border border-dashed border-[var(--sg-shell-border)] px-3 py-2.5 text-sm text-[var(--sg-shell-500)] transition-colors hover:border-[var(--sg-shell-400)] hover:text-[var(--sg-shell-600)]"
           >
             <Plus size={16} strokeWidth={1.5} />
             New project

@@ -84,7 +84,7 @@ export function RoomDetailModal({
         <div className="flex items-center justify-center py-12">
           <div
             className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"
-            style={{ color: "var(--color-text-tertiary)" }}
+            style={{ color: "var(--sg-shell-500)" }}
           />
         </div>
       ) : (
@@ -92,12 +92,12 @@ export function RoomDetailModal({
           {/* Room Info */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
+              <h3 className="text-base font-semibold text-[var(--sg-white)]">
                 {detail.room.name}
               </h3>
               <StatusBadge status={detail.room.status} />
             </div>
-            <div className="flex flex-wrap gap-3 text-xs text-[var(--color-text-tertiary)]">
+            <div className="flex flex-wrap gap-3 text-xs text-[var(--sg-shell-500)]">
               <span>World: {detail.room.world_key}</span>
               <span>Duration: {detail.room.planned_duration_min}m</span>
               <span>Max: {detail.room.max_participants}</span>
@@ -110,13 +110,13 @@ export function RoomDetailModal({
 
           {/* Status Update */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-tertiary)]">
+            <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-500)]">
               Update Status
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="h-10 w-full appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.04] px-4 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+              className="h-10 w-full appearance-none rounded-full border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--sg-white)] outline-none focus:border-[var(--sg-forest-400)]"
             >
               <option value="waiting">Waiting</option>
               <option value="active">Active</option>
@@ -126,12 +126,12 @@ export function RoomDetailModal({
 
           {/* Participants */}
           <div>
-            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
               Participants ({detail.participants.length})
             </h4>
-            <div className="max-h-32 overflow-y-auto rounded-lg border border-[var(--color-border-subtle)] divide-y divide-[var(--color-border-subtle)]">
+            <div className="max-h-32 overflow-y-auto rounded-lg border border-white/[0.04] divide-y divide-white/[0.04]">
               {detail.participants.length === 0 ? (
-                <p className="px-3 py-4 text-center text-xs text-[var(--color-text-tertiary)]">
+                <p className="px-3 py-4 text-center text-xs text-[var(--sg-shell-500)]">
                   No participants
                 </p>
               ) : (
@@ -140,10 +140,10 @@ export function RoomDetailModal({
                     key={p.id}
                     className="flex items-center justify-between px-3 py-2"
                   >
-                    <span className="text-sm text-[var(--color-text-secondary)]">
+                    <span className="text-sm text-[var(--sg-shell-300)]">
                       {p.display_name}
                     </span>
-                    <span className="text-xs text-[var(--color-text-tertiary)]">
+                    <span className="text-xs text-[var(--sg-shell-500)]">
                       {p.left_at ? "Left" : "Active"}
                     </span>
                   </div>
@@ -154,12 +154,12 @@ export function RoomDetailModal({
 
           {/* Recent Events */}
           <div>
-            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
               Recent Events ({detail.recentEvents.length})
             </h4>
-            <div className="max-h-40 overflow-y-auto rounded-lg border border-[var(--color-border-subtle)] divide-y divide-[var(--color-border-subtle)]">
+            <div className="max-h-40 overflow-y-auto rounded-lg border border-white/[0.04] divide-y divide-white/[0.04]">
               {detail.recentEvents.length === 0 ? (
-                <p className="px-3 py-4 text-center text-xs text-[var(--color-text-tertiary)]">
+                <p className="px-3 py-4 text-center text-xs text-[var(--sg-shell-500)]">
                   No events
                 </p>
               ) : (
@@ -177,10 +177,10 @@ export function RoomDetailModal({
                         className="shrink-0"
                         style={{ color: rendered.color }}
                       />
-                      <span className="min-w-0 flex-1 truncate text-xs text-[var(--color-text-secondary)]">
+                      <span className="min-w-0 flex-1 truncate text-xs text-[var(--sg-shell-300)]">
                         {rendered.label}
                       </span>
-                      <span className="shrink-0 text-xs text-[var(--color-text-tertiary)]">
+                      <span className="shrink-0 text-xs text-[var(--sg-shell-500)]">
                         {relativeTime(event.created_at)}
                       </span>
                     </div>

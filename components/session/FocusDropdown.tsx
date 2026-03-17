@@ -145,7 +145,7 @@ export const FocusDropdown = memo(function FocusDropdown({
   return (
     <div
       ref={popoverRef}
-      className="absolute bottom-full left-1/2 z-[60] mb-3 w-96 -translate-x-1/2 overflow-visible rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
+      className="absolute bottom-full left-1/2 z-[60] mb-3 w-96 -translate-x-1/2 overflow-visible rounded-xl border border-[var(--sg-shell-border)] p-3 shadow-lg"
       style={{
         background: "rgba(15,35,24,0.98)",
         backdropFilter: "blur(24px)",
@@ -155,7 +155,7 @@ export const FocusDropdown = memo(function FocusDropdown({
     >
       <div className="flex flex-col">
         {/* Title — top of popover */}
-        <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">What are you working on?</p>
+        <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">What are you working on?</p>
 
         {/* Goals + Tasks accordions — toggled by ListTodo button */}
         {showPicker && (

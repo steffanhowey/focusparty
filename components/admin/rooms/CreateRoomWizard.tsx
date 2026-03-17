@@ -67,35 +67,35 @@ const ARCHETYPES: {
     label: "Coding Room",
     description: "Developers and builders shipping code",
     icon: Code,
-    color: "#10B981",
+    color: "var(--sg-teal-600)",
   },
   {
     id: "writer",
     label: "Writing Room",
     description: "Writers, editors, and content creators",
     icon: Pen,
-    color: "#8B5CF6",
+    color: "var(--sg-teal-500)",
   },
   {
     id: "founder",
     label: "Builder Room",
     description: "Founders and operators building products",
     icon: Rocket,
-    color: "#F59E0B",
+    color: "var(--sg-gold-600)",
   },
   {
     id: "gentle",
     label: "Gentle Room",
     description: "Low-pressure momentum building",
     icon: Flower2,
-    color: "#EC4899",
+    color: "var(--sg-coral-500)",
   },
   {
     id: "custom",
     label: "Custom Room",
     description: "Define your own room type",
     icon: Sparkles,
-    color: "#3B82F6",
+    color: "var(--sg-forest-500)",
   },
 ];
 
@@ -239,7 +239,7 @@ export function CreateRoomWizard({
     <Modal isOpen={isOpen} onClose={handleClose} title="Create Room">
       {step === "archetype" && (
         <div className="space-y-4">
-          <p className="text-sm text-[var(--color-text-secondary)]">
+          <p className="text-sm text-[var(--sg-shell-300)]">
             Choose a room archetype. AI will generate the full configuration.
           </p>
           <div className="grid grid-cols-1 gap-2">
@@ -255,23 +255,23 @@ export function CreateRoomWizard({
                   style={{
                     borderColor: selected
                       ? a.color
-                      : "var(--color-border-default)",
+                      : "rgba(255,255,255,0.08)",
                     backgroundColor: selected
-                      ? `${a.color}10`
+                      ? "rgba(255,255,255,0.06)"
                       : "transparent",
                   }}
                 >
                   <div
                     className="flex h-9 w-9 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: `${a.color}20`, color: a.color }}
+                    style={{ backgroundColor: "rgba(255,255,255,0.08)", color: a.color }}
                   >
                     <Icon size={18} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-[var(--color-text-primary)]">
+                    <div className="text-sm font-medium text-[var(--sg-white)]">
                       {a.label}
                     </div>
-                    <div className="text-xs text-[var(--color-text-tertiary)]">
+                    <div className="text-xs text-[var(--sg-shell-500)]">
                       {a.description}
                     </div>
                   </div>
@@ -292,7 +292,7 @@ export function CreateRoomWizard({
       {step === "details" && (
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs text-[var(--color-text-tertiary)]">
+            <label className="mb-1 block text-xs text-[var(--sg-shell-500)]">
               Room Name
             </label>
             <input
@@ -300,12 +300,12 @@ export function CreateRoomWizard({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Lovable Builders"
-              className="w-full rounded-lg border border-[var(--color-border-default)] bg-white/[0.04] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+              className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-[var(--sg-white)] outline-none focus:border-[var(--sg-forest-400)]"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs text-[var(--color-text-tertiary)]">
+            <label className="mb-1 block text-xs text-[var(--sg-shell-500)]">
               Description
             </label>
             <textarea
@@ -313,12 +313,12 @@ export function CreateRoomWizard({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. Build apps using Lovable with other founders"
               rows={2}
-              className="w-full rounded-lg border border-[var(--color-border-default)] bg-white/[0.04] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+              className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-[var(--sg-white)] outline-none focus:border-[var(--sg-forest-400)]"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs text-[var(--color-text-tertiary)]">
+            <label className="mb-1 block text-xs text-[var(--sg-shell-500)]">
               Primary Topic
             </label>
             <input
@@ -326,12 +326,12 @@ export function CreateRoomWizard({
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. AI app building, vibe coding"
-              className="w-full rounded-lg border border-[var(--color-border-default)] bg-white/[0.04] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+              className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-[var(--sg-white)] outline-none focus:border-[var(--sg-forest-400)]"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs text-[var(--color-text-tertiary)]">
+            <label className="mb-1 block text-xs text-[var(--sg-shell-500)]">
               Target Audience
             </label>
             <input
@@ -339,7 +339,7 @@ export function CreateRoomWizard({
               value={audience}
               onChange={(e) => setAudience(e.target.value)}
               placeholder="e.g. Founders, indie hackers, builders"
-              className="w-full rounded-lg border border-[var(--color-border-default)] bg-white/[0.04] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-border-focus)]"
+              className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-[var(--sg-white)] outline-none focus:border-[var(--sg-forest-400)]"
             />
           </div>
 
@@ -353,7 +353,7 @@ export function CreateRoomWizard({
             <button
               type="button"
               onClick={() => setStep("archetype")}
-              className="flex-1 rounded-full border border-[var(--color-border-default)] py-2.5 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-white/5"
+              className="flex-1 rounded-full border border-white/[0.08] py-2.5 text-sm text-[var(--sg-shell-300)] transition-colors hover:bg-white/5"
             >
               Back
             </button>
@@ -378,7 +378,7 @@ export function CreateRoomWizard({
 
       {step === "review" && blueprint && (
         <div className="space-y-4">
-          <p className="text-sm text-[var(--color-text-secondary)]">
+          <p className="text-sm text-[var(--sg-shell-300)]">
             AI generated the following room configuration. Review and publish.
           </p>
 
@@ -400,7 +400,7 @@ export function CreateRoomWizard({
               value={`${blueprint.world_config.targetRoomSize} participants`}
             />
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[var(--color-text-tertiary)]">
+              <span className="text-xs text-[var(--sg-shell-500)]">
                 Accent
               </span>
               <div
@@ -409,7 +409,7 @@ export function CreateRoomWizard({
                   backgroundColor: blueprint.world_config.accentColor,
                 }}
               />
-              <span className="text-xs text-[var(--color-text-secondary)]">
+              <span className="text-xs text-[var(--sg-shell-300)]">
                 {blueprint.world_config.accentColor}
               </span>
             </div>
@@ -469,7 +469,7 @@ export function CreateRoomWizard({
                 setError(null);
                 setStep("details");
               }}
-              className="flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border-default)] px-4 py-2.5 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-white/5"
+              className="flex items-center justify-center gap-1.5 rounded-full border border-white/[0.08] px-4 py-2.5 text-sm text-[var(--sg-shell-300)] transition-colors hover:bg-white/5"
             >
               <RefreshCw size={13} />
               Regenerate
@@ -504,10 +504,10 @@ export function CreateRoomWizard({
             <Detail label="Name" value={result.name} />
             <Detail label="World Key" value={result.worldKey} />
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[var(--color-text-tertiary)]">
+              <span className="text-xs text-[var(--sg-shell-500)]">
                 Invite Code
               </span>
-              <code className="rounded bg-white/5 px-2 py-0.5 text-xs text-[var(--color-text-primary)]">
+              <code className="rounded bg-white/5 px-2 py-0.5 text-xs text-[var(--sg-white)]">
                 {result.inviteCode}
               </code>
               <button
@@ -517,7 +517,7 @@ export function CreateRoomWizard({
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}
-                className="text-[var(--color-text-tertiary)] hover:text-white"
+                className="text-[var(--sg-shell-500)] hover:text-white"
               >
                 {copied ? <Check size={13} /> : <Copy size={13} />}
               </button>
@@ -547,8 +547,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-[var(--color-border-default)] p-3">
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+    <div className="rounded-lg border border-white/[0.08] p-3">
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
         {title}
       </h3>
       <div className="space-y-1.5">{children}</div>
@@ -559,10 +559,10 @@ function Section({
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start gap-2">
-      <span className="w-16 shrink-0 text-xs text-[var(--color-text-tertiary)]">
+      <span className="w-16 shrink-0 text-xs text-[var(--sg-shell-500)]">
         {label}
       </span>
-      <span className="text-xs text-[var(--color-text-secondary)]">
+      <span className="text-xs text-[var(--sg-shell-300)]">
         {value}
       </span>
     </div>

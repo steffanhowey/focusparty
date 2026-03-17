@@ -313,7 +313,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
             />
 
             {/* Divider */}
-            <div className="mx-5 mt-4 border-t border-white/6" />
+            <div className="mx-5 mt-4 border-t border-white/[0.06]" />
 
             {/* ── Fixed-height form body — both steps always mounted ── */}
             <div className="relative" style={{ height: 168 }}>
@@ -342,7 +342,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
                       placeholder="Write your task or goal..."
                       className="w-full rounded-full py-2.5 pl-4 pr-10 text-sm text-white placeholder-white/30 outline-none ring-0 ring-white/0 transition-all focus:ring-1 focus:ring-white/12"
                       style={{
-                        background: "var(--sg-shell-50)",
+                        background: "rgba(255,255,255,0.06)",
                         border: "1px solid rgba(255,255,255,0.08)",
                       }}
                     />

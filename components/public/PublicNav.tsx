@@ -17,12 +17,12 @@ export function PublicNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center justify-between px-4 py-3 md:px-8 border-b border-[var(--color-border-default)]">
+    <nav className="flex items-center justify-between px-4 py-3 md:px-8 border-b border-[var(--sg-shell-border)]">
       <div className="flex items-center gap-6">
         {/* Logo */}
         <a
           href="/"
-          className="text-sm font-bold text-[var(--color-text-primary)]"
+          className="text-sm font-bold text-[var(--sg-shell-900)]"
         >
           SkillGap.ai
         </a>
@@ -37,8 +37,8 @@ export function PublicNav() {
               style={{
                 color:
                   pathname === link.href
-                    ? "var(--color-text-primary)"
-                    : "var(--color-text-tertiary)",
+                    ? "var(--sg-shell-900)"
+                    : "var(--sg-shell-500)",
               }}
             >
               {link.label}

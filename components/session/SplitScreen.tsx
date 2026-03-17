@@ -27,7 +27,7 @@ export const SplitScreen = memo(function SplitScreen({
     <div className="relative flex-1 overflow-hidden p-4">
       {/* ── AI partner (full-size) ── */}
       <div
-        className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-[var(--color-border-subtle)]"
+        className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-[var(--sg-shell-200)]"
         style={{
           background: c.roomBg,
           boxShadow: "var(--shadow-float)",
@@ -47,7 +47,7 @@ export const SplitScreen = memo(function SplitScreen({
               FP
             </div>
             <span className="text-sm font-semibold text-white">Focus Partner</span>
-            <span className="text-xs text-[var(--color-text-secondary)]">
+            <span className="text-xs text-[var(--sg-shell-600)]">
               Your co-working buddy
             </span>
             <div
@@ -71,14 +71,14 @@ export const SplitScreen = memo(function SplitScreen({
         {screenShareStream ? (
           <>
             <ScreenSharePreview stream={screenShareStream} />
-            <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-[var(--color-coral-700)]/80 px-2 py-0.5 text-2xs font-medium text-white backdrop-blur-sm">
+            <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-[var(--sg-coral-500)]/80 px-2 py-0.5 text-2xs font-medium text-white backdrop-blur-sm">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
               Screen
             </div>
           </>
         ) : (
           leftPanel ?? (
-            <div className="flex h-full w-full flex-col items-center justify-center text-[var(--color-text-tertiary)]">
+            <div className="flex h-full w-full flex-col items-center justify-center text-[var(--sg-shell-500)]">
               <div
                 className="mb-1.5 flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
                 style={{

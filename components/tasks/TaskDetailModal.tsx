@@ -83,14 +83,14 @@ export function TaskDetailModal({
 
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="mb-1.5 block text-xs text-[var(--color-text-tertiary)]">
+            <label className="mb-1.5 block text-xs text-[var(--sg-shell-500)]">
               Status
             </label>
             <div className="relative">
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as TaskStatus)}
-                className="h-10 w-full cursor-pointer appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 pr-9 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+                className="h-10 w-full cursor-pointer appearance-none rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 pr-9 text-sm text-[var(--sg-shell-600)] transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
               >
                 {(Object.keys(STATUS_CONFIG) as TaskStatus[]).map((s) => (
                   <option key={s} value={s}>
@@ -101,20 +101,20 @@ export function TaskDetailModal({
               <ChevronDown
                 size={14}
                 strokeWidth={1.5}
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--sg-shell-400)]"
               />
             </div>
           </div>
 
           <div className="flex-1">
-            <label className="mb-1.5 block text-xs text-[var(--color-text-tertiary)]">
+            <label className="mb-1.5 block text-xs text-[var(--sg-shell-500)]">
               Priority
             </label>
             <div className="relative">
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                className="h-10 w-full cursor-pointer appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 pr-9 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+                className="h-10 w-full cursor-pointer appearance-none rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 pr-9 text-sm text-[var(--sg-shell-600)] transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
               >
                 {(Object.keys(PRIORITY_CONFIG) as TaskPriority[]).map((p) => (
                   <option key={p} value={p}>
@@ -125,14 +125,14 @@ export function TaskDetailModal({
               <ChevronDown
                 size={14}
                 strokeWidth={1.5}
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--sg-shell-400)]"
               />
             </div>
           </div>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs text-[var(--color-text-tertiary)]">
+          <label className="mb-1.5 block text-xs text-[var(--sg-shell-500)]">
             Project
           </label>
           <ProjectPicker

@@ -48,7 +48,7 @@ export const TopBar = memo(function TopBar({
           <button
             type="button"
             onClick={onEndSession}
-            className="cursor-pointer rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-coral-700)]"
+            className="cursor-pointer rounded p-1 text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-coral-500)]"
             aria-label="End session"
             style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.5))" }}
           >
@@ -59,7 +59,7 @@ export const TopBar = memo(function TopBar({
           <button
             type="button"
             onClick={onToggleSettings}
-            className={`cursor-pointer rounded p-1 transition-colors ${settingsOpen ? "bg-white/10 text-white" : "text-[var(--color-text-tertiary)] hover:text-white"}`}
+            className={`cursor-pointer rounded p-1 transition-colors ${settingsOpen ? "bg-white/10 text-white" : "text-[var(--sg-shell-500)] hover:text-white"}`}
             aria-label={settingsOpen ? "Close settings" : "Open settings"}
             style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.5))" }}
           >
@@ -70,7 +70,7 @@ export const TopBar = memo(function TopBar({
           <button
             type="button"
             onClick={onToggleDrawer}
-            className={`cursor-pointer rounded p-1 transition-colors ${drawerOpen ? "bg-white/10 text-white" : "text-[var(--color-text-tertiary)] hover:text-white"}`}
+            className={`cursor-pointer rounded p-1 transition-colors ${drawerOpen ? "bg-white/10 text-white" : "text-[var(--sg-shell-500)] hover:text-white"}`}
             aria-label={drawerOpen ? "Close panel" : "Open tasks & chat"}
             style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.5))" }}
           >

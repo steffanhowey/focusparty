@@ -21,11 +21,11 @@ export function BottomBar({ activeTask, onEndSession }: BottomBarProps) {
       {/* Left: active task display */}
       <div className="flex min-w-0 items-center gap-2.5">
         {activeTask ? (
-          <span className="truncate text-sm text-[var(--color-text-secondary)]">
+          <span className="truncate text-sm text-[var(--sg-shell-600)]">
             {activeTask.text}
           </span>
         ) : (
-          <span className="text-xs text-[var(--color-text-tertiary)]">
+          <span className="text-xs text-[var(--sg-shell-500)]">
             No task in progress
           </span>
         )}

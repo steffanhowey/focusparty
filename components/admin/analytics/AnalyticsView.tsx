@@ -234,7 +234,7 @@ export function AnalyticsView() {
                   )}
                 </div>
                 {cal ? (
-                  <div className="mt-3 space-y-2 text-xs text-[var(--color-text-tertiary)]">
+                  <div className="mt-3 space-y-2 text-xs text-[var(--sg-shell-500)]">
                     <div className="flex justify-between">
                       <span>Sample size</span>
                       <span className="text-[var(--sg-shell-300)]">{cal.sampleSize}</span>
@@ -283,7 +283,7 @@ export function AnalyticsView() {
                     )}
                   </div>
                 ) : (
-                  <p className="mt-3 text-xs text-[var(--color-text-tertiary)]">
+                  <p className="mt-3 text-xs text-[var(--sg-shell-500)]">
                     No calibration data yet
                   </p>
                 )}
@@ -323,7 +323,7 @@ export function AnalyticsView() {
         )}
 
         {stats && (
-          <div className="mt-4 flex gap-6 text-xs text-[var(--color-text-tertiary)]">
+          <div className="mt-4 flex gap-6 text-xs text-[var(--sg-shell-500)]">
             <span className="flex items-center gap-1.5">
               <CheckCircle size={12} style={{ color: FOREST_300 }} />
               {stats.approved} approved
@@ -347,7 +347,7 @@ export function AnalyticsView() {
                 key={entry.id}
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-xs hover:bg-white/[0.02]"
               >
-                <span className="w-16 shrink-0 text-[var(--color-text-tertiary)]">
+                <span className="w-16 shrink-0 text-[var(--sg-shell-500)]">
                   {new Date(entry.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}
                 </span>
                 <StatusBadge status={entry.decision} />
@@ -394,7 +394,7 @@ export function AnalyticsView() {
 function CriteriaCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-white/[0.04] px-3 py-2">
-      <p className="text-xs text-[var(--color-text-tertiary)]">{label}</p>
+      <p className="text-xs text-[var(--sg-shell-500)]">{label}</p>
       <p className="mt-1 text-sm font-semibold text-[var(--sg-white)]">{value}</p>
     </div>
   );
