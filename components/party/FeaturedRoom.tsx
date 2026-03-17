@@ -112,10 +112,21 @@ export function FeaturedRoom({
           priority
         />
       ) : (
-        <div
-          className="absolute inset-0"
-          style={{ background: world.placeholderGradient }}
-        />
+        <>
+          <div
+            className="absolute inset-0"
+            style={{ background: world.placeholderGradient }}
+          />
+          {world.placeholderPattern && (
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: world.placeholderPattern,
+                backgroundSize: "16px 16px",
+              }}
+            />
+          )}
+        </>
       )}
 
       {/* Gradient overlay for text readability */}
@@ -128,7 +139,7 @@ export function FeaturedRoom({
       />
 
       {/* Most Active badge — top-left */}
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full bg-sg-coral-500 px-2.5 py-1">
+      <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full bg-[var(--sg-forest-500)] px-2.5 py-1">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
@@ -146,7 +157,7 @@ export function FeaturedRoom({
             {world.description}
           </p>
           <div className="mt-4 flex items-center gap-3">
-            <span className="inline-flex items-center rounded-full bg-sg-coral-500 px-5 py-2 text-sm font-bold uppercase tracking-wide text-white transition-all duration-150 group-hover/featured:brightness-110 active:scale-95">
+            <span className="inline-flex items-center rounded-full bg-[var(--sg-forest-500)] px-5 py-2 text-sm font-bold uppercase tracking-wide text-white transition-all duration-150 group-hover/featured:brightness-110 active:scale-95">
               Join
             </span>
 

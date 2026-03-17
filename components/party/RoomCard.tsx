@@ -153,10 +153,21 @@ export function RoomCard({
             className="object-cover"
           />
         ) : (
-          <div
-            className="absolute inset-0"
-            style={{ background: world.placeholderGradient }}
-          />
+          <>
+            <div
+              className="absolute inset-0"
+              style={{ background: world.placeholderGradient }}
+            />
+            {world.placeholderPattern && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: world.placeholderPattern,
+                  backgroundSize: "16px 16px",
+                }}
+              />
+            )}
+          </>
         )}
 
         {/* Vibe check overlay — visible on hover (desktop) or always (mobile/touch) */}

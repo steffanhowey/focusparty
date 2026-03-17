@@ -338,7 +338,7 @@ export const ActionBar = memo(function ActionBar({
           {/* Downward dropdown — sprint or break mode */}
           {goalCardOpen && !isBreak && !isJoining && !isResuming && currentDurationMin != null && onChangeDuration && onResetTimer && (
             <div
-              className="absolute top-full left-1/2 mt-3 -translate-x-1/2 rounded-xl border border-[var(--sg-shell-border)] p-3"
+              className="absolute top-full left-1/2 mt-3 -translate-x-1/2 rounded-xl border border-white/[0.08] p-3"
               style={{
                 background: "rgba(15,35,24,0.80)",
                 backdropFilter: "blur(24px)",
@@ -387,7 +387,7 @@ export const ActionBar = memo(function ActionBar({
                       style={{
                         background: d === breakDurationMinutes ? "var(--sg-teal-600)" : "transparent",
                         color: d === breakDurationMinutes ? "white" : "var(--sg-shell-500)",
-                        border: d === breakDurationMinutes ? "1px solid transparent" : "1px solid var(--sg-shell-border)",
+                        border: d === breakDurationMinutes ? "1px solid transparent" : "1px solid rgba(255,255,255,0.08)",
                       }}
                     >
                       {d}m

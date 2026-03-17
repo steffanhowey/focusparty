@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, CreditCard, Settings, LogOut, LogIn } from "lucide-react";
+import { ChevronDown, ChevronUp, CreditCard, Settings, LogOut, LogIn } from "lucide-react";
 import { Logo } from "./Logo";
 import { MenuItem } from "@/components/ui/MenuItem";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-import { useTheme } from "@/components/providers/ThemeProvider";
+
 import { NAV_ITEMS, NavIcon } from "./navItems";
 import { PLAN_LABELS, STUB_PLAN } from "@/lib/constants";
 
@@ -36,7 +36,6 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
   const pathname = usePathname();
   const { authState, signOut } = useAuth();
   const { displayName: rawDisplayName, username, avatarUrl } = useCurrentUser();
-  const { colorMode, setColorMode } = useTheme();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +45,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
     .join(" ");
   const planLabel = PLAN_LABELS[STUB_PLAN];
 
-  const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "rooms";
+  const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "learn";
 
   useEffect(() => {
     if (!profileMenuOpen) return;
@@ -65,22 +64,12 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
     <>
       <MenuItem
         size="default"
-        icon={colorMode === "dark" ? <Sun size={18} strokeWidth={1.8} /> : <Moon size={18} strokeWidth={1.8} />}
-        onClick={() => {
-          setColorMode(colorMode === "dark" ? "light" : "dark");
-        }}
-        className="text-shell-900"
-      >
-        {colorMode === "dark" ? "Light mode" : "Dark mode"}
-      </MenuItem>
-      <MenuItem
-        size="default"
         icon={<CreditCard size={18} strokeWidth={1.8} />}
         onClick={() => {
           setProfileMenuOpen(false);
           if (onNavClick) onNavClick("/settings");
         }}
-        className="text-shell-900"
+        className="text-[var(--sg-shell-900)]"
       >
         Plans & Billing
       </MenuItem>
@@ -91,7 +80,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
           setProfileMenuOpen(false);
           if (onNavClick) onNavClick("/settings");
         }}
-        className="text-shell-900"
+        className="text-[var(--sg-shell-900)]"
       >
         Settings
       </MenuItem>
@@ -111,7 +100,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
         <Link
           href="/login"
           onClick={() => setProfileMenuOpen(false)}
-          className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-forest-500 transition-colors hover:bg-shell-100"
+          className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[var(--sg-forest-500)] transition-colors hover:bg-[var(--sg-shell-100)]"
         >
           <LogIn size={18} strokeWidth={1.8} />
           <span>Sign in</span>
@@ -120,9 +109,8 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
     </>
   );
 
-  const asideClass = collapsed
-    ? `${SIDEBAR_WIDTH_RAILS} relative z-[var(--z-card)] flex h-screen flex-shrink-0 flex-col overflow-visible transition-[width] duration-200 ease-out`
-    : `${SIDEBAR_WIDTH_EXPANDED} relative z-[var(--z-card)] flex h-screen flex-shrink-0 flex-col overflow-visible transition-[width] duration-200 ease-out`;
+  const sidebarWidth = collapsed ? SIDEBAR_WIDTH_RAILS : SIDEBAR_WIDTH_EXPANDED;
+  const asideClass = `${sidebarWidth} relative z-[var(--z-card)] flex h-screen flex-shrink-0 flex-col overflow-visible transition-[width] duration-200 ease-out`;
 
   return (
     <aside className={`${asideClass}`} style={{ background: "var(--sg-shell-50)", borderRight: "1px solid var(--sg-shell-border)" }}>
@@ -141,7 +129,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                       onNavClick(item.href);
                     }
                   }}
-                  className={`flex h-10 min-h-10 w-10 min-w-10 shrink-0 items-center justify-center rounded-lg border-l-2 transition-all duration-150 ${isActive ? "border-forest-500 bg-forest-500/8" : "border-transparent"}`}
+                  className={`flex h-10 min-h-10 w-10 min-w-10 shrink-0 items-center justify-center rounded-lg border-l-2 transition-all duration-150 ${isActive ? "border-[var(--sg-forest-500)] bg-[var(--sg-forest-500)]/8" : "border-transparent"}`}
                   style={{
                     color: isActive ? "var(--sg-shell-900)" : "var(--sg-shell-500)",
                   }}
@@ -198,7 +186,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
       ) : (
         <>
           <div className="flex h-14 shrink-0 items-center px-4">
-            <Logo href="/practice" height={22} maxWidth={120} />
+            <Logo href="/learn" height={22} maxWidth={120} />
           </div>
           <nav className={`flex flex-col ${NAV_ITEM_GAP} px-3 pt-2`}>
             {NAV_ITEMS.map((item) => {
@@ -213,7 +201,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                       onNavClick(item.href);
                     }
                   }}
-                  className={`-mx-3 flex h-12 items-center gap-3 border-l-2 px-[calc(0.75rem+0.625rem)] transition-all duration-150 ${isActive ? "border-forest-500 bg-forest-500/8" : "border-transparent"}`}
+                  className={`-mx-3 flex h-12 items-center gap-3 border-l-2 px-[calc(0.75rem+0.625rem)] transition-all duration-150 ${isActive ? "border-[var(--sg-forest-500)] bg-[var(--sg-forest-500)]/8" : "border-transparent"}`}
                   style={{
                     color: isActive ? "var(--sg-shell-900)" : "var(--sg-shell-500)",
                   }}
@@ -266,14 +254,14 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
                 </div>
               )}
               <div className="min-w-0 flex-1 text-left">
-                <p className="truncate text-sm font-medium text-shell-900">
+                <p className="truncate text-sm font-medium text-[var(--sg-shell-900)]">
                   {displayName}
                 </p>
-                <p className="truncate text-xs font-medium text-shell-500">
+                <p className="truncate text-xs font-medium text-[var(--sg-shell-500)]">
                   {username ? `@${username}` : planLabel}
                 </p>
               </div>
-              <span className="shrink-0 text-shell-500">
+              <span className="shrink-0 text-[var(--sg-shell-500)]">
                 {profileMenuOpen ? <ChevronUp size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
               </span>
             </button>

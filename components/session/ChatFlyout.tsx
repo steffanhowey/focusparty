@@ -80,7 +80,7 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
 
       {/* Input */}
       <div className="px-4 py-3">
-        <div className="flex items-center gap-2 rounded-full border border-[var(--sg-shell-200)] bg-white/5 px-4 py-2">
+        <div className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/5 px-4 py-2">
           <input
             ref={inputRef}
             type="text"

@@ -100,7 +100,7 @@ export function FloatingFocus({
         onTransitionEnd={handleTransitionEnd}
       >
         <div
-          className="flex h-full flex-col border border-[var(--sg-shell-border)]"
+          className="flex h-full flex-col border border-white/[0.08]"
           style={{
             background: "rgba(15,35,24,0.65)",
             backdropFilter: "blur(24px)",
@@ -125,7 +125,7 @@ export function FloatingFocus({
       }}
     >
       <div
-        className="flex h-full flex-col overflow-hidden rounded-xl border border-[var(--sg-shell-border)]"
+        className="flex h-full flex-col overflow-hidden rounded-xl border border-white/[0.08]"
         style={{
           background: "rgba(15,35,24,0.65)",
           backdropFilter: "blur(24px)",

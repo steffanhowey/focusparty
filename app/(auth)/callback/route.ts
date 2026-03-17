@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
-  const next = searchParams.get("next") ?? "/practice";
+  const next = searchParams.get("next") ?? "/learn";
 
   const redirectTo = request.nextUrl.clone();
   redirectTo.pathname = next;

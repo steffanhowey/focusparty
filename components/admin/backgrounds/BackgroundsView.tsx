@@ -137,7 +137,7 @@ export function BackgroundsView() {
             <select
               value={filter.value}
               onChange={(e) => filter.onChange(e.target.value)}
-              className="h-9 appearance-none rounded-full border border-[var(--sg-shell-border)] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--sg-shell-600)] outline-none focus:border-[var(--sg-forest-400)]"
+              className="h-9 appearance-none rounded-full border border-white/[0.08] bg-white/[0.04] pl-3 pr-8 text-sm text-[var(--sg-shell-600)] outline-none focus:border-[var(--sg-forest-400)]"
             >
               <option value="">{filter.label}</option>
               {filter.options.map((o) => (
@@ -186,7 +186,7 @@ export function BackgroundsView() {
               key={asset.id}
               type="button"
               onClick={() => setSelectedAsset(asset)}
-              className="group relative overflow-hidden rounded-xl border border-[var(--sg-shell-border)] transition-all hover:border-[var(--sg-forest-400)]"
+              className="group relative overflow-hidden rounded-xl border border-white/[0.08] transition-all hover:border-[var(--sg-forest-400)]"
               style={{ background: "var(--sg-shell-100)" }}
             >
               {/* Thumbnail */}
@@ -315,7 +315,7 @@ export function BackgroundsView() {
             <select
               value={genWorld}
               onChange={(e) => setGenWorld(e.target.value)}
-              className="h-10 w-full appearance-none rounded-full border border-[var(--sg-shell-border)] bg-white/[0.04] px-4 text-sm text-[var(--sg-shell-900)] outline-none focus:border-[var(--sg-forest-400)]"
+              className="h-10 w-full appearance-none rounded-full border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--sg-shell-900)] outline-none focus:border-[var(--sg-forest-400)]"
             >
               <option value="default">Default</option>
               <option value="vibe-coding">Vibe Coding</option>
@@ -331,7 +331,7 @@ export function BackgroundsView() {
             <select
               value={genTimeOfDay}
               onChange={(e) => setGenTimeOfDay(e.target.value)}
-              className="h-10 w-full appearance-none rounded-full border border-[var(--sg-shell-border)] bg-white/[0.04] px-4 text-sm text-[var(--sg-shell-900)] outline-none focus:border-[var(--sg-forest-400)]"
+              className="h-10 w-full appearance-none rounded-full border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--sg-shell-900)] outline-none focus:border-[var(--sg-forest-400)]"
             >
               <option value="morning">Morning</option>
               <option value="afternoon">Afternoon</option>
@@ -358,7 +358,7 @@ export function BackgroundsView() {
                     borderColor:
                       genCount === n
                         ? "var(--sg-forest-500)"
-                        : "var(--sg-shell-border)",
+                        : "rgba(255,255,255,0.08)",
                     color:
                       genCount === n
                         ? "white"

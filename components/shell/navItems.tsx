@@ -2,7 +2,7 @@
 
 /**
  * Shared nav config for Hub sidebar and session menu drawer.
- * Practice is the app home. Icons: Users (practice), Target (goals), BarChart3 (stats), Settings.
+ * Learn is the app home. Icons: BookOpen (learn), Sparkles (skills), Users (practice), Target (goals), BarChart3 (stats), Settings.
  */
 
 import { BarChart3, BookOpen, Sparkles, Target, Settings, Users, type LucideIcon } from "lucide-react";

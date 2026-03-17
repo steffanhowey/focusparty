@@ -28,6 +28,8 @@ export interface WorldConfig {
   accentColor: string;
   /** CSS gradient used as placeholder when no AI background is available. */
   placeholderGradient: string;
+  /** Optional CSS for a geometric pattern overlay on placeholder covers. */
+  placeholderPattern?: string;
   /** CSS gradient overlay for text readability over the environment image. */
   environmentOverlay: string;
   /** The music vibe assigned to rooms in this world. */
@@ -43,8 +45,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     defaultSprintLength: 50,
     targetRoomSize: 10,
     accentColor: FOREST_500,
-    placeholderGradient:
-      `linear-gradient(135deg, ${FOREST_900} 0%, #1a2a20 50%, ${FOREST_900} 100%)`,
+    placeholderGradient: "linear-gradient(135deg, #0F2318 0%, #1E3A2C 100%)",
+    placeholderPattern:
+      "linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
     vibeKey: "calm-focus",
@@ -58,8 +61,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     defaultSprintLength: 50,
     targetRoomSize: 12,
     accentColor: FOREST_300,
-    placeholderGradient:
-      `linear-gradient(135deg, #0f2318 0%, #152e21 50%, #0d2618 100%)`,
+    placeholderGradient: "linear-gradient(135deg, #162E21 0%, #1a3a35 100%)",
+    placeholderPattern:
+      "repeating-linear-gradient(-45deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 20px, transparent 20px, transparent 40px)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.35) 100%)",
     vibeKey: "energizing-flow",
@@ -73,8 +77,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     defaultSprintLength: 45,
     targetRoomSize: 10,
     accentColor: TEAL_600,
-    placeholderGradient:
-      `linear-gradient(135deg, #1a2a28 0%, #1e3530 50%, #162e2a 100%)`,
+    placeholderGradient: "linear-gradient(135deg, #1a3a35 0%, #3D8E8B 100%)",
+    placeholderPattern:
+      "linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
     vibeKey: "deep-concentration",
@@ -88,8 +93,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     defaultSprintLength: 60,
     targetRoomSize: 15,
     accentColor: GOLD_600,
-    placeholderGradient:
-      `linear-gradient(135deg, #2a2010 0%, #33280f 50%, #211a08 100%)`,
+    placeholderGradient: "linear-gradient(135deg, #33280f 0%, #1E3A2C 100%)",
+    placeholderPattern:
+      "repeating-linear-gradient(-45deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 20px, transparent 20px, transparent 40px)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.3) 100%)",
     vibeKey: "energizing-flow",
@@ -103,8 +109,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     defaultSprintLength: 25,
     targetRoomSize: 8,
     accentColor: CORAL_500,
-    placeholderGradient:
-      `linear-gradient(135deg, #2a1a18 0%, #331e1c 50%, #201010 100%)`,
+    placeholderGradient: "linear-gradient(135deg, #1E3A2C 0%, #3A7D53 100%)",
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.25) 100%)",
     vibeKey: "ambient-chill",

@@ -27,7 +27,7 @@ export const SplitScreen = memo(function SplitScreen({
     <div className="relative flex-1 overflow-hidden p-4">
       {/* ── AI partner (full-size) ── */}
       <div
-        className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-[var(--sg-shell-200)]"
+        className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-white/[0.08]"
         style={{
           background: c.roomBg,
           boxShadow: "var(--shadow-float)",

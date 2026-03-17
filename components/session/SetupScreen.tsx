@@ -35,6 +35,7 @@ const CARD_STYLE: React.CSSProperties = {
   WebkitBackdropFilter: "blur(20px)",
   boxShadow: "var(--shadow-float)",
   "--sg-shell-100": "var(--sg-forest-800)",
+  "--sg-shell-200": "rgba(255, 255, 255, 0.08)",
   "--sg-shell-900": "#ffffff",
   "--sg-shell-600": "rgba(255,255,255,0.7)",
   "--sg-shell-500": "rgba(255,255,255,0.4)",
@@ -248,7 +249,7 @@ export function SetupScreen({
                           key={task.id}
                           type="button"
                           onClick={() => handleSelectTask(task.id)}
-                          className="flex w-full items-center gap-3 border-b border-[var(--sg-shell-200)] px-2 py-3 text-left last:border-b-0"
+                          className="flex w-full items-center gap-3 border-b border-white/[0.08] px-2 py-3 text-left last:border-b-0"
                         >
                           <span
                             className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${

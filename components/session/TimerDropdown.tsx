@@ -71,13 +71,17 @@ export function TimerDropdown({
       {/* Dropdown panel */}
       {open && (
         <div
-          className="absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-xl border border-[var(--sg-shell-border)] p-3 shadow-lg"
+          className="absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-xl border border-white/[0.08] p-3 shadow-lg"
           style={{
             background: "rgba(15,35,24,0.95)",
             backdropFilter: "blur(20px)",
             zIndex: 40,
             minWidth: 220,
-          }}
+            "--sg-shell-100": "rgba(255,255,255,0.06)",
+            "--sg-shell-200": "rgba(255,255,255,0.08)",
+            "--sg-shell-600": "rgba(255,255,255,0.5)",
+            "--sg-shell-900": "#ffffff",
+          } as React.CSSProperties}
           role="menu"
           aria-label="Timer controls"
         >
@@ -90,7 +94,7 @@ export function TimerDropdown({
           <DurationPills value={currentDurationMin} onChange={handleChangeDuration} />
 
           {/* Divider */}
-          <div className="my-2.5 border-t border-[var(--sg-shell-200)]" />
+          <div className="my-2.5 border-t border-white/[0.08]" />
 
           {/* Reset action */}
           <button

@@ -206,89 +206,14 @@
   --sg-sidebar-width: 240px;
   --sg-topbar-height: 56px;
 
-  /* ── Backward Compatibility ─────────────────────────────────────────────
-     Old --color-* tokens pointing to new --sg-* tokens.
-     These allow the app to work during incremental migration.
-     Remove each alias as the corresponding component is updated.
-     ──────────────────────────────────────────────────────────────────────── */
+  /* ── Shorthand aliases ── */
+  --shadow-sm: var(--sg-shadow-sm);
+  --shadow-md: var(--sg-shadow-md);
+  --shadow-lg: var(--sg-shadow-lg);
+  --shadow-xl: var(--sg-shadow-xl);
+  --shadow-float: var(--sg-shadow-lg);
+  --shadow-glow-forest: var(--sg-shadow-glow-forest);
 
-  /* Semantic (light-first) */
-  --color-bg-primary: var(--sg-white);
-  --color-bg-secondary: var(--sg-white);
-  --color-bg-elevated: var(--sg-shell-50);
-  --color-bg-hover: var(--sg-shell-100);
-  --color-bg-active: var(--sg-shell-200);
-  --color-bg-dropdown: rgba(15,35,24,0.95);
-  --color-text-primary: var(--sg-shell-900);
-  --color-text-secondary: var(--sg-shell-600);
-  --color-text-tertiary: var(--sg-shell-500);
-  --color-text-on-accent: var(--sg-white);
-  --color-border-default: var(--sg-shell-border);
-  --color-border-focus: var(--sg-forest-400);
-  --color-border-subtle: var(--sg-shell-200);
-
-  /* Accent */
-  --color-accent-primary: var(--sg-forest-500);
-  --color-accent-secondary: var(--sg-forest-600);
-  --color-accent-success: var(--sg-forest-300);
-  --color-accent-warning: var(--sg-gold-600);
-  --color-accent-error: var(--sg-coral-500);
-
-  /* Old palette scales → new */
-  --color-purple-700: var(--sg-forest-500);
-  --color-purple-800: var(--sg-forest-600);
-  --color-purple-500: var(--sg-forest-200);
-  --color-purple-300: var(--sg-forest-50);
-  --color-coral-700: var(--sg-coral-500);
-  --color-green-700: var(--sg-forest-300);
-  --color-green-900: var(--sg-forest-600);
-  --color-cyan-700: var(--sg-teal-500);
-  --color-cyan-300: var(--sg-teal-100);
-  --color-gold-700: var(--sg-gold-500);
-  --color-gold-500: var(--sg-gold-500);
-  --color-amber-700: var(--sg-gold-600);
-  --color-amber-600: var(--sg-gold-600);
-  --color-orange-700: var(--sg-gold-600);
-  --color-violet-700: var(--sg-teal-600);
-  --color-indigo-700: var(--sg-teal-600);
-  --color-red-700: var(--sg-coral-600);
-  --color-navy-800: var(--sg-forest-900);
-  --color-navy-750: var(--sg-forest-800);
-  --color-navy-700: var(--sg-forest-700);
-  --color-navy-500: var(--sg-shell-500);
-  --color-navy-400: var(--sg-shell-300);
-  --color-navy-300: var(--sg-shell-border);
-  --color-navy-200: var(--sg-shell-100);
-
-  /* Character territories — retired, aliased to forest */
-  --color-ember-primary: var(--sg-coral-500);
-  --color-ember-secondary: var(--sg-gold-600);
-  --color-ember-accent: var(--sg-gold-500);
-  --color-ember-bg: var(--sg-shell-50);
-  --color-moss-primary: var(--sg-forest-300);
-  --color-moss-secondary: var(--sg-teal-500);
-  --color-moss-accent: var(--sg-forest-200);
-  --color-moss-bg: var(--sg-sage-50);
-  --color-byte-primary: var(--sg-forest-500);
-  --color-byte-secondary: var(--sg-teal-600);
-  --color-byte-accent: var(--sg-forest-600);
-  --color-byte-bg: var(--sg-sage-50);
-
-  /* Old spacing → new */
-  --space-1: var(--sg-space-1);
-  --space-2: var(--sg-space-2);
-  --space-3: var(--sg-space-3);
-  --space-4: var(--sg-space-4);
-  --space-5: var(--sg-space-5);
-  --space-6: var(--sg-space-6);
-  --space-8: var(--sg-space-8);
-  --space-10: var(--sg-space-10);
-  --space-12: var(--sg-space-12);
-  --space-16: var(--sg-space-16);
-  --space-20: var(--sg-space-20);
-  --space-24: var(--sg-space-24);
-
-  /* Old radius → new */
   --radius-xs: var(--sg-radius-xs);
   --radius-sm: var(--sg-radius-sm);
   --radius-md: var(--sg-radius-md);
@@ -296,21 +221,6 @@
   --radius-xl: var(--sg-radius-xl);
   --radius-full: var(--sg-radius-pill);
 
-  /* Old shadows → new (light-mode tuned) */
-  --shadow-sm: var(--sg-shadow-sm);
-  --shadow-md: var(--sg-shadow-md);
-  --shadow-lg: var(--sg-shadow-lg);
-  --shadow-xl: var(--sg-shadow-xl);
-  --shadow-float: var(--sg-shadow-lg);
-  --shadow-glow-purple: var(--sg-shadow-glow-forest);
-
-  /* Old transitions → new */
-  --transition-fast: var(--sg-duration-fast) ease;
-  --transition-normal: var(--sg-duration-normal) ease;
-  --transition-slow: var(--sg-duration-slow) ease;
-  --transition-ambient: var(--sg-duration-ambient) ease-in-out;
-
-  /* Old z-index → new */
   --z-base: var(--sg-z-base);
   --z-card: var(--sg-z-card);
   --z-dropdown: var(--sg-z-dropdown);
@@ -383,90 +293,14 @@
   --color-shell-100: var(--sg-shell-100);
   --color-shell-50:  var(--sg-shell-50);
 
-  /* ── Backward-compat semantic aliases (used by existing Tailwind classes) ── */
-  --color-accent-primary: var(--sg-forest-500);
-  --color-accent-secondary: var(--sg-forest-600);
-  --color-accent-success: var(--sg-forest-300);
-  --color-accent-warning: var(--sg-gold-600);
-  --color-accent-error: var(--sg-coral-500);
-  --color-bg-primary: var(--color-bg-primary);
-  --color-bg-secondary: var(--color-bg-secondary);
-  --color-bg-elevated: var(--color-bg-elevated);
-  --color-bg-hover: var(--color-bg-hover);
-  --color-bg-active: var(--color-bg-active);
-  --color-bg-dropdown: var(--color-bg-dropdown);
-  --color-text-primary: var(--color-text-primary);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-text-tertiary: var(--color-text-tertiary);
-  --color-text-on-accent: var(--color-text-on-accent);
-  --color-border-default: var(--color-border-default);
-  --color-border-focus: var(--color-border-focus);
-  --color-border-subtle: var(--color-border-subtle);
-
-  /* Old palette names (backward compat for existing Tailwind classes) */
-  --color-purple-700: var(--sg-forest-500);
-  --color-coral-700: var(--sg-coral-500);
-  --color-green-700: var(--sg-forest-300);
-  --color-cyan-700: var(--sg-teal-500);
-  --color-gold-700: var(--sg-gold-500);
-  --color-gold-500: var(--sg-gold-500);
-  --color-amber-700: var(--sg-gold-600);
-  --color-red-700: var(--sg-coral-600);
-  --color-navy-700: var(--sg-forest-700);
-  --color-navy-500: var(--sg-shell-500);
-  --color-navy-400: var(--sg-shell-300);
-  --color-indigo-700: var(--sg-teal-600);
-  --color-violet-700: var(--sg-teal-600);
-
-  /* ── Shadows ── */
-  --shadow-sm: var(--sg-shadow-sm);
-  --shadow-md: var(--sg-shadow-md);
-  --shadow-lg: var(--sg-shadow-lg);
-  --shadow-xl: var(--sg-shadow-xl);
-  --shadow-float: var(--sg-shadow-lg);
-
-  /* ── Radius ── */
-  --radius-xs: var(--sg-radius-xs);
-  --radius-sm: var(--sg-radius-sm);
-  --radius-md: var(--sg-radius-md);
-  --radius-lg: var(--sg-radius-lg);
-  --radius-xl: var(--sg-radius-xl);
-  --radius-full: var(--sg-radius-pill);
-
-  /* ── Font ── */
-  --font-sans: var(--sg-font-body);
-
-  /* ── Spacing ── */
-  --spacing-1: var(--sg-space-1);
-  --spacing-2: var(--sg-space-2);
-  --spacing-3: var(--sg-space-3);
-  --spacing-4: var(--sg-space-4);
-  --spacing-5: var(--sg-space-5);
-  --spacing-6: var(--sg-space-6);
-  --spacing-8: var(--sg-space-8);
-  --spacing-10: var(--sg-space-10);
-  --spacing-12: var(--sg-space-12);
-  --spacing-16: var(--sg-space-16);
-  --spacing-20: var(--sg-space-20);
-  --spacing-24: var(--sg-space-24);
-
-  /* ── Z-index ── */
-  --z-base: var(--sg-z-base);
-  --z-card: var(--sg-z-card);
-  --z-dropdown: var(--sg-z-dropdown);
-  --z-topbar: var(--sg-z-sticky);
-  --z-modal: var(--sg-z-modal);
-  --z-tooltip: var(--sg-z-tooltip);
-  --z-notification: var(--sg-z-notification);
-
   /* ── Text ── */
   --text-2xs: 11px;
   --text-2xs--line-height: 1.25rem;
 }
 
 body {
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background: var(--sg-white);
+  color: var(--sg-shell-900);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }

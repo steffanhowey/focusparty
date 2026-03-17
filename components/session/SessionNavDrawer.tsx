@@ -25,7 +25,7 @@ export const SessionNavDrawer = memo(function SessionNavDrawer({ onClose }: Sess
 
   return (
     <aside
-      className="flex h-full flex-col border-r border-[var(--sg-shell-border)] bg-[var(--sg-white)] pt-4"
+      className="flex h-full flex-col border-r border-white/[0.08] bg-[var(--sg-forest-800)] pt-4"
       style={{ width: NAV_WIDTH }}
       role="navigation"
       aria-label="Navigation menu"
@@ -35,7 +35,7 @@ export const SessionNavDrawer = memo(function SessionNavDrawer({ onClose }: Sess
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg p-1.5 text-[var(--sg-shell-500)] hover:bg-[var(--sg-shell-200)] hover:text-white"
+          className="rounded-lg p-1.5 text-[var(--sg-shell-500)] hover:bg-white/[0.06] hover:text-white"
           aria-label="Close menu"
         >
           <X size={18} strokeWidth={2} />
@@ -51,8 +51,8 @@ export const SessionNavDrawer = memo(function SessionNavDrawer({ onClose }: Sess
               onClick={onClose}
               className="flex h-10 items-center gap-3 rounded-lg px-3 transition-[color,background] duration-150"
               style={{
-                background: isActive ? "var(--sg-shell-200)" : "transparent",
-                color: isActive ? "var(--sg-shell-900)" : "var(--sg-shell-500)",
+                background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
+                color: isActive ? "white" : "var(--sg-shell-500)",
               }}
               aria-current={isActive ? "page" : undefined}
             >

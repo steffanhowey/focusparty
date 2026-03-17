@@ -87,8 +87,8 @@ export const SortableTaskRow = memo(function SortableTaskRow({
       style={style}
       className={`group flex items-start gap-2.5 px-2 py-3 last:border-b-0 ${
         isActive
-          ? "border-l-2 border-l-[var(--sg-forest-400)] border-b border-b-[var(--sg-shell-200)] bg-white/[0.04]"
-          : "border-l-2 border-l-transparent border-b border-b-[var(--sg-shell-200)]"
+          ? "border-l-2 border-l-[var(--sg-forest-400)] border-b border-b-white/[0.08] bg-white/[0.04]"
+          : "border-l-2 border-l-transparent border-b border-b-white/[0.08]"
       }`}
     >
       {/* Drag handle */}
@@ -172,7 +172,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
           <button
             type="button"
             onClick={() => onComplete(task.id)}
-            className="flex h-[18px] w-[18px] items-center justify-center rounded-xs border border-[var(--sg-shell-border)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
+            className="flex h-[18px] w-[18px] items-center justify-center rounded-xs border border-white/[0.12] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
             aria-label={`Complete ${task.title}`}
           >
             <Check

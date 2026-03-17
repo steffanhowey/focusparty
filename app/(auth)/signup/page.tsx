@@ -39,7 +39,7 @@ function SignUpForm() {
   const [loading, setLoading] = useState(false);
 
   if (authState === "authenticated") {
-    const next = searchParams.get("next") ?? "/practice";
+    const next = searchParams.get("next") ?? "/learn";
     router.replace(next);
     return null;
   }

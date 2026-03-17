@@ -74,7 +74,7 @@ export function CheckInMenu({
 
   return (
     <div
-      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--sg-shell-border)] p-3 shadow-lg"
+      className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-white/[0.08] p-3 shadow-lg"
       style={{
         background: "rgba(15,35,24,0.85)",
         backdropFilter: "blur(24px)",
@@ -82,7 +82,11 @@ export function CheckInMenu({
         zIndex: 40,
         minWidth: 240,
         boxShadow: "var(--shadow-float)",
-      }}
+        "--sg-shell-100": "rgba(255,255,255,0.06)",
+        "--sg-shell-200": "rgba(255,255,255,0.08)",
+        "--sg-shell-600": "rgba(255,255,255,0.5)",
+        "--sg-shell-900": "#ffffff",
+      } as React.CSSProperties}
       role="dialog"
       aria-label="Check in"
     >
@@ -114,7 +118,7 @@ export function CheckInMenu({
       </div>
 
       {/* Divider */}
-      <div className="my-2 border-t border-[var(--sg-shell-200)]" />
+      <div className="my-2 border-t border-white/[0.08]" />
 
       {!showInput ? (
         <MenuItem
@@ -135,7 +139,7 @@ export function CheckInMenu({
             }}
             placeholder="What did you work on?"
             maxLength={120}
-            className="flex-1 rounded-lg border border-[var(--sg-shell-border)] bg-white/[0.06] px-2.5 py-1.5 text-xs text-white placeholder:text-[var(--sg-shell-500)] focus:border-[var(--sg-forest-500)]/50 focus:outline-none"
+            className="flex-1 rounded-lg border border-white/[0.08] bg-white/[0.06] px-2.5 py-1.5 text-xs text-white placeholder:text-[var(--sg-shell-500)] focus:border-[var(--sg-forest-500)]/50 focus:outline-none"
           />
           <Button
             variant="primary"

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { Layers } from "lucide-react";
 import type { LearningPath } from "@/lib/types";
 
 interface PathCoverProps {
@@ -13,19 +12,17 @@ interface PathCoverProps {
 }
 
 /**
- * Subtle accent colors for the no-thumbnail fallback gradient.
- * Using rgba values for gradient overlays — these are intentional
- * design choices, not color token replacements.
+ * Brand gradient pairs for the no-thumbnail fallback cover.
+ * Each entry is [startColor, endColor] for a 135deg diagonal gradient.
+ * Colors are from the brand design system (forest, teal, gold families).
  */
-const FALLBACK_ACCENTS = [
-  "rgba(58, 125, 83, 0.3)",
-  "rgba(61, 142, 139, 0.3)",
-  "rgba(58, 125, 83, 0.2)",
-  "rgba(42, 83, 64, 0.4)",
-  "rgba(30, 58, 44, 0.3)",
-  "rgba(107, 191, 135, 0.25)",
-  "rgba(58, 125, 83, 0.35)",
-  "rgba(61, 142, 139, 0.25)",
+const FALLBACK_GRADIENTS: [string, string][] = [
+  ["#162E21", "#1a3a35"],  // forest → teal
+  ["#1E3A2C", "#3A7D53"],  // forest → forest-500
+  ["#1a3a35", "#3D8E8B"],  // teal → teal
+  ["#33280f", "#1E3A2C"],  // gold → forest
+  ["#0F2318", "#1E3A2C"],  // forest-900 → forest
+  ["#162E21", "#3A7D53"],  // forest → forest bright
 ];
 
 /** Simple string hash → index */
@@ -74,8 +71,8 @@ export function PathCover({
   sizes = "(max-width: 640px) 100vw, 400px",
 }: PathCoverProps) {
   const thumbnail = resolveThumbnail(path);
-  const accentIdx = hashString(path.title) % FALLBACK_ACCENTS.length;
-  const accent = FALLBACK_ACCENTS[accentIdx];
+  const gradientIdx = hashString(path.title) % FALLBACK_GRADIENTS.length;
+  const [start, end] = FALLBACK_GRADIENTS[gradientIdx];
 
   return (
     <div className={`relative w-full overflow-hidden ${height}`}>
@@ -88,14 +85,22 @@ export function PathCover({
           className="object-cover"
         />
       ) : (
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{
-            background: `linear-gradient(135deg, ${accent}, white)`,
-          }}
-        >
-          <Layers size={32} style={{ color: "rgba(255,255,255,0.15)" }} />
-        </div>
+        <>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(135deg, ${start} 0%, ${end} 100%)`,
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)",
+              backgroundSize: "16px 16px",
+            }}
+          />
+        </>
       )}
     </div>
   );

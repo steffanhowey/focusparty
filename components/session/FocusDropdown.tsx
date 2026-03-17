@@ -145,13 +145,17 @@ export const FocusDropdown = memo(function FocusDropdown({
   return (
     <div
       ref={popoverRef}
-      className="absolute bottom-full left-1/2 z-[60] mb-3 w-96 -translate-x-1/2 overflow-visible rounded-xl border border-[var(--sg-shell-border)] p-3 shadow-lg"
+      className="absolute bottom-full left-1/2 z-[60] mb-3 w-96 -translate-x-1/2 overflow-visible rounded-xl border border-white/[0.08] p-3 shadow-lg"
       style={{
         background: "rgba(15,35,24,0.98)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         boxShadow: "var(--shadow-float)",
-      }}
+        "--sg-shell-100": "rgba(255,255,255,0.06)",
+        "--sg-shell-200": "rgba(255,255,255,0.08)",
+        "--sg-shell-600": "rgba(255,255,255,0.5)",
+        "--sg-shell-900": "#ffffff",
+      } as React.CSSProperties}
     >
       <div className="flex flex-col">
         {/* Title — top of popover */}

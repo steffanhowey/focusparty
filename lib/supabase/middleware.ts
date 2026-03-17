@@ -40,8 +40,15 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Redirect unauthenticated users away from protected routes.
+  // Redirect authenticated users from marketing landing to Learn (app home).
   const { pathname } = request.nextUrl;
+  if (user && pathname === "/") {
+    const learnUrl = request.nextUrl.clone();
+    learnUrl.pathname = "/learn";
+    return NextResponse.redirect(learnUrl);
+  }
+
+  // Redirect unauthenticated users away from protected routes.
   if (
     !user &&
     PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))

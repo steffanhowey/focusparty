@@ -204,7 +204,10 @@ function parseBlueprintToRoomDna(
       accentColor: (wc.accentColor as string) ?? "#3A7D53",
       placeholderGradient:
         (wc.placeholderGradient as string) ??
-        "linear-gradient(135deg, #0F2318 0%, #1a2a20 50%, #0F2318 100%)",
+        "linear-gradient(135deg, #0F2318 0%, #1E3A2C 100%)",
+      placeholderPattern:
+        (wc.placeholderPattern as string | undefined) ??
+        "linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)",
       environmentOverlay:
         (wc.environmentOverlay as string) ??
         "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",

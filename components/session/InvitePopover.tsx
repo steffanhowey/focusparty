@@ -1,6 +1,6 @@
 "use client";
 
-import { type RefObject, useEffect, useState } from "react";
+import React, { type RefObject, useEffect, useState } from "react";
 import { Link2, Check, Copy } from "lucide-react";
 import { useNotification } from "@/components/providers/NotificationProvider";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -86,7 +86,7 @@ export function InvitePopover({
 
   return (
     <div
-      className={`absolute rounded-xl border border-[var(--sg-shell-border)] p-3 shadow-lg ${
+      className={`absolute rounded-xl border border-white/[0.08] p-3 shadow-lg ${
         position === "below" ? "top-full mt-3" : "bottom-full mb-3"
       } ${align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"}`}
       style={{
@@ -95,8 +95,12 @@ export function InvitePopover({
         WebkitBackdropFilter: "blur(24px)",
         zIndex: 40,
         minWidth: 280,
+        "--sg-shell-100": "rgba(255,255,255,0.06)",
+        "--sg-shell-200": "rgba(255,255,255,0.08)",
+        "--sg-shell-600": "rgba(255,255,255,0.5)",
+        "--sg-shell-900": "#ffffff",
         boxShadow: "var(--shadow-float)",
-      }}
+      } as React.CSSProperties}
       role="dialog"
       aria-label="Invite to party"
     >

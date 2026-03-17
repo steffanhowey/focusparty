@@ -88,10 +88,21 @@ export function JoinRoomHeader({
             className="object-cover"
           />
         ) : (
-          <div
-            className="absolute inset-0"
-            style={{ background: world.placeholderGradient }}
-          />
+          <>
+            <div
+              className="absolute inset-0"
+              style={{ background: world.placeholderGradient }}
+            />
+            {world.placeholderPattern && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: world.placeholderPattern,
+                  backgroundSize: "16px 16px",
+                }}
+              />
+            )}
+          </>
         )}
       </div>
 

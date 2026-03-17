@@ -44,7 +44,7 @@ function LoginForm() {
 
   useEffect(() => {
     if (authState === "authenticated") {
-      const next = searchParams.get("next") ?? "/practice";
+      const next = searchParams.get("next") ?? "/learn";
       router.replace(next);
     }
   }, [authState, router, searchParams]);

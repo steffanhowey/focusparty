@@ -56,7 +56,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
           <button
             type="button"
             onClick={() => onToggle(task.id)}
-            className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-[var(--sg-shell-border)] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
+            className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-white/[0.12] transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
             aria-label={`Complete ${task.text}`}
           >
             <Check

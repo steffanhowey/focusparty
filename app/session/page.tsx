@@ -738,7 +738,7 @@ export default function SessionPage() {
             style={{ width: panelOpen ? PANEL_WIDTH : 0 }}
           >
             <aside
-              className="flex flex-col rounded-xl border border-[var(--sg-shell-border)]"
+              className="flex flex-col rounded-xl border border-white/[0.08]"
               style={{
                 width: PANEL_WIDTH - 16,
                 height: "calc(100% - 32px)",

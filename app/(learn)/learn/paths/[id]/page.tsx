@@ -404,30 +404,22 @@ export default function LearnPathPage() {
 
   return (
     <div className="h-screen flex flex-col bg-[var(--sg-white)]">
-      {/* Top Bar — matches rooms experience: transparent, no borders */}
-      <header className="relative z-10 flex items-center gap-3 py-4 px-4 shrink-0">
+      {/* Top Bar */}
+      <header className="relative z-10 flex items-center gap-3 py-4 px-4 shrink-0 border-b border-[var(--sg-shell-border)]">
         <button
           onClick={() => router.push("/learn")}
-          className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/15"
-          style={{
-            border: "1px solid rgba(255,255,255,0.12)",
-            background: "rgba(255,255,255,0.08)",
-          }}
+          className="flex cursor-pointer items-center gap-2 rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 py-2 text-sm font-medium text-[var(--sg-shell-700)] transition-colors hover:bg-[var(--sg-shell-100)]"
         >
           <ArrowLeft size={15} strokeWidth={2} />
           Learn
         </button>
         <div className="flex-1" />
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-sm font-medium text-white truncate max-w-[50%] text-center">
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-sm font-medium text-[var(--sg-shell-900)] truncate max-w-[50%] text-center">
           {path.title}
         </h1>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/15"
-          style={{
-            border: "1px solid rgba(255,255,255,0.12)",
-            background: "rgba(255,255,255,0.08)",
-          }}
+          className="flex cursor-pointer items-center gap-2 rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 py-2 text-sm font-medium text-[var(--sg-shell-700)] transition-colors hover:bg-[var(--sg-shell-100)]"
         >
           Path
         </button>

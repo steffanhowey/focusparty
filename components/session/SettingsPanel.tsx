@@ -73,7 +73,7 @@ function Accordion({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-b border-[var(--sg-shell-200)]">
+    <div className="border-b border-white/[0.08]">
       <button
         type="button"
         onClick={onToggle}
@@ -268,7 +268,7 @@ function DeviceSelector({
         <select
           value={selectedId}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none rounded-full border border-[var(--sg-shell-border)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--sg-shell-600)] transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
+          className="w-full appearance-none rounded-full border border-white/[0.08] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--sg-shell-600)] transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
         >
           {devices.length === 0 && <option value="">No devices found</option>}
           {devices.map((d) => (
@@ -348,7 +348,7 @@ function UserPreferencesContent({
               className={`flex-1 rounded-full border px-3 py-2 text-xs font-medium capitalize transition-all ${
                 settings.colorMode === mode
                   ? "border-[var(--sg-forest-400)] bg-[var(--sg-forest-400)]/10 text-white"
-                  : "border-[var(--sg-shell-200)] text-[var(--sg-shell-500)] hover:bg-white/[0.04]"
+                  : "border-white/[0.08] text-[var(--sg-shell-500)] hover:bg-white/[0.04]"
               }`}
             >
               {mode}

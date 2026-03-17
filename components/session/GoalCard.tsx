@@ -16,7 +16,7 @@ export function GoalCard({
 }: GoalCardProps) {
   return (
     <div
-      className="absolute top-0 left-1/2 -translate-x-1/2 rounded-b-lg border-x border-b border-[var(--sg-shell-border)] p-4 md:p-6"
+      className="absolute top-0 left-1/2 -translate-x-1/2 rounded-b-lg border-x border-b border-white/[0.08] p-4 md:p-6"
       style={{
         zIndex: 20,
         background: "rgba(15,35,24,0.80)",

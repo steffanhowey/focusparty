@@ -34,8 +34,8 @@ export function MenuItem({
   const stateStyles = danger
     ? "text-sg-coral-500 hover:bg-sg-coral-500/10"
     : active
-      ? "bg-forest-500/20 text-shell-900 ring-1 ring-forest-500/40"
-      : "text-shell-600 hover:bg-shell-100 hover:text-shell-900";
+      ? "bg-[var(--sg-forest-500)]/20 text-[var(--sg-shell-900)] ring-1 ring-[var(--sg-forest-500)]/40"
+      : "text-[var(--sg-shell-600)] hover:bg-[var(--sg-shell-100)] hover:text-[var(--sg-shell-900)]";
 
   return (
     <button
