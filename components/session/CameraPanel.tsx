@@ -36,8 +36,8 @@ export function CameraPanel({ videoRef, status, isActive }: CameraPanelProps) {
           <div
             className="mb-2.5 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold"
             style={{
-              background: "var(--color-bg-elevated)",
-              border: "1px solid var(--color-border-default)",
+              background: "var(--sg-forest-800)",
+              border: "1px solid rgba(255,255,255,0.08)",
             }}
           >
             S

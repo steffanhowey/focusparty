@@ -105,7 +105,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
           >
             Choose your environment
           </h2>
-          <p className="mb-5 text-sm text-[var(--color-text-secondary)]">
+          <p className="mb-5 text-sm text-shell-600">
             Each environment has its own host, pace, and personality.
           </p>
 
@@ -119,7 +119,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                   key={key}
                   type="button"
                   onClick={() => handleSelectWorld(world)}
-                  className="cursor-pointer rounded-md border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-4 text-left transition-all duration-150 hover:border-transparent"
+                  className="cursor-pointer rounded-md border border-shell-border bg-shell-50 p-4 text-left transition-all duration-150 hover:border-transparent"
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.borderColor =
                       world.accentColor;
@@ -128,7 +128,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLElement).style.borderColor =
-                      "var(--color-border-default)";
+                      "var(--sg-shell-border)";
                     (e.currentTarget as HTMLElement).style.boxShadow = "none";
                   }}
                 >
@@ -146,12 +146,12 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                   </h3>
 
                   {/* Description */}
-                  <p className="mt-1 text-xs leading-relaxed text-[var(--color-text-secondary)]">
+                  <p className="mt-1 text-xs leading-relaxed text-shell-600">
                     {world.description}
                   </p>
 
                   {/* Meta row */}
-                  <div className="mt-3 flex items-center gap-3 text-2xs text-[var(--color-text-tertiary)]">
+                  <div className="mt-3 flex items-center gap-3 text-2xs text-shell-500">
                     <span className="flex items-center gap-1">
                       <Clock size={10} />
                       {world.defaultSprintLength}m
@@ -202,7 +202,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
           <div className="space-y-5">
             {/* Room name */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+              <label className="mb-1.5 block text-xs font-medium text-shell-600">
                 Room name
               </label>
               <input
@@ -212,13 +212,13 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                 onChange={(e) => setName(e.target.value)}
                 maxLength={80}
                 autoFocus
-                className="h-11 w-full rounded-md border border-[var(--color-border-default)] bg-white/[0.06] px-4 text-sm text-white outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
+                className="h-11 w-full rounded-md border border-shell-border bg-white/[0.06] px-4 text-sm text-white outline-none placeholder:text-shell-500 focus:border-forest-400"
               />
             </div>
 
             {/* Sprint duration */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+              <label className="mb-1.5 block text-xs font-medium text-shell-600">
                 Sprint duration
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -232,16 +232,16 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                       background:
                         d === duration
                           ? selectedWorld?.accentColor ??
-                            "var(--color-accent-primary)"
+                            "var(--sg-forest-500)"
                           : "transparent",
                       color:
                         d === duration
                           ? "white"
-                          : "var(--color-text-tertiary)",
+                          : "var(--sg-shell-500)",
                       border:
                         d === duration
                           ? "none"
-                          : "1px solid var(--color-border-default)",
+                          : "1px solid var(--sg-shell-border)",
                     }}
                   >
                     {d}m
@@ -252,7 +252,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
 
             {/* Max participants */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+              <label className="mb-1.5 block text-xs font-medium text-shell-600">
                 Max participants
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -266,16 +266,16 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
                       background:
                         n === maxParticipants
                           ? selectedWorld?.accentColor ??
-                            "var(--color-accent-primary)"
+                            "var(--sg-forest-500)"
                           : "transparent",
                       color:
                         n === maxParticipants
                           ? "white"
-                          : "var(--color-text-tertiary)",
+                          : "var(--sg-shell-500)",
                       border:
                         n === maxParticipants
                           ? "none"
-                          : "1px solid var(--color-border-default)",
+                          : "1px solid var(--sg-shell-border)",
                     }}
                   >
                     {n}
@@ -294,7 +294,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
               className="mt-2"
               style={{
                 background:
-                  selectedWorld?.accentColor ?? "var(--color-accent-primary)",
+                  selectedWorld?.accentColor ?? "var(--sg-forest-500)",
               }}
             >
               Create room

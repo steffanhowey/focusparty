@@ -79,11 +79,11 @@ export function EnvironmentSetup({
       <div
         className="w-full max-w-md rounded-xl p-6"
         style={{
-          background: "rgba(10,10,10,0.85)",
+          background: "rgba(15,35,24,0.85)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: "var(--shadow-float)",
+          boxShadow: "var(--sg-shadow-dark-lg)",
         }}
       >
         {/* Room header */}
@@ -133,7 +133,7 @@ export function EnvironmentSetup({
             <div
               className="mt-1.5 max-h-48 overflow-y-auto rounded-lg py-1 shadow-lg"
               style={{
-                background: "rgba(10,10,10,0.95)",
+                background: "rgba(15,35,24,0.95)",
                 border: "1px solid rgba(255,255,255,0.08)",
               }}
             >

@@ -62,7 +62,7 @@ export const SplitScreen = memo(function SplitScreen({
       <div
         className="absolute bottom-10 left-10 z-10 h-36 w-48 overflow-hidden rounded-xl border border-white/[0.12]"
         style={{
-          background: "rgba(10,10,10,0.65)",
+          background: "rgba(15,35,24,0.65)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           boxShadow: "var(--shadow-float)",
@@ -82,8 +82,8 @@ export const SplitScreen = memo(function SplitScreen({
               <div
                 className="mb-1.5 flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
                 style={{
-                  background: "var(--color-bg-elevated)",
-                  border: "1px solid var(--color-border-default)",
+                  background: "var(--sg-forest-800)",
+                  border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
                 S

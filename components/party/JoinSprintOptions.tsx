@@ -106,8 +106,9 @@ export function JoinSprintOptions({
   const dropdown = open ? (
     <div
       ref={dropdownRef}
-      className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-dropdown)] p-1.5 shadow-lg backdrop-blur-[20px]"
+      className="rounded-lg border border-shell-border p-1.5 shadow-lg backdrop-blur-[20px]"
       style={{
+        background: "rgba(15,35,24,0.95)",
         position: "fixed",
         top: pos.top,
         left: pos.left,
@@ -127,15 +128,15 @@ export function JoinSprintOptions({
               <Check
                 size={14}
                 strokeWidth={2}
-                className="shrink-0 text-[var(--color-accent-primary)]"
+                className="shrink-0 text-forest-500"
               />
             ) : (
               <span className="w-[14px] shrink-0" />
             )}
-            <Timer size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
+            <Timer size={14} strokeWidth={1.5} className="shrink-0 text-shell-500" />
             <div>
-              <p className="text-sm font-medium text-[var(--color-text-secondary)]">Current Sprint</p>
-              <p className="text-2xs text-[var(--color-text-tertiary)]">
+              <p className="text-sm font-medium text-shell-600">Current Sprint</p>
+              <p className="text-2xs text-shell-500">
                 {formatMinutes(remainingSeconds)} remaining · {focusingCount} focusing
               </p>
             </div>
@@ -151,15 +152,15 @@ export function JoinSprintOptions({
               <Check
                 size={14}
                 strokeWidth={2}
-                className="shrink-0 text-[var(--color-accent-primary)]"
+                className="shrink-0 text-forest-500"
               />
             ) : (
               <span className="w-[14px] shrink-0" />
             )}
-            <Clock size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
+            <Clock size={14} strokeWidth={1.5} className="shrink-0 text-shell-500" />
             <div>
-              <p className="text-sm font-medium text-[var(--color-text-secondary)]">Next Sprint</p>
-              <p className="text-2xs text-[var(--color-text-tertiary)]">
+              <p className="text-sm font-medium text-shell-600">Next Sprint</p>
+              <p className="text-2xs text-shell-500">
                 Starts in {formatMinutes(remainingSeconds)} · Join fresh with group
               </p>
             </div>
@@ -173,13 +174,13 @@ export function JoinSprintOptions({
               key={d}
               type="button"
               onClick={() => handleSelectDuration(d)}
-              className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-white/[0.06]"
+              className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-sm text-shell-600 transition-colors hover:bg-white/[0.06]"
             >
               {freshDuration === d ? (
                 <Check
                   size={14}
                   strokeWidth={2}
-                  className="shrink-0 text-[var(--color-accent-primary)]"
+                  className="shrink-0 text-forest-500"
                 />
               ) : (
                 <span className="w-[14px] shrink-0" />
@@ -201,16 +202,16 @@ export function JoinSprintOptions({
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className="relative flex h-10 w-full cursor-pointer items-center gap-2 rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 pr-9 text-sm transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+          className="relative flex h-10 w-full cursor-pointer items-center gap-2 rounded-full border border-shell-border bg-white/[0.06] px-4 pr-9 text-sm transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
         >
-          <TriggerIcon size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
-          <span className="truncate text-[var(--color-text-secondary)]">
+          <TriggerIcon size={14} strokeWidth={1.5} className="shrink-0 text-shell-500" />
+          <span className="truncate text-shell-600">
             {triggerLabel}
           </span>
           <ChevronDown
             size={14}
             strokeWidth={1.5}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-shell-500"
           />
         </button>
 

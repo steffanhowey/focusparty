@@ -312,14 +312,14 @@ export function BreakVideoOverlay({
         left: notesOpen ? "calc(50% - 168px)" : "50%",
         ...dragStyle,
         transition: "left 0.3s ease",
-        background: "rgba(10,10,10,0.85)",
+        background: "rgba(15,35,24,0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        boxShadow: "var(--shadow-float)",
+        boxShadow: "var(--sg-shadow-dark-lg)",
         ...(isOvertime
           ? {
               animation: "fp-break-pulse 2s ease-in-out infinite",
-              borderColor: "rgba(140, 85, 239, 0.3)",
+              borderColor: "rgba(61,142,139,0.3)",
             }
           : {}),
       }}
@@ -339,7 +339,7 @@ export function BreakVideoOverlay({
             className="relative h-10 w-10 rounded-full border border-white/20 transition-transform duration-300 active:scale-95"
             style={{
               background: "radial-gradient(circle at 40% 35%, rgba(60,60,60,1), rgba(25,25,25,1))",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), var(--shadow-sm)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), var(--sg-shadow-sm)",
               transform: `rotate(${currentClipIndex * (360 / clips.length)}deg)`,
               transition: "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
             }}
@@ -524,7 +524,7 @@ export function BreakVideoOverlay({
                       <div
                         className="absolute bottom-4 left-1/2 z-20 w-48 -translate-x-1/2 rounded-lg border border-white/10 px-3 py-2"
                         style={{
-                          background: "rgba(10, 10, 10, 0.9)",
+                          background: "rgba(15,35,24,0.9)",
                           backdropFilter: "blur(12px)",
                         }}
                       >
@@ -543,12 +543,12 @@ export function BreakVideoOverlay({
       <style jsx global>{`
         @keyframes fp-break-pulse {
           0%, 100% {
-            border-color: rgba(140, 85, 239, 0.3);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 0 rgba(140,85,239,0);
+            border-color: rgba(61,142,139,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 0 rgba(61,142,139,0);
           }
           50% {
-            border-color: rgba(140, 85, 239, 0.8);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 16px 4px rgba(140,85,239,0.2);
+            border-color: rgba(61,142,139,0.8);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 16px 4px rgba(61,142,139,0.2);
           }
         }
       `}</style>

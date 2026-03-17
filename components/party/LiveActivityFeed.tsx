@@ -31,9 +31,9 @@ export function LiveActivityFeed({
       <div className="space-y-3 py-2">
         {[1, 2, 3].map((i) => (
           <div key={i} className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-[var(--color-bg-hover)] animate-pulse" />
+            <div className="h-2 w-2 rounded-full bg-shell-100 animate-pulse" />
             <div
-              className="h-3 rounded bg-[var(--color-bg-hover)] animate-pulse"
+              className="h-3 rounded bg-shell-100 animate-pulse"
               style={{ width: `${50 + i * 15}%` }}
             />
           </div>
@@ -44,7 +44,7 @@ export function LiveActivityFeed({
 
   if (events.length === 0) {
     return (
-      <p className="py-4 text-center text-sm text-[var(--color-text-tertiary)]">
+      <p className="py-4 text-center text-sm text-shell-500">
         No activity yet — start a session to get the momentum going
       </p>
     );
@@ -70,10 +70,10 @@ export function LiveActivityFeed({
                 <Icon size={11} style={{ color: rendered.color }} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm leading-snug text-[var(--color-text-secondary)]">
+                <p className="text-sm leading-snug text-shell-600">
                   {event.displayText}
                 </p>
-                <p className="mt-0.5 text-2xs text-[var(--color-text-tertiary)]">
+                <p className="mt-0.5 text-2xs text-shell-500">
                   {relativeTime(event.created_at)}
                 </p>
               </div>

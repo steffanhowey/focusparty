@@ -59,7 +59,7 @@ function AvatarCluster({
         ))}
       </span>
       {overflow > 0 && (
-        <span className="ml-1 text-2xs text-[var(--color-text-tertiary)]">
+        <span className="ml-1 text-2xs text-shell-500">
           +{overflow}
         </span>
       )}
@@ -107,10 +107,11 @@ export function RoomCard({
         ? "active"
         : "waiting";
 
+  // Status dot colors: active=forest-300, waiting=sg-gold-500, full=shell-400
   const statusConfig = {
-    active: { dot: "var(--color-green-700)", label: party.persistent ? "Open" : "Active" },
-    waiting: { dot: "var(--color-amber-700)", label: "Waiting" },
-    full: { dot: "#6B7280", label: "Full" },
+    active: { dot: "var(--sg-forest-300)", label: party.persistent ? "Open" : "Active" },
+    waiting: { dot: "var(--sg-gold-500)", label: "Waiting" },
+    full: { dot: "var(--sg-shell-400)", label: "Full" },
   } as const;
 
   const s = statusConfig[status];
@@ -129,14 +130,14 @@ export function RoomCard({
         style={{
           borderColor: isPreviewPlaying
             ? `${world.accentColor}60`
-            : "var(--color-border-default)",
+            : "var(--sg-shell-border)",
           boxShadow: isPreviewPlaying
             ? `0 0 0 1px ${world.accentColor}30, var(--shadow-sm)`
             : undefined,
         }}
       >
         {isJoining && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center" style={{ background: "rgba(10,10,10,0.6)" }}>
+          <div className="absolute inset-0 z-10 flex items-center justify-center" style={{ background: "rgba(15,35,24,0.6)" }}>
             <div className="flex items-center gap-2 text-sm font-medium text-white">
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               Entering...
@@ -175,7 +176,7 @@ export function RoomCard({
               }}
               className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 transition-all hover:scale-105 active:scale-100"
               style={{
-                background: "rgba(10,10,10,0.55)",
+                background: "rgba(15,35,24,0.55)",
                 backdropFilter: "blur(16px)",
                 WebkitBackdropFilter: "blur(16px)",
                 boxShadow: "var(--shadow-float)",
@@ -200,10 +201,10 @@ export function RoomCard({
       {/* Text + avatars outside card */}
       <div className="flex items-center gap-2 px-1 pt-2">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-semibold text-white">
+          <h3 className="truncate text-sm font-semibold text-shell-900">
             {party.name}
           </h3>
-          <p className="mt-0.5 line-clamp-1 text-xs text-[var(--color-text-tertiary)]">
+          <p className="mt-0.5 line-clamp-1 text-xs text-shell-500">
             {world.description}
           </p>
         </div>
@@ -221,11 +222,11 @@ export function RoomCard({
           ? "pointer-events-none opacity-70"
           : isFull
             ? "cursor-default opacity-50"
-            : "cursor-pointer hover:bg-[var(--color-bg-active)]"
+            : "cursor-pointer hover:bg-shell-200"
       }`}
     >
       {isJoining && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md" style={{ background: "rgba(10,10,10,0.6)" }}>
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md" style={{ background: "rgba(15,35,24,0.6)" }}>
           <div className="flex items-center gap-2 text-sm font-medium text-white">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
             Entering...
@@ -235,7 +236,7 @@ export function RoomCard({
 
       <div className="p-4">
         <div className="mb-3 flex items-center justify-end">
-          <span className="flex items-center gap-1.5 text-2xs text-[var(--color-text-tertiary)]">
+          <span className="flex items-center gap-1.5 text-2xs text-shell-500">
             <span
               className="inline-block h-2 w-2 rounded-full"
               style={{ background: s.dot }}
@@ -244,15 +245,15 @@ export function RoomCard({
           </span>
         </div>
 
-        <h3 className="truncate text-sm font-semibold text-white">
+        <h3 className="truncate text-sm font-semibold text-shell-900">
           {party.name}
         </h3>
 
-        <p className="mt-0.5 line-clamp-1 text-xs text-[var(--color-text-tertiary)]">
+        <p className="mt-0.5 line-clamp-1 text-xs text-shell-500">
           {world.description}
         </p>
 
-        <div className="mt-3 flex items-center gap-3 text-xs text-[var(--color-text-secondary)]">
+        <div className="mt-3 flex items-center gap-3 text-xs text-shell-600">
           <span className="flex items-center gap-1">
             <Users size={12} strokeWidth={1.8} />
             {party.participant_count}/{party.max_participants}

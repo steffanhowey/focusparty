@@ -65,7 +65,7 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
                 <div
                   className={`max-w-[80%] px-3.5 py-2 text-sm leading-relaxed ${
                     msg.role === "user"
-                      ? "rounded-lg rounded-br-sm bg-[var(--color-accent-primary)] text-white"
+                      ? "rounded-lg rounded-br-sm bg-[var(--sg-forest-600)] text-white"
                       : "rounded-lg rounded-bl-sm bg-white/[0.08] text-[var(--color-text-secondary)]"
                   }`}
                 >
@@ -94,7 +94,7 @@ export const ChatContent = memo(function ChatContent({ messages, onSendMessage }
             type="button"
             onClick={handleSubmit}
             disabled={!input.trim()}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-primary)] text-white transition-opacity disabled:opacity-30"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--sg-forest-500)] text-white transition-opacity disabled:opacity-30"
             aria-label="Send message"
           >
             <ArrowUp size={14} strokeWidth={2.5} />

@@ -135,7 +135,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
       className={`fixed inset-0 flex flex-col items-center justify-center transition-opacity ${
         exiting ? "opacity-0 duration-300" : "opacity-100 duration-400"
       }`}
-      style={{ zIndex: 45, background: "#050505" }}
+      style={{ zIndex: 45, background: "var(--sg-forest-900)" }}
       role="status"
       aria-live="polite"
       aria-label="Breathing exercise"
@@ -144,7 +144,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          background: `radial-gradient(circle, rgba(83, 90, 238, ${glowOpacity}) 0%, transparent ${glowRadius})`,
+          background: `radial-gradient(circle, rgba(58,125,83, ${glowOpacity}) 0%, transparent ${glowRadius})`,
           transition: launching
             ? "background 0.5s cubic-bezier(0.4, 0, 0.2, 1)"
             : `background ${animDuration} ${animEasing}`,
@@ -154,13 +154,13 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
       {/* Goal text — reinforces intention, fades during launch */}
       {goalText && (
         <p
-          className="absolute top-16 left-1/2 -translate-x-1/2 text-center text-sm text-[var(--color-navy-500)] transition-opacity duration-300"
+          className="absolute top-16 left-1/2 -translate-x-1/2 text-center text-sm text-[var(--sg-shell-500)] transition-opacity duration-300"
           style={{
             animation: "fp-breathe-fade-in 0.8s ease 0.3s both",
             opacity: launching ? 0 : undefined,
           }}
         >
-          Focusing on: <span className="text-[var(--color-navy-400)]">{goalText}</span>
+          Focusing on: <span className="text-[var(--sg-shell-300)]">{goalText}</span>
         </p>
       )}
 
@@ -195,7 +195,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
                 style={{
                   width: 130,
                   height: 130,
-                  background: `radial-gradient(circle at 40% 40%, rgba(83, 90, 238, ${PETAL_OPACITIES[i]}) 0%, rgba(83, 90, 238, 0.08) 100%)`,
+                  background: `radial-gradient(circle at 40% 40%, rgba(58,125,83, ${PETAL_OPACITIES[i]}) 0%, rgba(58,125,83, 0.08) 100%)`,
                   mixBlendMode: "screen",
                   // Double-rotate: position along angle, then un-rotate to stay upright
                   transform: `rotate(${angle}deg) translateY(${-spread}px) rotate(${-angle}deg)`,
@@ -210,8 +210,8 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
               style={{
                 width: 60,
                 height: 60,
-                background: "radial-gradient(circle, rgba(83, 90, 238, 0.6) 0%, rgba(83, 90, 238, 0.1) 100%)",
-                boxShadow: `0 0 ${isInhale ? 60 : 30}px rgba(83, 90, 238, ${isInhale ? 0.4 : 0.15})`,
+                background: "radial-gradient(circle, rgba(58,125,83, 0.6) 0%, rgba(58,125,83, 0.1) 100%)",
+                boxShadow: `0 0 ${isInhale ? 60 : 30}px rgba(58,125,83, ${isInhale ? 0.4 : 0.15})`,
                 transition: `box-shadow ${animDuration} ${animEasing}`,
               }}
             />
@@ -226,7 +226,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
       >
         <p
           key={`${phase}-${breath}`}
-          className={`text-xl font-semibold ${isDone ? "text-white" : "text-[var(--color-navy-400)]"}`}
+          className={`text-xl font-semibold ${isDone ? "text-white" : "text-[var(--sg-forest-300)]"}`}
           style={{
             animation: isDone
               ? "fp-breathe-fade-in 0.5s ease forwards"
@@ -249,12 +249,12 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
                   width: 8,
                   height: 8,
                   background: completed
-                    ? "var(--color-purple-700)"
+                    ? "var(--sg-forest-500)"
                     : active
-                      ? "rgba(83, 90, 238, 0.45)"
+                      ? "rgba(58,125,83, 0.45)"
                       : "rgba(255, 255, 255, 0.1)",
                   boxShadow: completed
-                    ? "0 0 8px rgba(83, 90, 238, 0.5)"
+                    ? "var(--sg-shadow-glow-forest)"
                     : "none",
                 }}
               />
@@ -268,7 +268,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
             type="button"
             onClick={handleLetsGo}
             data-autofocus
-            className="mt-4 cursor-pointer rounded-full bg-[var(--color-purple-700)] px-10 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-[var(--color-accent-secondary)] hover:shadow-[0_0_24px_rgba(83,90,238,0.4)]"
+            className="mt-4 cursor-pointer rounded-full bg-[var(--sg-forest-500)] px-10 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-[var(--sg-forest-400)] hover:shadow-[0_0_24px_rgba(58,125,83,0.4)]"
             style={{
               animation: "fp-breathe-fade-in 0.5s ease 0.15s both",
             }}
@@ -283,7 +283,7 @@ export function BreathingOverlay({ isOpen, goalText, onComplete }: BreathingOver
         <button
           type="button"
           onClick={handleSkip}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer text-xs text-[#555] transition-colors hover:text-[var(--color-navy-500)]"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer text-xs text-[rgba(255,255,255,0.2)] transition-colors hover:text-[var(--sg-shell-500)]"
         >
           Skip
         </button>

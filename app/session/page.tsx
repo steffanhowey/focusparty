@@ -568,19 +568,7 @@ export default function SessionPage() {
     <div
       className="relative flex h-screen w-screen overflow-hidden"
       style={{
-        background: selectedVibe ? undefined : "#0a0a0a",
-        "--color-bg-primary": "#0a0a0a",
-        "--color-bg-secondary": "#0a0a0a",
-        "--color-bg-elevated": "#141414",
-        "--color-bg-hover": "rgba(255, 255, 255, 0.08)",
-        "--color-bg-active": "rgba(255, 255, 255, 0.12)",
-        "--color-text-primary": "#ffffff",
-        "--color-text-secondary": "#c0c0c0",
-        "--color-text-tertiary": "#888888",
-        "--color-text-on-accent": "#ffffff",
-        "--color-border-default": "rgba(255, 255, 255, 0.08)",
-        "--color-border-focus": "#7c5cfc",
-        "--color-border-subtle": "rgba(255, 255, 255, 0.04)",
+        background: selectedVibe ? undefined : "var(--sg-forest-900)",
       } as React.CSSProperties}
     >
       {selectedVibe && <VibeBackground activeVibe={selectedVibe} />}

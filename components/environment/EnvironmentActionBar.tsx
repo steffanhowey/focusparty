@@ -24,11 +24,11 @@ export function EnvironmentActionBar({
       <div
         className="flex items-center gap-1 rounded-full px-2 py-1.5"
         style={{
-          background: "rgba(10,10,10,0.55)",
+          background: "rgba(15,35,24,0.55)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: "var(--shadow-float)",
+          boxShadow: "var(--sg-shadow-dark-lg)",
         }}
       >
         {/* Pause / Resume */}
@@ -86,7 +86,7 @@ function ActionButton({
       }`}
       style={{
         color: danger
-          ? "var(--color-coral-700)"
+          ? "var(--sg-coral-500)"
           : active
             ? undefined
             : "rgba(255,255,255,0.75)",

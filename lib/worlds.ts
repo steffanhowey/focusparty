@@ -5,6 +5,7 @@
 
 import type { HostPersonality } from "./hosts";
 import type { VibeId } from "./musicConstants";
+import { FOREST_500, FOREST_300, TEAL_600, GOLD_600, CORAL_500, FOREST_900 } from "./palette";
 
 export type WorldKey =
   | "default"
@@ -41,9 +42,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     hostPersonality: "default",
     defaultSprintLength: 50,
     targetRoomSize: 10,
-    accentColor: "#3B82F6",
+    accentColor: FOREST_500,
     placeholderGradient:
-      "linear-gradient(135deg, #1a1c3a 0%, #1e2a4a 50%, #162040 100%)",
+      `linear-gradient(135deg, ${FOREST_900} 0%, #1a2a20 50%, ${FOREST_900} 100%)`,
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
     vibeKey: "calm-focus",
@@ -56,9 +57,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     hostPersonality: "vibe-coding",
     defaultSprintLength: 50,
     targetRoomSize: 12,
-    accentColor: "#10B981",
+    accentColor: FOREST_300,
     placeholderGradient:
-      "linear-gradient(135deg, #0f2922 0%, #152e2a 50%, #0d2618 100%)",
+      `linear-gradient(135deg, #0f2318 0%, #152e21 50%, #0d2618 100%)`,
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.35) 100%)",
     vibeKey: "energizing-flow",
@@ -71,9 +72,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     hostPersonality: "writer-room",
     defaultSprintLength: 45,
     targetRoomSize: 10,
-    accentColor: "#8B5CF6",
+    accentColor: TEAL_600,
     placeholderGradient:
-      "linear-gradient(135deg, #1e1633 0%, #27204a 50%, #1a1230 100%)",
+      `linear-gradient(135deg, #1a2a28 0%, #1e3530 50%, #162e2a 100%)`,
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
     vibeKey: "deep-concentration",
@@ -86,9 +87,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     hostPersonality: "yc-build",
     defaultSprintLength: 60,
     targetRoomSize: 15,
-    accentColor: "#F59E0B",
+    accentColor: GOLD_600,
     placeholderGradient:
-      "linear-gradient(135deg, #2a2010 0%, #33280f 50%, #211a08 100%)",
+      `linear-gradient(135deg, #2a2010 0%, #33280f 50%, #211a08 100%)`,
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.3) 100%)",
     vibeKey: "energizing-flow",
@@ -101,9 +102,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     hostPersonality: "gentle-start",
     defaultSprintLength: 25,
     targetRoomSize: 8,
-    accentColor: "#EC4899",
+    accentColor: CORAL_500,
     placeholderGradient:
-      "linear-gradient(135deg, #2a1525 0%, #331a2e 50%, #20101c 100%)",
+      `linear-gradient(135deg, #2a1a18 0%, #331e1c 50%, #201010 100%)`,
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.25) 100%)",
     vibeKey: "ambient-chill",

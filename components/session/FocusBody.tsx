@@ -129,7 +129,7 @@ function ItemMenu({
       ref={menuRef}
       className="absolute right-2 top-full z-50 mt-1 w-40 rounded-lg py-1"
       style={{
-        background: "var(--color-navy-800)",
+        background: "var(--sg-forest-800)",
         border: "1px solid rgba(255,255,255,0.1)",
         boxShadow: "var(--shadow-lg)",
       }}

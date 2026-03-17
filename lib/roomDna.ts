@@ -201,10 +201,10 @@ function parseBlueprintToRoomDna(
       hostPersonality: worldKey as WorldConfig["hostPersonality"],
       defaultSprintLength: (wc.defaultSprintLength as number) ?? 50,
       targetRoomSize: (wc.targetRoomSize as number) ?? 10,
-      accentColor: (wc.accentColor as string) ?? "#3B82F6",
+      accentColor: (wc.accentColor as string) ?? "#3A7D53",
       placeholderGradient:
         (wc.placeholderGradient as string) ??
-        "linear-gradient(135deg, #1a1c3a 0%, #1e2a4a 50%, #162040 100%)",
+        "linear-gradient(135deg, #0F2318 0%, #1a2a20 50%, #0F2318 100%)",
       environmentOverlay:
         (wc.environmentOverlay as string) ??
         "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",

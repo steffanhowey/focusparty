@@ -57,7 +57,7 @@ export function SwitchTaskModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-[360px] rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] p-6 shadow-xl">
+      <div className="relative w-full max-w-[360px] rounded-lg border border-[rgba(255,255,255,0.08)] bg-[var(--sg-forest-800)] p-6 shadow-xl">
         <h3
           className="mb-2 text-base font-semibold text-white"
         >

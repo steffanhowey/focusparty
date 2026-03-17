@@ -62,10 +62,10 @@ export function ParticipantList({
           key={`empty-${i}`}
           className="flex items-center gap-3 rounded-md px-3 py-2"
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-dashed border-[var(--color-border-default)]">
-            <span className="text-xs text-[var(--color-text-tertiary)]">?</span>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-dashed border-shell-border">
+            <span className="text-xs text-shell-500">?</span>
           </div>
-          <span className="text-sm text-[var(--color-text-tertiary)]">
+          <span className="text-sm text-shell-500">
             Waiting&hellip;
           </span>
         </div>

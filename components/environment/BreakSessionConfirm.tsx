@@ -68,7 +68,8 @@ export function BreakSessionConfirm({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-[var(--color-navy-700)]/60 backdrop-blur-[8px]"
+        className="absolute inset-0 backdrop-blur-[8px]"
+        style={{ background: "rgba(30,58,44,0.6)" }}
         onClick={onCancel}
         aria-hidden="true"
       />
@@ -78,15 +79,15 @@ export function BreakSessionConfirm({
         className="animate-fp-review-enter relative w-full max-w-[480px] overflow-hidden rounded-xl p-8"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "rgba(10,10,10,0.94)",
+          background: "rgba(15,35,24,0.94)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: "var(--shadow-xl)",
+          boxShadow: "var(--sg-shadow-xl)",
         }}
       >
         <div className="mb-8 text-center">
-          <Coffee size={28} className="mx-auto mb-3 text-[var(--color-violet-700)]" />
+          <Coffee size={28} className="mx-auto mb-3" style={{ color: "var(--sg-teal-600)" }} />
           <h2
             id="break-confirm-title"
             className="text-2xl font-bold text-white"

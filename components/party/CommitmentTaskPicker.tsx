@@ -90,7 +90,7 @@ export function CommitmentTaskPicker({
         inline
           ? undefined
           : {
-              background: "rgba(10,10,10,0.95)",
+              background: "rgba(15,35,24,0.95)",
               backdropFilter: "blur(16px)",
               WebkitBackdropFilter: "blur(16px)",
               border: "1px solid rgba(255,255,255,0.08)",

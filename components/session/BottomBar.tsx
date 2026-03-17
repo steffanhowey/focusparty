@@ -13,7 +13,7 @@ export function BottomBar({ activeTask, onEndSession }: BottomBarProps) {
     <footer
       className="relative flex h-14 flex-shrink-0 items-center justify-between px-4 md:px-6"
       style={{
-        background: "rgba(10,10,10,0.7)",
+        background: "rgba(15,35,24,0.7)",
         backdropFilter: "blur(12px)",
         zIndex: 20,
       }}

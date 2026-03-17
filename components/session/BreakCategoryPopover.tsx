@@ -48,7 +48,7 @@ export function BreakCategoryPopover({
     <div
       className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
       style={{
-        background: "rgba(10,10,10,0.85)",
+        background: "rgba(15,35,24,0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         zIndex: 40,

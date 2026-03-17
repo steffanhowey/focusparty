@@ -187,10 +187,10 @@ export function EnvironmentHeader({
           <div
             className="absolute left-0 top-full mt-2 overflow-y-auto rounded-xl border border-white/[0.08]"
             style={{
-              background: "rgba(10,10,10,0.90)",
+              background: "rgba(15,35,24,0.90)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
-              boxShadow: "var(--shadow-float)",
+              boxShadow: "var(--sg-shadow-dark-lg)",
               zIndex: 40,
               width: 280,
               maxHeight: "min(420px, calc(100vh - 100px))",
@@ -201,7 +201,7 @@ export function EnvironmentHeader({
             aria-label="Switch session"
           >
             {/* Section title */}
-            <p className="px-3 pt-2.5 pb-1 text-2xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            <p className="px-3 pt-2.5 pb-1 text-2xs font-semibold uppercase tracking-wider text-[rgba(255,255,255,0.4)]">
               Available Sessions
             </p>
 
@@ -222,7 +222,7 @@ export function EnvironmentHeader({
 
             {/* Empty */}
             {!showLoading && parties.length === 0 && (
-              <p className="px-4 py-5 text-center text-xs text-[var(--color-text-tertiary)]">
+              <p className="px-4 py-5 text-center text-xs text-[rgba(255,255,255,0.4)]">
                 No other active rooms
               </p>
             )}
@@ -266,10 +266,10 @@ export function EnvironmentHeader({
                       </div>
                       {/* Text */}
                       <div className="min-w-0 flex-1 text-left">
-                        <p className={`truncate text-sm font-medium ${isCurrent ? "text-white" : "text-[var(--color-text-secondary)]"}`}>
+                        <p className={`truncate text-sm font-medium ${isCurrent ? "text-white" : "text-[rgba(255,255,255,0.6)]"}`}>
                           {p.name}
                         </p>
-                        <p className="truncate text-2xs text-[var(--color-text-tertiary)]">
+                        <p className="truncate text-2xs text-[rgba(255,255,255,0.4)]">
                           {world.description}
                         </p>
                       </div>

@@ -75,7 +75,7 @@ export function CurriculumBreakFlyout({
 
       <div className="px-5 pb-3">
         <div className="flex items-center gap-2">
-          <BookOpen className="h-3.5 w-3.5 text-[var(--color-accent-primary)]" />
+          <BookOpen className="h-3.5 w-3.5 text-[var(--sg-forest-500)]" />
           <span className="text-xs text-white/40">
             {completedCount} of {curriculum.length} completed
           </span>
@@ -83,7 +83,7 @@ export function CurriculumBreakFlyout({
         {/* Progress bar */}
         <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-[var(--color-accent-primary)] transition-[width] duration-300"
+            className="h-full rounded-full bg-[var(--sg-forest-500)] transition-[width] duration-300"
             style={{
               width: `${curriculum.length > 0 ? (completedCount / curriculum.length) * 100 : 0}%`,
             }}
@@ -103,7 +103,7 @@ export function CurriculumBreakFlyout({
                   entry.completed
                     ? "border-white/5 bg-white/[0.02] opacity-60"
                     : isCurrent
-                      ? "border-[var(--color-accent-primary)]/30 bg-[var(--color-accent-primary)]/5"
+                      ? "border-[var(--sg-forest-500)]/30 bg-[var(--sg-forest-500)]/5"
                       : entry.onShelf
                         ? "border-white/5 bg-transparent hover:bg-white/[0.04]"
                         : "cursor-not-allowed border-white/5 bg-transparent opacity-40"
@@ -115,7 +115,7 @@ export function CurriculumBreakFlyout({
                   {/* Position number / status */}
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-medium text-white/50">
                     {entry.completed ? (
-                      <CheckCircle className="h-4 w-4 text-[var(--color-green-700)]" />
+                      <CheckCircle className="h-4 w-4 text-[var(--sg-forest-300)]" />
                     ) : !entry.onShelf ? (
                       <Lock className="h-3 w-3 text-white/30" />
                     ) : (
@@ -129,7 +129,7 @@ export function CurriculumBreakFlyout({
                         {entry.title}
                       </p>
                       {isCurrent && !entry.completed && (
-                        <span className="shrink-0 rounded-full bg-[var(--color-accent-primary)]/20 px-2 py-0.5 text-[10px] font-medium text-[var(--color-accent-primary)]">
+                        <span className="shrink-0 rounded-full bg-[var(--sg-forest-500)]/20 px-2 py-0.5 text-[10px] font-medium text-[var(--sg-forest-500)]">
                           Up Next
                         </span>
                       )}

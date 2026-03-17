@@ -10,9 +10,9 @@ import type { ActivityFeedItem, CommitmentType } from "@/lib/types";
 // ─── Commitment type display ────────────────────────────────
 
 const COMMITMENT_CONFIG: Record<CommitmentType, { icon: typeof User; label: string; color: string }> = {
-  personal: { icon: User, label: "Personal", color: "var(--color-navy-500)" },
-  social: { icon: Users, label: "Social", color: "var(--color-navy-500)" },
-  locked: { icon: Lock, label: "Locked In", color: "var(--color-navy-500)" },
+  personal: { icon: User, label: "Personal", color: "var(--sg-shell-500)" },
+  social: { icon: Users, label: "Social", color: "var(--sg-shell-500)" },
+  locked: { icon: Lock, label: "Locked In", color: "var(--sg-shell-500)" },
 };
 
 // ─── Host personality descriptions ──────────────────────────
@@ -78,7 +78,7 @@ function SprintCountdown({
           className="h-full rounded-full transition-[width] duration-1000 ease-linear"
           style={{
             width: `${progress * 100}%`,
-            background: "rgba(91, 198, 130, 0.6)",
+            background: "rgba(74,158,106,0.6)",
           }}
         />
       </div>
@@ -121,9 +121,9 @@ function HighFiveButton({
       className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
       style={{
         background: sent
-          ? "rgba(91,198,130,0.15)"
-          : "rgba(245,158,11,0.15)",
-        color: sent ? "var(--color-green-700)" : "var(--color-gold-700)",
+          ? "rgba(74,158,106,0.15)"
+          : "rgba(205,190,61,0.15)",
+        color: sent ? "var(--sg-forest-400)" : "var(--sg-gold-500)",
       }}
     >
       {sent ? (
@@ -223,14 +223,14 @@ export function ParticipantCard({
   return (
     <div
       ref={cardRef}
-      className="fixed z-50 w-60 rounded-xl border border-[var(--color-border-default)] p-4"
+      className="fixed z-50 w-60 rounded-xl border border-white/[0.08] p-4"
       style={{
         top,
         left,
-        background: "rgba(10,10,10,0.85)",
+        background: "rgba(15,35,24,0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        boxShadow: "var(--shadow-float)",
+        boxShadow: "var(--sg-shadow-dark-lg)",
       }}
       role="dialog"
       aria-label={`${participant.displayName} profile`}
@@ -284,7 +284,7 @@ export function ParticipantCard({
 
           {/* Host label */}
           {participant.participantType === "host" && (
-            <span className="text-xs" style={{ color: "var(--color-violet-700)" }}>
+            <span className="text-xs" style={{ color: "var(--sg-teal-600)" }}>
               Room Host
             </span>
           )}
@@ -295,8 +295,8 @@ export function ParticipantCard({
       {participant.status === "on_break" && participant.breakContentTitle ? (
         <div className="mb-3 rounded-lg bg-white/[0.05] px-3 py-2.5">
           <div className="mb-2 flex items-center gap-1.5">
-            <Coffee size={10} strokeWidth={2} style={{ color: "var(--color-violet-700)" }} />
-            <span className="text-2xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-violet-700)" }}>
+            <Coffee size={10} strokeWidth={2} style={{ color: "var(--sg-teal-600)" }} />
+            <span className="text-2xs font-semibold uppercase tracking-wider" style={{ color: "var(--sg-teal-600)" }}>
               On Break
             </span>
           </div>
@@ -321,8 +321,8 @@ export function ParticipantCard({
               onClick={() => onJoinBreak(participant.breakContentId!)}
               className="mt-2.5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:brightness-110"
               style={{
-                background: "rgba(140, 85, 239, 0.15)",
-                color: "var(--color-violet-700)",
+                background: "rgba(61,142,139,0.15)",
+                color: "var(--sg-teal-600)",
               }}
             >
               <Coffee size={15} strokeWidth={2} />

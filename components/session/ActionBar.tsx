@@ -145,7 +145,7 @@ function Tip({ label, children, hidden }: { label: string; children: ReactNode; 
     <div className="group/tip relative">
       {children}
       {!hidden && (
-        <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[var(--color-bg-dropdown)] px-2.5 py-1 text-2xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100">
+        <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[rgba(15,35,24,0.95)] px-2.5 py-1 text-2xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100">
           {label}
         </span>
       )}
@@ -242,12 +242,12 @@ export const ActionBar = memo(function ActionBar({
             style={{
               borderColor: isJoining
                 ? "rgba(255,255,255,0.15)"
-                : (isBreak || isResuming) ? "rgba(140, 85, 239, 0.3)" : "rgba(255,255,255,0.08)",
-              background: "rgba(10,10,10,0.55)",
+                : (isBreak || isResuming) ? "rgba(61,142,139,0.3)" : "rgba(255,255,255,0.08)",
+              background: "rgba(15,35,24,0.55)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
               boxShadow: (isBreak || isResuming)
-                ? "var(--shadow-float), 0 0 12px 2px rgba(140,85,239,0.15)"
+                ? "var(--shadow-float), 0 0 12px 2px rgba(61,142,139,0.15)"
                 : "var(--shadow-float)",
             }}
           >
@@ -257,7 +257,7 @@ export const ActionBar = memo(function ActionBar({
                 <Zap size={18} strokeWidth={2} />
               </div>
             ) : (isBreak || isResuming) ? (
-              <div className="flex h-full items-center pl-4 pr-1 text-[var(--color-violet-700)]">
+              <div className="flex h-full items-center pl-4 pr-1 text-[var(--sg-teal-600)]">
                 <Coffee size={20} strokeWidth={2} />
               </div>
             ) : (
@@ -284,7 +284,7 @@ export const ActionBar = memo(function ActionBar({
                   style={{
                     fontVariantNumeric: "tabular-nums",
                     minWidth: "1.2em",
-                    color: isResuming ? "var(--color-violet-700)" : "white",
+                    color: isResuming ? "var(--sg-teal-600)" : "white",
                   }}
                 >
                   {isResuming ? (resumingCountdown ?? 0) : (joiningCountdown ?? 0)}
@@ -303,7 +303,7 @@ export const ActionBar = memo(function ActionBar({
                   style={{
                     textShadow: "0 1px 6px rgba(0,0,0,0.5)",
                     fontVariantNumeric: "tabular-nums",
-                    color: isBreak ? "var(--color-violet-700)" : "white",
+                    color: isBreak ? "var(--sg-teal-600)" : "white",
                   }}
                 >
                   {isBreak ? formatBreakTime(breakRemaining) : formatted}
@@ -312,7 +312,7 @@ export const ActionBar = memo(function ActionBar({
                   size={18}
                   strokeWidth={2.5}
                   className={`transition-transform duration-200 ${goalCardOpen ? "" : "rotate-180"}`}
-                  style={{ color: isBreak ? "rgba(140, 85, 239, 0.5)" : "var(--color-text-tertiary)" }}
+                  style={{ color: isBreak ? "rgba(61,142,139,0.5)" : "var(--color-text-tertiary)" }}
                 />
               </button>
             )}
@@ -325,12 +325,12 @@ export const ActionBar = memo(function ActionBar({
             </p>
           )}
           {isResuming && (
-            <p className="mt-1.5 text-center text-2xs font-medium tracking-wider text-[var(--color-violet-700)]/70">
+            <p className="mt-1.5 text-center text-2xs font-medium tracking-wider text-[var(--sg-teal-600)]/70">
               Resuming…
             </p>
           )}
           {isBreak && !goalCardOpen && (
-            <p className="mt-1.5 text-center text-2xs font-medium tracking-wider text-[var(--color-violet-700)]/70">
+            <p className="mt-1.5 text-center text-2xs font-medium tracking-wider text-[var(--sg-teal-600)]/70">
               On Break
             </p>
           )}
@@ -340,7 +340,7 @@ export const ActionBar = memo(function ActionBar({
             <div
               className="absolute top-full left-1/2 mt-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3"
               style={{
-                background: "rgba(10,10,10,0.80)",
+                background: "rgba(15,35,24,0.80)",
                 backdropFilter: "blur(24px)",
                 WebkitBackdropFilter: "blur(24px)",
                 boxShadow: "var(--shadow-float)",
@@ -367,15 +367,15 @@ export const ActionBar = memo(function ActionBar({
             <div
               className="absolute top-full left-1/2 mt-3 -translate-x-1/2 rounded-xl border p-3"
               style={{
-                borderColor: "rgba(140, 85, 239, 0.2)",
-                background: "rgba(10,10,10,0.80)",
+                borderColor: "rgba(61,142,139,0.2)",
+                background: "rgba(15,35,24,0.80)",
                 backdropFilter: "blur(24px)",
                 WebkitBackdropFilter: "blur(24px)",
                 boxShadow: "var(--shadow-float)",
                 zIndex: 40,
               }}
             >
-              <p className="mb-2 text-xs font-medium text-[var(--color-violet-700)]/70">Break duration</p>
+              <p className="mb-2 text-xs font-medium text-[var(--sg-teal-600)]/70">Break duration</p>
               <div className="flex items-center gap-2">
                 <div className="flex gap-1.5">
                   {[3, 5, 10].map((d) => (
@@ -385,7 +385,7 @@ export const ActionBar = memo(function ActionBar({
                       onClick={() => onChangeBreakDuration(d)}
                       className="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150"
                       style={{
-                        background: d === breakDurationMinutes ? "var(--color-violet-700)" : "transparent",
+                        background: d === breakDurationMinutes ? "var(--sg-teal-600)" : "transparent",
                         color: d === breakDurationMinutes ? "white" : "var(--color-text-tertiary)",
                         border: d === breakDurationMinutes ? "1px solid transparent" : "1px solid var(--color-border-default)",
                       }}
@@ -410,7 +410,7 @@ export const ActionBar = memo(function ActionBar({
                   type="button"
                   onClick={onEndBreak}
                   className="mt-2 w-full cursor-pointer rounded-lg py-1.5 text-xs font-medium transition-colors hover:bg-white/10"
-                  style={{ color: "var(--color-violet-700)" }}
+                  style={{ color: "var(--sg-teal-600)" }}
                 >
                   End Break
                 </button>
@@ -424,7 +424,7 @@ export const ActionBar = memo(function ActionBar({
       <div
         className="absolute bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border border-white/[0.08] px-2 py-1.5"
         style={{
-          background: "rgba(10,10,10,0.55)",
+          background: "rgba(15,35,24,0.55)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           boxShadow: "var(--shadow-float)",

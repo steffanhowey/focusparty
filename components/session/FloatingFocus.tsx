@@ -102,7 +102,7 @@ export function FloatingFocus({
         <div
           className="flex h-full flex-col border border-[var(--color-border-default)]"
           style={{
-            background: "rgba(10,10,10,0.65)",
+            background: "rgba(15,35,24,0.65)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
             boxShadow: "var(--shadow-float)",
@@ -127,7 +127,7 @@ export function FloatingFocus({
       <div
         className="flex h-full flex-col overflow-hidden rounded-xl border border-[var(--color-border-default)]"
         style={{
-          background: "rgba(10,10,10,0.65)",
+          background: "rgba(15,35,24,0.65)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           boxShadow: "var(--shadow-float)",

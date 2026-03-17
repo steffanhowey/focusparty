@@ -19,7 +19,7 @@ export function GoalCard({
       className="absolute top-0 left-1/2 -translate-x-1/2 rounded-b-lg border-x border-b border-[var(--color-border-default)] p-4 md:p-6"
       style={{
         zIndex: 20,
-        background: "rgba(10,10,10,0.80)",
+        background: "rgba(15,35,24,0.80)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         boxShadow: "var(--shadow-float)",

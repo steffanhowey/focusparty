@@ -90,7 +90,7 @@ export function InvitePopover({
         position === "below" ? "top-full mt-3" : "bottom-full mb-3"
       } ${align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"}`}
       style={{
-        background: "rgba(10,10,10,0.65)",
+        background: "rgba(15,35,24,0.65)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         zIndex: 40,
@@ -118,7 +118,7 @@ export function InvitePopover({
             <button
               type="button"
               onClick={handleCopy}
-              className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-[var(--color-accent-primary)] px-3 text-xs font-medium text-white transition-all hover:brightness-110"
+              className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-[var(--sg-forest-500)] px-3 text-xs font-medium text-white transition-all hover:brightness-110"
             >
               {copied ? (
                 <>

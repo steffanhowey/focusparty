@@ -70,7 +70,7 @@ export function LiveParticipantsStrip({
                     width: px,
                     height: px,
                     border: `2px solid ${borderColor}`,
-                    boxShadow: "0 0 0 2px var(--color-bg-secondary)",
+                    boxShadow: "0 0 0 2px var(--sg-white)",
                   }}
                 />
               ) : (
@@ -81,9 +81,9 @@ export function LiveParticipantsStrip({
                     height: px,
                     borderColor,
                     background: bgColor,
-                    color: charDef?.primary ?? "var(--color-text-secondary)",
+                    color: charDef?.primary ?? "var(--sg-shell-600)",
                     fontSize: size === "sm" ? 11 : 13,
-                    boxShadow: "0 0 0 2px var(--color-bg-secondary)",
+                    boxShadow: "0 0 0 2px var(--sg-white)",
                   }}
                 >
                   {initial}
@@ -99,7 +99,7 @@ export function LiveParticipantsStrip({
                   backgroundColor: statusCfg.dotColor,
                   bottom: -1,
                   right: -1,
-                  border: "2px solid var(--color-bg-secondary)",
+                  border: "2px solid var(--sg-white)",
                 }}
               />
             </div>
@@ -112,7 +112,7 @@ export function LiveParticipantsStrip({
           className="ml-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
           style={{
             background: "rgba(255,255,255,0.08)",
-            color: "var(--color-text-secondary)",
+            color: "var(--sg-shell-600)",
           }}
         >
           +{overflow}

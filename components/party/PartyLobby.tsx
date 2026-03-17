@@ -267,7 +267,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-text-tertiary)] border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-shell-500 border-t-transparent" />
       </div>
     );
   }
@@ -276,12 +276,12 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <h3 className="text-lg font-semibold text-white">Room not found</h3>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+        <p className="mt-1 text-sm text-shell-600">
           This room may have ended or doesn&apos;t exist.
         </p>
         <Link
           href="/practice"
-          className="mt-4 text-sm font-medium text-[var(--color-accent-primary)] hover:underline"
+          className="mt-4 text-sm font-medium text-forest-500 hover:underline"
         >
           Back to rooms
         </Link>
@@ -293,12 +293,12 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <h3 className="text-lg font-semibold text-white">Room ended</h3>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+        <p className="mt-1 text-sm text-shell-600">
           This room has already completed.
         </p>
         <Link
           href="/practice"
-          className="mt-4 text-sm font-medium text-[var(--color-accent-primary)] hover:underline"
+          className="mt-4 text-sm font-medium text-forest-500 hover:underline"
         >
           Back to rooms
         </Link>
@@ -313,7 +313,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
       {/* Back link */}
       <Link
         href="/practice"
-        className="mb-5 inline-flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] hover:text-white"
+        className="mb-5 inline-flex items-center gap-1.5 text-sm text-shell-600 hover:text-shell-900"
       >
         <ArrowLeft size={16} />
         All rooms
@@ -333,7 +333,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
           >
             {party.name}
           </h2>
-          <p className="text-sm text-[var(--color-text-secondary)]">
+          <p className="text-sm text-shell-600">
             {party.persistent
               ? getWorldConfig(party.world_key).description
               : <>{party.planned_duration_min}m sprint &middot;{" "}
@@ -352,7 +352,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
               </span>
             )}
             {!partySummary.loading && partySummary.sessionsToday > 0 && (
-              <span className="ml-1 text-[var(--color-text-tertiary)]">
+              <span className="ml-1 text-shell-500">
                 &middot; {partySummary.sessionsToday} session{partySummary.sessionsToday !== 1 ? "s" : ""} today
               </span>
             )}
@@ -386,7 +386,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
             />
           )}
         </div>
-        <div className="mb-3 border-t border-[var(--color-border-default)]" />
+        <div className="mb-3 border-t border-shell-border" />
         <LiveActivityFeed
           events={feedEvents}
           isLoading={feedLoading}

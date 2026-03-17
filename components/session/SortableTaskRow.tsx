@@ -87,7 +87,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
       style={style}
       className={`group flex items-start gap-2.5 px-2 py-3 last:border-b-0 ${
         isActive
-          ? "border-l-2 border-l-[var(--color-accent-primary)] border-b border-b-[var(--color-border-subtle)] bg-white/[0.04]"
+          ? "border-l-2 border-l-[var(--sg-forest-400)] border-b border-b-[var(--color-border-subtle)] bg-white/[0.04]"
           : "border-l-2 border-l-transparent border-b border-b-[var(--color-border-subtle)]"
       }`}
     >
@@ -144,7 +144,7 @@ export const SortableTaskRow = memo(function SortableTaskRow({
           onClick={() => onActivate(task.id)}
           className={`flex h-5 shrink-0 items-center justify-center transition-colors ${
             isActive
-              ? "text-[var(--color-accent-primary)]"
+              ? "text-[var(--sg-forest-400)]"
               : "text-[var(--color-text-tertiary)] opacity-0 group-hover:opacity-100 hover:text-white"
           }`}
           aria-label={isActive ? `Active: ${task.title}` : `Focus on ${task.title}`}

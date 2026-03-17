@@ -67,8 +67,9 @@ export function CommitmentPicker({ value, onChange, accentColor }: CommitmentPic
   const dropdown = open ? (
     <div
       ref={dropdownRef}
-      className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-dropdown)] p-1.5 shadow-lg backdrop-blur-[20px]"
+      className="rounded-lg border border-shell-border p-1.5 shadow-lg backdrop-blur-[20px]"
       style={{
+        background: "rgba(15,35,24,0.95)",
         position: "fixed",
         top: pos.top,
         left: pos.left,
@@ -83,16 +84,16 @@ export function CommitmentPicker({ value, onChange, accentColor }: CommitmentPic
           onClick={() => handleSelect(type)}
           className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/[0.06]"
         >
-          <Icon size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
+          <Icon size={14} strokeWidth={1.5} className="shrink-0 text-shell-500" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-[var(--color-text-secondary)]">{label}</p>
-            <p className="text-2xs text-[var(--color-text-tertiary)]">{desc}</p>
+            <p className="text-sm font-medium text-shell-600">{label}</p>
+            <p className="text-2xs text-shell-500">{desc}</p>
           </div>
           {value === type && (
             <Check
               size={14}
               strokeWidth={2}
-              className="shrink-0 text-[var(--color-accent-primary)]"
+              className="shrink-0 text-forest-500"
             />
           )}
         </button>
@@ -109,16 +110,16 @@ export function CommitmentPicker({ value, onChange, accentColor }: CommitmentPic
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className="relative flex h-10 w-full cursor-pointer items-center gap-2 rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 pr-9 text-sm transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+          className="relative flex h-10 w-full cursor-pointer items-center gap-2 rounded-full border border-shell-border bg-white/[0.06] px-4 pr-9 text-sm transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
         >
-          <SelectedIcon size={14} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-tertiary)]" />
-          <span className="truncate text-[var(--color-text-secondary)]">
+          <SelectedIcon size={14} strokeWidth={1.5} className="shrink-0 text-shell-500" />
+          <span className="truncate text-shell-600">
             {selected.label}
           </span>
           <ChevronDown
             size={14}
             strokeWidth={1.5}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-shell-500"
           />
         </button>
 

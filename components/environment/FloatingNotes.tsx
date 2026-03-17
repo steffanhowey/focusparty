@@ -117,12 +117,12 @@ export function FloatingNotes({
         onTransitionEnd={handleTransitionEnd}
       >
         <div
-          className="flex h-full flex-col border border-[var(--color-border-default)]"
+          className="flex h-full flex-col border border-white/[0.08]"
           style={{
-            background: "rgba(10,10,10,0.65)",
+            background: "rgba(15,35,24,0.65)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
-            boxShadow: "var(--shadow-float)",
+            boxShadow: "var(--sg-shadow-dark-lg)",
           }}
         />
       </div>
@@ -142,12 +142,12 @@ export function FloatingNotes({
       }}
     >
       <div
-        className="flex h-full flex-col overflow-hidden rounded-xl border border-[var(--color-border-default)]"
+        className="flex h-full flex-col overflow-hidden rounded-xl border border-white/[0.08]"
         style={{
-          background: "rgba(10,10,10,0.65)",
+          background: "rgba(15,35,24,0.65)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
-          boxShadow: "var(--shadow-float)",
+          boxShadow: "var(--sg-shadow-dark-lg)",
         }}
       >
         {/* Header — drag handle */}
@@ -156,7 +156,7 @@ export function FloatingNotes({
           <button
             type="button"
             onClick={handleMinimize}
-            className="cursor-pointer rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
+            className="cursor-pointer rounded-lg p-1.5 text-white/40 transition-colors hover:bg-white/10 hover:text-white"
             aria-label="Minimize notes"
           >
             <Minus size={18} strokeWidth={2} />

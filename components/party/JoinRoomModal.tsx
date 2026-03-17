@@ -280,7 +280,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-[4px]"
+        className="absolute inset-0 bg-shell-900/40 backdrop-blur-[4px]"
         aria-hidden
       />
 
@@ -288,7 +288,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
       <div
         className="relative w-full max-w-[520px] overflow-visible rounded-xl"
         style={{
-          background: "rgba(10,10,10,0.94)",
+          background: "rgba(15,35,24,0.94)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
@@ -342,7 +342,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
                       placeholder="Write your task or goal..."
                       className="w-full rounded-full py-2.5 pl-4 pr-10 text-sm text-white placeholder-white/30 outline-none ring-0 ring-white/0 transition-all focus:ring-1 focus:ring-white/12"
                       style={{
-                        background: "var(--color-bg-elevated)",
+                        background: "var(--sg-shell-50)",
                         border: "1px solid rgba(255,255,255,0.08)",
                       }}
                     />
@@ -366,7 +366,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
                     <div
                       className="absolute left-0 right-0 z-20 mx-5 mt-1.5 overflow-hidden rounded-xl shadow-lg"
                       style={{
-                        background: "rgba(10,10,10,0.95)",
+                        background: "rgba(15,35,24,0.95)",
                         backdropFilter: "blur(16px)",
                         WebkitBackdropFilter: "blur(16px)",
                         border: "1px solid rgba(255,255,255,0.08)",

@@ -122,9 +122,9 @@ export function PostWatchPanel({
       <div
         className="relative mx-auto w-full max-w-lg rounded-2xl border border-white/10 p-6 transition-all duration-300"
         style={{
-          background: "rgba(10, 10, 10, 0.85)",
+          background: "rgba(15,35,24,0.85)",
           backdropFilter: "blur(24px)",
-          boxShadow: "var(--shadow-float)",
+          boxShadow: "var(--sg-shadow-dark-lg)",
           opacity: animateIn ? 1 : 0,
           transform: animateIn ? "translateY(0)" : "translateY(12px)",
         }}
@@ -134,7 +134,7 @@ export function PostWatchPanel({
         {section === "comprehension" && check && (
           <div>
             <div className="mb-4 flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-[var(--color-accent-primary)]" />
+              <CheckCircle className="h-4 w-4 text-[var(--sg-forest-500)]" />
               <span className="text-xs font-medium uppercase tracking-wider text-white/50">
                 Quick check
               </span>
@@ -174,7 +174,7 @@ export function PostWatchPanel({
 
             {check.timestampHint != null && (
               <button
-                className="mt-2 flex items-center gap-1.5 text-xs text-[var(--color-accent-primary)] transition-opacity hover:opacity-80"
+                className="mt-2 flex items-center gap-1.5 text-xs text-[var(--sg-forest-500)] transition-opacity hover:opacity-80"
                 onClick={() => {
                   handleInteraction();
                   trackScaffoldingEvent(contentItemId, "comprehension_rewatch", {
@@ -205,7 +205,7 @@ export function PostWatchPanel({
         {section === "exercise" && scaffolding.exercise && (
           <div>
             <div className="mb-4 flex items-center gap-2">
-              <Code2 className="h-4 w-4 text-[var(--color-accent-primary)]" />
+              <Code2 className="h-4 w-4 text-[var(--sg-forest-500)]" />
               <span className="text-xs font-medium uppercase tracking-wider text-white/50">
                 Try it yourself
               </span>
@@ -285,7 +285,7 @@ export function PostWatchPanel({
         {section === "discussion" && (
           <div>
             <div className="mb-4 flex items-center gap-2">
-              <MessageCircle className="h-4 w-4 text-[var(--color-accent-primary)]" />
+              <MessageCircle className="h-4 w-4 text-[var(--sg-forest-500)]" />
               <span className="text-xs font-medium uppercase tracking-wider text-white/50">
                 For the room
               </span>

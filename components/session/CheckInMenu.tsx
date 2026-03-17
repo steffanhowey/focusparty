@@ -76,7 +76,7 @@ export function CheckInMenu({
     <div
       className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
       style={{
-        background: "rgba(10,10,10,0.85)",
+        background: "rgba(15,35,24,0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         zIndex: 40,
@@ -135,7 +135,7 @@ export function CheckInMenu({
             }}
             placeholder="What did you work on?"
             maxLength={120}
-            className="flex-1 rounded-lg border border-[var(--color-border-default)] bg-white/[0.06] px-2.5 py-1.5 text-xs text-white placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent-primary)]/50 focus:outline-none"
+            className="flex-1 rounded-lg border border-[var(--color-border-default)] bg-white/[0.06] px-2.5 py-1.5 text-xs text-white placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--sg-forest-500)]/50 focus:outline-none"
           />
           <Button
             variant="primary"

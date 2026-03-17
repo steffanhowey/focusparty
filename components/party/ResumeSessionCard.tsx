@@ -29,7 +29,7 @@ export function ResumeSessionCard({
 
   return (
     <div
-      className="relative overflow-hidden rounded-md border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)]"
+      className="relative overflow-hidden rounded-md border border-shell-border bg-white"
     >
       {/* Character-colored left stripe */}
       <div
@@ -54,7 +54,7 @@ export function ResumeSessionCard({
         </div>
 
         {goalText && (
-          <p className="mb-3 text-sm text-[var(--color-text-secondary)]">
+          <p className="mb-3 text-sm text-shell-600">
             {goalText}
           </p>
         )}

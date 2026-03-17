@@ -43,7 +43,7 @@ export function BreakContentCard({ clip, onSelect }: BreakContentCardProps) {
         )}
         <span
           className="rounded-full px-1.5 py-0.5 text-2xs"
-          style={{ background: "rgba(140, 85, 239, 0.15)", color: "rgba(140, 85, 239, 0.8)" }}
+          style={{ background: "rgba(61,142,139,0.15)", color: "var(--sg-teal-600)" }}
         >
           {clip.duration} min
         </span>

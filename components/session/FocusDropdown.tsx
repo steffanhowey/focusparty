@@ -147,7 +147,7 @@ export const FocusDropdown = memo(function FocusDropdown({
       ref={popoverRef}
       className="absolute bottom-full left-1/2 z-[60] mb-3 w-96 -translate-x-1/2 overflow-visible rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
       style={{
-        background: "rgba(10,10,10,0.98)",
+        background: "rgba(15,35,24,0.98)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         boxShadow: "var(--shadow-float)",
@@ -215,7 +215,7 @@ export const FocusDropdown = memo(function FocusDropdown({
           <div
             className="flex items-center gap-1.5 rounded-full py-1 pl-4 pr-1.5 ring-0 ring-white/0 transition-all focus-within:ring-1 focus-within:ring-white/12"
             style={{
-              background: "var(--color-bg-elevated)",
+              background: "var(--sg-forest-800)",
               border: "1px solid rgba(255,255,255,0.08)",
             }}
           >

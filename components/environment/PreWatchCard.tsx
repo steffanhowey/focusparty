@@ -67,14 +67,14 @@ export function PreWatchCard({
       <div
         className="relative mx-auto w-full max-w-md rounded-2xl border border-white/10 p-6"
         style={{
-          background: "rgba(10, 10, 10, 0.85)",
+          background: "rgba(15,35,24,0.85)",
           backdropFilter: "blur(24px)",
-          boxShadow: "var(--shadow-float)",
+          boxShadow: "var(--sg-shadow-dark-lg)",
         }}
       >
         {/* Header */}
         <div className="mb-4 flex items-center gap-2">
-          <Brain className="h-4 w-4 text-[var(--color-accent-primary)]" />
+          <Brain className="h-4 w-4" style={{ color: "var(--sg-forest-500)" }} />
           <span className="text-xs font-medium uppercase tracking-wider text-white/50">
             Before you watch
           </span>

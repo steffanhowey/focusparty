@@ -111,7 +111,7 @@ export const NotesPopover = memo(function NotesPopover({
       ref={popoverRef}
       className="absolute bottom-full left-1/2 z-50 mb-3 w-72 rounded-xl border border-[var(--color-border-default)] shadow-lg"
       style={{
-        background: "rgba(10,10,10,0.85)",
+        background: "rgba(15,35,24,0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         boxShadow: "var(--shadow-float)",

@@ -70,7 +70,7 @@ export function MusicPopover({
     <div
       className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 rounded-xl border border-[var(--color-border-default)] p-3 shadow-lg"
       style={{
-        background: "rgba(10,10,10,0.65)",
+        background: "rgba(15,35,24,0.65)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         zIndex: 40,
@@ -154,7 +154,7 @@ export function MusicPopover({
           max={100}
           value={volume}
           onChange={(e) => onSetVolume(Number(e.target.value))}
-          className="music-volume-slider h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/20 accent-[var(--color-accent-primary)]"
+          className="music-volume-slider h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/20 accent-[var(--sg-forest-400)]"
           aria-label="Volume"
         />
 

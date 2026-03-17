@@ -39,7 +39,7 @@ export const FocusPopover = memo(function FocusPopover({
       ref={popoverRef}
       className="absolute bottom-[calc(100%+8px)] left-1/2 z-50 w-80 -translate-x-1/2 overflow-hidden rounded-xl"
       style={{
-        background: "var(--color-navy-800)",
+        background: "var(--sg-forest-800)",
         border: "1px solid rgba(255,255,255,0.08)",
         boxShadow: "var(--shadow-float)",
       }}

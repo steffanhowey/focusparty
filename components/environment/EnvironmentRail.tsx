@@ -64,7 +64,7 @@ export function EnvironmentRail({
         <button
           type="button"
           onClick={onClose}
-          className="cursor-pointer rounded-lg p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:bg-white/10 hover:text-white"
+          className="cursor-pointer rounded-lg p-1.5 text-[rgba(255,255,255,0.4)] transition-colors hover:bg-white/10 hover:text-white"
           aria-label="Close momentum"
         >
           <X size={18} strokeWidth={2} />

@@ -258,7 +258,7 @@ function DeviceSelector({
           <button
             type="button"
             onClick={action.onClick}
-            className="text-xs text-[var(--color-accent-primary)] transition-colors hover:text-white hover:underline"
+            className="text-xs text-[var(--sg-forest-400)] transition-colors hover:text-white hover:underline"
           >
             {action.label}
           </button>
@@ -268,7 +268,7 @@ function DeviceSelector({
         <select
           value={selectedId}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+          className="w-full appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--sg-forest-400)] focus:border-[var(--sg-forest-400)] focus:outline-none"
         >
           {devices.length === 0 && <option value="">No devices found</option>}
           {devices.map((d) => (
@@ -347,7 +347,7 @@ function UserPreferencesContent({
               onClick={() => onUpdateSetting("colorMode", mode)}
               className={`flex-1 rounded-full border px-3 py-2 text-xs font-medium capitalize transition-all ${
                 settings.colorMode === mode
-                  ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-primary)]/10 text-white"
+                  ? "border-[var(--sg-forest-400)] bg-[var(--sg-forest-400)]/10 text-white"
                   : "border-[var(--color-border-subtle)] text-[var(--color-text-tertiary)] hover:bg-white/[0.04]"
               }`}
             >
@@ -391,7 +391,7 @@ function Toggle({
       <span>{label}</span>
       <div
         className={`relative h-5 w-9 rounded-full transition-colors ${
-          checked ? "bg-[var(--color-accent-primary)]" : "bg-white/15"
+          checked ? "bg-[var(--sg-forest-500)]" : "bg-white/15"
         }`}
       >
         <div

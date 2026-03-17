@@ -74,7 +74,7 @@ export function LeaveConfirmModal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-[var(--color-navy-700)]/60 backdrop-blur-[8px]"
+        className="absolute inset-0 bg-[var(--sg-forest-700)]/60 backdrop-blur-[8px]"
         aria-hidden="true"
       />
 
@@ -83,18 +83,18 @@ export function LeaveConfirmModal({
         className="animate-fp-review-enter relative w-full max-w-[520px] overflow-hidden rounded-xl p-8"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "rgba(10,10,10,0.94)",
+          background: "rgba(22,46,33,0.94)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
           boxShadow: "var(--shadow-xl)",
-          "--color-bg-elevated": "#141414",
+          "--color-bg-elevated": "var(--sg-forest-800)",
           "--color-text-primary": "#ffffff",
-          "--color-text-secondary": "#c0c0c0",
-          "--color-text-tertiary": "#888888",
+          "--color-text-secondary": "rgba(255,255,255,0.7)",
+          "--color-text-tertiary": "rgba(255,255,255,0.4)",
           "--color-text-on-accent": "#ffffff",
           "--color-border-default": "rgba(255, 255, 255, 0.08)",
-          "--color-border-focus": "#7c5cfc",
+          "--color-border-focus": "var(--sg-forest-400)",
         } as React.CSSProperties}
       >
         {/* ── Header ── */}

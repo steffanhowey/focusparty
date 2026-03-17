@@ -151,7 +151,7 @@ export const TasksPanel = memo(function TasksPanel({
         {activeGoal && goalTasks && (
           <div className="mb-2 rounded-lg border border-white/6 px-3 py-2.5" style={{ background: "rgba(255,255,255,0.03)" }}>
             <div className="flex items-center gap-2">
-              <Target size={14} className="shrink-0 text-[var(--color-accent-primary)]" />
+              <Target size={14} className="shrink-0 text-[var(--sg-forest-400)]" />
               <span className="min-w-0 flex-1 truncate text-xs font-semibold text-white">
                 {activeGoal.title}
               </span>
@@ -182,7 +182,7 @@ export const TasksPanel = memo(function TasksPanel({
                         <button
                           type="button"
                           onClick={() => onSetSprintGoal(task.id)}
-                          className="shrink-0 cursor-pointer rounded px-1.5 py-0.5 text-2xs font-medium text-[var(--color-accent-primary)] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[var(--color-accent-primary)]/10"
+                          className="shrink-0 cursor-pointer rounded px-1.5 py-0.5 text-2xs font-medium text-[var(--sg-forest-400)] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[var(--sg-forest-400)]/10"
                         >
                           Sprint this
                         </button>
@@ -197,7 +197,7 @@ export const TasksPanel = memo(function TasksPanel({
                 type="button"
                 onClick={onAISuggest}
                 disabled={isAISuggesting}
-                className="mt-2 flex w-full cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1.5 text-2xs font-medium text-[var(--color-accent-primary)] transition-colors hover:bg-[var(--color-accent-primary)]/10 disabled:cursor-default disabled:opacity-50"
+                className="mt-2 flex w-full cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1.5 text-2xs font-medium text-[var(--sg-forest-400)] transition-colors hover:bg-[var(--sg-forest-400)]/10 disabled:cursor-default disabled:opacity-50"
               >
                 {isAISuggesting ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
                 {isAISuggesting ? "Suggesting..." : "What should I do next?"}
@@ -311,7 +311,7 @@ export const TasksPanel = memo(function TasksPanel({
       <DragOverlay dropAnimation={null}>
         {draggedTask ? (
           <div
-            className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-3 py-2 shadow-lg"
+            className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[var(--sg-forest-800)] px-3 py-2 shadow-lg"
             style={{
               boxShadow: "var(--shadow-float)",
             }}

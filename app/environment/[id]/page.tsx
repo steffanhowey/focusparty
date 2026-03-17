@@ -19,11 +19,11 @@ import { useChat } from "@/lib/useChat";
 import { useNotes } from "@/lib/useNotes";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import {
-  GREEN_700,
-  CYAN_700,
-  GOLD_700,
-  AMBER_700,
-  VIOLET_700,
+  FOREST_300,
+  TEAL_500,
+  GOLD_500,
+  GOLD_600,
+  TEAL_600,
 } from "@/lib/palette";
 import { updatePartyStatus, leaveParty, type Party } from "@/lib/parties";
 import { useEnvironmentParty } from "@/lib/useEnvironmentParty";
@@ -406,7 +406,7 @@ export default function EnvironmentPage() {
 
     for (const event of newEvents) {
       let targetId: string | null = null;
-      let color = CYAN_700;
+      let color = TEAL_500;
       let text = "";
 
       if (event.event_type === "check_in") {
@@ -421,16 +421,16 @@ export default function EnvironmentPage() {
         const message = event.payload?.message as string | undefined;
 
         if (action === "progress") {
-          color = GREEN_700;
+          color = FOREST_300;
           text = "Making progress";
         } else if (action === "ship") {
-          color = AMBER_700;
+          color = GOLD_600;
           text = taskTitle ? `Shipped ${taskTitle}` : "Shipped something";
         } else if (action === "reset") {
-          color = GOLD_700;
+          color = GOLD_500;
           text = "Taking a reset";
         } else if (action === "update") {
-          color = CYAN_700;
+          color = TEAL_500;
           text = message || "Shared an update";
         }
       }
@@ -440,7 +440,7 @@ export default function EnvironmentPage() {
         // Skip synthetic return high-fives targeting us — already handled optimistically
         if (event.actor_type === "synthetic" && hfTarget === userId) continue;
         targetId = hfTarget;
-        color = AMBER_700;
+        color = GOLD_600;
         text = "High five!";
       }
 
@@ -449,13 +449,13 @@ export default function EnvironmentPage() {
           event.actor_type === "synthetic"
             ? (event.payload?.synthetic_id as string) ?? null
             : event.user_id;
-        color = GREEN_700;
+        color = FOREST_300;
         text = "Sprint complete!";
       }
 
       if (event.event_type === "break_completed") {
         targetId = event.user_id;
-        color = VIOLET_700;
+        color = TEAL_600;
         text = "Back to it!";
       }
 
@@ -465,7 +465,7 @@ export default function EnvironmentPage() {
         targetId = event.actor_type === "synthetic"
           ? (event.payload?.synthetic_id as string) ?? null
           : event.user_id;
-        color = GREEN_700;
+        color = FOREST_300;
         text = "Task done!";
       }
 
@@ -473,7 +473,7 @@ export default function EnvironmentPage() {
         // Skip own goal completions — already handled optimistically in handleCompleteGoal
         if (event.user_id === userId) continue;
         targetId = event.user_id;
-        color = GREEN_700;
+        color = FOREST_300;
         text = "Goal done!";
       }
 
@@ -1210,7 +1210,7 @@ export default function EnvironmentPage() {
         console.error("[EnvironmentPage] task_completed event failed:", err?.message ?? err?.code ?? JSON.stringify(err))
       );
 
-      setCelebrations((prev) => new Map(prev).set(userId, { color: GREEN_700, text: "Task done!" }));
+      setCelebrations((prev) => new Map(prev).set(userId, { color: FOREST_300, text: "Task done!" }));
       setTimeout(() => {
         setCelebrations((prev) => {
           const next = new Map(prev);
@@ -1259,7 +1259,7 @@ export default function EnvironmentPage() {
         console.error("[EnvironmentPage] goal_completed event failed:", err?.message ?? err?.code ?? JSON.stringify(err))
       );
 
-      setCelebrations((prev) => new Map(prev).set(userId, { color: GREEN_700, text: "Goal done!" }));
+      setCelebrations((prev) => new Map(prev).set(userId, { color: FOREST_300, text: "Goal done!" }));
       setTimeout(() => {
         setCelebrations((prev) => {
           const next = new Map(prev);
@@ -1427,21 +1427,21 @@ export default function EnvironmentPage() {
       setCheckInOpen(false);
 
       // ── Optimistic celebration: fire avatar effect immediately ──
-      let color = CYAN_700;
+      let color = TEAL_500;
       let text = "";
       const taskTitle = activeTask?.title;
 
       if (action === "progress") {
-        color = GREEN_700;
+        color = FOREST_300;
         text = "Making progress";
       } else if (action === "ship") {
-        color = AMBER_700;
+        color = GOLD_600;
         text = taskTitle ? `Shipped ${taskTitle}` : "Shipped something";
       } else if (action === "reset") {
-        color = GOLD_700;
+        color = GOLD_500;
         text = "Taking a reset";
       } else if (action === "update") {
-        color = CYAN_700;
+        color = TEAL_500;
         text = message || "Shared an update";
       }
 
@@ -1740,7 +1740,7 @@ export default function EnvironmentPage() {
       setTimeout(() => {
         // Optimistic celebration on user's avatar
         setCelebrations((prev) =>
-          new Map(prev).set(userId, { color: AMBER_700, text: "High five!" })
+          new Map(prev).set(userId, { color: GOLD_600, text: "High five!" })
         );
         setTimeout(() => {
           setCelebrations((prev) => {
@@ -1904,7 +1904,7 @@ export default function EnvironmentPage() {
                           event_type: "task_completed",
                           body: goal,
                         }).catch(() => {});
-                        setCelebrations((prev) => new Map(prev).set(userId, { color: GREEN_700, text: "Done!" }));
+                        setCelebrations((prev) => new Map(prev).set(userId, { color: FOREST_300, text: "Done!" }));
                         setTimeout(() => {
                           setCelebrations((prev) => { const next = new Map(prev); next.delete(userId!); return next; });
                         }, 2000);

@@ -85,11 +85,11 @@ export function PartyList() {
       <div>
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-text-tertiary)] border-t-transparent" />
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-shell-500 border-t-transparent" />
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-sm text-[var(--color-text-secondary)]">
+            <p className="text-sm text-shell-600">
               {error}
             </p>
           </div>
@@ -115,14 +115,14 @@ export function PartyList() {
             {allListedRooms.length > 0 && (
               <section>
                 <div className="mb-6 flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                  <h2 className="text-xl font-bold text-shell-900">
                     Practice
                   </h2>
                   <div className="relative">
                     <select
                       value={filter}
                       onChange={(e) => setFilter(e.target.value as RoomFilter)}
-                      className="cursor-pointer appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+                      className="cursor-pointer appearance-none rounded-full border border-shell-border bg-white/[0.06] px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
                     >
                       {FILTER_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -133,7 +133,7 @@ export function PartyList() {
                     <ChevronDown
                       size={14}
                       strokeWidth={1.5}
-                      className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+                      className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-shell-500"
                     />
                   </div>
                 </div>
