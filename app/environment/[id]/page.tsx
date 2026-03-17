@@ -1774,11 +1774,11 @@ export default function EnvironmentPage() {
   // ─── Render ────────────────────────────────────────────
 
   if (partyLoading || persistence.isHydrating) {
-    return <div className="h-full bg-black" />;
+    return <div className="h-full bg-forest-900" />;
   }
 
   return (
-    <div className="relative flex h-full w-full animate-env-fade-in overflow-hidden bg-black">
+    <div className="relative flex h-full w-full animate-env-fade-in overflow-hidden bg-forest-900">
       {/* Background (always visible) */}
       <EnvironmentBackground
         imageUrl={backgroundImageUrl}
@@ -1987,7 +1987,7 @@ export default function EnvironmentPage() {
           style={{ width: panelOpen ? PANEL_WIDTH : 0, overflow: "hidden" }}
         >
           <aside
-            className="flex flex-col rounded-xl border border-[var(--color-border-default)]"
+            className="flex flex-col rounded-xl border border-[var(--sg-shell-border)]"
             style={{
               width: PANEL_WIDTH - 16,
               height: "calc(100% - 32px)",

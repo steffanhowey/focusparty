@@ -63,7 +63,7 @@ export default async function PulsePage() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: "var(--color-bg-primary)" }}
+      style={{ background: "var(--sg-white)" }}
     >
       <PublicNav />
       <main className="mx-auto max-w-5xl px-4 py-8 md:px-8">

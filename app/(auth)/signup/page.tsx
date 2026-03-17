@@ -71,22 +71,22 @@ function SignUpForm() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">Create your account</h1>
-      <p className="mt-2 text-[var(--color-text-secondary)]">
+      <h1 className="text-2xl font-semibold text-[var(--sg-shell-900)]">Create your account</h1>
+      <p className="mt-2 text-[var(--sg-shell-600)]">
         We&apos;ll send you a magic link.
       </p>
 
-      <div className="mt-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
+      <div className="mt-8 rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] p-6">
         {sent ? (
           <div className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-bg-active)]">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sg-shell-200)]">
               <span className="text-xl" aria-hidden>✉️</span>
             </div>
-            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+            <p className="text-sm font-medium text-[var(--sg-shell-900)]">
               Check your inbox
             </p>
-            <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
-              Magic link sent to <strong className="text-[var(--color-text-secondary)]">{email}</strong>
+            <p className="mt-2 text-xs text-[var(--sg-shell-500)]">
+              Magic link sent to <strong className="text-[var(--sg-shell-600)]">{email}</strong>
             </p>
             <Button
               variant="link"
@@ -104,7 +104,7 @@ function SignUpForm() {
           <form onSubmit={handleSubmit}>
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+                <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
                   First name
                 </label>
                 <input
@@ -113,11 +113,11 @@ function SignUpForm() {
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Jane"
                   required
-                  className="h-11 w-full rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-5 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
+                  className="h-11 w-full rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] px-5 text-sm text-[var(--sg-shell-900)] outline-none placeholder:text-[var(--sg-shell-500)] focus:border-[var(--sg-forest-500)]"
                 />
               </div>
               <div className="flex-1">
-                <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+                <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
                   Last name
                 </label>
                 <input
@@ -126,11 +126,11 @@ function SignUpForm() {
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Doe"
                   required
-                  className="h-11 w-full rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-5 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
+                  className="h-11 w-full rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] px-5 text-sm text-[var(--sg-shell-900)] outline-none placeholder:text-[var(--sg-shell-500)] focus:border-[var(--sg-forest-500)]"
                 />
               </div>
             </div>
-            <label className="mt-4 mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+            <label className="mt-4 mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
               Email address
             </label>
             <input
@@ -139,9 +139,9 @@ function SignUpForm() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="h-11 w-full rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-5 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
+              className="h-11 w-full rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] px-5 text-sm text-[var(--sg-shell-900)] outline-none placeholder:text-[var(--sg-shell-500)] focus:border-[var(--sg-forest-500)]"
             />
-            {error && <p className="mt-2 text-xs text-[var(--color-coral-700)]">{error}</p>}
+            {error && <p className="mt-2 text-xs text-[var(--sg-coral-500)]">{error}</p>}
             <Button
               variant="primary"
               fullWidth
@@ -156,11 +156,11 @@ function SignUpForm() {
         )}
       </div>
 
-      <p className="mt-6 text-center text-sm text-[var(--color-text-tertiary)]">
+      <p className="mt-6 text-center text-sm text-[var(--sg-shell-500)]">
         Already have an account?{" "}
         <Link
           href="/login"
-          className="text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
+          className="text-[var(--sg-shell-600)] transition-colors hover:text-[var(--sg-shell-900)]"
         >
           Log in
         </Link>
@@ -171,8 +171,8 @@ function SignUpForm() {
 
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-screen flex-col" style={{ background: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
-      <header className="backdrop-blur-md" style={{ background: "var(--color-bg-primary)" }}>
+    <div className="flex min-h-screen flex-col" style={{ background: "var(--sg-white)", color: "var(--sg-shell-900)" }}>
+      <header className="backdrop-blur-md" style={{ background: "var(--sg-white)" }}>
         <nav className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6">
           <Logo href="/" height={32} maxWidth={140} />
         </nav>

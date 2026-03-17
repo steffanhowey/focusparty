@@ -74,13 +74,13 @@ export default function JoinPartyPage({
   const canJoin = !isFull && !isCompleted && isAuthenticated;
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
-      <header className="border-b border-[var(--color-border-subtle)]">
+    <div className="min-h-screen bg-[var(--sg-white)] text-[var(--sg-shell-900)]">
+      <header className="border-b border-[var(--sg-shell-200)]">
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo href="/" height={32} maxWidth={140} />
           <Link
             href="/rooms"
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="text-sm font-medium text-[var(--sg-shell-600)] hover:text-[var(--sg-shell-900)] transition-colors"
           >
             Open app
           </Link>
@@ -90,7 +90,7 @@ export default function JoinPartyPage({
       <main className="mx-auto max-w-md px-4 py-16 sm:py-24">
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-text-tertiary)] border-t-transparent" />
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--sg-shell-500)] border-t-transparent" />
           </div>
         )}
 
@@ -99,12 +99,12 @@ export default function JoinPartyPage({
             <h1 className="text-2xl font-semibold text-white">
               Party not found
             </h1>
-            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            <p className="mt-2 text-sm text-[var(--sg-shell-600)]">
               This party may have ended or the link is invalid.
             </p>
             <Link
               href="/rooms"
-              className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[var(--color-accent-primary)] px-8 font-medium text-white transition-all hover:bg-[var(--color-purple-800)]"
+              className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[var(--sg-forest-500)] px-8 font-medium text-white transition-all hover:bg-[var(--sg-forest-400)]"
             >
               Go to app
             </Link>
@@ -135,14 +135,14 @@ export default function JoinPartyPage({
                   <h2 className="text-lg font-semibold text-white">
                     {party.name}
                   </h2>
-                  <p className="text-sm text-[var(--color-text-secondary)]">
+                  <p className="text-sm text-[var(--sg-shell-600)]">
                     {party.planned_duration_min}m sprint &middot;{" "}
                     <span style={{ color: CHARACTERS[party.character].primary }}>
                       {CHARACTERS[party.character].name}
                     </span>{" "}
                     hosting
                   </p>
-                  <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
+                  <p className="mt-2 text-xs text-[var(--sg-shell-500)]">
                     {participants.length}/{party.max_participants} participants
                     joined
                   </p>
@@ -151,19 +151,19 @@ export default function JoinPartyPage({
             </Card>
 
             {isCompleted && (
-              <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
+              <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
                 This party has already ended.
               </p>
             )}
 
             {isActive && !isFull && (
-              <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
+              <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
                 This party is in progress. Join now to hop in!
               </p>
             )}
 
             {isFull && !isCompleted && (
-              <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
+              <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
                 This party is full.
               </p>
             )}
@@ -171,7 +171,7 @@ export default function JoinPartyPage({
             {!isCompleted && !isFull && (
               <>
                 {!isAuthenticated && (
-                  <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
+                  <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
                     Sign in to join this party.
                   </p>
                 )}
@@ -190,7 +190,7 @@ export default function JoinPartyPage({
             <div className="mt-4 text-center">
               <Link
                 href="/rooms"
-                className="text-sm text-[var(--color-text-secondary)] hover:text-white"
+                className="text-sm text-[var(--sg-shell-600)] hover:text-white"
               >
                 Back to app
               </Link>

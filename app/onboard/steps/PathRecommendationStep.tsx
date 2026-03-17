@@ -64,9 +64,9 @@ export default function PathRecommendationStep({
       <div className="flex flex-col items-center gap-4 py-16">
         <Loader2
           size={28}
-          className="animate-spin text-[var(--color-text-tertiary)]"
+          className="animate-spin text-[var(--sg-shell-500)]"
         />
-        <p className="text-sm text-[var(--color-text-secondary)]">
+        <p className="text-sm text-[var(--sg-shell-600)]">
           Personalizing your first path...
         </p>
       </div>
@@ -77,16 +77,16 @@ export default function PathRecommendationStep({
     // No editorial picks available — go straight to browse
     return (
       <>
-        <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
+        <h1 className="text-2xl font-semibold text-[var(--sg-shell-900)]">
           You&apos;re ready to explore
         </h1>
-        <p className="mt-2 text-[var(--color-text-secondary)]">
+        <p className="mt-2 text-[var(--sg-shell-600)]">
           We&apos;re still curating paths for your profile. Browse what&apos;s
           available and dive in.
         </p>
         <button
           onClick={onBrowse}
-          className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75"
+          className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--sg-forest-500)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75"
         >
           Browse paths
         </button>
@@ -96,23 +96,23 @@ export default function PathRecommendationStep({
 
   return (
     <>
-      <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
+      <h1 className="text-2xl font-semibold text-[var(--sg-shell-900)]">
         Here&apos;s where you start
       </h1>
-      <p className="mt-2 text-[var(--color-text-secondary)]">
+      <p className="mt-2 text-[var(--sg-shell-600)]">
         Based on your role and experience, we think this is the best first step.
       </p>
 
       {/* Hero path card */}
-      <div className="mt-8 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
-        <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+      <div className="mt-8 rounded-xl border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] p-6">
+        <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
           {hero.display_title}
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-secondary)]">
+        <p className="mt-2 text-sm leading-relaxed text-[var(--sg-shell-600)]">
           {hero.display_description}
         </p>
 
-        <div className="mt-4 flex items-center gap-4 text-xs text-[var(--color-text-tertiary)]">
+        <div className="mt-4 flex items-center gap-4 text-xs text-[var(--sg-shell-500)]">
           <span className="inline-flex items-center gap-1">
             <Clock size={13} strokeWidth={1.8} />
             {hero.time_estimate_min} min
@@ -132,7 +132,7 @@ export default function PathRecommendationStep({
             {hero.tool_names.map((tool) => (
               <span
                 key={tool}
-                className="rounded-full border border-[var(--color-border-default)] px-2.5 py-0.5 text-[11px] text-[var(--color-text-tertiary)]"
+                className="rounded-full border border-[var(--sg-shell-border)] px-2.5 py-0.5 text-[11px] text-[var(--sg-shell-500)]"
               >
                 {tool}
               </span>
@@ -142,7 +142,7 @@ export default function PathRecommendationStep({
 
         <button
           onClick={() => onStartPath(hero)}
-          className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75"
+          className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--sg-forest-500)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75"
         >
           Start learning
         </button>
@@ -151,7 +151,7 @@ export default function PathRecommendationStep({
       {/* Also for you */}
       {also.length > 0 && (
         <div className="mt-5">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">
+          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-[var(--sg-shell-500)]">
             Also for you
           </p>
           <div className="flex flex-col gap-2">
@@ -159,12 +159,12 @@ export default function PathRecommendationStep({
               <button
                 key={pick.id}
                 onClick={() => promoteToHero(pick)}
-                className="flex items-center justify-between rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] px-4 py-3 text-left transition-all hover:border-[var(--color-border-focus)] hover:bg-[var(--color-bg-active)]"
+                className="flex items-center justify-between rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] px-4 py-3 text-left transition-all hover:border-[var(--sg-forest-500)] hover:bg-[var(--sg-shell-200)]"
               >
-                <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                <span className="text-sm font-medium text-[var(--sg-shell-900)]">
                   {pick.display_title}
                 </span>
-                <span className="ml-3 shrink-0 text-xs text-[var(--color-text-tertiary)]">
+                <span className="ml-3 shrink-0 text-xs text-[var(--sg-shell-500)]">
                   {pick.time_estimate_min} min
                 </span>
               </button>
@@ -176,7 +176,7 @@ export default function PathRecommendationStep({
       {/* Browse more */}
       <button
         onClick={onBrowse}
-        className="mx-auto mt-5 block text-sm text-[var(--color-text-tertiary)] underline decoration-[var(--color-border-default)] underline-offset-2 transition-colors hover:text-[var(--color-text-secondary)]"
+        className="mx-auto mt-5 block text-sm text-[var(--sg-shell-500)] underline decoration-[var(--sg-shell-border)] underline-offset-2 transition-colors hover:text-[var(--sg-shell-600)]"
       >
         Browse more paths
       </button>

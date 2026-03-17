@@ -80,10 +80,10 @@ export default function FunctionStep({ onSelect }: FunctionStepProps) {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
+      <h1 className="text-2xl font-semibold text-[var(--sg-shell-900)]">
         What kind of work do you do?
       </h1>
-      <p className="mt-2 text-[var(--color-text-secondary)]">
+      <p className="mt-2 text-[var(--sg-shell-600)]">
         {mode === "single"
           ? "Pick your primary role — this shapes everything you see."
           : "Select up to 3, then star your primary."}
@@ -100,16 +100,16 @@ export default function FunctionStep({ onSelect }: FunctionStepProps) {
               <button
                 key={opt.value}
                 onClick={() => handleSingleSelect(opt.value)}
-                className="group flex flex-col items-center gap-3 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-5 transition-all hover:border-[var(--color-accent-primary)] hover:bg-[var(--color-bg-active)]"
+                className="group flex flex-col items-center gap-3 rounded-xl border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] p-5 transition-all hover:border-[var(--sg-forest-500)] hover:bg-[var(--sg-shell-200)]"
               >
                 {Icon && (
                   <Icon
                     size={28}
                     strokeWidth={1.5}
-                    className="text-[var(--color-text-secondary)] transition-colors group-hover:text-[var(--color-accent-primary)]"
+                    className="text-[var(--sg-shell-600)] transition-colors group-hover:text-[var(--sg-forest-500)]"
                   />
                 )}
-                <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                <span className="text-sm font-medium text-[var(--sg-shell-900)]">
                   {opt.label}
                 </span>
               </button>
@@ -124,8 +124,8 @@ export default function FunctionStep({ onSelect }: FunctionStepProps) {
               disabled={!isSelected && selected.size >= 3}
               className={`group relative flex flex-col items-center gap-3 rounded-xl border p-5 transition-all ${
                 isSelected
-                  ? "border-[var(--color-accent-primary)] bg-[var(--color-bg-active)]"
-                  : "border-[var(--color-border-default)] bg-[var(--color-bg-hover)] hover:border-[var(--color-border-focus)]"
+                  ? "border-[var(--sg-forest-500)] bg-[var(--sg-shell-200)]"
+                  : "border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] hover:border-[var(--sg-forest-500)]"
               } disabled:cursor-not-allowed disabled:opacity-40`}
             >
               {isSelected && (
@@ -134,7 +134,7 @@ export default function FunctionStep({ onSelect }: FunctionStepProps) {
                     e.stopPropagation();
                     starAsPrimary(opt.value);
                   }}
-                  className="absolute right-2 top-2 rounded-full p-1 transition-colors hover:bg-[var(--color-bg-hover)]"
+                  className="absolute right-2 top-2 rounded-full p-1 transition-colors hover:bg-[var(--sg-shell-100)]"
                   title="Set as primary"
                 >
                   <Star
@@ -142,15 +142,15 @@ export default function FunctionStep({ onSelect }: FunctionStepProps) {
                     strokeWidth={1.8}
                     className={
                       isPrimary
-                        ? "fill-[var(--color-accent-warning)] text-[var(--color-accent-warning)]"
-                        : "text-[var(--color-text-tertiary)]"
+                        ? "fill-[var(--sg-gold-600)] text-[var(--sg-gold-600)]"
+                        : "text-[var(--sg-shell-500)]"
                     }
                   />
                 </button>
               )}
               {isSelected && (
                 <div className="absolute left-2 top-2">
-                  <Check size={14} strokeWidth={2} className="text-[var(--color-accent-primary)]" />
+                  <Check size={14} strokeWidth={2} className="text-[var(--sg-forest-500)]" />
                 </div>
               )}
               {Icon && (
@@ -159,12 +159,12 @@ export default function FunctionStep({ onSelect }: FunctionStepProps) {
                   strokeWidth={1.5}
                   className={
                     isSelected
-                      ? "text-[var(--color-accent-primary)]"
-                      : "text-[var(--color-text-secondary)]"
+                      ? "text-[var(--sg-forest-500)]"
+                      : "text-[var(--sg-shell-600)]"
                   }
                 />
               )}
-              <span className="text-sm font-medium text-[var(--color-text-primary)]">
+              <span className="text-sm font-medium text-[var(--sg-shell-900)]">
                 {opt.label}
               </span>
             </button>
@@ -175,28 +175,28 @@ export default function FunctionStep({ onSelect }: FunctionStepProps) {
         {mode === "single" ? (
           <button
             onClick={enterMultiMode}
-            className="group flex flex-col items-center gap-3 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-5 transition-all hover:border-[var(--color-accent-primary)] hover:bg-[var(--color-bg-active)]"
+            className="group flex flex-col items-center gap-3 rounded-xl border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] p-5 transition-all hover:border-[var(--sg-forest-500)] hover:bg-[var(--sg-shell-200)]"
           >
             <LayoutGrid
               size={28}
               strokeWidth={1.5}
-              className="text-[var(--color-text-secondary)] transition-colors group-hover:text-[var(--color-accent-primary)]"
+              className="text-[var(--sg-shell-600)] transition-colors group-hover:text-[var(--sg-forest-500)]"
             />
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+            <span className="text-sm font-medium text-[var(--sg-shell-900)]">
               Multiple / Founder
             </span>
           </button>
         ) : (
           <div className="col-span-2">
             {!canConfirmMulti && selected.size > 0 && !primary && (
-              <p className="mb-3 text-center text-xs text-[var(--color-accent-warning)]">
+              <p className="mb-3 text-center text-xs text-[var(--sg-gold-600)]">
                 Star one as your primary to continue
               </p>
             )}
             <button
               onClick={confirmMulti}
               disabled={!canConfirmMulti}
-              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--sg-forest-500)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
             >
               Continue
             </button>

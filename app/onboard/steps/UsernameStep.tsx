@@ -24,16 +24,16 @@ export default function UsernameStep({
         return (
           <Loader2
             size={16}
-            className="animate-spin text-[var(--color-text-tertiary)]"
+            className="animate-spin text-[var(--sg-shell-500)]"
           />
         );
       case "available":
         return (
-          <Check size={16} className="text-[var(--color-green-700)]" />
+          <Check size={16} className="text-[var(--sg-forest-300)]" />
         );
       case "taken":
       case "invalid":
-        return <X size={16} className="text-[var(--color-red-700)]" />;
+        return <X size={16} className="text-[var(--sg-coral-500)]" />;
       default:
         return null;
     }
@@ -41,19 +41,19 @@ export default function UsernameStep({
 
   return (
     <>
-      <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
+      <h1 className="text-2xl font-semibold text-[var(--sg-shell-900)]">
         Pick a handle
       </h1>
-      <p className="mt-2 text-[var(--color-text-secondary)]">
+      <p className="mt-2 text-[var(--sg-shell-600)]">
         This is how others will find you. You can always change it later.
       </p>
 
-      <div className="mt-8 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-6">
-        <label className="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">
+      <div className="mt-8 rounded-xl border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] p-6">
+        <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
           Username
         </label>
         <div className="relative">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-tertiary)]">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--sg-shell-500)]">
             @
           </span>
           <input
@@ -61,13 +61,13 @@ export default function UsernameStep({
             value={username.value}
             onChange={(e) => username.setValue(e.target.value)}
             placeholder="your_handle"
-            className="h-11 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] pl-8 pr-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)]"
+            className="h-11 w-full rounded-lg border border-[var(--sg-shell-border)] bg-[var(--sg-shell-100)] pl-8 pr-10 text-sm text-[var(--sg-shell-900)] outline-none placeholder:text-[var(--sg-shell-500)] focus:border-[var(--sg-forest-500)]"
             style={{
               borderColor:
                 username.status === "available"
-                  ? "var(--color-green-700)"
+                  ? "var(--sg-forest-300)"
                   : username.status === "taken" || username.status === "invalid"
-                    ? "var(--color-red-700)"
+                    ? "var(--sg-coral-500)"
                     : undefined,
             }}
           />
@@ -76,12 +76,12 @@ export default function UsernameStep({
           </span>
         </div>
         {username.error && (
-          <p className="mt-1.5 text-xs text-[var(--color-red-700)]">
+          <p className="mt-1.5 text-xs text-[var(--sg-coral-500)]">
             {username.error}
           </p>
         )}
         {username.status === "available" && (
-          <p className="mt-1.5 text-xs text-[var(--color-green-700)]">
+          <p className="mt-1.5 text-xs text-[var(--sg-forest-300)]">
             @{username.value} is available
           </p>
         )}
@@ -89,7 +89,7 @@ export default function UsernameStep({
         <button
           onClick={onConfirm}
           disabled={!username.isValid || saving}
-          className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--color-accent-primary)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
+          className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--sg-forest-500)] font-medium text-white transition-opacity hover:opacity-85 active:opacity-75 disabled:opacity-50"
         >
           {saving ? "Saving..." : "Let\u2019s go"}
         </button>
@@ -98,7 +98,7 @@ export default function UsernameStep({
       <button
         onClick={onSkip}
         disabled={saving}
-        className="mx-auto mt-4 block text-xs text-[var(--color-text-tertiary)] underline decoration-[var(--color-border-default)] underline-offset-2 transition-colors hover:text-[var(--color-text-secondary)]"
+        className="mx-auto mt-4 block text-xs text-[var(--sg-shell-500)] underline decoration-[var(--sg-shell-border)] underline-offset-2 transition-colors hover:text-[var(--sg-shell-600)]"
       >
         Skip for now
       </button>

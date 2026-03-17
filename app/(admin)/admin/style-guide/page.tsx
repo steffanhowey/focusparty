@@ -157,7 +157,7 @@ export default function StyleGuidePage() {
                 border: "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              <MenuItem size="default" icon={<Settings size={18} />} className="text-[var(--color-text-primary)]">Settings</MenuItem>
+              <MenuItem size="default" icon={<Settings size={18} />} className="text-[var(--sg-shell-900)]">Settings</MenuItem>
               <MenuItem size="default" icon={<Music size={18} />} active>Active Item</MenuItem>
               <MenuItem size="default" icon={<Trash2 size={18} />} danger>Sign out</MenuItem>
             </div>

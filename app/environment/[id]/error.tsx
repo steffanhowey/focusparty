@@ -14,11 +14,11 @@ export default function EnvironmentError({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[var(--color-bg-primary)] text-center">
-      <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[var(--sg-white)] text-center">
+      <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
         Session interrupted
       </h2>
-      <p className="max-w-sm text-sm text-[var(--color-text-secondary)]">
+      <p className="max-w-sm text-sm text-[var(--sg-shell-600)]">
         Something went wrong during your focus session. You can try to resume or
         head back to Practice.
       </p>
@@ -26,14 +26,14 @@ export default function EnvironmentError({
         <button
           onClick={reset}
           className="rounded-full px-5 py-2.5 text-sm font-medium text-white"
-          style={{ background: "var(--color-accent-primary)" }}
+          style={{ background: "var(--sg-forest-500)" }}
         >
           Resume session
         </button>
         <a
           href="/practice"
-          className="rounded-full border px-5 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
-          style={{ borderColor: "var(--color-border-default)" }}
+          className="rounded-full border px-5 py-2.5 text-sm font-medium text-[var(--sg-shell-600)] transition-colors hover:text-[var(--sg-shell-900)]"
+          style={{ borderColor: "var(--sg-shell-border)" }}
         >
           Back to Practice
         </a>

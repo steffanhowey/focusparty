@@ -24,16 +24,16 @@ export default async function IndexRedirectPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center"
-      style={{ background: "var(--color-bg-primary)" }}
+      style={{ background: "var(--sg-white)" }}
     >
       <div className="text-center space-y-2">
-        <p className="text-sm text-[var(--color-text-tertiary)]">
+        <p className="text-sm text-[var(--sg-shell-500)]">
           The AI Skills Index will be published at the start of next month.
         </p>
         <a
           href="/pulse"
           className="text-sm font-medium hover:underline"
-          style={{ color: "var(--color-cyan-700)" }}
+          style={{ color: "var(--sg-teal-500)" }}
         >
           View the Skills Pulse instead
         </a>

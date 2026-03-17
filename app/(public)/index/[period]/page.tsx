@@ -16,10 +16,10 @@ export const revalidate = 3600;
 // ─── Direction config ──────────────────────────────────────
 
 const DIR_STYLE: Record<TrendDirection, { icon: typeof TrendingUp; color: string }> = {
-  rising: { icon: TrendingUp, color: "var(--color-green-700)" },
-  emerging: { icon: Sparkles, color: "var(--color-cyan-700)" },
-  declining: { icon: TrendingDown, color: "var(--color-amber-600)" },
-  stable: { icon: Minus, color: "var(--color-text-tertiary)" },
+  rising: { icon: TrendingUp, color: "var(--sg-forest-300)" },
+  emerging: { icon: Sparkles, color: "var(--sg-teal-500)" },
+  declining: { icon: TrendingDown, color: "var(--sg-gold-600)" },
+  stable: { icon: Minus, color: "var(--sg-shell-500)" },
 };
 
 // ─── Metadata ──────────────────────────────────────────────
@@ -79,16 +79,16 @@ export default async function IndexPeriodPage({ params }: PageProps) {
   return (
     <div
       className="min-h-screen"
-      style={{ background: "var(--color-bg-primary)" }}
+      style={{ background: "var(--sg-white)" }}
     >
       <PublicNav />
       <main className="mx-auto max-w-5xl px-4 py-8 md:px-8 space-y-8">
         {/* Header */}
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)] md:text-3xl">
+          <h1 className="text-2xl font-bold text-[var(--sg-shell-900)] md:text-3xl">
             AI Skills Index — {entry.period}
           </h1>
-          <p className="text-sm text-[var(--color-text-tertiary)]">
+          <p className="text-sm text-[var(--sg-shell-500)]">
             Monthly ranking of AI skills by market demand, velocity, and
             practitioner activity.
           </p>
@@ -97,37 +97,37 @@ export default async function IndexPeriodPage({ params }: PageProps) {
         {/* Platform stats */}
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <Card className="p-4 space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
               Skills Tracked
             </p>
-            <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+            <p className="text-2xl font-bold text-[var(--sg-shell-900)]">
               {entry.platform_stats.skills_tracked}
             </p>
           </Card>
           <Card className="p-4 space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
               Practitioners
             </p>
-            <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+            <p className="text-2xl font-bold text-[var(--sg-shell-900)]">
               {entry.platform_stats.total_practitioners.toLocaleString()}
             </p>
           </Card>
           <Card className="p-4 space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
               Emerging
             </p>
             <p
               className="text-2xl font-bold"
-              style={{ color: "var(--color-cyan-700)" }}
+              style={{ color: "var(--sg-teal-500)" }}
             >
               {entry.emerging_skills.length}
             </p>
           </Card>
           <Card className="p-4 space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
               Completions
             </p>
-            <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+            <p className="text-2xl font-bold text-[var(--sg-shell-900)]">
               {entry.platform_stats.total_completions.toLocaleString()}
             </p>
           </Card>
@@ -136,16 +136,16 @@ export default async function IndexPeriodPage({ params }: PageProps) {
         {/* Key findings */}
         {entry.key_findings.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+            <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
               Key Findings
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {entry.key_findings.map((finding, i) => (
                 <Card key={i} className="p-4 space-y-2">
-                  <h4 className="text-sm font-medium text-[var(--color-text-primary)]">
+                  <h4 className="text-sm font-medium text-[var(--sg-shell-900)]">
                     {finding.headline}
                   </h4>
-                  <p className="text-xs text-[var(--color-text-tertiary)]">
+                  <p className="text-xs text-[var(--sg-shell-500)]">
                     {finding.analysis}
                   </p>
                 </Card>
@@ -156,26 +156,26 @@ export default async function IndexPeriodPage({ params }: PageProps) {
 
         {/* Rankings table */}
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+          <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
             Rankings
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[var(--color-border-default)]">
-                  <th className="text-left py-2 pr-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                <tr className="border-b border-[var(--sg-shell-border)]">
+                  <th className="text-left py-2 pr-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
                     #
                   </th>
-                  <th className="text-left py-2 pr-4 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                  <th className="text-left py-2 pr-4 text-[10px] font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
                     Skill
                   </th>
-                  <th className="text-left py-2 pr-4 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                  <th className="text-left py-2 pr-4 text-[10px] font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
                     Direction
                   </th>
-                  <th className="text-right py-2 pr-4 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                  <th className="text-right py-2 pr-4 text-[10px] font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
                     Heat
                   </th>
-                  <th className="text-right py-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)] hidden sm:table-cell">
+                  <th className="text-right py-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--sg-shell-500)] hidden sm:table-cell">
                     Practitioners
                   </th>
                 </tr>
@@ -187,15 +187,15 @@ export default async function IndexPeriodPage({ params }: PageProps) {
                   return (
                     <tr
                       key={r.skill_slug}
-                      className="border-b border-[var(--color-border-default)] last:border-0"
+                      className="border-b border-[var(--sg-shell-border)] last:border-0"
                     >
-                      <td className="py-2.5 pr-3 text-[var(--color-text-tertiary)]">
+                      <td className="py-2.5 pr-3 text-[var(--sg-shell-500)]">
                         {r.rank}
                       </td>
                       <td className="py-2.5 pr-4">
                         <a
                           href={`/skills/${r.skill_slug}`}
-                          className="font-medium text-[var(--color-text-primary)] hover:underline"
+                          className="font-medium text-[var(--sg-shell-900)] hover:underline"
                         >
                           {r.skill_name}
                         </a>
@@ -208,10 +208,10 @@ export default async function IndexPeriodPage({ params }: PageProps) {
                           <DirIcon size={12} />
                         </span>
                       </td>
-                      <td className="py-2.5 pr-4 text-right text-[var(--color-text-secondary)]">
+                      <td className="py-2.5 pr-4 text-right text-[var(--sg-shell-600)]">
                         {r.heat_score.toFixed(2)}
                       </td>
-                      <td className="py-2.5 text-right text-[var(--color-text-secondary)] hidden sm:table-cell">
+                      <td className="py-2.5 text-right text-[var(--sg-shell-600)] hidden sm:table-cell">
                         {r.practitioner_count.toLocaleString()}
                       </td>
                     </tr>
@@ -225,7 +225,7 @@ export default async function IndexPeriodPage({ params }: PageProps) {
         {/* Previous months */}
         {periodOptions.length > 1 && (
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">
+            <h3 className="text-sm font-medium text-[var(--sg-shell-600)]">
               Previous Months
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -237,12 +237,12 @@ export default async function IndexPeriodPage({ params }: PageProps) {
                   style={{
                     background:
                       p === entry.period
-                        ? "var(--color-accent-primary)"
-                        : "var(--color-bg-hover)",
+                        ? "var(--sg-forest-500)"
+                        : "var(--sg-shell-100)",
                     color:
                       p === entry.period
-                        ? "var(--color-text-inverse)"
-                        : "var(--color-text-secondary)",
+                        ? "var(--sg-white)"
+                        : "var(--sg-shell-600)",
                   }}
                 >
                   {p}

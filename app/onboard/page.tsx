@@ -38,11 +38,11 @@ export default function OnboardPage() {
         <div
           className="flex min-h-screen items-center justify-center"
           style={{
-            background: "var(--color-bg-primary)",
-            color: "var(--color-text-primary)",
+            background: "var(--sg-white)",
+            color: "var(--sg-shell-900)",
           }}
         >
-          <p className="text-[var(--color-text-secondary)]">Loading...</p>
+          <p className="text-[var(--sg-shell-600)]">Loading...</p>
         </div>
       }
     >
@@ -302,11 +302,11 @@ function OnboardContent() {
       <div
         className="flex min-h-screen items-center justify-center"
         style={{
-          background: "var(--color-bg-primary)",
-          color: "var(--color-text-primary)",
+          background: "var(--sg-white)",
+          color: "var(--sg-shell-900)",
         }}
       >
-        <p className="text-[var(--color-text-secondary)]">Loading...</p>
+        <p className="text-[var(--sg-shell-600)]">Loading...</p>
       </div>
     );
   }
@@ -325,13 +325,13 @@ function OnboardContent() {
     <div
       className="flex min-h-screen flex-col"
       style={{
-        background: "var(--color-bg-primary)",
-        color: "var(--color-text-primary)",
+        background: "var(--sg-white)",
+        color: "var(--sg-shell-900)",
       }}
     >
       <header
         className="backdrop-blur-md"
-        style={{ background: "var(--color-bg-primary)" }}
+        style={{ background: "var(--sg-white)" }}
       >
         <nav className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6">
           <Logo href="/" height={32} maxWidth={140} />
@@ -346,10 +346,10 @@ function OnboardContent() {
               key={i}
               className={`h-2 rounded-full transition-all ${
                 i === normalizedStep
-                  ? "w-8 bg-[var(--color-accent-primary)]"
+                  ? "w-8 bg-[var(--sg-forest-500)]"
                   : i < normalizedStep
-                    ? "w-2 bg-[var(--color-text-tertiary)]"
-                    : "w-2 bg-[var(--color-border-default)]"
+                    ? "w-2 bg-[var(--sg-shell-500)]"
+                    : "w-2 bg-[var(--sg-shell-border)]"
               }`}
             />
           ))}

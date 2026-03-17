@@ -35,14 +35,14 @@ export default function HubError({
         style={{
           fontSize: "1.25rem",
           fontWeight: 600,
-          color: "var(--color-text-primary)",
+          color: "var(--sg-shell-900)",
         }}
       >
         Something went wrong
       </h2>
       <p
         style={{
-          color: "var(--color-text-secondary)",
+          color: "var(--sg-shell-600)",
           maxWidth: "28rem",
           lineHeight: 1.5,
         }}
@@ -55,8 +55,8 @@ export default function HubError({
         style={{
           padding: "0.5rem 1.25rem",
           borderRadius: "0.5rem",
-          backgroundColor: "var(--color-accent-primary)",
-          color: "#fff",
+          backgroundColor: "var(--sg-forest-500)",
+          color: "var(--sg-white)",
           border: "none",
           cursor: "pointer",
           fontSize: "0.875rem",
@@ -69,7 +69,7 @@ export default function HubError({
         <p
           style={{
             fontSize: "0.75rem",
-            color: "var(--color-text-tertiary)",
+            color: "var(--sg-shell-500)",
             marginTop: "0.5rem",
           }}
         >
