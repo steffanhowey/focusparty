@@ -1,73 +1,115 @@
-// ─── SkillGap Color Palette ──────────────────────────────────
-// Single source of truth for every color used in JS/TS config
-// objects. Each constant maps 1:1 to a CSS custom property in
-// globals.css — use CSS vars in Tailwind classes; import from
-// here when you need a raw hex in JS (chart configs, status
-// maps, inline style objects, etc.).
-//
-// RULE: Never hardcode a hex string in a config or component.
-//       Import from this file instead.
+// ─── SkillGap Color Palette (New System) ─────────────────────
+// Maps 1:1 to --sg-* CSS custom properties in globals.css.
+// Use CSS vars in Tailwind/JSX. Import from here for JS configs
+// (chart colors, inline style objects, status maps).
+// RULE: Never hardcode a hex string. Import from this file.
 // ─────────────────────────────────────────────────────────────
 
-// ── Core Palette ─────────────────────────────────────────────
-// (mirrors :root custom properties in globals.css)
+// ── Core Palette ──────────────────────────────────────────────
 
-export const GREEN_700 = "#5BC682"; // --color-green-700
-export const CYAN_700 = "#5CC2EC"; // --color-cyan-700
-export const GOLD_700 = "#F5C54E"; // --color-gold-700
-export const AMBER_700 = "#F59E0B"; // --color-amber-700
-export const ORANGE_700 = "#EE984B"; // --color-orange-700
-export const CORAL_700 = "#E96861"; // --color-coral-700
-export const RED_700 = "#EF5555"; // --color-red-700
-export const PURPLE_700 = "#535AEE"; // --color-purple-700
-export const INDIGO_700 = "#7c5cfc"; // --color-indigo-700
-export const VIOLET_700 = "#8C55EF"; // --color-violet-700
-export const NAVY_800 = "#0a0a0a"; // --color-navy-800
-export const NAVY_500 = "#888888"; // --color-navy-500
-export const NAVY_400 = "#c0c0c0"; // --color-navy-400
+export const FOREST_900 = "#0F2318";
+export const FOREST_800 = "#162E21";
+export const FOREST_700 = "#1E3A2C";
+export const FOREST_600 = "#2A5340";
+export const FOREST_500 = "#3A7D53";
+export const FOREST_400 = "#4A9E6A";
+export const FOREST_300 = "#6BBF87";
+export const FOREST_200 = "#A3D9B5";
 
-// ── Semantic: Status (tasks, goals) ──────────────────────────
+export const TEAL_600 = "#3D8E8B";
+export const TEAL_500 = "#5BA8A0";
+export const TEAL_400 = "#7CC0B8";
 
-export const STATUS_TODO = NAVY_500;
-export const STATUS_IN_PROGRESS = INDIGO_700;
-export const STATUS_DONE = GREEN_700;
+export const GOLD_900 = "#5C4D0E";
+export const GOLD_600 = "#B89C1E";
+export const GOLD_500 = "#CDBE3D";
 
-// ── Semantic: Participant Status ─────────────────────────────
+export const CORAL_600 = "#D64540";
+export const CORAL_500 = "#E96861";
 
-export const PARTICIPANT_IDLE = NAVY_500;
-export const PARTICIPANT_FOCUSED = GREEN_700;
+export const SAGE_700 = "#5A7A5E";
+export const SAGE_500 = "#8BAF8E";
 
-// ── Semantic: Tone (activity feed) ───────────────────────────
+export const SHELL_900 = "#262626";
+export const SHELL_700 = "#525252";
+export const SHELL_600 = "#6B6B6B";
+export const SHELL_500 = "#8A8A8A";
+export const SHELL_400 = "#A3A3A3";
+export const SHELL_300 = "#D4D4D4";
 
-export const TONE_SUCCESS = GREEN_700;
-export const TONE_NEUTRAL = NAVY_500;
+// ── Semantic: Status ──────────────────────────────────────────
 
-// ── Semantic: Room State ─────────────────────────────────────
+export const STATUS_TODO = SHELL_500;
+export const STATUS_IN_PROGRESS = TEAL_600;
+export const STATUS_DONE = FOREST_300;
 
-export const ROOM_QUIET = NAVY_500;
-export const ROOM_WARMING = AMBER_700;
-export const ROOM_FOCUSED = CORAL_700;
-export const ROOM_FLOWING = VIOLET_700;
-export const ROOM_COOLING = CYAN_700;
+// ── Semantic: Participant ─────────────────────────────────────
 
-// ── Semantic: Priority ───────────────────────────────────────
+export const PARTICIPANT_IDLE = SHELL_500;
+export const PARTICIPANT_FOCUSED = FOREST_300;
 
-export const PRIORITY_URGENT = RED_700;
-export const PRIORITY_HIGH = ORANGE_700;
-export const PRIORITY_MEDIUM = AMBER_700;
-export const PRIORITY_LOW = NAVY_500;
+// ── Semantic: Tone (activity feed) ────────────────────────────
 
-// ── Semantic: Celebration / Reward ───────────────────────────
+export const TONE_SUCCESS = FOREST_300;
+export const TONE_NEUTRAL = SHELL_500;
 
-export const CELEBRATION_AMBER = AMBER_700;
+// ── Semantic: Room State ──────────────────────────────────────
 
-// ── Project Default Colors ───────────────────────────────────
+export const ROOM_QUIET = SHELL_500;
+export const ROOM_WARMING = GOLD_600;
+export const ROOM_FOCUSED = FOREST_400;
+export const ROOM_FLOWING = TEAL_500;
+export const ROOM_COOLING = SAGE_500;
+
+// ── Semantic: Priority ────────────────────────────────────────
+
+export const PRIORITY_URGENT = CORAL_600;
+export const PRIORITY_HIGH = GOLD_600;
+export const PRIORITY_MEDIUM = GOLD_500;
+export const PRIORITY_LOW = SHELL_500;
+
+// ── Semantic: Celebration ─────────────────────────────────────
+
+export const CELEBRATION_GOLD = GOLD_500;
+
+// ── Project Colors (for rotation) ─────────────────────────────
 
 export const PROJECT_COLORS = [
-  INDIGO_700,
-  RED_700,
-  ORANGE_700,
-  AMBER_700,
-  GREEN_700,
-  CYAN_700,
+  FOREST_500,
+  TEAL_600,
+  GOLD_600,
+  FOREST_300,
+  SAGE_500,
+  SHELL_500,
 ] as const;
+
+// ── Backward Compatibility (DEPRECATED — remove as components migrate) ──
+
+/** @deprecated Use FOREST_300 */
+export const GREEN_700 = FOREST_300;
+/** @deprecated Use TEAL_500 */
+export const CYAN_700 = TEAL_500;
+/** @deprecated Use GOLD_500 */
+export const GOLD_700 = GOLD_500;
+/** @deprecated Use GOLD_600 */
+export const AMBER_700 = GOLD_600;
+/** @deprecated Use GOLD_600 */
+export const ORANGE_700 = GOLD_600;
+/** @deprecated Use CORAL_500 */
+export const CORAL_700 = CORAL_500;
+/** @deprecated Use CORAL_600 */
+export const RED_700 = CORAL_600;
+/** @deprecated Use FOREST_500 */
+export const PURPLE_700 = FOREST_500;
+/** @deprecated Use TEAL_600 */
+export const INDIGO_700 = TEAL_600;
+/** @deprecated Use TEAL_600 */
+export const VIOLET_700 = TEAL_600;
+/** @deprecated Use FOREST_900 */
+export const NAVY_800 = FOREST_900;
+/** @deprecated Use SHELL_500 */
+export const NAVY_500 = SHELL_500;
+/** @deprecated Use SHELL_300 */
+export const NAVY_400 = SHELL_300;
+/** @deprecated Use GOLD_600 */
+export const CELEBRATION_AMBER = GOLD_600;
