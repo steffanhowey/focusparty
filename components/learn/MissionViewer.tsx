@@ -31,9 +31,9 @@ interface MissionFeedback {
 // ─── Constants ──────────────────────────────────────────────
 
 const QUALITY_COLORS: Record<string, string> = {
-  strong: "var(--color-green-700)",
-  good: "var(--color-cyan-700)",
-  needs_work: "var(--color-amber-700)",
+  strong: "var(--sg-forest-300)",
+  good: "var(--sg-teal-500)",
+  needs_work: "var(--sg-gold-600)",
 };
 
 const QUALITY_LABELS: Record<string, string> = {
@@ -163,8 +163,8 @@ export function MissionViewer({
     return (
       <div className="flex flex-col items-center justify-center h-full gap-6 p-8 animate-fade-in">
         <Card className="p-6 max-w-2xl w-full">
-          <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1.5">
-            <Check size={12} style={{ color: "var(--color-green-700)" }} />
+          <p className="text-xs text-shell-500 flex items-center gap-1.5">
+            <Check size={12} style={{ color: "var(--sg-forest-300)" }} />
             Completed
           </p>
         </Card>
@@ -179,15 +179,15 @@ export function MissionViewer({
         <div className="flex items-center justify-between">
           <p
             className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--color-accent-primary)" }}
+            style={{ color: "var(--sg-forest-500)" }}
           >
             Tool Mission
           </p>
           <span
             className="text-[10px] font-medium px-2 py-0.5 rounded-full"
             style={{
-              background: "rgba(255,255,255,0.08)",
-              color: "var(--color-text-tertiary)",
+              background: "var(--sg-shell-100)",
+              color: "var(--sg-shell-500)",
             }}
           >
             {GUIDANCE_LABELS[mission.guidance_level] ?? mission.guidance_level}
@@ -195,7 +195,7 @@ export function MissionViewer({
         </div>
 
         {/* Objective */}
-        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed font-medium">
+        <p className="text-sm text-shell-900 leading-relaxed font-medium">
           {mission.objective}
         </p>
 
@@ -204,7 +204,7 @@ export function MissionViewer({
           <>
             {/* Context */}
             {mission.context && (
-              <p className="text-xs text-[var(--color-text-tertiary)] italic">
+              <p className="text-xs text-shell-500 italic">
                 {mission.context}
               </p>
             )}
@@ -215,7 +215,7 @@ export function MissionViewer({
                 {mission.steps.map((step, i) => (
                   <li
                     key={i}
-                    className="text-sm text-[var(--color-text-secondary)] leading-relaxed"
+                    className="text-sm text-shell-600 leading-relaxed"
                   >
                     {step}
                   </li>
@@ -225,7 +225,7 @@ export function MissionViewer({
 
             {/* Pre-built prompt */}
             <div className="space-y-1.5">
-              <p className="text-xs font-medium text-[var(--color-text-secondary)]">
+              <p className="text-xs font-medium text-shell-600">
                 Your prompt (ready to paste)
               </p>
               <CodeBlock code={mission.tool_prompt} />
@@ -234,7 +234,7 @@ export function MissionViewer({
             {/* Starter code */}
             {mission.starter_code && (
               <div className="space-y-1.5">
-                <p className="text-xs font-medium text-[var(--color-text-secondary)]">
+                <p className="text-xs font-medium text-shell-600">
                   Starter code
                 </p>
                 <CodeBlock code={mission.starter_code} />
@@ -246,17 +246,17 @@ export function MissionViewer({
               <div
                 className="rounded-lg px-3 py-2.5 space-y-1.5"
                 style={{
-                  background: "var(--color-bg-primary)",
-                  border: "1px solid var(--color-border-default)",
+                  background: "white",
+                  border: "1px solid var(--sg-shell-border)",
                 }}
               >
-                <p className="text-xs font-medium text-[var(--color-text-secondary)]">
+                <p className="text-xs font-medium text-shell-600">
                   Success criteria
                 </p>
                 {mission.success_criteria.map((c, i) => (
                   <p
                     key={i}
-                    className="text-xs text-[var(--color-text-tertiary)] flex items-start gap-1.5"
+                    className="text-xs text-shell-500 flex items-start gap-1.5"
                   >
                     <span className="shrink-0 mt-0.5">•</span>
                     {c}
@@ -288,11 +288,10 @@ export function MissionViewer({
           <>
             {/* Pinned objective */}
             <div
-              className="rounded-lg px-3 py-2.5 text-sm"
+              className="rounded-lg px-3 py-2.5 text-sm text-shell-900"
               style={{
-                background: "var(--color-bg-primary)",
-                borderLeft: "3px solid var(--color-accent-primary)",
-                color: "var(--color-text-primary)",
+                background: "white",
+                borderLeft: "3px solid var(--sg-forest-500)",
               }}
             >
               {mission.objective}
@@ -301,14 +300,13 @@ export function MissionViewer({
             {/* Success criteria reminder */}
             {mission.success_criteria.length > 0 && (
               <div
-                className="rounded-lg px-3 py-2.5 text-xs"
+                className="rounded-lg px-3 py-2.5 text-xs text-shell-500"
                 style={{
-                  background: "var(--color-bg-primary)",
-                  border: "1px solid var(--color-border-default)",
-                  color: "var(--color-text-tertiary)",
+                  background: "white",
+                  border: "1px solid var(--sg-shell-border)",
                 }}
               >
-                <span className="font-medium text-[var(--color-text-secondary)]">
+                <span className="font-medium text-shell-600">
                   Success looks like:{" "}
                 </span>
                 {mission.success_criteria.join(" · ")}
@@ -333,7 +331,7 @@ export function MissionViewer({
         {/* ── Phase 3: Submission ── */}
         {phase === "submission" && (
           <>
-            <p className="text-xs text-[var(--color-text-tertiary)]">
+            <p className="text-xs text-shell-500">
               {mission.submission_type === "screenshot"
                 ? "Describe what you built or paste your output below."
                 : "Paste your output here so we can check it against the success criteria."}
@@ -346,9 +344,9 @@ export function MissionViewer({
               rows={8}
               className="w-full rounded-lg px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-1"
               style={{
-                background: "var(--color-bg-primary)",
-                color: "var(--color-text-primary)",
-                border: "1px solid var(--color-border-default)",
+                background: "white",
+                color: "var(--sg-shell-900)",
+                border: "1px solid var(--sg-shell-border)",
               }}
             />
 
@@ -392,19 +390,19 @@ export function MissionViewer({
                   {feedback.criteria_results.map((cr, i) => (
                     <div
                       key={i}
-                      className="flex items-start gap-2 text-xs text-[var(--color-text-secondary)]"
+                      className="flex items-start gap-2 text-xs text-shell-600"
                     >
                       {cr.passed ? (
                         <CheckCircle2
                           size={14}
                           className="shrink-0 mt-0.5"
-                          style={{ color: "var(--color-green-700)" }}
+                          style={{ color: "var(--sg-forest-300)" }}
                         />
                       ) : (
                         <XCircle
                           size={14}
                           className="shrink-0 mt-0.5"
-                          style={{ color: "var(--color-amber-700)" }}
+                          style={{ color: "var(--sg-gold-600)" }}
                         />
                       )}
                       <span>{cr.criterion}</span>
@@ -415,11 +413,10 @@ export function MissionViewer({
 
             {/* Feedback card */}
             <div
-              className="rounded-lg px-3 py-2.5 text-sm leading-relaxed"
+              className="rounded-lg px-3 py-2.5 text-sm leading-relaxed text-shell-600"
               style={{
-                background: "var(--color-bg-primary)",
+                background: "white",
                 borderLeft: `3px solid ${QUALITY_COLORS[feedback.quality] ?? QUALITY_COLORS.good}`,
-                color: "var(--color-text-secondary)",
               }}
             >
               {feedback.feedback}
@@ -463,22 +460,22 @@ function CodeBlock({ code }: { code: string }) {
     <div
       className="relative rounded-lg overflow-hidden"
       style={{
-        background: "var(--color-bg-primary)",
-        border: "1px solid var(--color-border-default)",
+        background: "var(--sg-shell-50)",
+        border: "1px solid var(--sg-shell-border)",
       }}
     >
-      <pre className="p-3 text-xs font-mono overflow-x-auto text-[var(--color-text-secondary)] leading-relaxed">
+      <pre className="p-3 text-xs font-mono overflow-x-auto text-shell-600 leading-relaxed">
         {code}
       </pre>
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 p-1.5 rounded transition-colors hover:bg-white/10"
+        className="absolute top-2 right-2 p-1.5 rounded transition-colors hover:bg-shell-200"
         title="Copy"
       >
         {copied ? (
-          <Check size={12} style={{ color: "var(--color-green-700)" }} />
+          <Check size={12} style={{ color: "var(--sg-forest-300)" }} />
         ) : (
-          <Copy size={12} className="text-[var(--color-text-tertiary)]" />
+          <Copy size={12} className="text-shell-500" />
         )}
       </button>
     </div>
@@ -502,9 +499,9 @@ function CopyToast({
       <div
         className="px-4 py-2.5 rounded-lg text-sm font-medium shadow-lg"
         style={{
-          background: "var(--color-bg-secondary)",
-          color: "var(--color-text-primary)",
-          border: "1px solid var(--color-border-default)",
+          background: "white",
+          color: "var(--sg-shell-900)",
+          border: "1px solid var(--sg-shell-border)",
         }}
       >
         {message}

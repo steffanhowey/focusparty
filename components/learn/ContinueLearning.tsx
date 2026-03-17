@@ -19,13 +19,13 @@ export function ContinueLearning({ paths }: ContinueLearningProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] flex items-center gap-2">
+        <h2 className="text-sm font-semibold text-shell-600 flex items-center gap-2">
           <BookOpen size={14} />
           Continue Learning
         </h2>
         <Link
           href="/skills"
-          className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-accent-primary)] transition-colors flex items-center gap-1"
+          className="text-xs text-shell-500 hover:text-forest-500 transition-colors flex items-center gap-1"
         >
           View skills
           <ArrowRight size={10} />
@@ -46,11 +46,11 @@ export function ContinueLearning({ paths }: ContinueLearningProps) {
               href={`/learn/paths/${path.id}`}
               className="block shrink-0 group"
             >
-              <Card className="p-3 w-64 space-y-2 hover:border-[var(--color-border-focus)] transition-colors">
-                <h3 className="text-sm font-medium text-[var(--color-text-primary)] line-clamp-2 group-hover:text-[var(--color-accent-primary)] transition-colors">
+              <Card className="p-3 w-64 space-y-2 hover:border-forest-400 transition-colors">
+                <h3 className="text-sm font-medium text-shell-900 line-clamp-2 group-hover:text-forest-500 transition-colors">
                   {path.title}
                 </h3>
-                <div className="flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
+                <div className="flex items-center gap-2 text-xs text-shell-500">
                   <span>
                     {progress.items_completed}/{progress.items_total} done
                   </span>
@@ -58,16 +58,16 @@ export function ContinueLearning({ paths }: ContinueLearningProps) {
                   <span>{pct}%</span>
                 </div>
                 {/* Progress bar */}
-                <div className="h-1 rounded-full bg-[var(--color-bg-hover)] overflow-hidden">
+                <div className="h-1 rounded-full bg-shell-100 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${pct}%`,
-                      background: "var(--color-accent-primary)",
+                      background: "var(--sg-forest-500)",
                     }}
                   />
                 </div>
-                <div className="flex items-center gap-1 text-xs text-[var(--color-accent-primary)] opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 text-xs text-forest-500 opacity-0 group-hover:opacity-100 transition-opacity">
                   <span>Continue</span>
                   <ArrowRight size={12} />
                 </div>

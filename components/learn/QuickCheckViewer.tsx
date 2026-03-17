@@ -23,9 +23,9 @@ interface CheckFeedback {
 // ─── Constants ──────────────────────────────────────────────
 
 const QUALITY_COLORS: Record<string, string> = {
-  strong: "var(--color-green-700)",
-  good: "var(--color-cyan-700)",
-  needs_work: "var(--color-amber-700)",
+  strong: "var(--sg-forest-300)",
+  good: "var(--sg-teal-500)",
+  needs_work: "var(--sg-gold-600)",
 };
 
 // ─── Component ──────────────────────────────────────────────
@@ -114,8 +114,8 @@ export function QuickCheckViewer({
     return (
       <div className="flex flex-col items-center justify-center h-full gap-6 p-8 animate-fade-in">
         <Card className="p-6 max-w-2xl w-full">
-          <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1.5">
-            <Check size={12} style={{ color: "var(--color-green-700)" }} />
+          <p className="text-xs text-shell-500 flex items-center gap-1.5">
+            <Check size={12} style={{ color: "var(--sg-forest-300)" }} />
             Completed
           </p>
         </Card>
@@ -129,13 +129,13 @@ export function QuickCheckViewer({
         {/* Header */}
         <p
           className="text-xs font-semibold uppercase tracking-widest"
-          style={{ color: "var(--color-accent-primary)" }}
+          style={{ color: "var(--sg-forest-500)" }}
         >
           Quick Check
         </p>
 
         {/* Question */}
-        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+        <p className="text-sm text-shell-900 leading-relaxed">
           {check.question}
         </p>
 
@@ -152,16 +152,16 @@ export function QuickCheckViewer({
                     style={{
                       background:
                         selected === option
-                          ? "rgba(255,255,255,0.08)"
-                          : "var(--color-bg-primary)",
+                          ? "var(--sg-shell-100)"
+                          : "white",
                       border:
                         selected === option
-                          ? "1px solid var(--color-accent-primary)"
-                          : "1px solid var(--color-border-default)",
+                          ? "1px solid var(--sg-forest-500)"
+                          : "1px solid var(--sg-shell-border)",
                       color:
                         selected === option
-                          ? "var(--color-text-primary)"
-                          : "var(--color-text-secondary)",
+                          ? "var(--sg-shell-900)"
+                          : "var(--sg-shell-600)",
                     }}
                   >
                     {option}
@@ -176,9 +176,9 @@ export function QuickCheckViewer({
                 rows={3}
                 className="w-full rounded-lg px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-1"
                 style={{
-                  background: "var(--color-bg-primary)",
-                  color: "var(--color-text-primary)",
-                  border: "1px solid var(--color-border-default)",
+                  background: "white",
+                  color: "var(--sg-shell-900)",
+                  border: "1px solid var(--sg-shell-border)",
                 }}
               />
             )}
@@ -205,11 +205,10 @@ export function QuickCheckViewer({
           <>
             {/* Feedback card */}
             <div
-              className="rounded-lg px-3 py-2.5 text-sm leading-relaxed"
+              className="rounded-lg px-3 py-2.5 text-sm leading-relaxed text-shell-600"
               style={{
-                background: "var(--color-bg-primary)",
+                background: "white",
                 borderLeft: `3px solid ${QUALITY_COLORS[feedback.quality] ?? QUALITY_COLORS.good}`,
-                color: "var(--color-text-secondary)",
               }}
             >
               {feedback.feedback}
@@ -220,12 +219,12 @@ export function QuickCheckViewer({
               <div
                 className="rounded-lg px-3 py-2 text-xs"
                 style={{
-                  background: "var(--color-bg-primary)",
-                  border: "1px solid var(--color-border-default)",
-                  color: "var(--color-text-tertiary)",
+                  background: "white",
+                  border: "1px solid var(--sg-shell-border)",
+                  color: "var(--sg-shell-500)",
                 }}
               >
-                <span className="font-medium text-[var(--color-text-secondary)]">
+                <span className="font-medium text-shell-600">
                   Hint:{" "}
                 </span>
                 {check.hint}

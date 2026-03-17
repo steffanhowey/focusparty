@@ -36,6 +36,7 @@ function formatDuration(seconds: number): string {
 /**
  * Path navigation sidebar for the learning environment.
  * Groups items by section with clear active/completed/upcoming states.
+ * Dark (forest-900) immersive background — preserves rgba overlays.
  */
 export function PathSidebar({
   path,
@@ -93,12 +94,12 @@ export function PathSidebar({
     <div className="h-full overflow-y-auto fp-shell-scroll">
       {/* Header + Progress */}
       <div className="p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+        <h3 className="text-sm font-semibold text-white">
           Path
         </h3>
         {progress && (
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
+            <div className="flex items-center justify-between text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
               <span>
                 {progress.items_completed}/{progress.items_total} complete
               </span>
@@ -124,7 +125,7 @@ export function PathSidebar({
                       : 0
                   }%`,
                   background:
-                    "linear-gradient(to right, var(--color-accent-primary), var(--color-cyan-700))",
+                    "linear-gradient(to right, var(--sg-forest-500), var(--sg-teal-600))",
                 }}
               />
             </div>
@@ -135,7 +136,7 @@ export function PathSidebar({
       {/* Skills */}
       {path.skill_tags && path.skill_tags.length > 0 && (
         <div className="px-4 pb-3">
-          <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          <p className="mb-2 text-[10px] font-medium uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)" }}>
             Skills
           </p>
           <div className="space-y-1.5">
@@ -147,7 +148,7 @@ export function PathSidebar({
                   key={tag.skill_slug}
                   className="flex items-center justify-between"
                 >
-                  <span className="text-xs text-[var(--color-text-secondary)]">
+                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>
                     {tag.skill_name}
                   </span>
                   {tag.user_fluency && (
@@ -173,21 +174,21 @@ export function PathSidebar({
           <div key={key}>
             <button
               onClick={() => toggleSection(key)}
-              className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-[var(--color-bg-hover)] transition-colors"
+              className="w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-white/[0.06]"
             >
               <div className="flex items-center gap-1.5">
                 {sectionDone && (
                   <Check
                     size={10}
-                    style={{ color: "var(--color-green-700)" }}
+                    style={{ color: "var(--sg-forest-300)" }}
                   />
                 )}
                 <span
                   className="text-[10px] font-semibold uppercase tracking-wider"
                   style={{
                     color: sectionDone
-                      ? "var(--color-green-700)"
-                      : "var(--color-text-tertiary)",
+                      ? "var(--sg-forest-300)"
+                      : "rgba(255,255,255,0.4)",
                   }}
                 >
                   {moduleMeta?.title ?? key}
@@ -196,12 +197,12 @@ export function PathSidebar({
               {isCollapsed ? (
                 <ChevronDown
                   size={12}
-                  className="text-[var(--color-text-tertiary)]"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
                 />
               ) : (
                 <ChevronUp
                   size={12}
-                  className="text-[var(--color-text-tertiary)]"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
                 />
               )}
             </button>
@@ -219,10 +220,10 @@ export function PathSidebar({
                     className="w-full flex items-start gap-2.5 px-4 py-3.5 text-left transition-colors border-b border-[rgba(255,255,255,0.06)]"
                     style={{
                       background: isCurrent
-                        ? "var(--color-bg-hover)"
+                        ? "rgba(255,255,255,0.06)"
                         : "transparent",
                       borderLeft: isCurrent
-                        ? "2px solid var(--color-accent-primary)"
+                        ? "2px solid var(--sg-forest-500)"
                         : "2px solid transparent",
                     }}
                   >
@@ -235,12 +236,12 @@ export function PathSidebar({
                         background: completed
                           ? "rgba(255,255,255,0.06)"
                           : isCurrent
-                            ? "var(--color-accent-primary)"
+                            ? "var(--sg-forest-500)"
                             : "rgba(255,255,255,0.08)",
                         border: completed
                           ? "1px solid rgba(255,255,255,0.08)"
                           : isCurrent
-                            ? "1px solid var(--color-accent-primary)"
+                            ? "1px solid var(--sg-forest-500)"
                             : "1px solid rgba(255,255,255,0.10)",
                         cursor: isCurrent && item.content_type === "video" && !completed ? "pointer" : undefined,
                       }}
@@ -253,7 +254,7 @@ export function PathSidebar({
                       {completed ? (
                         <Check
                           size={14}
-                          style={{ color: "var(--color-accent-primary)" }}
+                          style={{ color: "var(--sg-forest-500)" }}
                         />
                       ) : (item.task_type ?? "watch") === "do" ? (
                         <Pencil
@@ -261,7 +262,7 @@ export function PathSidebar({
                           style={{
                             color: isCurrent
                               ? "white"
-                              : "var(--color-text-tertiary)",
+                              : "rgba(255,255,255,0.4)",
                           }}
                         />
                       ) : (item.task_type ?? "watch") === "check" ? (
@@ -270,7 +271,7 @@ export function PathSidebar({
                           style={{
                             color: isCurrent
                               ? "white"
-                              : "var(--color-text-tertiary)",
+                              : "rgba(255,255,255,0.4)",
                           }}
                         />
                       ) : (item.task_type ?? "watch") === "reflect" ? (
@@ -279,7 +280,7 @@ export function PathSidebar({
                           style={{
                             color: isCurrent
                               ? "white"
-                              : "var(--color-text-tertiary)",
+                              : "rgba(255,255,255,0.4)",
                           }}
                         />
                       ) : item.content_type === "video" ? (
@@ -295,7 +296,7 @@ export function PathSidebar({
                             style={{
                               color: isCurrent
                                 ? "white"
-                                : "var(--color-text-tertiary)",
+                                : "rgba(255,255,255,0.4)",
                             }}
                           />
                         )
@@ -305,7 +306,7 @@ export function PathSidebar({
                           style={{
                             color: isCurrent
                               ? "white"
-                              : "var(--color-text-tertiary)",
+                              : "rgba(255,255,255,0.4)",
                           }}
                         />
                       )}
@@ -317,16 +318,16 @@ export function PathSidebar({
                         className="text-xs truncate"
                         style={{
                           color: completed
-                            ? "var(--color-text-tertiary)"
+                            ? "rgba(255,255,255,0.4)"
                             : isCurrent
-                              ? "var(--color-text-primary)"
-                              : "var(--color-text-secondary)",
+                              ? "white"
+                              : "rgba(255,255,255,0.6)",
                           fontWeight: isCurrent ? 600 : 400,
                         }}
                       >
                         {item.title}
                       </p>
-                      <span className="text-[10px] text-[var(--color-text-tertiary)]">
+                      <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>
                         {formatDuration(item.duration_seconds)}
                         {(item.clip_start_seconds != null && item.clip_start_seconds > 0) || item.clip_end_seconds != null
                           ? " · clip"

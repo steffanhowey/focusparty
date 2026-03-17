@@ -8,6 +8,8 @@ interface TopicFiltersProps {
 
 /**
  * Horizontal scrollable row of topic filter pills.
+ * Rendered inside the hero section (dark background) so pills use
+ * dark-on-dark rgba styling rather than light surface tokens.
  */
 export function TopicFilters({ topics, selected, onToggle }: TopicFiltersProps) {
   if (topics.length === 0) return null;
@@ -23,7 +25,7 @@ export function TopicFilters({ topics, selected, onToggle }: TopicFiltersProps) 
             className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-md transition-colors"
             style={{
               background: isActive
-                ? "var(--color-accent-primary)"
+                ? "var(--sg-forest-500)"
                 : "rgba(0,0,0,0.35)",
               color: isActive ? "white" : "rgba(255,255,255,0.8)",
               border: `1px solid ${isActive ? "transparent" : "rgba(255,255,255,0.15)"}`,

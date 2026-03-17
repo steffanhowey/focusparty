@@ -54,14 +54,14 @@ export function GenerationCard({ status, query, onRetry }: GenerationCardProps) 
         className="relative aspect-video flex items-center justify-center"
         style={{
           background:
-            "linear-gradient(135deg, var(--color-bg-secondary), var(--color-bg-hover))",
+            "linear-gradient(135deg, white, var(--sg-shell-100))",
         }}
       >
         {status === "generating" ? (
           <div className="flex flex-col items-center gap-3">
             <Loader2
               size={28}
-              className="text-[var(--color-text-tertiary)] animate-spin"
+              className="text-shell-500 animate-spin"
             />
             {/* Step indicators */}
             <div className="flex flex-col gap-1.5 items-start px-6 w-full">
@@ -75,12 +75,12 @@ export function GenerationCard({ status, query, onRetry }: GenerationCardProps) 
                     className="flex items-center gap-2 transition-opacity duration-300"
                     style={{ opacity: isDone ? 0.4 : isActive ? 1 : 0.25 }}
                   >
-                    <StepIcon size={12} className="text-[var(--color-text-tertiary)]" />
+                    <StepIcon size={12} className="text-shell-500" />
                     <span
                       className={`text-xs ${
                         isActive
-                          ? "text-[var(--color-text-secondary)] font-medium"
-                          : "text-[var(--color-text-tertiary)]"
+                          ? "text-shell-600 font-medium"
+                          : "text-shell-500"
                       }`}
                     >
                       {step.label}{isActive ? "..." : ""}
@@ -93,7 +93,7 @@ export function GenerationCard({ status, query, onRetry }: GenerationCardProps) 
         ) : (
           <AlertCircle
             size={32}
-            className="text-[var(--color-coral-700)]"
+            className="text-sg-coral-500"
           />
         )}
       </div>
@@ -102,21 +102,21 @@ export function GenerationCard({ status, query, onRetry }: GenerationCardProps) 
       <div className="p-3 space-y-2">
         {status === "generating" ? (
           <>
-            <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
+            <h3 className="text-sm font-medium text-shell-900">
               Building a learning path
             </h3>
             <div className="flex items-center justify-between">
-              <p className="text-xs text-[var(--color-text-tertiary)] line-clamp-1 flex-1">
+              <p className="text-xs text-shell-500 line-clamp-1 flex-1">
                 {query}
               </p>
-              <span className="text-xs text-[var(--color-text-tertiary)] tabular-nums ml-2 shrink-0">
+              <span className="text-xs text-shell-500 tabular-nums ml-2 shrink-0">
                 {elapsedSec}s
               </span>
             </div>
           </>
         ) : (
           <>
-            <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
+            <h3 className="text-sm font-medium text-shell-900">
               Couldn&apos;t generate path
             </h3>
             <Button variant="ghost" size="sm" onClick={onRetry}>

@@ -56,27 +56,27 @@ export function WeeklyDigestCard() {
       <button
         type="button"
         onClick={handleDismiss}
-        className="absolute top-3 right-3 p-1 rounded-full transition-colors hover:bg-[var(--color-bg-hover)] cursor-pointer"
+        className="absolute top-3 right-3 p-1 rounded-full transition-colors hover:bg-shell-100 cursor-pointer"
       >
-        <X size={14} className="text-[var(--color-text-tertiary)]" />
+        <X size={14} className="text-shell-500" />
       </button>
 
       {/* Badge */}
       <div className="flex items-center gap-1.5">
-        <Sparkles size={12} style={{ color: "var(--color-cyan-700)" }} />
+        <Sparkles size={12} style={{ color: "var(--sg-teal-600)" }} />
         <span
           className="text-[10px] font-semibold uppercase tracking-wider"
-          style={{ color: "var(--color-cyan-700)" }}
+          style={{ color: "var(--sg-teal-600)" }}
         >
           Weekly Intelligence
         </span>
       </div>
 
       {/* Content */}
-      <h4 className="text-sm font-medium text-[var(--color-text-primary)] leading-snug pr-6">
+      <h4 className="text-sm font-medium text-shell-900 leading-snug pr-6">
         {digest.headline}
       </h4>
-      <p className="text-xs text-[var(--color-text-tertiary)] line-clamp-2">
+      <p className="text-xs text-shell-500 line-clamp-2">
         {digest.analysis}
       </p>
 
@@ -84,7 +84,7 @@ export function WeeklyDigestCard() {
       <a
         href="/pulse"
         className="inline-flex items-center gap-1 text-xs font-medium transition-colors hover:underline"
-        style={{ color: "var(--color-cyan-700)" }}
+        style={{ color: "var(--sg-teal-600)" }}
       >
         View full intelligence
         <ArrowRight size={10} />

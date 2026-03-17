@@ -22,9 +22,9 @@ interface ReflectionFeedback {
 // ─── Constants ──────────────────────────────────────────────
 
 const QUALITY_COLORS: Record<string, string> = {
-  strong: "var(--color-green-700)",
-  good: "var(--color-cyan-700)",
-  needs_work: "var(--color-amber-700)",
+  strong: "var(--sg-forest-300)",
+  good: "var(--sg-teal-500)",
+  needs_work: "var(--sg-gold-600)",
 };
 
 // ─── Component ──────────────────────────────────────────────
@@ -98,8 +98,8 @@ export function ReflectionViewer({
     return (
       <div className="flex flex-col items-center justify-center h-full gap-6 p-8 animate-fade-in">
         <Card className="p-6 max-w-2xl w-full">
-          <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1.5">
-            <Check size={12} style={{ color: "var(--color-green-700)" }} />
+          <p className="text-xs text-shell-500 flex items-center gap-1.5">
+            <Check size={12} style={{ color: "var(--sg-forest-300)" }} />
             Completed
           </p>
         </Card>
@@ -113,18 +113,17 @@ export function ReflectionViewer({
         {/* Header */}
         <p
           className="text-xs font-semibold uppercase tracking-widest"
-          style={{ color: "var(--color-accent-primary)" }}
+          style={{ color: "var(--sg-forest-500)" }}
         >
           Reflect
         </p>
 
         {/* Reflection prompt */}
         <div
-          className="rounded-lg px-4 py-3 text-sm leading-relaxed"
+          className="rounded-lg px-4 py-3 text-sm leading-relaxed text-shell-900"
           style={{
-            background: "var(--color-bg-primary)",
-            borderLeft: "3px solid var(--color-accent-primary)",
-            color: "var(--color-text-primary)",
+            background: "white",
+            borderLeft: "3px solid var(--sg-forest-500)",
           }}
         >
           {reflection.prompt}
@@ -141,9 +140,9 @@ export function ReflectionViewer({
                 rows={5}
                 className="w-full rounded-lg px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-1"
                 style={{
-                  background: "var(--color-bg-primary)",
-                  color: "var(--color-text-primary)",
-                  border: "1px solid var(--color-border-default)",
+                  background: "white",
+                  color: "var(--sg-shell-900)",
+                  border: "1px solid var(--sg-shell-border)",
                 }}
               />
               <div className="flex items-center justify-between">
@@ -151,8 +150,8 @@ export function ReflectionViewer({
                   className="text-[10px]"
                   style={{
                     color: meetsMinLength
-                      ? "var(--color-text-tertiary)"
-                      : "var(--color-amber-700)",
+                      ? "var(--sg-shell-500)"
+                      : "var(--sg-gold-600)",
                   }}
                 >
                   {response.trim().length}/{minLength} min characters
@@ -179,11 +178,10 @@ export function ReflectionViewer({
           <>
             {/* Feedback card */}
             <div
-              className="rounded-lg px-3 py-2.5 text-sm leading-relaxed"
+              className="rounded-lg px-3 py-2.5 text-sm leading-relaxed text-shell-600"
               style={{
-                background: "var(--color-bg-primary)",
+                background: "white",
                 borderLeft: `3px solid ${QUALITY_COLORS[feedback.quality] ?? QUALITY_COLORS.good}`,
-                color: "var(--color-text-secondary)",
               }}
             >
               {feedback.feedback}

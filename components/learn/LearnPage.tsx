@@ -419,7 +419,7 @@ export function LearnPage() {
     <div className="space-y-5 md:space-y-8">
       {/* Hero card — matches FeaturedRoom e-spot pattern */}
       <section
-        className="relative flex w-full items-center justify-center rounded-md border border-[var(--color-border-default)]"
+        className="relative flex w-full items-center justify-center rounded-md border border-shell-border"
         style={{ height: "clamp(340px, 50vh, 500px)" }}
       >
         {/* Background image — overflow-hidden on wrapper so dropdown can escape */}
@@ -504,7 +504,7 @@ export function LearnPage() {
 
       {/* Error */}
       {error && (
-        <p className="text-center text-sm text-[var(--color-coral-700)]">
+        <p className="text-center text-sm text-sg-coral-500">
           {error}
         </p>
       )}
@@ -520,7 +520,7 @@ export function LearnPage() {
       {/* Trending skills pills (discovery mode only) */}
       {!query && trending.length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-xs text-[var(--color-text-tertiary)] shrink-0">
+          <span className="text-xs text-shell-500 shrink-0">
             Trending:
           </span>
           {trending.slice(0, 5).map((ms) => {
@@ -537,11 +537,11 @@ export function LearnPage() {
                 className="inline-flex items-center gap-1 shrink-0 rounded-full px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer"
                 style={{
                   background: isActive
-                    ? "var(--color-amber-600)"
-                    : "var(--color-bg-hover)",
+                    ? "var(--sg-gold-600)"
+                    : "var(--sg-shell-100)",
                   color: isActive
-                    ? "var(--color-text-inverse)"
-                    : "var(--color-text-secondary)",
+                    ? "white"
+                    : "var(--sg-shell-600)",
                 }}
               >
                 <TrendingUp size={10} />
@@ -555,14 +555,14 @@ export function LearnPage() {
       {/* Skill filter chip */}
       {skillFilter && (
         <div className="mb-3 flex items-center gap-2">
-          <span className="text-xs text-[var(--color-text-tertiary)]">
+          <span className="text-xs text-shell-500">
             Filtered by:
           </span>
           <span
-            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors hover:bg-[var(--color-bg-active)]"
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors hover:bg-shell-200"
             style={{
-              background: "var(--color-bg-hover)",
-              color: "var(--color-text-secondary)",
+              background: "var(--sg-shell-100)",
+              color: "var(--sg-shell-600)",
             }}
             onClick={() => setSkillFilter(null)}
           >
@@ -574,7 +574,7 @@ export function LearnPage() {
 
       {/* Section header + grid */}
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+        <h2 className="text-xl font-bold text-shell-900">
           Learning Paths
         </h2>
         <div className="flex items-center gap-2">
@@ -583,7 +583,7 @@ export function LearnPage() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="cursor-pointer appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+              className="cursor-pointer appearance-none rounded-full border border-shell-border bg-white/[0.06] px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
             >
               {visibleCategories.map((cat) => (
                 <option key={cat.value} value={cat.value}>
@@ -594,7 +594,7 @@ export function LearnPage() {
             <ChevronDown
               size={14}
               strokeWidth={1.5}
-              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-shell-500"
             />
           </div>
           {/* Sort dropdown */}
@@ -602,7 +602,7 @@ export function LearnPage() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOption)}
-              className="cursor-pointer appearance-none rounded-full border border-[var(--color-border-default)] bg-white/[0.06] px-4 py-2 pr-8 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] focus:outline-none"
+              className="cursor-pointer appearance-none rounded-full border border-shell-border bg-white/[0.06] px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -613,7 +613,7 @@ export function LearnPage() {
             <ChevronDown
               size={14}
               strokeWidth={1.5}
-              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-shell-500"
             />
           </div>
         </div>
@@ -636,19 +636,19 @@ export function LearnPage() {
         </div>
       ) : category === "in-progress" ? (
         <div className="text-center py-16 space-y-2">
-          <p className="text-sm text-[var(--color-text-tertiary)]">
+          <p className="text-sm text-shell-500">
             No paths in progress yet. Start a learning path to track your progress.
           </p>
         </div>
       ) : category !== "all" ? (
         <div className="text-center py-16 space-y-2">
-          <p className="text-sm text-[var(--color-text-tertiary)]">
+          <p className="text-sm text-shell-500">
             No paths found in this category yet. Try searching for a specific topic.
           </p>
         </div>
       ) : (
         <div className="text-center py-16 space-y-2">
-          <p className="text-sm text-[var(--color-text-tertiary)]">
+          <p className="text-sm text-shell-500">
             Loading learning paths...
           </p>
         </div>
@@ -675,10 +675,10 @@ function AnimatedCheck({ size = 16 }: { size?: number }) {
       className="fp-gen-check"
       style={{ animation: "fp-check-pop 350ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }}
     >
-      <circle cx="8" cy="8" r="7" stroke="var(--color-green-700)" strokeWidth={1.5} fill="none" />
+      <circle cx="8" cy="8" r="7" stroke="var(--sg-forest-300)" strokeWidth={1.5} fill="none" />
       <path
         d="M4.5 8.2 L7 10.5 L11.5 5.5"
-        stroke="var(--color-green-700)"
+        stroke="var(--sg-forest-300)"
         strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -694,7 +694,7 @@ function AnimatedFail({ size = 18 }: { size?: number }) {
       className="fp-gen-fail"
       style={{ animation: "fp-fail-shake 400ms ease-out" }}
     >
-      <X size={size} strokeWidth={2} style={{ color: "var(--color-coral-700)" }} />
+      <X size={size} strokeWidth={2} style={{ color: "var(--sg-coral-500)" }} />
     </div>
   );
 }
@@ -712,7 +712,7 @@ function StepRow({ label, state, delay }: { label: string; state: StepState; del
       {/* Icon area — 18px wide */}
       <div className="w-[18px] h-[18px] flex items-center justify-center shrink-0">
         {state === "active" && (
-          <Loader2 size={14} className="animate-spin" style={{ color: "var(--color-green-700)" }} />
+          <Loader2 size={14} className="animate-spin" style={{ color: "var(--sg-forest-300)" }} />
         )}
         {state === "complete" && <AnimatedCheck size={18} />}
         {state === "failed" && <AnimatedFail size={18} />}
@@ -724,12 +724,12 @@ function StepRow({ label, state, delay }: { label: string; state: StepState; del
         style={{
           color:
             state === "active"
-              ? "var(--color-text-primary)"
+              ? "white"
               : state === "complete"
-                ? "var(--color-text-tertiary)"
+                ? "rgba(255,255,255,0.4)"
                 : state === "failed"
-                  ? "var(--color-coral-700)"
-                  : "var(--color-text-tertiary)",
+                  ? "var(--sg-coral-500)"
+                  : "rgba(255,255,255,0.4)",
           textDecoration: state === "complete" ? "line-through" : "none",
           opacity: state === "complete" ? 0.6 : 1,
         }}
@@ -875,10 +875,10 @@ function GenerationOverlay({
       >
         {/* Header */}
         <div className="w-full space-y-1.5 mb-6">
-          <p className="text-lg font-semibold text-[var(--color-text-primary)]">
+          <p className="text-lg font-semibold text-white">
             Building your learning path
           </p>
-          <p className="text-sm text-[var(--color-text-tertiary)]">
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
             {query}
           </p>
         </div>
@@ -898,21 +898,23 @@ function GenerationOverlay({
         {/* Failure footer */}
         {status === "failed" && (
           <div className="mt-6 space-y-3">
-            <p className="text-xs text-[var(--color-text-tertiary)]">
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
               We couldn&apos;t build this path
             </p>
             <div className="flex items-center gap-4">
               <button
                 type="button"
                 onClick={() => generation.retry()}
-                className="text-sm font-medium text-[var(--color-green-700)] hover:underline cursor-pointer"
+                className="text-sm font-medium hover:underline cursor-pointer"
+                style={{ color: "var(--sg-forest-300)" }}
               >
                 Try again
               </button>
               <button
                 type="button"
                 onClick={onDismiss}
-                className="text-sm text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] cursor-pointer"
+                className="text-sm cursor-pointer transition-colors"
+                style={{ color: "rgba(255,255,255,0.4)" }}
               >
                 Go back
               </button>

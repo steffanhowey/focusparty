@@ -40,16 +40,16 @@ function SkillRow({
       {/* Skill info (left) */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="text-sm font-medium text-[var(--color-text-primary)] truncate">
+          <span className="text-sm font-medium text-shell-900 truncate">
             {skill.name}
           </span>
           {relevance === "primary" && (
-            <span className="text-[10px] px-1 py-px rounded bg-[var(--color-bg-hover)] text-[var(--color-text-tertiary)] uppercase tracking-wider font-medium shrink-0">
+            <span className="text-[10px] px-1 py-px rounded bg-shell-100 text-shell-500 uppercase tracking-wider font-medium shrink-0">
               Primary
             </span>
           )}
         </div>
-        <span className="text-xs text-[var(--color-text-tertiary)]">
+        <span className="text-xs text-shell-500">
           {skill.domain_name}
         </span>
       </div>
@@ -59,14 +59,14 @@ function SkillRow({
         <FluencyBadge level={before.fluency_level} size="sm" />
         <ArrowRight
           size={12}
-          className="text-[var(--color-text-tertiary)]"
+          className="text-shell-500"
         />
         <div className="relative">
           <FluencyBadge level={after.fluency_level} />
           {leveled_up && (
             <span
               className="absolute -top-1 -right-1 animate-pulse"
-              style={{ color: "var(--color-gold-700)" }}
+              style={{ color: "var(--sg-gold-600)" }}
             >
               <Sparkles size={10} />
             </span>
@@ -96,13 +96,13 @@ export function SkillReceipt({ receipt }: SkillReceiptProps) {
       style={{ animationDelay: "400ms", animationFillMode: "backwards" }}
     >
       <Card className="overflow-hidden">
-        {/* Accent bar — uses green for level-up, default accent otherwise */}
+        {/* Accent bar — uses forest-300 for level-up, default border otherwise */}
         <div
           className="h-0.5"
           style={{
             background: hasLevelUp
-              ? "linear-gradient(to right, var(--color-green-700), var(--color-gold-700))"
-              : "var(--color-border-default)",
+              ? "linear-gradient(to right, var(--sg-forest-300), var(--sg-gold-600))"
+              : "var(--sg-shell-border)",
           }}
         />
 
@@ -114,11 +114,11 @@ export function SkillReceipt({ receipt }: SkillReceiptProps) {
                 size={14}
                 style={{
                   color: hasLevelUp
-                    ? "var(--color-green-700)"
-                    : "var(--color-text-tertiary)",
+                    ? "var(--sg-forest-300)"
+                    : "var(--sg-shell-500)",
                 }}
               />
-              <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+              <h3 className="text-sm font-semibold text-shell-900">
                 Skills Developed
               </h3>
             </div>
@@ -126,7 +126,7 @@ export function SkillReceipt({ receipt }: SkillReceiptProps) {
               <span
                 className="text-[10px] font-semibold uppercase tracking-widest animate-fade-in"
                 style={{
-                  color: "var(--color-gold-700)",
+                  color: "var(--sg-gold-600)",
                   animationDelay: "800ms",
                 }}
               >
@@ -138,7 +138,7 @@ export function SkillReceipt({ receipt }: SkillReceiptProps) {
           {/* First receipt message */}
           {is_first_receipt && (
             <p
-              className="text-xs text-[var(--color-text-tertiary)] animate-fade-in"
+              className="text-xs text-shell-500 animate-fade-in"
               style={{
                 animationDelay: "500ms",
                 animationFillMode: "backwards",
@@ -151,11 +151,11 @@ export function SkillReceipt({ receipt }: SkillReceiptProps) {
           {/* Divider */}
           <div
             className="h-px !mt-3"
-            style={{ background: "var(--color-border-default)" }}
+            style={{ background: "var(--sg-shell-border)" }}
           />
 
           {/* Skill rows */}
-          <div className="divide-y divide-[var(--color-border-default)]">
+          <div className="divide-y divide-shell-border">
             {skills.map((entry, i) => (
               <SkillRow key={entry.skill.slug} entry={entry} index={i} />
             ))}

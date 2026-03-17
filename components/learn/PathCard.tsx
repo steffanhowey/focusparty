@@ -11,9 +11,9 @@ interface PathCardProps {
 }
 
 const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
-  beginner: { label: "Beginner", color: "var(--color-green-700)" },
-  intermediate: { label: "Intermediate", color: "var(--color-cyan-700)" },
-  advanced: { label: "Advanced", color: "var(--color-coral-700)" },
+  beginner: { label: "Beginner", color: "var(--sg-forest-300)" },
+  intermediate: { label: "Intermediate", color: "var(--sg-teal-500)" },
+  advanced: { label: "Advanced", color: "var(--sg-coral-500)" },
 };
 
 function formatDuration(seconds: number): string {
@@ -45,8 +45,8 @@ export function PathCard({ path, progress, onClick, onSkillClick }: PathCardProp
     >
       {/* Image card */}
       <div
-        className="group/card relative w-full overflow-hidden rounded-md border shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)]"
-        style={{ borderColor: "var(--color-border-default)" }}
+        className="group/card relative w-full overflow-hidden rounded-md border shadow-sm transition-all duration-200 hover:shadow-md"
+        style={{ borderColor: "var(--sg-shell-border)" }}
       >
         <PathCover path={path} height="h-[200px]" />
 
@@ -57,7 +57,7 @@ export function PathCard({ path, progress, onClick, onSkillClick }: PathCardProp
             background: "rgba(0,0,0,0.5)",
             color:
               DIFFICULTY_CONFIG[path.difficulty_level]?.color ??
-              "var(--color-cyan-700)",
+              "var(--sg-teal-500)",
           }}
         >
           {DIFFICULTY_CONFIG[path.difficulty_level]?.label ?? path.difficulty_level}
@@ -70,7 +70,7 @@ export function PathCard({ path, progress, onClick, onSkillClick }: PathCardProp
               className="h-full transition-all"
               style={{
                 width: `${percentComplete}%`,
-                background: "var(--color-accent-primary)",
+                background: "var(--sg-forest-500)",
               }}
             />
           </div>
@@ -80,10 +80,10 @@ export function PathCard({ path, progress, onClick, onSkillClick }: PathCardProp
       {/* Title + meta below card */}
       <div className="flex items-center gap-2 px-1 pt-2">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-semibold text-white">
+          <h3 className="truncate text-sm font-semibold text-shell-900">
             {path.title}
           </h3>
-          <p className="mt-0.5 line-clamp-1 text-xs text-[var(--color-text-tertiary)]">
+          <p className="mt-0.5 line-clamp-1 text-xs text-shell-500">
             {formatDuration(path.estimated_duration_seconds)}
             {percentComplete !== null && ` · ${percentComplete}% complete`}
           </p>
@@ -95,10 +95,10 @@ export function PathCard({ path, progress, onClick, onSkillClick }: PathCardProp
                 .map((tag) => (
                   <span
                     key={tag.skill_slug}
-                    className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium cursor-pointer transition-colors hover:bg-[var(--color-bg-active)] hover:text-[var(--color-text-primary)]"
+                    className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium cursor-pointer transition-colors hover:bg-shell-200 hover:text-shell-900"
                     style={{
-                      background: "var(--color-bg-hover)",
-                      color: "var(--color-text-secondary)",
+                      background: "var(--sg-shell-100)",
+                      color: "var(--sg-shell-600)",
                     }}
                     onClick={(e) => {
                       e.stopPropagation();

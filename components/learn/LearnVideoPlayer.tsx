@@ -228,8 +228,8 @@ export function LearnVideoPlayer({
 
   if (!ytId) {
     return (
-      <div className="aspect-video bg-[var(--color-bg-secondary)] flex flex-col items-center justify-center rounded-lg gap-3">
-        <p className="text-sm text-[var(--color-text-tertiary)]">
+      <div className="aspect-video bg-white flex flex-col items-center justify-center rounded-lg gap-3">
+        <p className="text-sm text-shell-500">
           Video unavailable in player
         </p>
         <Button
@@ -247,7 +247,7 @@ export function LearnVideoPlayer({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 gap-3">
-      <div className="relative flex-1 min-h-0 bg-black rounded-lg overflow-hidden group border border-[var(--color-border-default)]">
+      <div className="relative flex-1 min-h-0 bg-black rounded-lg overflow-hidden group border border-shell-border">
         {/* YouTube player container */}
         <div
           ref={containerRef}
@@ -275,7 +275,7 @@ export function LearnVideoPlayer({
             <div className="absolute inset-0 bg-black/40" />
             <div
               className="relative rounded-full p-4"
-              style={{ background: "var(--color-accent-primary)" }}
+              style={{ background: "var(--sg-forest-500)" }}
             >
               <Play size={32} className="text-white ml-1" />
             </div>
@@ -285,7 +285,7 @@ export function LearnVideoPlayer({
                 className="absolute bottom-3 right-3 px-2 py-1 rounded text-[10px] font-medium tabular-nums"
                 style={{
                   background: "rgba(0, 0, 0, 0.7)",
-                  color: "var(--color-text-secondary)",
+                  color: "rgba(255,255,255,0.6)",
                   backdropFilter: "blur(4px)",
                 }}
               >
@@ -337,7 +337,7 @@ export function LearnVideoPlayer({
         )}
       </div>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-[var(--color-text-primary)] line-clamp-1">
+        <h3 className="text-sm font-medium text-shell-900 line-clamp-1">
           {title}
         </h3>
         <Button

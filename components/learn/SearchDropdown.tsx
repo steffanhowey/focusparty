@@ -10,9 +10,9 @@ import { PathCover } from "./PathCover";
 // ─── Shared helpers ─────────────────────────────────────────
 
 const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
-  beginner: { label: "Beginner", color: "var(--color-green-700)" },
-  intermediate: { label: "Intermediate", color: "var(--color-cyan-700)" },
-  advanced: { label: "Advanced", color: "var(--color-coral-700)" },
+  beginner: { label: "Beginner", color: "var(--sg-forest-300)" },
+  intermediate: { label: "Intermediate", color: "var(--sg-teal-500)" },
+  advanced: { label: "Advanced", color: "var(--sg-coral-500)" },
 };
 
 function formatDuration(seconds: number): string {
@@ -74,8 +74,8 @@ export function SearchDropdown({
       ref={dropdownRef}
       className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border shadow-lg"
       style={{
-        background: "var(--color-bg-elevated)",
-        borderColor: "var(--color-border-default)",
+        background: "var(--sg-shell-50)",
+        borderColor: "var(--sg-shell-border)",
       }}
       // Prevent input blur so clicks inside the dropdown (Build Path, result rows)
       // register before the dropdown closes
@@ -87,9 +87,9 @@ export function SearchDropdown({
           <div className="flex items-center gap-2 px-4 py-3">
             <Loader2
               size={14}
-              className="animate-spin text-[var(--color-text-tertiary)]"
+              className="animate-spin text-shell-500"
             />
-            <span className="text-xs text-[var(--color-text-tertiary)]">
+            <span className="text-xs text-shell-500">
               Searching...
             </span>
           </div>
@@ -109,14 +109,14 @@ export function SearchDropdown({
         {results.length > 0 && showBuildRow && (
           <div
             className="border-t"
-            style={{ borderColor: "var(--color-border-default)" }}
+            style={{ borderColor: "var(--sg-shell-border)" }}
           />
         )}
 
         {/* Related results */}
         {results.length > 0 && (
           <div className="px-3 pt-2 pb-1">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-shell-500">
               Related paths
             </p>
           </div>
@@ -148,7 +148,7 @@ function ResultRow({
   return (
     <button
       type="button"
-      className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-[var(--color-bg-hover)] cursor-pointer"
+      className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-shell-100 cursor-pointer"
       onClick={onSelect}
     >
       {/* Thumbnail — branded cover at small size */}
@@ -157,7 +157,7 @@ function ResultRow({
         style={{
           width: 96,
           height: 64,
-          borderColor: "var(--color-border-default)",
+          borderColor: "var(--sg-shell-border)",
         }}
       >
         <PathCover path={path} height="h-full" sizes="96px" />
@@ -169,17 +169,17 @@ function ResultRow({
           <span
             className="inline-block rounded px-1.5 py-0.5 text-[10px] font-medium leading-none mb-1"
             style={{
-              background: "var(--color-bg-hover)",
+              background: "var(--sg-shell-100)",
               color: difficulty.color,
             }}
           >
             {difficulty.label}
           </span>
         )}
-        <p className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
+        <p className="truncate text-sm font-semibold text-shell-900">
           {path.title}
         </p>
-        <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
+        <p className="mt-0.5 text-xs text-shell-500">
           {formatDuration(path.estimated_duration_seconds)}
           {moduleCount > 0 && ` · ${moduleCount} modules`}
         </p>
@@ -193,8 +193,8 @@ function ResultRow({
                   key={tag.skill_slug}
                   className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium"
                   style={{
-                    background: "var(--color-bg-hover)",
-                    color: "var(--color-text-tertiary)",
+                    background: "var(--sg-shell-100)",
+                    color: "var(--sg-shell-500)",
                   }}
                 >
                   {tag.skill_name}
@@ -210,12 +210,12 @@ function ResultRow({
         style={{
           width: 28,
           height: 28,
-          background: "var(--color-bg-hover)",
+          background: "var(--sg-shell-100)",
         }}
       >
         <ArrowRight
           size={14}
-          className="text-[var(--color-text-tertiary)]"
+          className="text-shell-500"
         />
       </div>
     </button>
@@ -231,11 +231,11 @@ function BuildPathThumbnail() {
       style={{
         width: 96,
         height: 64,
-        borderColor: "var(--color-border-default)",
-        background: "var(--color-bg-secondary)",
+        borderColor: "var(--sg-shell-border)",
+        background: "white",
       }}
     >
-      <Sparkles size={20} className="text-[var(--color-text-tertiary)]" />
+      <Sparkles size={20} className="text-shell-500" />
     </div>
   );
 }
@@ -271,10 +271,10 @@ function BuildPathRow({
       <div className="flex w-full items-center gap-3 px-3 py-2.5">
         <BuildPathThumbnail />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+          <p className="text-sm font-semibold text-shell-900">
             Couldn&apos;t build path
           </p>
-          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+          <p className="mt-1 text-xs text-shell-500">
             Not enough content available yet
           </p>
         </div>
@@ -290,10 +290,10 @@ function BuildPathRow({
     <div className="flex w-full items-center gap-3 px-3 py-2.5">
       <BuildPathThumbnail />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
+        <p className="truncate text-sm font-semibold text-shell-900">
           {query}
         </p>
-        <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
+        <p className="mt-0.5 text-xs text-shell-500">
           Custom AI-curated path
         </p>
       </div>
@@ -301,7 +301,7 @@ function BuildPathRow({
         variant="outline"
         size="xs"
         onClick={() => onStartGeneration(query)}
-        className="!border-[var(--color-green-700)] !text-[var(--color-green-700)] hover:!bg-[var(--color-green-700)]/10"
+        className="!border-forest-500 !text-forest-500 hover:!bg-forest-500/10"
       >
         Start Learning
       </Button>

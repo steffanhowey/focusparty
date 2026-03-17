@@ -14,16 +14,18 @@ interface PathCoverProps {
 
 /**
  * Subtle accent colors for the no-thumbnail fallback gradient.
+ * Using rgba values for gradient overlays — these are intentional
+ * design choices, not color token replacements.
  */
 const FALLBACK_ACCENTS = [
-  "rgba(88, 28, 135, 0.3)",
-  "rgba(14, 116, 144, 0.3)",
-  "rgba(30, 64, 175, 0.3)",
-  "rgba(124, 58, 237, 0.3)",
-  "rgba(21, 128, 61, 0.3)",
-  "rgba(157, 23, 77, 0.3)",
-  "rgba(180, 83, 9, 0.3)",
-  "rgba(194, 65, 12, 0.3)",
+  "rgba(58, 125, 83, 0.3)",
+  "rgba(61, 142, 139, 0.3)",
+  "rgba(58, 125, 83, 0.2)",
+  "rgba(42, 83, 64, 0.4)",
+  "rgba(30, 58, 44, 0.3)",
+  "rgba(107, 191, 135, 0.25)",
+  "rgba(58, 125, 83, 0.35)",
+  "rgba(61, 142, 139, 0.25)",
 ];
 
 /** Simple string hash → index */
@@ -89,7 +91,7 @@ export function PathCover({
         <div
           className="absolute inset-0 flex items-center justify-center"
           style={{
-            background: `linear-gradient(135deg, ${accent}, var(--color-bg-secondary))`,
+            background: `linear-gradient(135deg, ${accent}, white)`,
           }}
         >
           <Layers size={32} style={{ color: "rgba(255,255,255,0.15)" }} />

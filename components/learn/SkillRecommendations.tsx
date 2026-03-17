@@ -24,22 +24,22 @@ const REASON_CONFIG: Record<
   level_up: {
     icon: TrendingUp,
     label: "Level up",
-    color: "var(--color-green-700)",
+    color: "var(--sg-forest-300)",
   },
   function_gap: {
     icon: Target,
     label: "Key skill",
-    color: "var(--color-cyan-700)",
+    color: "var(--sg-teal-600)",
   },
   domain_expansion: {
     icon: Compass,
     label: "Explore",
-    color: "var(--color-text-tertiary)",
+    color: "var(--sg-shell-500)",
   },
   market_demand: {
     icon: Flame,
     label: "In Demand",
-    color: "var(--color-amber-600)",
+    color: "var(--sg-gold-600)",
   },
 };
 
@@ -61,7 +61,7 @@ function RecommendationCard({
 
   return (
     <Card
-      className="p-4 space-y-3 animate-fade-in cursor-pointer transition-colors hover:bg-[var(--color-bg-hover)]"
+      className="p-4 space-y-3 animate-fade-in cursor-pointer transition-colors hover:bg-shell-50"
       style={{
         animationDelay: `${index * 100}ms`,
         animationFillMode: "backwards",
@@ -81,22 +81,22 @@ function RecommendationCard({
 
       {/* Skill + reasoning */}
       <div className="space-y-0.5">
-        <h4 className="text-sm font-medium text-[var(--color-text-primary)] leading-snug">
+        <h4 className="text-sm font-medium text-shell-900 leading-snug">
           {rec.skill.name}
         </h4>
-        <p className="text-xs text-[var(--color-text-tertiary)]">
+        <p className="text-xs text-shell-500">
           {rec.reason_text}
         </p>
       </div>
 
       {/* Top path */}
       <div className="flex items-center justify-between pt-1">
-        <p className="text-xs text-[var(--color-text-secondary)] truncate pr-2">
+        <p className="text-xs text-shell-600 truncate pr-2">
           {topPath.title}
         </p>
         <ArrowRight
           size={12}
-          className="text-[var(--color-text-tertiary)] shrink-0"
+          className="text-shell-500 shrink-0"
         />
       </div>
     </Card>
@@ -116,7 +116,7 @@ export function SkillRecommendations({
 
   return (
     <div className="space-y-3 mb-6">
-      <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">
+      <h3 className="text-sm font-medium text-shell-600">
         Recommended for you
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

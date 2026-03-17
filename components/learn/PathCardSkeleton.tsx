@@ -9,14 +9,14 @@ export function PathCardSkeleton() {
     <div>
       {/* Image placeholder */}
       <div
-        className="h-[200px] w-full animate-pulse rounded-md border bg-[var(--color-bg-hover)]"
-        style={{ borderColor: "var(--color-border-default)" }}
+        className="h-[200px] w-full animate-pulse rounded-md border bg-shell-100"
+        style={{ borderColor: "var(--sg-shell-border)" }}
       />
 
       {/* Text placeholder below */}
       <div className="space-y-1.5 px-1 pt-2">
-        <div className="h-4 w-4/5 animate-pulse rounded bg-[var(--color-bg-hover)]" />
-        <div className="h-3 w-2/5 animate-pulse rounded bg-[var(--color-bg-hover)]" />
+        <div className="h-4 w-4/5 animate-pulse rounded bg-shell-100" />
+        <div className="h-3 w-2/5 animate-pulse rounded bg-shell-100" />
       </div>
     </div>
   );
