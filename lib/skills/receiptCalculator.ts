@@ -100,10 +100,12 @@ export async function calculateSkillReceipt(
 
       missionCount++;
 
-      // Extract score from evaluation if present
+      // Extract score from evaluation if present.
+      // Skip null scores (unevaluated/failed evaluations) — they must not
+      // inflate fluency assessment. Only real AI evaluations count.
       if (state.evaluation) {
         const eval_ = state.evaluation;
-        if (typeof eval_.score === "number") {
+        if (typeof eval_.score === "number" && eval_.score > 0) {
           missionScores.push(eval_.score);
         } else if (eval_.quality === "nailed_it") {
           missionScores.push(90);
@@ -112,6 +114,7 @@ export async function calculateSkillReceipt(
         } else if (eval_.quality === "needs_iteration") {
           missionScores.push(45);
         }
+        // null score or unrecognized quality → not counted
       }
     }
 

@@ -2,10 +2,16 @@ import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@/lib/supabase/admin";
 import { mapPathRow, mapProgressRow } from "@/lib/learn/pathGenerator";
-import type { LearningProgress } from "@/lib/types";
+import type { AchievementSummary, LearningProgress } from "@/lib/types";
 import { evaluateSubmission, type SubmissionEvaluation } from "@/lib/learn/evaluator";
 import { UpdateProgressSchema, parseBody } from "@/lib/learn/validation";
 import type { SkillReceipt } from "@/lib/types/skills";
+import type { ActivityEventType } from "@/lib/types/activity";
+import {
+  ACHIEVEMENT_SUMMARY_SELECT,
+  generateAchievementShareSlug,
+  mapAchievementSummaryRow,
+} from "@/lib/achievements/achievementModel";
 
 /**
  * GET /api/learn/paths/[id]
@@ -48,6 +54,7 @@ export async function GET(
   } = await supabase.auth.getUser();
 
   let progress: LearningProgress | null = null;
+  let achievement: AchievementSummary | null = null;
 
   if (user) {
     const { data: progressRow } = await admin
@@ -59,6 +66,21 @@ export async function GET(
 
     if (progressRow) {
       progress = mapProgressRow(progressRow);
+
+      if (progress.status === "completed") {
+        const { data: achievementRow } = await admin
+          .from("fp_achievements")
+          .select(ACHIEVEMENT_SUMMARY_SELECT)
+          .eq("user_id", user.id)
+          .eq("path_id", id)
+          .single();
+
+        if (achievementRow) {
+          achievement = mapAchievementSummaryRow(
+            achievementRow as Record<string, unknown>,
+          );
+        }
+      }
     }
   }
 
@@ -71,7 +93,11 @@ export async function GET(
     path.skill_tags = tagMap.get(id) ?? [];
   }
 
-  return NextResponse.json({ path, progress });
+  return NextResponse.json({
+    path,
+    progress,
+    ...(achievement ? { achievement } : {}),
+  });
 }
 
 /**
@@ -133,14 +159,16 @@ export async function PATCH(
   const pathItems = (pathRow.items as unknown[]) ?? [];
 
   // Check for existing progress
-  const { data: existing } = await admin
+  const { data: existingProgress } = await admin
     .from("fp_learning_progress")
     .select("*")
     .eq("user_id", user.id)
     .eq("path_id", id)
     .single();
 
-  if (!existing) {
+  let progressRow = existingProgress;
+
+  if (!progressRow) {
     // Create new progress record
     const { data: created, error: createErr } = await admin
       .from("fp_learning_progress")
@@ -162,6 +190,8 @@ export async function PATCH(
       );
     }
 
+    progressRow = created;
+
     // Increment start_count on path
     admin
       .from("fp_learning_paths")
@@ -169,8 +199,32 @@ export async function PATCH(
       .eq("id", id)
       .then(() => {});
 
-    return NextResponse.json({ progress: mapProgressRow(created!) });
+    // Emit path_started event (fire-and-forget)
+    admin
+      .from("fp_activity_events")
+      .insert({
+        user_id: user.id,
+        actor_type: "system" as const,
+        event_type: "path_started" as ActivityEventType,
+        body: `Started "${pathRow.title}"`,
+        payload: { path_id: id, path_title: pathRow.title },
+      })
+      .then(({ error: evtErr }) => {
+        if (evtErr) console.error("[learn/paths] path_started event error:", evtErr);
+      });
+
+    const needsFollowupUpdate =
+      body.item_completed !== undefined ||
+      body.time_delta_seconds !== undefined ||
+      body.item_state !== undefined ||
+      body.submission !== undefined;
+
+    if (!needsFollowupUpdate) {
+      return NextResponse.json({ progress: mapProgressRow(created!) });
+    }
   }
+
+  const existing = progressRow;
 
   // Update existing progress
   const updates: Record<string, unknown> = {
@@ -188,6 +242,7 @@ export async function PATCH(
 
   let evaluation: SubmissionEvaluation | null = null;
   let skillReceipt: SkillReceipt | null = null;
+  let achievement: AchievementSummary | null = null;
 
   if (body.item_completed) {
     const itemStates = (existing.item_states as Record<string, unknown>) ?? {};
@@ -224,65 +279,181 @@ export async function PATCH(
     ).length;
     updates.items_completed = completedCount;
 
-    // Check if path is complete
+    // ── Path completion logic (atomic + idempotent) ──────────
     if (completedCount >= pathItems.length && !existing.completed_at) {
       updates.status = "completed";
       updates.completed_at = new Date().toISOString();
 
-      // Increment completion_count on path
-      admin
-        .from("fp_learning_paths")
-        .update({
-          completion_count: (pathRow.completion_count ?? 0) + 1,
-        })
-        .eq("id", id)
-        .then(() => {});
-
-      // Auto-create achievement (fire-and-forget)
       const totalTime =
         (existing.time_invested_seconds ?? 0) +
         (body.time_delta_seconds ?? 0);
-      const rand = Math.random().toString(36).slice(2, 6);
-      const topicSlug = ((pathRow.topics as string[]) ?? [])[0]
-        ?.toLowerCase()
-        .replace(/[^a-z0-9-]/g, "")
-        .slice(0, 20) ?? "skill";
-      const shareSlug = `${topicSlug}-${rand}`;
 
-      admin
-        .from("fp_achievements")
-        .insert({
-          user_id: user.id,
+      // Step 1: Atomic completion — update only if completed_at is still NULL.
+      // This prevents race conditions where two concurrent PATCHes both
+      // pass the !existing.completed_at check above.
+      const { data: completionRow, error: completionErr } = await admin
+        .from("fp_learning_progress")
+        .update({
+          status: "completed",
+          completed_at: updates.completed_at,
+          last_activity_at: updates.completed_at,
+        })
+        .eq("id", existing.id)
+        .is("completed_at", null) // Atomic guard
+        .select("id")
+        .single();
+
+      // If no row returned, another request already completed this path.
+      // We still update item_states below, but skip achievement + receipt.
+      const isFirstCompletion = !completionErr && !!completionRow;
+
+      if (isFirstCompletion) {
+        // Increment completion_count on path (fire-and-forget)
+        admin
+          .from("fp_learning_paths")
+          .update({
+            completion_count: (pathRow.completion_count ?? 0) + 1,
+          })
+          .eq("id", id)
+          .then(() => {});
+
+        // Step 2: Create achievement (awaited, conflict-safe).
+        // UNIQUE(user_id, path_id) constraint prevents duplicates.
+        const { data: profileRow } = await admin
+          .from("fp_profiles")
+          .select("display_name, first_name")
+          .eq("id", user.id)
+          .single();
+
+        const profile = (profileRow as Record<string, unknown> | null) ?? null;
+        const shareSlug = generateAchievementShareSlug(
+          (profile?.display_name as string | null) ??
+            (profile?.first_name as string | null) ??
+            null,
+          (pathRow.topics as string[]) ?? [],
+        );
+
+        const { error: achieveErr } = await admin
+          .from("fp_achievements")
+          .upsert(
+            {
+              user_id: user.id,
+              path_id: id,
+              progress_id: existing.id,
+              path_title: pathRow.title,
+              path_topics: pathRow.topics ?? [],
+              items_completed: completedCount,
+              time_invested_seconds: totalTime,
+              difficulty_level: pathRow.difficulty_level ?? "intermediate",
+              completed_at: updates.completed_at,
+              share_slug: shareSlug,
+            },
+            { onConflict: "user_id,path_id", ignoreDuplicates: true },
+          );
+
+        if (achieveErr) {
+          console.error("[learn/paths] achievement insert error:", achieveErr);
+        }
+
+        // Step 3: Receipt idempotency — check if a receipt already exists
+        // on the achievement row. If so, return it instead of recalculating.
+        const { data: existingAchievement } = await admin
+          .from("fp_achievements")
+          .select(`${ACHIEVEMENT_SUMMARY_SELECT}, skill_receipt`)
+          .eq("user_id", user.id)
+          .eq("path_id", id)
+          .single();
+
+        if (existingAchievement) {
+          achievement = mapAchievementSummaryRow(
+            existingAchievement as Record<string, unknown>,
+          );
+        }
+
+        if (existingAchievement?.skill_receipt) {
+          // Receipt already calculated (e.g., from a previous attempt)
+          skillReceipt = existingAchievement.skill_receipt as SkillReceipt;
+        } else {
+          // Calculate fresh receipt (writes fp_user_skills, returns before/after)
+          const { calculateSkillReceipt } = await import(
+            "@/lib/skills/receiptCalculator"
+          );
+          skillReceipt = await calculateSkillReceipt({
+            userId: user.id,
+            pathId: id,
+            pathTitle: pathRow.title as string,
+            completedAt: updates.completed_at as string,
+            itemStates: updates.item_states as Record<
+              string,
+              { completed?: boolean; evaluation?: Record<string, unknown> }
+            >,
+            pathItems: pathItems as Array<{
+              item_id?: string;
+              task_type?: string;
+              mission?: { objective?: string };
+            }>,
+          });
+
+          // Persist receipt on achievement before returning so the durable
+          // history survives refreshes and downstream profile/recommendation reads.
+          if (skillReceipt) {
+            const { error: receiptErr } = await admin
+              .from("fp_achievements")
+              .update({ skill_receipt: skillReceipt })
+              .eq("user_id", user.id)
+              .eq("path_id", id);
+
+            if (receiptErr) {
+              console.error("[learn/paths] persist receipt error:", receiptErr);
+            }
+          }
+        }
+
+        // Emit learning activity events (fire-and-forget)
+        const emitEvent = (
+          eventType: ActivityEventType,
+          eventBody: string,
+          payload: Record<string, unknown>,
+        ): void => {
+          admin
+            .from("fp_activity_events")
+            .insert({
+              user_id: user.id,
+              actor_type: "system",
+              event_type: eventType,
+              body: eventBody,
+              payload,
+            })
+            .then(({ error: evtErr }) => {
+              if (evtErr) console.error(`[learn/paths] ${eventType} event error:`, evtErr);
+            });
+        };
+
+        emitEvent("path_completed", `Completed "${pathRow.title}"`, {
           path_id: id,
-          progress_id: existing.id,
           path_title: pathRow.title,
-          path_topics: pathRow.topics ?? [],
           items_completed: completedCount,
           time_invested_seconds: totalTime,
-          difficulty_level: pathRow.difficulty_level ?? "intermediate",
-          share_slug: shareSlug,
-        })
-        .then(() => {});
+        });
 
-      // Calculate skill receipt (writes fp_user_skills, returns before/after)
-      const { calculateSkillReceipt } = await import(
-        "@/lib/skills/receiptCalculator"
-      );
-      skillReceipt = await calculateSkillReceipt({
-        userId: user.id,
-        pathId: id,
-        pathTitle: pathRow.title as string,
-        completedAt: updates.completed_at as string,
-        itemStates: updates.item_states as Record<
-          string,
-          { completed?: boolean; evaluation?: Record<string, unknown> }
-        >,
-        pathItems: pathItems as Array<{
-          item_id?: string;
-          task_type?: string;
-          mission?: { objective?: string };
-        }>,
-      });
+        if (skillReceipt?.skills) {
+          for (const entry of skillReceipt.skills) {
+            if (entry.leveled_up) {
+              emitEvent(
+                "skill_leveled_up",
+                `Leveled up ${entry.skill.name} to ${entry.after.fluency_level}`,
+                {
+                  skill_slug: entry.skill.slug,
+                  skill_name: entry.skill.name,
+                  from_level: entry.before.fluency_level,
+                  to_level: entry.after.fluency_level,
+                  path_id: id,
+                },
+              );
+            }
+          }
+        }
+      }
     }
   }
 
@@ -301,10 +472,29 @@ export async function PATCH(
     );
   }
 
+  if (updated?.status === "completed" && (!achievement || !skillReceipt)) {
+    const { data: achievementRow } = await admin
+      .from("fp_achievements")
+      .select(`${ACHIEVEMENT_SUMMARY_SELECT}, skill_receipt`)
+      .eq("user_id", user.id)
+      .eq("path_id", id)
+      .single();
+
+    if (achievementRow) {
+      achievement = mapAchievementSummaryRow(
+        achievementRow as Record<string, unknown>,
+      );
+
+      if (!skillReceipt && achievementRow.skill_receipt) {
+        skillReceipt = achievementRow.skill_receipt as SkillReceipt;
+      }
+    }
+  }
+
   return NextResponse.json({
     progress: mapProgressRow(updated!),
     ...(evaluation ? { evaluation } : {}),
     ...(skillReceipt ? { skill_receipt: skillReceipt } : {}),
+    ...(achievement ? { achievement } : {}),
   });
 }
-

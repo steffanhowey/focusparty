@@ -4,14 +4,22 @@
  * Skill-based recommendation cards for the Learn page.
  *
  * Shows personalized path recommendations based on the user's skill profile.
- * Three recommendation types, each with a distinct visual treatment:
- * - Level-up: highlighted, most prominent (you're almost there)
- * - Function gap: standard weight (you should know this)
- * - Domain expansion: subtle (broaden your capabilities)
+ * Five recommendation types, each with a distinct visual treatment.
+ * Each card has a deterministic primary CTA: Start Path, Continue Path,
+ * or Practice in Room — resolved server-side based on real user state.
  */
 
 import { Card } from "@/components/ui/Card";
-import { TrendingUp, Target, Compass, ArrowRight, Flame } from "lucide-react";
+import {
+  TrendingUp,
+  Target,
+  Compass,
+  ArrowRight,
+  Flame,
+  Zap,
+  Users,
+  Play,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { SkillRecommendation } from "@/lib/useSkillRecommendations";
 
@@ -21,6 +29,11 @@ const REASON_CONFIG: Record<
   string,
   { icon: typeof TrendingUp; label: string; color: string }
 > = {
+  continue_momentum: {
+    icon: Zap,
+    label: "Keep going",
+    color: "var(--sg-forest-500)",
+  },
   level_up: {
     icon: TrendingUp,
     label: "Level up",
@@ -56,8 +69,12 @@ function RecommendationCard({
   const config = REASON_CONFIG[rec.reason] ?? REASON_CONFIG.function_gap;
   const Icon = config.icon;
   const topPath = rec.paths[0];
+  const action = rec.action;
 
   if (!topPath) return null;
+
+  const isContinue = action?.type === "continue_path";
+  const ctaHref = action?.href ?? `/learn/paths/${topPath.id}`;
 
   return (
     <Card
@@ -66,7 +83,7 @@ function RecommendationCard({
         animationDelay: `${index * 100}ms`,
         animationFillMode: "backwards",
       }}
-      onClick={() => router.push(`/learn/paths/${topPath.id}`)}
+      onClick={() => router.push(ctaHref)}
     >
       {/* Reason badge */}
       <div className="flex items-center gap-1.5">
@@ -89,15 +106,38 @@ function RecommendationCard({
         </p>
       </div>
 
-      {/* Top path */}
-      <div className="flex items-center justify-between pt-1">
-        <p className="text-xs text-shell-600 truncate pr-2">
-          {topPath.title}
-        </p>
-        <ArrowRight
-          size={12}
-          className="text-shell-500 shrink-0"
-        />
+      {/* Path title */}
+      <p className="text-xs text-shell-600 truncate">
+        {topPath.title}
+      </p>
+
+      {/* Primary CTA + optional room hint */}
+      <div className="flex items-center justify-between pt-1 border-t border-shell-200">
+        <div className="flex items-center gap-1.5">
+          {isContinue ? (
+            <Play size={11} style={{ color: "var(--sg-forest-500)" }} />
+          ) : (
+            <ArrowRight size={11} className="text-shell-500" />
+          )}
+          <span
+            className="text-xs font-medium"
+            style={{
+              color: isContinue
+                ? "var(--sg-forest-500)"
+                : "var(--sg-shell-700)",
+            }}
+          >
+            {action?.label ?? "Start path"}
+          </span>
+        </div>
+        {action?.room_name && (
+          <div className="flex items-center gap-1 text-[10px] text-shell-400">
+            <Users size={9} />
+            <span className="truncate max-w-[100px]">
+              {action.room_name}
+            </span>
+          </div>
+        )}
       </div>
     </Card>
   );

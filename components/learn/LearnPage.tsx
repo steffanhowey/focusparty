@@ -13,6 +13,7 @@ import { PathCardSkeletonGrid } from "./PathCardSkeleton";
 import { TopicFilters } from "./TopicFilters";
 import { SearchDropdown } from "./SearchDropdown";
 import { SkillRecommendations } from "./SkillRecommendations";
+import { SkillsSnapshot } from "./SkillsSnapshot";
 import { WeeklyDigestCard } from "./WeeklyDigestCard";
 import type { LearningPath, LearningProgress } from "@/lib/types";
 
@@ -246,9 +247,6 @@ export function LearnPage() {
 
   // Navigation is now handled inside GenerationOverlay after the "ready" moment
 
-  // Clear skill filter when category or query changes
-  useEffect(() => { setSkillFilter(null); }, [category, query]);
-
   // Build a progress lookup map from in-progress paths
   const progressMap = useMemo(() => {
     const map = new Map<string, LearningProgress>();
@@ -368,6 +366,7 @@ export function LearnPage() {
 
   const handleTopicClick = useCallback(
     (slug: string) => {
+      setSkillFilter(null);
       setQueryFromTopic(slug);
       setIsDropdownOpen(true);
       inputRef.current?.focus();
@@ -379,6 +378,7 @@ export function LearnPage() {
   const handleQueryChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
+      setSkillFilter(null);
       setQuery(val);
       setIsDropdownOpen(val.trim().length > 0);
     },
@@ -509,6 +509,9 @@ export function LearnPage() {
         </p>
       )}
 
+      {/* User's skill snapshot (discovery mode only, hides if no skills) */}
+      {!query && <SkillsSnapshot />}
+
       {/* Skill-based recommendations (discovery mode only) */}
       {!query && recommendations.length > 0 && (
         <SkillRecommendations recommendations={recommendations} />
@@ -582,7 +585,10 @@ export function LearnPage() {
           <div className="relative">
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => {
+                setSkillFilter(null);
+                setCategory(e.target.value);
+              }}
               className="cursor-pointer appearance-none rounded-full border border-shell-border bg-shell-50 px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none"
             >
               {visibleCategories.map((cat) => (

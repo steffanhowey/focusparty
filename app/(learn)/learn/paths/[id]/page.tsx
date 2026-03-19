@@ -7,14 +7,12 @@ import {
   Play,
   FileText,
   Pencil,
-  Share2,
-  Link2,
-  Copy,
-  Download,
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { AchievementCard } from "@/components/achievements/AchievementCard";
+import { AchievementShareMenu } from "@/components/achievements/AchievementShareMenu";
 import { ContentViewer } from "@/components/learn/ContentViewer";
 import { PathSidebar } from "@/components/learn/PathSidebar";
 import { PathCard } from "@/components/learn/PathCard";
@@ -31,24 +29,6 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { trackFirstMissionCompleted } from "@/lib/onboarding/tracking";
 import type { LearningPath, ItemState } from "@/lib/types";
-
-// ─── Helpers ─────────────────────────────────────────────────
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  if (m < 60) return `${m} min`;
-  const h = Math.floor(m / 60);
-  const rm = m % 60;
-  return rm ? `${h}h ${rm}m` : `${h}h`;
-}
-
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 // ─── Section Milestone Toast ─────────────────────────────────
 
@@ -80,112 +60,6 @@ function SectionToast({
   );
 }
 
-// ─── Achievement Card (Shareable) ────────────────────────────
-
-function AchievementCard({
-  path,
-  itemsCompleted,
-  timeInvested,
-  completedAt,
-}: {
-  path: LearningPath;
-  itemsCompleted: number;
-  timeInvested: number;
-  completedAt: string;
-}) {
-  return (
-    <div
-      className="w-full max-w-md rounded-xl overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(145deg, var(--sg-shell-50), var(--sg-white))",
-        border: "1px solid var(--sg-shell-border)",
-        boxShadow: "var(--shadow-float, 0 8px 32px rgba(0,0,0,0.3))",
-      }}
-    >
-      {/* Accent bar */}
-      <div
-        className="h-1"
-        style={{
-          background:
-            "linear-gradient(to right, var(--sg-forest-500), var(--sg-teal-600))",
-        }}
-      />
-
-      <div className="p-6 space-y-5">
-        {/* Title */}
-        <div className="space-y-1">
-          <p
-            className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--sg-forest-500)" }}
-          >
-            Path Complete
-          </p>
-          <h3 className="text-lg font-bold text-[var(--sg-shell-900)] leading-snug">
-            {path.title}
-          </h3>
-        </div>
-
-        {/* Divider */}
-        <div
-          className="h-px"
-          style={{ background: "var(--sg-shell-border)" }}
-        />
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <p className="text-[var(--sg-shell-500)] text-xs">
-              Resources
-            </p>
-            <p className="text-[var(--sg-shell-900)] font-medium">
-              {itemsCompleted} completed
-            </p>
-          </div>
-          <div>
-            <p className="text-[var(--sg-shell-500)] text-xs">
-              Time invested
-            </p>
-            <p className="text-[var(--sg-shell-900)] font-medium">
-              {formatDuration(timeInvested)}
-            </p>
-          </div>
-        </div>
-
-        {/* Topics */}
-        {path.topics.length > 0 && (
-          <div className="space-y-1.5">
-            <p className="text-[var(--sg-shell-500)] text-xs">Topics</p>
-            <div className="flex flex-wrap gap-1.5">
-              {path.topics.slice(0, 5).map((t) => (
-                <span
-                  key={t}
-                  className="px-2 py-0.5 rounded text-xs bg-[var(--sg-sage-100)] text-[var(--sg-shell-600)]"
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-xs text-[var(--sg-shell-500)]">
-            Completed {formatDate(completedAt)}
-          </span>
-          <span
-            className="text-xs font-medium"
-            style={{ color: "var(--sg-shell-500)" }}
-          >
-            SkillGap.ai
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Page ───────────────────────────────────────────────
 
 /**
@@ -200,6 +74,7 @@ export default function LearnPathPage() {
   const {
     path,
     progress,
+    achievement,
     currentItemIndex,
     isLoading,
     error,
@@ -215,7 +90,6 @@ export default function LearnPathPage() {
   const [showTransition, setShowTransition] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sectionToast, setSectionToast] = useState<string | null>(null);
-  const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const togglePlayRef = useRef<(() => void) | null>(null);
   const [recommendedPaths, setRecommendedPaths] = useState<LearningPath[]>([]);
@@ -230,6 +104,20 @@ export default function LearnPathPage() {
   const isItemCompleted = currentItemKey
     ? progress?.item_states?.[currentItemKey]?.completed ?? false
     : false;
+  const primaryReceiptSkill =
+    skillReceipt?.skills.find((entry) => entry.relevance === "primary") ??
+    skillReceipt?.skills[0] ??
+    null;
+  const leveledUpSkills =
+    skillReceipt?.skills.filter((entry) => entry.leveled_up) ?? [];
+  const completionHeadline = leveledUpSkills.length
+    ? `You leveled up in ${leveledUpSkills[0].skill.name}${leveledUpSkills.length > 1 ? ` + ${leveledUpSkills.length - 1} more` : ""}`
+    : primaryReceiptSkill
+      ? `${primaryReceiptSkill.skill.name} demonstrated in practice`
+      : "You finished something real";
+  const completionSubheadline = achievement
+    ? "Your public credential is ready to share."
+    : "We’re preparing your public credential now.";
 
   // Track module completions for milestone toasts
   useEffect(() => {
@@ -238,6 +126,7 @@ export default function LearnPathPage() {
     const modules = path.modules?.length
       ? path.modules
       : [{ index: 0, title: path.title, description: "", task_count: path.items.length, duration_seconds: path.estimated_duration_seconds }];
+    let nextToastMessage: string | null = null;
 
     for (const mod of modules) {
       const key = `module-${mod.index}`;
@@ -256,12 +145,20 @@ export default function LearnPathPage() {
             !prevCompletedSections.current.has(`module-${m.index}`) &&
             path.items.some((i) => (i.module_index ?? 0) === m.index)
         );
-        const msg = nextMod
+        nextToastMessage = nextMod
           ? `${mod.title} complete — moving to ${nextMod.title}`
           : `${mod.title} complete`;
-        setSectionToast(msg);
+        break;
       }
     }
+
+    if (!nextToastMessage) return;
+
+    const timer = window.setTimeout(() => {
+      setSectionToast(nextToastMessage);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [path, progress]);
 
   // Fetch recommended paths when path is completed (skill-aware with topic fallback)
@@ -317,7 +214,7 @@ export default function LearnPathPage() {
       .update({ first_mission_completed_at: new Date().toISOString() })
       .eq("id", user.id)
       .then(() => {});
-  }, [user, profile, currentItem]);
+  }, [currentItem, pathId, profile, progress?.started_at, user]);
 
   const handleComplete = useCallback(async () => {
     if (!currentItem || !currentItemKey) return;
@@ -354,32 +251,6 @@ export default function LearnPathPage() {
     },
     [advanceToItem]
   );
-
-  const handleCopyLink = useCallback(() => {
-    const url = `${window.location.origin}/learn/paths/${pathId}`;
-    navigator.clipboard.writeText(url).catch(() => {});
-    setShareMenuOpen(false);
-  }, [pathId]);
-
-  const handleShareLinkedIn = useCallback(() => {
-    const url = `${window.location.origin}/learn/paths/${pathId}`;
-    const text = `I just completed "${path?.title}" on SkillGap.ai! ${path?.items.length} resources, topics: ${path?.topics.slice(0, 3).join(", ")}`;
-    window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${encodeURIComponent(text)}`,
-      "_blank"
-    );
-    setShareMenuOpen(false);
-  }, [path, pathId]);
-
-  const handleShareTwitter = useCallback(() => {
-    const url = `${window.location.origin}/learn/paths/${pathId}`;
-    const text = `Just completed "${path?.title}" on @SkillGapAI`;
-    window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-      "_blank"
-    );
-    setShareMenuOpen(false);
-  }, [path, pathId]);
 
   if (isLoading) {
     return (
@@ -434,84 +305,86 @@ export default function LearnPathPage() {
         >
           {isCompleted ? (
             /* ─── Completion Celebration ─────────────────────── */
-            <div className="flex flex-col items-center py-12 px-4 sm:px-8 gap-10">
-              {/* Header */}
-              <div className="text-center space-y-2 animate-fade-in">
+            <div className="relative isolate flex flex-col items-center gap-10 overflow-hidden px-4 py-12 sm:px-8">
+              <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+                <div
+                  className="absolute left-1/2 top-0 h-72 w-72 -translate-x-[78%] rounded-full blur-3xl"
+                  style={{
+                    background:
+                      "radial-gradient(circle, var(--sg-sage-100) 0%, transparent 68%)",
+                  }}
+                />
+                <div
+                  className="absolute right-0 top-24 h-80 w-80 translate-x-1/4 rounded-full blur-3xl"
+                  style={{
+                    background:
+                      "radial-gradient(circle, var(--sg-teal-100) 0%, transparent 70%)",
+                  }}
+                />
+                <div
+                  className="absolute bottom-0 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full blur-3xl"
+                  style={{
+                    background:
+                      "radial-gradient(circle, var(--sg-gold-100) 0%, transparent 70%)",
+                  }}
+                />
+              </div>
+
+              <div className="max-w-2xl text-center space-y-3 animate-fade-in">
                 <p
                   className="text-sm font-semibold uppercase tracking-widest"
                   style={{ color: "var(--sg-forest-500)" }}
                 >
                   Path Complete
                 </p>
-                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--sg-shell-900)]">
-                  Congratulations!
+                <h2
+                  className="text-3xl leading-[1.08] text-[var(--sg-shell-900)] sm:text-[2.6rem]"
+                  style={{
+                    fontFamily: "var(--font-display), 'Fraunces', Georgia, serif",
+                  }}
+                >
+                  {completionHeadline}
                 </h2>
+                <p className="mx-auto max-w-xl text-sm leading-6 text-[var(--sg-shell-600)] sm:text-base">
+                  {completionSubheadline}
+                </p>
               </div>
 
               {/* Achievement Card */}
-              <div className="animate-fade-in" style={{ animationDelay: "200ms" }}>
+              <div
+                className="w-full flex justify-center animate-fade-in"
+                style={{ animationDelay: "200ms" }}
+              >
                 <AchievementCard
-                  path={path}
+                  pathTitle={path.title}
+                  pathTopics={path.topics}
                   itemsCompleted={progress?.items_completed ?? path.items.length}
-                  timeInvested={progress?.time_invested_seconds ?? 0}
-                  completedAt={
-                    progress?.completed_at ?? new Date().toISOString()
-                  }
+                  timeInvestedSeconds={progress?.time_invested_seconds ?? 0}
+                  completedAt={progress?.completed_at ?? new Date().toISOString()}
+                  skillReceipt={skillReceipt}
                 />
               </div>
 
               {/* Skill Receipt */}
-              {skillReceipt && <SkillReceipt receipt={skillReceipt} />}
+              {skillReceipt && (
+                <SkillReceipt
+                  receipt={skillReceipt}
+                  title={leveledUpSkills.length > 0 ? "Skills Advanced" : "Skills Demonstrated"}
+                  className="max-w-xl"
+                />
+              )}
 
               {/* Share + Continue buttons */}
               <div
                 className="flex flex-col sm:flex-row items-center gap-3 animate-fade-in"
                 style={{ animationDelay: "600ms" }}
               >
-                <div className="relative">
-                  <Button
-                    variant="secondary"
-                    leftIcon={<Share2 size={14} />}
-                    onClick={() => setShareMenuOpen(!shareMenuOpen)}
-                  >
-                    Share Achievement
-                  </Button>
-                  {shareMenuOpen && (
-                    <div
-                      className="absolute top-full mt-2 left-1/2 -translate-x-1/2 rounded-lg shadow-lg py-1 z-10 min-w-[180px]"
-                      style={{
-                        background: "var(--sg-white)",
-                        border: "1px solid var(--sg-shell-border)",
-                      }}
-                    >
-                      <button
-                        onClick={handleCopyLink}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[var(--sg-shell-600)] hover:bg-[var(--sg-sage-50)] transition-colors"
-                      >
-                        <Copy size={12} />
-                        Copy link
-                      </button>
-                      <button
-                        onClick={handleShareLinkedIn}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[var(--sg-shell-600)] hover:bg-[var(--sg-sage-50)] transition-colors"
-                      >
-                        <Link2 size={12} />
-                        Share to LinkedIn
-                      </button>
-                      <button
-                        onClick={handleShareTwitter}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[var(--sg-shell-600)] hover:bg-[var(--sg-sage-50)] transition-colors"
-                      >
-                        <Link2 size={12} />
-                        Share to X
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <Button
-                  variant="cta"
-                  onClick={() => router.push("/learn")}
-                >
+                <AchievementShareMenu
+                  shareSlug={achievement?.share_slug}
+                  pathTitle={path.title}
+                  pathTopics={path.topics}
+                />
+                <Button variant="cta" onClick={() => router.push("/learn")}>
                   Continue Learning
                 </Button>
               </div>
@@ -519,13 +392,19 @@ export default function LearnPathPage() {
               {/* Recommended Next */}
               {recommendedPaths.length > 0 && (
                 <div
-                  className="w-full max-w-2xl space-y-4 animate-fade-in"
+                  className="w-full max-w-3xl space-y-4 animate-fade-in"
                   style={{ animationDelay: "800ms" }}
                 >
                   <div className="h-px bg-[var(--sg-shell-border)]" />
-                  <p className="text-sm font-semibold text-[var(--sg-shell-600)]">
-                    Recommended next
-                  </p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-[var(--sg-shell-700)]">
+                      Build on this momentum
+                    </p>
+                    <p className="text-sm text-[var(--sg-shell-500)]">
+                      Recommended next paths based on the skills you just
+                      demonstrated.
+                    </p>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {recommendedPaths.map((rp) => (
                       <PathCard

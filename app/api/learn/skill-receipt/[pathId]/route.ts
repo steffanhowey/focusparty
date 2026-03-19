@@ -2,14 +2,16 @@
  * GET /api/learn/skill-receipt/:pathId
  *
  * Returns the skill receipt for a completed path.
- * Reconstructs from stored fp_user_skills data.
- * The "write" happens during path completion (PATCH /api/learn/paths/:id).
+ * Prefers the persisted receipt from fp_achievements (exact before/after).
+ * Falls back to reconstruction from current fp_user_skills state for
+ * paths completed before receipt persistence was added.
  */
 
 import { NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getSkillsWithDomains } from "@/lib/skills/taxonomy";
+import { assessFluencyLevel } from "@/lib/skills/assessment";
 import type { SkillReceiptEntry, UserSkill, SkillFluency } from "@/lib/types/skills";
 
 export async function GET(
@@ -30,7 +32,20 @@ export async function GET(
 
   const admin = createAdminClient();
 
-  // Verify path is completed by this user
+  // Try to load the persisted receipt from fp_achievements first.
+  // This has the exact before/after snapshot from completion time.
+  const { data: achievementRow } = await admin
+    .from("fp_achievements")
+    .select("skill_receipt, completed_at, path_title")
+    .eq("user_id", user.id)
+    .eq("path_id", pathId)
+    .single();
+
+  if (achievementRow?.skill_receipt) {
+    return NextResponse.json({ skill_receipt: achievementRow.skill_receipt });
+  }
+
+  // Fallback: reconstruct from current state (approximate before/after)
   const { data: progressRow } = await admin
     .from("fp_learning_progress")
     .select("completed_at, path_id")
@@ -43,7 +58,6 @@ export async function GET(
     return NextResponse.json({ error: "Path not completed" }, { status: 404 });
   }
 
-  // Load path info
   const { data: pathRow } = await admin
     .from("fp_learning_paths")
     .select("id, title")
@@ -54,7 +68,6 @@ export async function GET(
     return NextResponse.json({ error: "Path not found" }, { status: 404 });
   }
 
-  // Load skill tags for this path
   const { data: tagRows } = await admin
     .from("fp_skill_tags")
     .select("skill_id, relevance")
@@ -64,11 +77,9 @@ export async function GET(
     return NextResponse.json({ skill_receipt: null });
   }
 
-  // Load full skill info
   const allSkills = await getSkillsWithDomains();
   const skillMap = new Map(allSkills.map((s) => [s.id, s]));
 
-  // Load user's current skill data
   const skillIds = tagRows.map((t) => t.skill_id);
   const { data: userSkills } = await admin
     .from("fp_user_skills")
@@ -80,7 +91,6 @@ export async function GET(
     (userSkills ?? []).map((s: UserSkill) => [s.skill_id, s]),
   );
 
-  // Build receipt entries (after-only — approximate "before" by subtracting 1 path)
   const entries: SkillReceiptEntry[] = [];
 
   for (const tag of tagRows) {
@@ -88,14 +98,20 @@ export async function GET(
     if (!skill) continue;
 
     const userSkill = userSkillMap.get(tag.skill_id);
+    const currentPaths = Math.max(userSkill?.paths_completed ?? 0, 1);
+    const currentAvgScore = userSkill?.avg_score ?? null;
     const currentFluency: SkillFluency =
-      (userSkill?.fluency_level as SkillFluency) ?? "exploring";
-    const currentPaths = userSkill?.paths_completed ?? 0;
+      (userSkill?.fluency_level as SkillFluency) ??
+      assessFluencyLevel({
+        paths_completed: currentPaths,
+        avg_score: currentAvgScore,
+      });
 
-    // Approximate "before" by subtracting 1 path
     const approxBeforePaths = Math.max(0, currentPaths - 1);
-    const approxBeforeFluency: SkillFluency =
-      currentPaths <= 1 ? "exploring" : currentFluency;
+    const approxBeforeFluency = assessFluencyLevel({
+      paths_completed: approxBeforePaths,
+      avg_score: currentAvgScore,
+    });
 
     entries.push({
       skill: {
@@ -114,14 +130,16 @@ export async function GET(
         fluency_level: currentFluency,
         paths_completed: currentPaths,
       },
-      leveled_up: false, // Can't reliably reconstruct — only accurate at completion time
+      leveled_up: false,
       missions_in_path: 0,
       avg_score_in_path: null,
     });
   }
 
-  // Sort: primary first
-  entries.sort((a, b) => (a.relevance === "primary" ? -1 : 1));
+  entries.sort((a, b) => {
+    if (a.relevance === b.relevance) return 0;
+    return a.relevance === "primary" ? -1 : 1;
+  });
 
   return NextResponse.json({
     skill_receipt: {

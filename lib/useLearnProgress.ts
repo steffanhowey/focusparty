@@ -1,13 +1,20 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { LearningPath, LearningProgress, ItemState, SkillReceipt } from "./types";
+import type {
+  AchievementSummary,
+  LearningPath,
+  LearningProgress,
+  ItemState,
+  SkillReceipt,
+} from "./types";
 
 // ─── Types ──────────────────────────────────────────────────
 
 interface UseLearnProgressReturn {
   path: LearningPath | null;
   progress: LearningProgress | null;
+  achievement: AchievementSummary | null;
   currentItemIndex: number;
   isLoading: boolean;
   error: string | null;
@@ -27,6 +34,7 @@ interface UseLearnProgressReturn {
 export function useLearnProgress(pathId: string): UseLearnProgressReturn {
   const [path, setPath] = useState<LearningPath | null>(null);
   const [progress, setProgress] = useState<LearningProgress | null>(null);
+  const [achievement, setAchievement] = useState<AchievementSummary | null>(null);
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,14 +44,27 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
 
   // Fetch path and progress on mount
   useEffect(() => {
-    setIsLoading(true);
-    fetch(`/api/learn/paths/${pathId}`)
-      .then((res) => {
+    let isActive = true;
+
+    async function loadPath(): Promise<void> {
+      setIsLoading(true);
+      setError(null);
+      setPath(null);
+      setProgress(null);
+      setAchievement(null);
+      setSkillReceipt(null);
+      setCurrentItemIndex(0);
+
+      try {
+        const res = await fetch(`/api/learn/paths/${pathId}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
+        if (!isActive) return;
+
         setPath(data.path);
+        setAchievement(data.achievement ?? null);
+
         if (data.progress) {
           setProgress(data.progress);
           setCurrentItemIndex(data.progress.current_item_index);
@@ -53,19 +74,35 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
             fetch(`/api/learn/skill-receipt/${pathId}`)
               .then((r) => r.json())
               .then((d) => {
-                if (d.skill_receipt) setSkillReceipt(d.skill_receipt);
+                if (isActive && d.skill_receipt) {
+                  setSkillReceipt(d.skill_receipt);
+                }
               })
               .catch(() => {}); // Silent fail — receipt is enhancement, not critical
           }
         }
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setIsLoading(false));
+      } catch (err) {
+        if (isActive) {
+          setError(err instanceof Error ? err.message : "Unknown error");
+        }
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    }
+
+    void loadPath();
+
+    return () => {
+      isActive = false;
+    };
   }, [pathId]);
 
   // Time tracking: accumulate every second, flush every 30s (only when authenticated with progress)
-  const progressRef = useRef(progress);
-  progressRef.current = progress;
+  const progressRef = useRef<LearningProgress | null>(progress);
+
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
 
   useEffect(() => {
     timeInterval.current = setInterval(() => {
@@ -157,6 +194,7 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
         });
         const data = await res.json();
         if (data.progress) setProgress(data.progress);
+        if (data.achievement) setAchievement(data.achievement);
         if (data.skill_receipt) setSkillReceipt(data.skill_receipt);
       } catch {
         // Optimistic update already applied
@@ -189,6 +227,7 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
   return {
     path,
     progress,
+    achievement,
     currentItemIndex,
     isLoading,
     error,

@@ -1,26 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@/lib/supabase/admin";
-
-/**
- * Generate a URL-friendly share slug.
- * Format: topic-topic-XXXX (4 random chars)
- */
-function generateShareSlug(
-  displayName: string | null,
-  topics: string[]
-): string {
-  const namePart = (displayName ?? "learner")
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
-    .slice(0, 12);
-  const topicPart = (topics[0] ?? "skill")
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, "")
-    .slice(0, 20);
-  const rand = Math.random().toString(36).slice(2, 6);
-  return `${namePart}-${topicPart}-${rand}`;
-}
+import { generateAchievementShareSlug } from "@/lib/achievements/achievementModel";
 
 /**
  * POST /api/learn/achievements
@@ -93,13 +74,16 @@ export async function POST(request: Request): Promise<NextResponse> {
   // Get user display name
   const { data: profile } = await admin
     .from("fp_profiles")
-    .select("name")
+    .select("display_name, first_name")
     .eq("id", user.id)
     .single();
 
   const items = (pathRow.items as unknown[]) ?? [];
-  const shareSlug = generateShareSlug(
-    profile?.name ?? null,
+  const profileRow = (profile as Record<string, unknown> | null) ?? null;
+  const shareSlug = generateAchievementShareSlug(
+    (profileRow?.display_name as string | null) ??
+      (profileRow?.first_name as string | null) ??
+      null,
     (pathRow.topics as string[]) ?? []
   );
 

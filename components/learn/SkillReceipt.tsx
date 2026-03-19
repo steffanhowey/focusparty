@@ -81,9 +81,19 @@ function SkillRow({
 
 interface SkillReceiptProps {
   receipt: SkillReceiptType;
+  title?: string;
+  subtitle?: string | null;
+  showFirstReceiptNote?: boolean;
+  className?: string;
 }
 
-export function SkillReceipt({ receipt }: SkillReceiptProps) {
+export function SkillReceipt({
+  receipt,
+  title = "Skills Developed",
+  subtitle = null,
+  showFirstReceiptNote = true,
+  className = "",
+}: SkillReceiptProps) {
   const { skills, is_first_receipt } = receipt;
 
   if (skills.length === 0) return null;
@@ -92,7 +102,7 @@ export function SkillReceipt({ receipt }: SkillReceiptProps) {
 
   return (
     <div
-      className="w-full max-w-md animate-fade-in"
+      className={`w-full max-w-md animate-fade-in ${className}`}
       style={{ animationDelay: "400ms", animationFillMode: "backwards" }}
     >
       <Card className="overflow-hidden">
@@ -119,7 +129,7 @@ export function SkillReceipt({ receipt }: SkillReceiptProps) {
                 }}
               />
               <h3 className="text-sm font-semibold text-shell-900">
-                Skills Developed
+                {title}
               </h3>
             </div>
             {hasLevelUp && (
@@ -135,8 +145,18 @@ export function SkillReceipt({ receipt }: SkillReceiptProps) {
             )}
           </div>
 
-          {/* First receipt message */}
-          {is_first_receipt && (
+          {/* Context copy */}
+          {subtitle ? (
+            <p
+              className="text-xs text-shell-500 animate-fade-in"
+              style={{
+                animationDelay: "500ms",
+                animationFillMode: "backwards",
+              }}
+            >
+              {subtitle}
+            </p>
+          ) : showFirstReceiptNote && is_first_receipt ? (
             <p
               className="text-xs text-shell-500 animate-fade-in"
               style={{
@@ -146,7 +166,7 @@ export function SkillReceipt({ receipt }: SkillReceiptProps) {
             >
               Your skill profile is starting to take shape.
             </p>
-          )}
+          ) : null}
 
           {/* Divider */}
           <div

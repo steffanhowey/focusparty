@@ -84,7 +84,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   const admin = createAdminClient();
 
   // ─── Fetch user's in-progress paths (if authenticated) ────
-  let inProgress: { path: LearningPath; progress: LearningProgress }[] =
+  const inProgress: { path: LearningPath; progress: LearningProgress }[] =
     [];
   try {
     const supabase = await createServerClient();
@@ -160,6 +160,70 @@ export async function GET(request: Request): Promise<NextResponse> {
     const tagMap = await loadSkillTagsForPaths(discPathIds);
     for (const p of discovery) { p.skill_tags = tagMap.get(p.id) ?? []; }
     for (const ip of inProgress) { ip.path.skill_tags = tagMap.get(ip.path.id) ?? []; }
+
+    // ── Skill-aware personalization (soft re-ranking) ──────
+    // Boost paths for unstarted/weak skills, softly deprioritize Proficient+.
+    // Preserves diversity — only adjusts relative order, never filters.
+    let userId: string | null = null;
+    try {
+      const supabase = await createServerClient();
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      userId = authUser?.id ?? null;
+    } catch { /* unauthenticated */ }
+
+    if (userId) {
+      const { data: userSkillRows } = await admin
+        .from("fp_user_skills")
+        .select("skill_id, fluency_level")
+        .eq("user_id", userId);
+
+      if (userSkillRows && userSkillRows.length > 0) {
+        // Build skill_slug → fluency lookup via taxonomy cache
+        const { getSkillsWithDomains } = await import("@/lib/skills/taxonomy");
+        const allSkills = await getSkillsWithDomains();
+        const idToFluency = new Map(
+          userSkillRows.map((r: Record<string, unknown>) => [
+            r.skill_id as string,
+            r.fluency_level as string,
+          ]),
+        );
+        const slugToFluency = new Map<string, string>();
+        for (const s of allSkills) {
+          const f = idToFluency.get(s.id);
+          if (f) slugToFluency.set(s.slug, f);
+        }
+
+        // Score each discovery path with a soft skill-aware multiplier
+        const scored = discovery.map((p) => {
+          let multiplier = 1.0;
+          const tags = p.skill_tags ?? [];
+
+          if (tags.length > 0) {
+            // Average multiplier across the path's skill tags
+            let sum = 0;
+            for (const tag of tags) {
+              const fluency = slugToFluency.get(tag.skill_slug);
+              if (!fluency) {
+                sum += 1.3; // Unstarted skill — boost
+              } else if (fluency === "exploring") {
+                sum += 1.15; // Weak skill — moderate boost
+              } else if (fluency === "proficient" || fluency === "advanced") {
+                sum += 0.7; // Already strong — soft deprioritize
+              } else {
+                sum += 1.0; // Practicing — neutral
+              }
+            }
+            multiplier = sum / tags.length;
+          }
+
+          const baseScore = p.view_count ?? 0;
+          return { path: p, score: baseScore * multiplier };
+        });
+
+        scored.sort((a, b) => b.score - a.score);
+        discovery = scored.map((s) => s.path);
+      }
+    }
 
     return NextResponse.json({
       discovery,

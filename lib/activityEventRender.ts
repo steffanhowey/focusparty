@@ -17,6 +17,8 @@ import {
   XCircle,
   Coffee,
   GitBranch,
+  BookOpen,
+  GraduationCap,
   type LucideIcon,
 } from "lucide-react";
 import type { ActivityEvent } from "./types";
@@ -339,6 +341,37 @@ export function renderActivityEvent(
         label: `${name} posted progress to ${wbProvider ?? "external service"}`,
         tone: "neutral",
         color: TONE_NEUTRAL,
+      };
+    }
+
+    case "path_started": {
+      const pathTitle = (event.payload?.path_title as string) || event.body || "a learning path";
+      return {
+        icon: BookOpen,
+        label: `Started ${pathTitle.length > 40 ? pathTitle.slice(0, 37) + "..." : pathTitle}`,
+        tone: "neutral",
+        color: TONE_NEUTRAL,
+      };
+    }
+
+    case "path_completed": {
+      const completedTitle = (event.payload?.path_title as string) || event.body || "a learning path";
+      return {
+        icon: GraduationCap,
+        label: `Completed ${completedTitle.length > 35 ? completedTitle.slice(0, 32) + "..." : completedTitle}`,
+        tone: "success",
+        color: TONE_SUCCESS,
+      };
+    }
+
+    case "skill_leveled_up": {
+      const skillName = (event.payload?.skill_name as string) || "a skill";
+      const toLevel = (event.payload?.to_level as string) || "";
+      return {
+        icon: TrendingUp,
+        label: `Leveled up ${skillName}${toLevel ? ` to ${toLevel}` : ""}`,
+        tone: "success",
+        color: TONE_SUCCESS,
       };
     }
 

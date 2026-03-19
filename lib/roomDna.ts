@@ -212,6 +212,7 @@ function parseBlueprintToRoomDna(
         (wc.environmentOverlay as string) ??
         "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
       vibeKey: (wc.vibeKey as VibeId) ?? "calm-focus",
+      skillDomains: (wc.skillDomains as string[]) ?? [],
     };
 
     const styleGuide: HostStyleGuide = {

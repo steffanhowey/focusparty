@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from "react";
-import type { SkillFluency } from "@/lib/types/skills";
+import type { SkillFluency, SkillReceipt } from "@/lib/types/skills";
 
 // ─── Types (API response shapes) ────────────────────────────
 
@@ -49,11 +49,59 @@ export interface SkillProfileSummary {
   skills_at_proficient: number;
   skills_at_advanced: number;
   total_paths_completed: number;
+  effective_fluency?: SkillFluency;
+}
+
+export interface FunctionGap {
+  skill_slug: string;
+  skill_name: string;
+  domain_name: string;
+  domain_icon: string;
+}
+
+export interface ActiveProgression {
+  skill_slug: string;
+  skill_name: string;
+  fluency_level: SkillFluency;
+  paths_completed: number;
+  paths_to_next: number;
+  next_level: string;
+}
+
+export interface StrongestSkill {
+  skill_slug: string;
+  skill_name: string;
+  domain_name: string;
+  fluency_level: SkillFluency;
+  paths_completed: number;
+}
+
+export interface SkillGaps {
+  user_function: string | null;
+  function_gaps: FunctionGap[];
+  active_progression: ActiveProgression[];
+  strongest: StrongestSkill[];
+}
+
+/** Achievement record from the profile API. */
+export interface ProfileAchievement {
+  id: string;
+  path_id: string;
+  path_title: string;
+  path_topics: string[];
+  items_completed: number;
+  time_invested_seconds: number;
+  difficulty_level: string;
+  share_slug: string;
+  skill_receipt: SkillReceipt | null;
+  completed_at: string;
 }
 
 interface UseSkillProfileReturn {
   domains: SkillProfileDomain[];
   summary: SkillProfileSummary | null;
+  gaps: SkillGaps | null;
+  achievements: ProfileAchievement[];
   isLoading: boolean;
   error: string | null;
 }
@@ -61,6 +109,8 @@ interface UseSkillProfileReturn {
 export function useSkillProfile(): UseSkillProfileReturn {
   const [domains, setDomains] = useState<SkillProfileDomain[]>([]);
   const [summary, setSummary] = useState<SkillProfileSummary | null>(null);
+  const [gaps, setGaps] = useState<SkillGaps | null>(null);
+  const [achievements, setAchievements] = useState<ProfileAchievement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,10 +123,12 @@ export function useSkillProfile(): UseSkillProfileReturn {
       .then((data) => {
         setDomains(data.domains ?? []);
         setSummary(data.summary ?? null);
+        setGaps(data.gaps ?? null);
+        setAchievements(data.recent_achievements ?? []);
       })
       .catch((err) => setError(err.message))
       .finally(() => setIsLoading(false));
   }, []);
 
-  return { domains, summary, isLoading, error };
+  return { domains, summary, gaps, achievements, isLoading, error };
 }

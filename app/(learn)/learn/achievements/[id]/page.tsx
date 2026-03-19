@@ -1,71 +1,16 @@
-import { createClient as createAdminClient } from "@/lib/supabase/admin";
+import Link from "next/link";
 import type { Metadata } from "next";
-
-// ─── Types ──────────────────────────────────────────────────
-
-interface Achievement {
-  id: string;
-  path_title: string;
-  path_topics: string[];
-  items_completed: number;
-  time_invested_seconds: number;
-  difficulty_level: string;
-  completed_at: string;
-  share_slug: string;
-  user_id: string;
-}
-
-// ─── Helpers ────────────────────────────────────────────────
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  if (m < 60) return `${m} min`;
-  const h = Math.floor(m / 60);
-  const rm = m % 60;
-  return rm ? `${h}h ${rm}m` : `${h}h`;
-}
-
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-async function fetchAchievement(id: string): Promise<Achievement | null> {
-  const admin = createAdminClient();
-
-  // Try by share_slug first, then by id
-  let { data } = await admin
-    .from("fp_achievements")
-    .select("*")
-    .eq("share_slug", id)
-    .single();
-
-  if (!data) {
-    const result = await admin
-      .from("fp_achievements")
-      .select("*")
-      .eq("id", id)
-      .single();
-    data = result.data;
-  }
-
-  return data as Achievement | null;
-}
-
-async function fetchUserName(userId: string): Promise<string> {
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("fp_profiles")
-    .select("name")
-    .eq("id", userId)
-    .single();
-  return data?.name ?? "A learner";
-}
-
-// ─── Metadata ───────────────────────────────────────────────
+import { ArrowRight } from "lucide-react";
+import { AchievementCard } from "@/components/achievements/AchievementCard";
+import { SkillReceipt } from "@/components/learn/SkillReceipt";
+import { getAchievementPageData } from "@/lib/achievements/getAchievementPageData";
+import {
+  formatAchievementDate,
+  formatAchievementDuration,
+  getAchievementHighlightedSkills,
+  getAchievementLevelUpCount,
+  getSiteUrl,
+} from "@/lib/achievements/achievementModel";
 
 export async function generateMetadata({
   params,
@@ -73,31 +18,54 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const achievement = await fetchAchievement(id);
+  const data = await getAchievementPageData(id);
 
-  if (!achievement) {
-    return { title: "Achievement Not Found — SkillGap" };
+  if (!data) {
+    return {
+      title: "Achievement Not Found — SkillGap",
+      robots: { index: false, follow: false },
+    };
   }
 
-  const description = `${achievement.items_completed} resources completed in ${formatDuration(achievement.time_invested_seconds)}. Topics: ${achievement.path_topics.join(", ")}.`;
+  const { achievement, user_name } = data;
+  const siteUrl = getSiteUrl();
+  const pageUrl = `${siteUrl}/learn/achievements/${achievement.share_slug}`;
+  const imageUrl = `${pageUrl}/opengraph-image`;
+  const highlightedSkills = getAchievementHighlightedSkills(
+    achievement.skill_receipt,
+  );
+  const description = highlightedSkills.length
+    ? `${user_name} completed ${achievement.path_title} on SkillGap. Skills demonstrated: ${highlightedSkills.join(", ")}. ${formatAchievementDuration(achievement.time_invested_seconds)} invested.`
+    : `${user_name} completed ${achievement.path_title} on SkillGap. ${achievement.items_completed} resources completed in ${formatAchievementDuration(achievement.time_invested_seconds)}.`;
 
   return {
-    title: `${achievement.path_title} — Completed on SkillGap`,
+    title: `${achievement.path_title} — SkillGap Credential`,
     description,
+    alternates: {
+      canonical: pageUrl,
+    },
     openGraph: {
-      title: `I completed "${achievement.path_title}" on SkillGap`,
-      description: `${achievement.items_completed} resources · ${formatDuration(achievement.time_invested_seconds)} invested`,
+      title: `${user_name} completed ${achievement.path_title} on SkillGap`,
+      description,
       type: "article",
+      url: pageUrl,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${achievement.path_title} credential`,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `I completed "${achievement.path_title}" on SkillGap`,
+      title: `${user_name} completed ${achievement.path_title} on SkillGap`,
       description,
+      images: [imageUrl],
     },
   };
 }
-
-// ─── Page ───────────────────────────────────────────────────
 
 export default async function AchievementPage({
   params,
@@ -105,125 +73,138 @@ export default async function AchievementPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const achievement = await fetchAchievement(id);
+  const data = await getAchievementPageData(id);
 
-  if (!achievement) {
+  if (!data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--sg-white)]">
-        <p className="text-sm text-[var(--sg-shell-500)]">
-          Achievement not found.
-        </p>
+      <div className="min-h-screen bg-[var(--sg-cream-50)] px-6 py-16">
+        <div className="mx-auto flex max-w-xl flex-col items-center justify-center gap-5 rounded-[var(--sg-radius-xl)] border border-[var(--sg-shell-border)] bg-[var(--sg-white)] px-8 py-12 text-center shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--sg-forest-500)]">
+            SkillGap
+          </p>
+          <h1
+            className="text-3xl text-[var(--sg-shell-900)]"
+            style={{
+              fontFamily: "var(--font-display), 'Fraunces', Georgia, serif",
+            }}
+          >
+            Achievement not found
+          </h1>
+          <p className="max-w-md text-sm leading-6 text-[var(--sg-shell-600)]">
+            This credential link may have expired, been removed, or never
+            existed in the first place.
+          </p>
+          <Link
+            href="/learn"
+            className="inline-flex items-center gap-2 rounded-[var(--sg-radius-btn)] bg-[var(--sg-forest-500)] px-5 py-3 text-sm font-semibold text-white transition-all duration-150 hover:opacity-85"
+          >
+            Start learning on SkillGap
+            <ArrowRight size={15} />
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const userName = await fetchUserName(achievement.user_id);
+  const { achievement, user_name } = data;
+  const highlightedSkills = getAchievementHighlightedSkills(
+    achievement.skill_receipt,
+    2,
+  );
+  const levelUpCount = getAchievementLevelUpCount(achievement.skill_receipt);
+  const headline = highlightedSkills.length
+    ? `${highlightedSkills[0]} demonstrated in practice`
+    : "AI fluency, demonstrated in practice";
+  const subtitle = levelUpCount
+    ? `${user_name} completed ${achievement.path_title} on ${formatAchievementDate(achievement.completed_at)} and advanced ${levelUpCount} skill${levelUpCount > 1 ? "s" : ""}.`
+    : `${user_name} completed ${achievement.path_title} on ${formatAchievementDate(achievement.completed_at)}. The skills below were captured at completion.`;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--sg-white)] p-6">
-      {/* Attribution */}
-      <p className="text-sm text-[var(--sg-shell-500)] mb-6">
-        {userName} completed this learning path
-      </p>
-
-      {/* Achievement Card */}
-      <div
-        className="w-full max-w-md rounded-xl overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(145deg, var(--sg-shell-50), var(--sg-white))",
-          border: "1px solid var(--sg-shell-border)",
-          boxShadow: "var(--shadow-float, 0 8px 32px rgba(0,0,0,0.12))",
-        }}
-      >
-        {/* Accent bar */}
+    <div className="relative min-h-screen overflow-hidden bg-[var(--sg-cream-50)]">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
-          className="h-1"
+          className="absolute left-1/2 top-0 h-80 w-80 -translate-x-[78%] rounded-full blur-3xl"
           style={{
             background:
-              "linear-gradient(to right, var(--sg-forest-500), var(--sg-teal-600))",
+              "radial-gradient(circle, var(--sg-sage-100) 0%, transparent 68%)",
           }}
         />
+        <div
+          className="absolute right-0 top-24 h-96 w-96 translate-x-1/4 rounded-full blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, var(--sg-teal-100) 0%, transparent 70%)",
+          }}
+        />
+        <div
+          className="absolute bottom-0 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, var(--sg-gold-100) 0%, transparent 70%)",
+          }}
+        />
+      </div>
 
-        <div className="p-6 space-y-5">
-          {/* Title */}
-          <div className="space-y-1">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "var(--sg-forest-500)" }}
-            >
-              Path Complete
-            </p>
-            <h1 className="text-lg font-bold text-[var(--sg-shell-900)] leading-snug">
-              {achievement.path_title}
-            </h1>
-          </div>
-
-          {/* Divider */}
-          <div
-            className="h-px"
-            style={{ background: "var(--sg-shell-border)" }}
-          />
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p className="text-[var(--sg-shell-500)] text-xs">
-                Resources
-              </p>
-              <p className="text-[var(--sg-shell-900)] font-medium">
-                {achievement.items_completed} completed
-              </p>
+      <main className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center px-6 py-16 sm:px-10">
+        <div className="w-full max-w-3xl space-y-10">
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-white)] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--sg-forest-500)] shadow-sm">
+              Public Credential
             </div>
-            <div>
-              <p className="text-[var(--sg-shell-500)] text-xs">
-                Time invested
-              </p>
-              <p className="text-[var(--sg-shell-900)] font-medium">
-                {formatDuration(achievement.time_invested_seconds)}
+            <div className="space-y-3">
+              <h1
+                className="text-4xl leading-[1.05] text-[var(--sg-shell-900)] sm:text-[3.25rem]"
+                style={{
+                  fontFamily: "var(--font-display), 'Fraunces', Georgia, serif",
+                }}
+              >
+                {headline}
+              </h1>
+              <p className="mx-auto max-w-2xl text-sm leading-6 text-[var(--sg-shell-600)] sm:text-base">
+                {subtitle}
               </p>
             </div>
           </div>
 
-          {/* Topics */}
-          {achievement.path_topics.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-[var(--sg-shell-500)] text-xs">
-                Topics
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {achievement.path_topics.slice(0, 5).map((t) => (
-                  <span
-                    key={t}
-                    className="px-2 py-0.5 rounded text-xs bg-[var(--sg-sage-100)] text-[var(--sg-shell-600)]"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
+          <div className="flex justify-center">
+            <AchievementCard
+              pathTitle={achievement.path_title}
+              pathTopics={achievement.path_topics}
+              itemsCompleted={achievement.items_completed}
+              timeInvestedSeconds={achievement.time_invested_seconds}
+              completedAt={achievement.completed_at}
+              skillReceipt={achievement.skill_receipt}
+              variant="public"
+            />
+          </div>
+
+          {achievement.skill_receipt && (
+            <div className="flex justify-center">
+              <SkillReceipt
+                receipt={achievement.skill_receipt}
+                title={levelUpCount > 0 ? "Skills Advanced" : "Skills Demonstrated"}
+                subtitle={`${user_name}'s fluency snapshot at completion.`}
+                showFirstReceiptNote={false}
+                className="max-w-xl"
+              />
             </div>
           )}
 
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-xs text-[var(--sg-shell-500)]">
-              Completed {formatDate(achievement.completed_at)}
-            </span>
-            <span className="text-xs font-medium text-[var(--sg-shell-500)]">
-              SkillGap.ai
-            </span>
+          <div className="flex flex-col items-center gap-3 text-center">
+            <Link
+              href="/learn"
+              className="inline-flex items-center gap-2 rounded-[var(--sg-radius-btn)] bg-[var(--sg-forest-500)] px-5 py-3 text-sm font-semibold text-white transition-all duration-150 hover:opacity-85"
+            >
+              Build your own skill graph
+              <ArrowRight size={15} />
+            </Link>
+            <p className="text-xs leading-5 text-[var(--sg-shell-500)]">
+              SkillGap helps working professionals build AI fluency through
+              guided paths, live rooms, and durable proof of progress.
+            </p>
           </div>
         </div>
-      </div>
-
-      {/* CTA */}
-      <a
-        href="/learn"
-        className="mt-8 text-sm font-medium transition-colors"
-        style={{ color: "var(--sg-forest-500)" }}
-      >
-        Start learning on SkillGap.ai
-      </a>
+      </main>
     </div>
   );
 }

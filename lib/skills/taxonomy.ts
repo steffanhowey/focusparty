@@ -11,8 +11,46 @@ let _skills: Skill[] | null = null;
 let _cacheTime = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+const FUNCTION_ALIASES: Record<string, string> = {
+  engineering: "engineering",
+  marketing: "marketing",
+  design: "design",
+  product: "product",
+  data: "data_analytics",
+  analytics: "data_analytics",
+  data_analytics: "data_analytics",
+  data_and_analytics: "data_analytics",
+  sales: "sales_revenue",
+  sales_revenue: "sales_revenue",
+  sales_and_revenue: "sales_revenue",
+  operations: "operations",
+};
+
 function isCacheFresh(): boolean {
   return Date.now() - _cacheTime < CACHE_TTL;
+}
+
+/** Normalize function labels/slugs to the app's canonical enum values. */
+export function normalizeSkillFunctionValue(value: string): string {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, "_");
+  return FUNCTION_ALIASES[normalized] ?? normalized;
+}
+
+/** Whether a skill tagged for one or more functions should match the given function. */
+export function skillMatchesFunction(
+  relevantFunctions: string[],
+  fn: string,
+): boolean {
+  if (relevantFunctions.length === 0) return true;
+  const normalizedFn = normalizeSkillFunctionValue(fn);
+  return relevantFunctions.some(
+    (value) => normalizeSkillFunctionValue(value) === normalizedFn,
+  );
 }
 
 /** Load all skill domains, cached. */
@@ -55,9 +93,7 @@ export async function getSkillsWithDomains(): Promise<SkillWithDomain[]> {
 /** Get skills relevant to a specific function. Returns universal + function-relevant. */
 export async function getSkillsForFunction(fn: string): Promise<Skill[]> {
   const skills = await getSkills();
-  return skills.filter(
-    (s) => s.relevant_functions.length === 0 || s.relevant_functions.includes(fn),
-  );
+  return skills.filter((s) => skillMatchesFunction(s.relevant_functions, fn));
 }
 
 /** Find a skill by slug. */

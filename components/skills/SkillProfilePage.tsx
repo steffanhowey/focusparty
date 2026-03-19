@@ -11,6 +11,8 @@ import { StatsCard } from "@/components/progress/StatsCard";
 import { useSkillProfile } from "@/lib/useSkillProfile";
 import { useSkillMarketState } from "@/lib/useSkillMarketState";
 import { SkillDomainSection } from "./SkillDomainSection";
+import { GapSummary } from "./GapSummary";
+import { AchievementHistory } from "./AchievementHistory";
 import type { SkillFluency } from "@/lib/types/skills";
 
 // ─── Fluency distribution bar ────────────────────────────────
@@ -33,7 +35,7 @@ const FLUENCY_BAR_SEGMENTS: {
 // ─── Component ───────────────────────────────────────────────
 
 export function SkillProfilePage() {
-  const { domains, summary, isLoading, error } = useSkillProfile();
+  const { domains, summary, gaps, achievements, isLoading, error } = useSkillProfile();
   const { states: marketStates } = useSkillMarketState();
 
   // Loading state
@@ -166,6 +168,12 @@ export function SkillProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Gap summary */}
+      {gaps && <GapSummary gaps={gaps} />}
+
+      {/* Achievement history */}
+      <AchievementHistory achievements={achievements} />
 
       {/* Domain sections */}
       <div className="divide-y divide-[var(--sg-shell-border)]">

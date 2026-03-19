@@ -21,8 +21,8 @@ function getClient(): OpenAI {
 
 /** The evaluation result returned to the client and stored in item_states. */
 export interface SubmissionEvaluation {
-  /** Overall score 0-100 */
-  score: number;
+  /** Overall score 0-100, or null if evaluation failed/was skipped */
+  score: number | null;
   /** 1-2 sentence summary feedback */
   feedback: string;
   /** What the learner did well */
@@ -60,11 +60,16 @@ const EVALUATION_SCHEMA = {
 
 // ─── Default fallback ───────────────────────────────────────
 
+/**
+ * Fallback evaluation used when the AI evaluator fails or the submission
+ * is too short. Score is null so it does NOT count toward fluency
+ * assessment — only real AI evaluations feed into skill progression.
+ */
 const DEFAULT_EVALUATION: SubmissionEvaluation = {
-  score: 75,
-  feedback: "Great work completing this mission! Keep building on what you've learned.",
-  strengths: ["Completed the mission objective"],
-  improvements: ["Try experimenting with variations to deepen your understanding"],
+  score: null,
+  feedback: "Your submission was recorded. We couldn't evaluate it automatically — it won't affect your skill progression.",
+  strengths: ["Completed the mission"],
+  improvements: [],
 };
 
 // ─── Evaluate ───────────────────────────────────────────────

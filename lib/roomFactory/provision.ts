@@ -209,6 +209,7 @@ async function finalizeBlueprintAndCache(
     placeholderGradient: blueprint.world_config.placeholderGradient,
     environmentOverlay: blueprint.world_config.environmentOverlay,
     vibeKey: blueprint.world_config.vibeKey as VibeId,
+    skillDomains: ((blueprint.world_config as Record<string, unknown>).skillDomains as string[]) ?? [],
   };
 
   const styleGuide: HostStyleGuide = {

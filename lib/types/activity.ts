@@ -26,7 +26,10 @@ export type ActivityEventType =
   | "break_cancelled"
   | "integration_linked"
   | "integration_writeback"
-  | "discussion_prompt";
+  | "discussion_prompt"
+  | "path_started"
+  | "path_completed"
+  | "skill_leveled_up";
 
 export interface ActivityEvent {
   id: string;

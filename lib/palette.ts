@@ -23,6 +23,7 @@ export const TEAL_400 = "#7CC0B8";
 export const GOLD_900 = "#5C4D0E";
 export const GOLD_600 = "#B89C1E";
 export const GOLD_500 = "#CDBE3D";
+export const GOLD_100 = "#F8F6DC";
 
 export const CORAL_600 = "#D64540";
 export const CORAL_500 = "#E96861";
@@ -36,6 +37,7 @@ export const SHELL_600 = "#6B6B6B";
 export const SHELL_500 = "#8A8A8A";
 export const SHELL_400 = "#A3A3A3";
 export const SHELL_300 = "#D4D4D4";
+export const SHELL_50 = "#FAFAFA";
 
 // ── Semantic: Status ──────────────────────────────────────────
 

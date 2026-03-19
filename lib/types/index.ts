@@ -122,3 +122,8 @@ export type {
   SkillReceiptEntry,
   SkillReceipt,
 } from "./skills";
+export type {
+  AchievementSummary,
+  AchievementRecord,
+  AchievementPageData,
+} from "./achievements";

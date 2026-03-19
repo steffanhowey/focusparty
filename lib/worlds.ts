@@ -5,7 +5,8 @@
 
 import type { HostPersonality } from "./hosts";
 import type { VibeId } from "./musicConstants";
-import { FOREST_500, FOREST_300, TEAL_600, GOLD_600, CORAL_500, FOREST_900 } from "./palette";
+import { getDynamicWorldConfig } from "./roomDna";
+import { FOREST_500, FOREST_300, TEAL_600, GOLD_600, CORAL_500 } from "./palette";
 
 export type WorldKey =
   | "default"
@@ -34,6 +35,12 @@ export interface WorldConfig {
   environmentOverlay: string;
   /** The music vibe assigned to rooms in this world. */
   vibeKey: VibeId;
+  /**
+   * Skill domain slugs this world naturally supports.
+   * Used by the recommendation engine to suggest rooms for skill development.
+   * Empty array = general-purpose, matches any domain.
+   */
+  skillDomains: string[];
 }
 
 export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
@@ -51,6 +58,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
     vibeKey: "calm-focus",
+    skillDomains: [], // General purpose — matches any domain
   },
 
   "vibe-coding": {
@@ -67,6 +75,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.35) 100%)",
     vibeKey: "energizing-flow",
+    skillDomains: ["technical-building", "workflow-automation"],
   },
 
   "writer-room": {
@@ -83,6 +92,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 100%)",
     vibeKey: "deep-concentration",
+    skillDomains: ["writing-communication", "strategy-planning", "persuasion-sales"],
   },
 
   "yc-build": {
@@ -99,6 +109,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.3) 100%)",
     vibeKey: "energizing-flow",
+    skillDomains: ["technical-building", "strategy-planning", "operations-execution"],
   },
 
   "gentle-start": {
@@ -113,14 +124,13 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     environmentOverlay:
       "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.25) 100%)",
     vibeKey: "ambient-chill",
+    skillDomains: [], // Low-pressure — matches any domain for exploring-level users
   },
 };
 
 /** Get a world config by key, falling back to dynamic → default. */
 export function getWorldConfig(worldKey: string): WorldConfig {
   if (worldKey in WORLD_CONFIGS) return WORLD_CONFIGS[worldKey as WorldKey];
-  // Dynamic lookup for factory-created rooms
-  const { getDynamicWorldConfig } = require("./roomDna");
   const dynamic = getDynamicWorldConfig(worldKey);
   if (dynamic) return dynamic;
   return WORLD_CONFIGS.default;
