@@ -28,9 +28,12 @@ export function FirstPathTooltip() {
     if (profile.first_mission_completed_at) return;
     if (!profile.onboarding_completed) return;
 
-    setVisible(true);
-    const timer = setTimeout(() => setVisible(false), 6000);
-    return () => clearTimeout(timer);
+    const showTimer = window.setTimeout(() => setVisible(true), 0);
+    const hideTimer = window.setTimeout(() => setVisible(false), 6000);
+    return () => {
+      window.clearTimeout(showTimer);
+      window.clearTimeout(hideTimer);
+    };
   }, [profile]);
 
   if (!visible) return null;
@@ -41,7 +44,7 @@ export function FirstPathTooltip() {
         onClick={() => setVisible(false)}
         className="rounded-lg border border-[var(--sg-shell-border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--sg-shell-900)] shadow-lg"
       >
-        Your first module takes about 8 minutes
+        Your first rep takes about 8 minutes
       </button>
     </div>
   );
@@ -59,7 +62,8 @@ export function AdjustAnytimeBanner() {
   useEffect(() => {
     const notSure = localStorage.getItem("sg_fluency_not_sure");
     if (notSure === "true") {
-      setVisible(true);
+      const timer = window.setTimeout(() => setVisible(true), 0);
+      return () => window.clearTimeout(timer);
     }
   }, []);
 
@@ -177,7 +181,7 @@ export function RoomBridge({
     // Don't show if user hasn't completed their first mission
     if (!profile.first_mission_completed_at) return;
 
-    setVisible(true);
+    const showTimer = window.setTimeout(() => setVisible(true), 0);
 
     // Track + record that we showed it
     const daysSince = profile.onboarding_completed
@@ -191,6 +195,7 @@ export function RoomBridge({
       .update({ room_bridge_shown_at: new Date().toISOString() })
       .eq("id", user.id)
       .then(() => {});
+    return () => window.clearTimeout(showTimer);
   }, [profile, user]);
 
   const dismiss = useCallback(async () => {

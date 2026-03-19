@@ -195,7 +195,7 @@ function ResultRow({
           </p>
           <p className="mt-0.5 text-xs text-shell-500">
             {formatDuration(path.estimated_duration_seconds)}
-            {moduleCount > 0 && ` · ${moduleCount} modules`}
+            {moduleCount > 0 && ` · ${moduleCount} parts`}
           </p>
           {path.skill_tags && path.skill_tags.length > 0 && (
             <div className="mt-1 flex flex-wrap gap-1">
@@ -292,6 +292,26 @@ function BuildPathRow({
   onToggleSave?: (path: LearningPath) => void;
 }) {
   const { status, generatedPath, retry } = generation;
+
+  if (status === "generating") {
+    return (
+      <div className="flex w-full items-center gap-3 px-3 py-2.5">
+        <BuildPathThumbnail />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-shell-900">
+            Building mission
+          </p>
+          <p className="mt-1 text-xs text-shell-500">
+            Curating a focused mission for {query}
+          </p>
+        </div>
+        <Loader2
+          size={14}
+          className="animate-spin text-forest-500"
+        />
+      </div>
+    );
+  }
 
   // Completed state — show the generated path as a result row
   if (status === "complete" && generatedPath) {

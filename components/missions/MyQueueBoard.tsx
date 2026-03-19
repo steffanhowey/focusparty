@@ -11,6 +11,13 @@ import type { LearningPath, LearningProgress } from "@/lib/types";
 import type { ProfileAchievement } from "@/lib/useSkillProfile";
 import { getMissionRoute } from "@/lib/appRoutes";
 import { MissionOutcomeCard } from "@/components/progress/MissionOutcomeCard";
+import {
+  formatMissionDuration,
+  getMissionExpectedOutput,
+  getMissionNextAction,
+  getMissionPrimaryArea,
+  getMissionProgressSummary,
+} from "@/lib/missionPresentation";
 
 type ActiveMission = {
   path: LearningPath;
@@ -36,35 +43,19 @@ const QUEUE_COLUMNS: QueueColumnDef[] = [
   {
     key: "saved",
     label: "Saved",
-    description: "Missions you want to keep within reach.",
+    description: "Missions waiting for a start.",
   },
   {
     key: "active",
     label: "Active",
-    description: "Work already in motion.",
+    description: "Work already underway.",
   },
   {
     key: "completed",
     label: "Completed",
-    description: "Mission outcomes with visible evidence.",
+    description: "Recent outcomes you can revisit.",
   },
 ];
-
-function formatDuration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `~${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  const remainder = minutes % 60;
-  return remainder > 0 ? `~${hours}h ${remainder}m` : `~${hours}h`;
-}
-
-function formatCompletedLabel(progress: LearningProgress): string {
-  const percent =
-    progress.items_total > 0
-      ? Math.round((progress.items_completed / progress.items_total) * 100)
-      : 0;
-  return `${progress.items_completed}/${progress.items_total} complete · ${percent}%`;
-}
 
 interface SavedMissionRecord {
   goal: GoalRecord;
@@ -192,7 +183,7 @@ export function MyQueueBoard({
             My Queue
           </h2>
           <p className="text-sm text-shell-500">
-            Save the next mission, keep active work moving, and hold onto recent evidence.
+            A light mission inventory. Saved stays ready, Active moves automatically, and Completed holds recent outcomes.
           </p>
         </div>
       </div>
@@ -280,9 +271,17 @@ function SavedLane({
                 {path?.title ?? goal.title}
               </p>
               {path ? (
-                <p className="text-xs text-shell-500">
-                  {formatDuration(path.estimated_duration_seconds)}
-                </p>
+                <div className="space-y-1">
+                  <p className="text-xs text-shell-500">
+                    {getMissionPrimaryArea(path).detail ?? getMissionPrimaryArea(path).label}
+                  </p>
+                  <p className="text-xs leading-5 text-shell-600">
+                    {getMissionExpectedOutput(path)}
+                  </p>
+                  <p className="text-xs text-shell-500">
+                    {formatMissionDuration(path.estimated_duration_seconds)}
+                  </p>
+                </div>
               ) : (
                 <p className="text-xs text-shell-500">
                   Mission details will load when this mission is ready again.
@@ -297,7 +296,7 @@ function SavedLane({
                     href={getMissionRoute(path.id)}
                     className="inline-flex items-center gap-1.5 text-xs font-medium text-forest-500 transition-colors hover:text-shell-900"
                   >
-                    Open mission
+                    Start mission
                     <ArrowRight size={12} />
                   </Link>
                 )}
@@ -352,9 +351,17 @@ function ActiveLane({
               <p className="text-sm font-medium leading-snug text-shell-900">
                 {path.title}
               </p>
-              <p className="text-xs text-shell-500">
-                {formatCompletedLabel(progress)}
-              </p>
+              <div className="space-y-1">
+                <p className="text-xs text-shell-500">
+                  {getMissionPrimaryArea(path).detail ?? getMissionPrimaryArea(path).label}
+                </p>
+                <p className="text-xs leading-5 text-shell-600">
+                  {getMissionNextAction(path, progress)}
+                </p>
+                <p className="text-xs text-shell-500">
+                  {getMissionProgressSummary(progress)}
+                </p>
+              </div>
             </div>
 
             <div className="h-1 overflow-hidden rounded-full bg-shell-100">
@@ -376,7 +383,7 @@ function ActiveLane({
                 href={getMissionRoute(path.id)}
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-forest-500 transition-colors hover:text-shell-900"
               >
-                Continue mission
+                Resume mission
                 <ArrowRight size={12} />
               </Link>
             )}

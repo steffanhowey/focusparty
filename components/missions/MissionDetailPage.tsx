@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  Clock3,
   FileText,
   PanelsTopLeft,
   Pencil,
@@ -17,8 +18,8 @@ import { Card } from "@/components/ui/Card";
 import { AchievementShareMenu } from "@/components/achievements/AchievementShareMenu";
 import { ContentViewer } from "@/components/learn/ContentViewer";
 import { PathSidebar } from "@/components/learn/PathSidebar";
-import { PathCard } from "@/components/learn/PathCard";
 import { SkillReceipt } from "@/components/learn/SkillReceipt";
+import { MissionCard } from "@/components/missions/MissionCard";
 import { useLearnProgress } from "@/lib/useLearnProgress";
 import { useProfile } from "@/lib/useProfile";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -28,49 +29,25 @@ import {
   MissionCelebration,
   RoomBridge,
 } from "@/components/onboarding/GuidedFirstSession";
+import {
+  getMissionCheckpoints,
+  getMissionContext,
+  getMissionExpectedOutput,
+  getMissionFraming,
+  getMissionNextAction,
+  getMissionPrimaryArea,
+  getMissionProgressSummary,
+  getMissionRepSummary,
+  getMissionRoomHint,
+  getMissionStateLabel,
+  getMissionStructureSummary,
+  getMissionSuccessPreview,
+  getMissionUiState,
+  type MissionUiState,
+} from "@/lib/missionPresentation";
 import { createClient } from "@/lib/supabase/client";
 import { trackFirstMissionCompleted } from "@/lib/onboarding/tracking";
-import type { ItemState, LearningPath, PathItem } from "@/lib/types";
-
-function getItemKey(item: PathItem, index: number): string {
-  return item.item_id ?? item.content_id ?? `idx-${index}`;
-}
-
-function getActiveWorkItem(path: LearningPath, itemStates: Record<string, ItemState> | undefined): PathItem | null {
-  const nextOpenMission = path.items.find((item, index) => {
-    if (item.task_type !== "do" || !item.mission) return false;
-    const key = getItemKey(item, index);
-    return !(itemStates?.[key]?.completed ?? false);
-  });
-
-  const firstMission =
-    path.items.find((item) => item.task_type === "do" && item.mission) ?? null;
-
-  return nextOpenMission ?? firstMission ?? path.items[0] ?? null;
-}
-
-function getArtifactExpectation(item: PathItem | null): string {
-  const mission = item?.mission;
-  if (!mission) return "A finished step you can carry into the next rep.";
-  if (mission.success_criteria[0]) return mission.success_criteria[0];
-  if (mission.submission_type === "screenshot") {
-    return "A tangible output you can capture or describe.";
-  }
-  if (mission.submission_type === "either") {
-    return "A clear output you can paste back or capture.";
-  }
-  return "A written output that shows what you made.";
-}
-
-function getMissionStateLabel(
-  itemsCompleted: number,
-  itemsTotal: number,
-  isCompleted: boolean,
-): string {
-  if (isCompleted) return "Completed";
-  if (itemsCompleted === 0) return "Ready to start";
-  return `${itemsCompleted}/${itemsTotal} steps complete`;
-}
+import type { ItemState, LearningPath } from "@/lib/types";
 
 function SectionToast({
   message,
@@ -150,18 +127,29 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
     ? "Your mission evidence is ready to review and share."
     : "We’re preparing your mission evidence now.";
 
-  const activeWorkItem = useMemo(() => {
+  const missionPresentation = useMemo(() => {
     if (!path) return null;
-    return getActiveWorkItem(path, progress?.item_states);
-  }, [path, progress?.item_states]);
 
-  const currentWork = activeWorkItem?.mission?.objective ?? currentItem?.title ?? path?.goal ?? path?.description ?? "Start the next rep.";
-  const artifactExpectation = getArtifactExpectation(activeWorkItem);
-  const missionState = getMissionStateLabel(
-    progress?.items_completed ?? 0,
-    progress?.items_total ?? path?.items.length ?? 0,
-    isCompleted,
-  );
+    return {
+      area: getMissionPrimaryArea(path),
+      framing: getMissionFraming(path, progress),
+      context: getMissionContext(path, progress),
+      expectedOutput: getMissionExpectedOutput(path, progress),
+      nextAction: getMissionNextAction(path, progress),
+      progressSummary: getMissionProgressSummary(progress),
+      effortSummary: getMissionRepSummary(path),
+      structureSummary: getMissionStructureSummary(path),
+      stateLabel: getMissionStateLabel(progress),
+      stateTone: getMissionUiState(progress),
+      checkpoints: getMissionCheckpoints(path, progress).slice(0, 4),
+      successPreview: getMissionSuccessPreview(path, progress).slice(0, 4),
+      roomHint: getMissionRoomHint(progress),
+    };
+  }, [path, progress]);
+
+  const artifactExpectation =
+    missionPresentation?.expectedOutput ??
+    "A finished step you can carry into your next rep.";
 
   useEffect(() => {
     if (!path || !progress) return;
@@ -341,31 +329,93 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
 
       {!isCompleted && (
         <section className="shrink-0 border-b border-[var(--sg-shell-border)] bg-[var(--sg-shell-50)] px-4 py-4">
-          <div className="grid gap-4 lg:grid-cols-[1.25fr,1fr,0.9fr,auto]">
-            <MissionSummaryBlock
-              icon={<Target size={14} className="text-forest-500" />}
-              label="Current Work"
-              value={currentWork}
-            />
-            <MissionSummaryBlock
-              icon={<FileText size={14} className="text-shell-500" />}
-              label="Expected Output"
-              value={artifactExpectation}
-            />
-            <MissionSummaryBlock
-              icon={<CheckCircle2 size={14} className="text-forest-500" />}
-              label="Mission State"
-              value={missionState}
-            />
-            <div className="flex items-end">
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<PanelsTopLeft size={14} />}
-                onClick={() => router.push("/rooms")}
-              >
-                Open Rooms
-              </Button>
+          <div className="space-y-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <MissionStatePill
+                    label={missionPresentation?.stateLabel ?? "Ready"}
+                    state={missionPresentation?.stateTone ?? "ready"}
+                  />
+                  {missionPresentation?.area.detail && (
+                    <MissionMetaPill>{missionPresentation.area.detail}</MissionMetaPill>
+                  )}
+                  <MissionMetaPill>
+                    {missionPresentation?.area.label ?? "AI Mission"}
+                  </MissionMetaPill>
+                  {missionPresentation?.effortSummary && (
+                    <MissionMetaPill>{missionPresentation.effortSummary}</MissionMetaPill>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-forest-500">
+                    Mission Brief
+                  </p>
+                  <h2 className="text-2xl font-semibold leading-tight text-shell-900">
+                    {path.title}
+                  </h2>
+                  <p className="max-w-3xl text-sm leading-6 text-shell-600">
+                    {missionPresentation?.framing}
+                  </p>
+                </div>
+              </div>
+
+              <Card className="p-4 xl:max-w-sm">
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-shell-500">
+                      What To Do Next
+                    </p>
+                    <p className="text-sm leading-6 text-shell-900">
+                      {missionPresentation?.nextAction}
+                    </p>
+                  </div>
+
+                  <div className="space-y-1 text-sm text-shell-600">
+                    <p>{missionPresentation?.progressSummary}</p>
+                    <p>{missionPresentation?.structureSummary}</p>
+                  </div>
+
+                  <div className="rounded-[var(--sg-radius-lg)] bg-shell-50 p-3">
+                    <p className="text-xs leading-5 text-shell-600">
+                      {missionPresentation?.roomHint}
+                    </p>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<PanelsTopLeft size={14} />}
+                    onClick={() => router.push("/rooms")}
+                  >
+                    Enter room
+                  </Button>
+                </div>
+              </Card>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+              <MissionBriefCard
+                icon={<Target size={14} className="text-forest-500" />}
+                label="Scenario"
+                value={missionPresentation?.context ?? path.description}
+              />
+              <MissionBriefCard
+                icon={<FileText size={14} className="text-shell-500" />}
+                label="Expected Output"
+                value={artifactExpectation}
+              />
+              <MissionBriefList
+                icon={<Clock3 size={14} className="text-shell-500" />}
+                label="Checkpoints"
+                items={missionPresentation?.checkpoints ?? []}
+              />
+              <MissionBriefList
+                icon={<CheckCircle2 size={14} className="text-forest-500" />}
+                label="Success Looks Like"
+                items={missionPresentation?.successPreview ?? []}
+              />
             </div>
           </div>
         </section>
@@ -499,10 +549,9 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {recommendedPaths.map((recommendedPath) => (
-                      <PathCard
+                      <MissionCard
                         key={recommendedPath.id}
                         path={recommendedPath}
-                        onClick={(id) => router.push(`/missions/${id}`)}
                       />
                     ))}
                   </div>
@@ -621,7 +670,64 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
   );
 }
 
-function MissionSummaryBlock({
+const MISSION_STATE_STYLES: Record<
+  MissionUiState,
+  { background: string; border: string; color: string }
+> = {
+  ready: {
+    background: "var(--sg-shell-100)",
+    border: "var(--sg-shell-border)",
+    color: "var(--sg-shell-700)",
+  },
+  saved: {
+    background: "var(--sg-shell-100)",
+    border: "var(--sg-shell-border)",
+    color: "var(--sg-shell-700)",
+  },
+  active: {
+    background: "var(--sg-forest-50)",
+    border: "var(--sg-forest-200)",
+    color: "var(--sg-forest-600)",
+  },
+  completed: {
+    background: "var(--sg-gold-100)",
+    border: "var(--sg-gold-200)",
+    color: "var(--sg-gold-900)",
+  },
+};
+
+function MissionStatePill({
+  label,
+  state,
+}: {
+  label: string;
+  state: MissionUiState;
+}) {
+  const style = MISSION_STATE_STYLES[state];
+
+  return (
+    <span
+      className="inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+      style={{
+        background: style.background,
+        borderColor: style.border,
+        color: style.color,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function MissionMetaPill({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-shell-border bg-white px-2.5 py-1 text-[11px] font-medium text-shell-600">
+      {children}
+    </span>
+  );
+}
+
+function MissionBriefCard({
   icon,
   label,
   value,
@@ -631,14 +737,41 @@ function MissionSummaryBlock({
   value: string;
 }) {
   return (
-    <div className="space-y-1">
+    <Card className="h-full p-4">
       <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-shell-500">
         {icon}
         {label}
       </div>
-      <p className="text-sm leading-6 text-shell-800">
+      <p className="mt-3 text-sm leading-6 text-shell-800">
         {value}
       </p>
-    </div>
+    </Card>
+  );
+}
+
+function MissionBriefList({
+  icon,
+  label,
+  items,
+}: {
+  icon: ReactNode;
+  label: string;
+  items: string[];
+}) {
+  return (
+    <Card className="h-full p-4">
+      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-shell-500">
+        {icon}
+        {label}
+      </div>
+      <div className="mt-3 space-y-2">
+        {items.map((item) => (
+          <div key={item} className="flex items-start gap-2 text-sm leading-6 text-shell-800">
+            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-forest-500" />
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
