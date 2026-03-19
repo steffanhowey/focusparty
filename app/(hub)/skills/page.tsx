@@ -1,9 +1,5 @@
-import { SkillProfilePage } from "@/components/skills/SkillProfilePage";
+import { redirect } from "next/navigation";
 
-export default function SkillsPage() {
-  return (
-    <main className="flex-1">
-      <SkillProfilePage />
-    </main>
-  );
+export default function SkillsRedirect() {
+  redirect("/progress");
 }

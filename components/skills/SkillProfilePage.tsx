@@ -5,6 +5,7 @@
  * Shows summary stats, fluency distribution, and domain sections.
  */
 
+import Link from "next/link";
 import { Loader2, BookOpen, TrendingUp, Layers, Compass } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { StatsCard } from "@/components/progress/StatsCard";
@@ -34,7 +35,15 @@ const FLUENCY_BAR_SEGMENTS: {
 
 // ─── Component ───────────────────────────────────────────────
 
-export function SkillProfilePage() {
+interface SkillProfilePageProps {
+  showSubtitle?: boolean;
+  showAchievementHistory?: boolean;
+}
+
+export function SkillProfilePage({
+  showSubtitle = true,
+  showAchievementHistory = true,
+}: SkillProfilePageProps) {
   const { domains, summary, gaps, achievements, isLoading, error } = useSkillProfile();
   const { states: marketStates } = useSkillMarketState();
 
@@ -76,14 +85,14 @@ export function SkillProfilePage() {
             Your skill profile starts here
           </h2>
           <p className="mt-1 text-sm text-[var(--sg-shell-500)] max-w-sm">
-            Complete learning paths to develop verified AI skills and build your professional skill portfolio.
+            Complete missions to develop verified AI skills and build a durable capability record.
           </p>
         </div>
-        <a href="/learn">
+        <Link href="/missions">
           <Button variant="primary" size="default" leftIcon={<BookOpen size={16} />}>
-            Browse Paths
+            Browse Missions
           </Button>
-        </a>
+        </Link>
       </div>
     );
   }
@@ -98,9 +107,11 @@ export function SkillProfilePage() {
   return (
     <div className="space-y-6">
       {/* Subtitle */}
-      <p className="text-sm text-[var(--sg-shell-500)]">
-        Your AI skill portfolio
-      </p>
+      {showSubtitle && (
+        <p className="text-sm text-[var(--sg-shell-500)]">
+          Your capability record and recent evidence
+        </p>
+      )}
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -173,7 +184,9 @@ export function SkillProfilePage() {
       {gaps && <GapSummary gaps={gaps} />}
 
       {/* Achievement history */}
-      <AchievementHistory achievements={achievements} />
+      {showAchievementHistory && (
+        <AchievementHistory achievements={achievements} />
+      )}
 
       {/* Domain sections */}
       <div className="divide-y divide-[var(--sg-shell-border)]">

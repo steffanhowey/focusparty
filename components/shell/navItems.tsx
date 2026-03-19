@@ -2,10 +2,18 @@
 
 /**
  * Shared nav config for Hub sidebar and session menu drawer.
- * Learn is the app home. Icons: BookOpen (learn), Sparkles (skills), Users (practice), Target (goals), BarChart3 (stats), Settings.
+ * Phase 1 shell recenter:
+ * Home → Missions → Rooms → Progress → Settings.
  */
 
-import { BarChart3, BookOpen, Sparkles, Target, Settings, Users, type LucideIcon } from "lucide-react";
+import {
+  House,
+  PanelsTopLeft,
+  Settings,
+  Target,
+  TrendingUp,
+  type LucideIcon,
+} from "lucide-react";
 
 const NAV_ICON_SIZE = 20;
 
@@ -15,11 +23,10 @@ export const NAV_ITEMS: Array<{
   label: string;
   icon: LucideIcon;
 }> = [
-  { id: "learn", href: "/learn", label: "Learn", icon: BookOpen },
-  { id: "skills", href: "/skills", label: "Skills", icon: Sparkles },
-  { id: "practice", href: "/practice", label: "Practice", icon: Users },
-  { id: "goals", href: "/goals", label: "Goals", icon: Target },
-  { id: "stats", href: "/stats", label: "Stats", icon: BarChart3 },
+  { id: "home", href: "/home", label: "Home", icon: House },
+  { id: "missions", href: "/missions", label: "Missions", icon: Target },
+  { id: "rooms", href: "/rooms", label: "Rooms", icon: PanelsTopLeft },
+  { id: "progress", href: "/progress", label: "Progress", icon: TrendingUp },
   { id: "settings", href: "/settings", label: "Settings", icon: Settings },
 ];
 

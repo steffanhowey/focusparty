@@ -2,24 +2,28 @@
 
 import { usePathname } from "next/navigation";
 import { ReactNode, useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
-import { Users, Plus, Menu } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Menu, PanelsTopLeft } from "lucide-react";
 import { IconButton } from "@/components/ui/IconButton";
 import { Sidebar } from "./Sidebar";
 import { CLIENT_NAV_HREFS } from "./navItems";
 import { FunctionMigrationModal } from "@/components/onboarding/FunctionMigrationModal";
 
-const PAGE_TITLES: Record<string, string> = {
-  "/practice": "Practice",
-  "/learn": "Learn",
-  "/skills": "Skills",
-  "/goals": "Goals",
-  "/stats": "Stats",
-  "/settings": "Settings",
-};
+const PAGE_TITLE_RULES: Array<{ prefix: string; title: string }> = [
+  { prefix: "/home", title: "Home" },
+  { prefix: "/missions", title: "Missions" },
+  { prefix: "/learn", title: "Missions" },
+  { prefix: "/rooms", title: "Rooms" },
+  { prefix: "/practice", title: "Rooms" },
+  { prefix: "/progress", title: "Progress" },
+  { prefix: "/skills", title: "Progress" },
+  { prefix: "/stats", title: "Progress" },
+  { prefix: "/goals", title: "Missions" },
+  { prefix: "/settings", title: "Settings" },
+];
 
 function getTitleForPath(pathname: string): string {
-  return PAGE_TITLES[pathname] ?? "Learn";
+  const match = PAGE_TITLE_RULES.find(({ prefix }) => pathname.startsWith(prefix));
+  return match?.title ?? "Home";
 }
 
 /* ─── Lazy tab components ─── */
@@ -28,12 +32,12 @@ const LazyPartyList = lazy(() =>
   import("@/components/party/PartyList").then((m) => ({ default: m.PartyList }))
 );
 
-const LazyGoalBoard = lazy(() =>
-  import("@/components/goals/GoalBoard").then((m) => ({ default: m.GoalBoard }))
+const LazyHomePage = lazy(() =>
+  import("@/components/home/HomePage").then((m) => ({ default: m.HomePage }))
 );
 
-const LazyProgressDashboard = lazy(() =>
-  import("@/components/progress/ProgressDashboard").then((m) => ({ default: m.ProgressDashboard }))
+const LazyProgressPage = lazy(() =>
+  import("@/components/progress/ProgressPage").then((m) => ({ default: m.ProgressPage }))
 );
 
 const LazyProfileSettings = lazy(() =>
@@ -44,24 +48,19 @@ const LazyIntegrationSettings = lazy(() =>
   import("@/components/settings/IntegrationSettings").then((m) => ({ default: m.IntegrationSettings }))
 );
 
-const LazyLearnPage = lazy(() =>
-  import("@/components/learn/LearnPage").then((m) => ({ default: m.LearnPage }))
-);
-
-const LazySkillProfilePage = lazy(() =>
-  import("@/components/skills/SkillProfilePage").then((m) => ({ default: m.SkillProfilePage }))
+const LazyMissionsPage = lazy(() =>
+  import("@/components/missions/MissionsPage").then((m) => ({ default: m.MissionsPage }))
 );
 
 /**
  * Tab definitions — maps route paths to their lazy component(s).
- * Order determines prefetch priority (Learn first since it's the home tab).
+ * Order determines prefetch priority (Home first since it's the app launchpad).
  */
 const TAB_DEFS: Array<{ path: string; render: () => ReactNode }> = [
-  { path: "/learn", render: () => <LazyLearnPage /> },
-  { path: "/skills", render: () => <LazySkillProfilePage /> },
-  { path: "/practice", render: () => <LazyPartyList /> },
-  { path: "/goals", render: () => <LazyGoalBoard /> },
-  { path: "/stats", render: () => <LazyProgressDashboard /> },
+  { path: "/home", render: () => <LazyHomePage /> },
+  { path: "/missions", render: () => <LazyMissionsPage /> },
+  { path: "/rooms", render: () => <LazyPartyList /> },
+  { path: "/progress", render: () => <LazyProgressPage /> },
   {
     path: "/settings",
     render: () => (
@@ -87,11 +86,10 @@ function usePrefetchTabs(): void {
       () => {
         // Fire-and-forget dynamic imports — populates the module cache
         // so React.lazy resolves instantly when the tab is first visited.
-        import("@/components/learn/LearnPage").catch(() => {});
-        import("@/components/skills/SkillProfilePage").catch(() => {});
+        import("@/components/home/HomePage").catch(() => {});
+        import("@/components/missions/MissionsPage").catch(() => {});
         import("@/components/party/PartyList").catch(() => {});
-        import("@/components/goals/GoalBoard").catch(() => {});
-        import("@/components/progress/ProgressDashboard").catch(() => {});
+        import("@/components/progress/ProgressPage").catch(() => {});
         import("@/components/settings/ProfileSettings").catch(() => {});
         import("@/components/settings/IntegrationSettings").catch(() => {});
       },
@@ -108,26 +106,19 @@ export function HubShell({ children }: { children: ReactNode }) {
   const [clientTab, setClientTab] = useState<string | null>(null);
 
   // Track which tabs have been visited so we can mount them once and keep them alive.
-  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set());
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
+    () => new Set(CLIENT_NAV_HREFS.has(pathname) ? [pathname] : []),
+  );
 
   // Prefetch all tab chunks during idle time
   usePrefetchTabs();
 
-  // Single source of truth: clientTab (after first nav click) or pathname (initial server render)
-  const effectivePath = clientTab ?? pathname;
-  const title = getTitleForPath(effectivePath);
+  const resolvedClientTab =
+    clientTab !== null && CLIENT_NAV_HREFS.has(pathname) ? clientTab : null;
 
-  // Mark the active tab as visited whenever it changes
-  useEffect(() => {
-    if (CLIENT_NAV_HREFS.has(effectivePath)) {
-      setVisitedTabs((prev) => {
-        if (prev.has(effectivePath)) return prev;
-        const next = new Set(prev);
-        next.add(effectivePath);
-        return next;
-      });
-    }
-  }, [effectivePath]);
+  // Single source of truth: clientTab (after first nav click) or pathname (initial server render)
+  const effectivePath = resolvedClientTab ?? pathname;
+  const title = getTitleForPath(effectivePath);
 
   const toggleMobileMenu = useCallback(() => {
     setMobileMenuOpen((prev) => !prev);
@@ -137,6 +128,12 @@ export function HubShell({ children }: { children: ReactNode }) {
     if (!CLIENT_NAV_HREFS.has(href)) return;
     window.history.pushState(null, "", href);
     setClientTab(href);
+    setVisitedTabs((prev) => {
+      if (prev.has(href)) return prev;
+      const next = new Set(prev);
+      next.add(href);
+      return next;
+    });
   }, []);
 
   const handleMobileNavClick = useCallback((href: string) => {
@@ -144,20 +141,18 @@ export function HubShell({ children }: { children: ReactNode }) {
     setMobileMenuOpen(false);
   }, [handleNavClick]);
 
-  // Clear stale clientTab when Next.js navigates to a non-client-tab route
-  // (e.g., <Link> from /rooms grid to /rooms/[id])
-  useEffect(() => {
-    if (clientTab !== null && !CLIENT_NAV_HREFS.has(pathname)) {
-      setClientTab(null);
-    }
-  }, [pathname, clientTab]);
-
   // Sync with browser back/forward
   useEffect(() => {
     const onPopState = () => {
       const p = window.location.pathname;
       if (CLIENT_NAV_HREFS.has(p)) {
         setClientTab(p);
+        setVisitedTabs((prev) => {
+          if (prev.has(p)) return prev;
+          const next = new Set(prev);
+          next.add(p);
+          return next;
+        });
       } else {
         setClientTab(null);
       }
@@ -167,7 +162,7 @@ export function HubShell({ children }: { children: ReactNode }) {
   }, []);
 
   // When clientTab is null we're on a server-rendered route — show children directly.
-  const isClientTab = clientTab !== null;
+  const isClientTab = resolvedClientTab !== null;
 
   return (
     <div className="flex h-screen overflow-hidden safe-bottom">
@@ -193,7 +188,7 @@ export function HubShell({ children }: { children: ReactNode }) {
         className="min-w-0 flex-1 flex flex-col overflow-hidden"
         style={{ background: "var(--sg-white)" }}
       >
-        {effectivePath !== "/practice" && effectivePath !== "/learn" && (
+        {effectivePath !== "/rooms" && effectivePath !== "/missions" && (
           <div className="shrink-0 px-4 md:px-5 lg:px-6">
             <div className="mx-auto flex h-16 items-center justify-between gap-4" style={{ maxWidth: "var(--sg-max-width)" }}>
               <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -209,28 +204,18 @@ export function HubShell({ children }: { children: ReactNode }) {
                   {title}
                 </span>
               </div>
-              {effectivePath === "/goals" ? (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  leftIcon={<Plus size={18} strokeWidth={1.8} />}
-                  onClick={() => document.dispatchEvent(new CustomEvent("fp:create-goal"))}
-                  aria-label="New goal"
-                >
-                  <span className="hidden sm:inline">New Goal</span>
-                </Button>
-              ) : (
+              {effectivePath !== "/rooms" && (
                 <a
-                  href="/practice"
+                  href="/rooms"
                   onClick={(e) => {
                     e.preventDefault();
-                    handleNavClick("/practice");
+                    handleNavClick("/rooms");
                   }}
                   className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-[var(--sg-radius-btn)] bg-[var(--sg-forest-500)] px-4 text-white sm:px-5"
-                  aria-label="Join session"
+                  aria-label="Open rooms"
                 >
-                  <Users size={18} strokeWidth={1.8} className="shrink-0" />
-                  <span className="hidden text-sm font-semibold sm:inline">Join Session</span>
+                  <PanelsTopLeft size={18} strokeWidth={1.8} className="shrink-0" />
+                  <span className="hidden text-sm font-semibold sm:inline">Open Rooms</span>
                 </a>
               )}
             </div>

@@ -1,26 +1,12 @@
-import React from "react";
-import { ImageResponse } from "next/og";
-import {
-  ACHIEVEMENT_OG_ALT,
-  ACHIEVEMENT_OG_CONTENT_TYPE,
-  ACHIEVEMENT_OG_SIZE,
-  AchievementOgImage,
-} from "@/components/achievements/AchievementOgImage";
-import { getAchievementPageData } from "@/lib/achievements/getAchievementPageData";
-
-export const alt = ACHIEVEMENT_OG_ALT;
-export const size = ACHIEVEMENT_OG_SIZE;
-export const contentType = ACHIEVEMENT_OG_CONTENT_TYPE;
+import { NextResponse } from "next/server";
+import { getProgressEvidenceImageRoute } from "@/lib/appRoutes";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
-  const data = await getAchievementPageData(id);
+  const url = new URL(getProgressEvidenceImageRoute(id), request.url);
 
-  return new ImageResponse(
-    React.createElement(AchievementOgImage, { data }),
-    { ...size },
-  );
+  return NextResponse.redirect(url);
 }

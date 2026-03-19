@@ -1,5 +1,5 @@
-import { GoalBoard } from "@/components/goals/GoalBoard";
+import { redirect } from "next/navigation";
 
-export default function GoalsPage() {
-  return <GoalBoard />;
+export default function GoalsRedirect() {
+  redirect("/missions");
 }

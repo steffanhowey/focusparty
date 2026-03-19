@@ -1,9 +1,5 @@
-import { ProgressDashboard } from "@/components/progress/ProgressDashboard";
+import { redirect } from "next/navigation";
 
-export default function StatsPage() {
-  return (
-    <main className="flex-1">
-      <ProgressDashboard />
-    </main>
-  );
+export default function StatsRedirect() {
+  redirect("/progress");
 }

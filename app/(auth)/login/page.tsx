@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Logo } from "@/components/shell/Logo";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { HOME_ROUTE } from "@/lib/appRoutes";
 
 function friendlyError(raw: string): string {
   const lower = raw.toLowerCase();
@@ -44,7 +45,7 @@ function LoginForm() {
 
   useEffect(() => {
     if (authState === "authenticated") {
-      const next = searchParams.get("next") ?? "/learn";
+      const next = searchParams.get("next") ?? HOME_ROUTE;
       router.replace(next);
     }
   }, [authState, router, searchParams]);

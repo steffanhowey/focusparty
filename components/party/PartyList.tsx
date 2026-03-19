@@ -11,14 +11,15 @@ import { EmptyState } from "./EmptyState";
 import { CreatePartyModal } from "./CreatePartyModal";
 import { useActiveBackgrounds } from "@/lib/useActiveBackgrounds";
 import { ChevronDown } from "lucide-react";
+import { getRoomRoute } from "@/lib/appRoutes";
 
 type RoomFilter = "all" | "most-active" | "coding" | "writing" | "calm";
 
 const FILTER_OPTIONS: { value: RoomFilter; label: string }[] = [
-  { value: "all", label: "All Sessions" },
+  { value: "all", label: "All Rooms" },
   { value: "most-active", label: "Most Active" },
   { value: "coding", label: "Coding & Building" },
-  { value: "writing", label: "Writing & Focus" },
+  { value: "writing", label: "Writing & Deep Work" },
   { value: "calm", label: "Calm & Gentle" },
 ];
 
@@ -54,7 +55,7 @@ export function PartyList() {
     if (!requireAuth()) return;
     // Stop any active preview before navigating
     preview.stopPreview();
-    router.push(`/environment/${partyId}`);
+    router.push(getRoomRoute(partyId));
   };
 
   // Pick the featured room: most participants among persistent rooms
@@ -116,7 +117,7 @@ export function PartyList() {
               <section>
                 <div className="mb-6 flex items-center justify-between">
                   <h2 className="text-xl font-bold text-shell-900">
-                    Practice
+                    Rooms
                   </h2>
                   <div className="relative">
                     <select

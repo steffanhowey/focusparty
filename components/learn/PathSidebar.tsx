@@ -23,6 +23,7 @@ interface PathSidebarProps {
   onSelectItem: (index: number) => void;
   isPlaying?: boolean;
   onTogglePlay?: () => void;
+  title?: string;
 }
 
 function formatDuration(seconds: number): string {
@@ -45,6 +46,7 @@ export function PathSidebar({
   onSelectItem,
   isPlaying,
   onTogglePlay,
+  title = "Path",
 }: PathSidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
@@ -95,7 +97,7 @@ export function PathSidebar({
       {/* Header + Progress */}
       <div className="p-4 space-y-3">
         <h3 className="text-sm font-semibold text-white">
-          Path
+          {title}
         </h3>
         {progress && (
           <div className="space-y-1.5">

@@ -16,6 +16,7 @@ import {
   type PartyParticipant,
 } from "@/lib/parties";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { getRoomRoute } from "@/lib/appRoutes";
 
 export default function JoinPartyPage({
   params,
@@ -62,7 +63,7 @@ export default function JoinPartyPage({
     setJoining(true);
     try {
       await joinParty(id, userId!, displayName);
-      router.push(party?.status === "active" ? `/environment/${id}` : `/rooms/${id}`);
+      router.push(getRoomRoute(id));
     } catch {
       setJoining(false);
     }
@@ -97,10 +98,10 @@ export default function JoinPartyPage({
         {!loading && notFound && (
           <div className="text-center">
             <h1 className="text-2xl font-semibold text-white">
-              Party not found
+              Room not found
             </h1>
             <p className="mt-2 text-sm text-[var(--sg-shell-600)]">
-              This party may have ended or the link is invalid.
+              This room may have ended or the link is invalid.
             </p>
             <Link
               href="/rooms"
@@ -116,7 +117,7 @@ export default function JoinPartyPage({
             <h1
               className="mb-6 text-2xl font-semibold text-white"
             >
-              Join party
+              Join room
             </h1>
 
             <Card
@@ -152,19 +153,19 @@ export default function JoinPartyPage({
 
             {isCompleted && (
               <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
-                This party has already ended.
+                This room has already ended.
               </p>
             )}
 
             {isActive && !isFull && (
               <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
-                This party is in progress. Join now to hop in!
+                This room is in progress. Join now to hop in.
               </p>
             )}
 
             {isFull && !isCompleted && (
               <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
-                This party is full.
+                This room is full.
               </p>
             )}
 
@@ -172,7 +173,7 @@ export default function JoinPartyPage({
               <>
                 {!isAuthenticated && (
                   <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
-                    Sign in to join this party.
+                    Sign in to join this room.
                   </p>
                 )}
 
@@ -182,7 +183,7 @@ export default function JoinPartyPage({
                   onClick={handleJoin}
                   disabled={!canJoin || joining}
                 >
-                  {joining ? "Joining..." : isAuthenticated ? "Join Party" : "Sign in to join"}
+                  {joining ? "Joining..." : isAuthenticated ? "Join Room" : "Sign in to join"}
                 </Button>
               </>
             )}

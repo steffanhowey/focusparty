@@ -1,6 +1,8 @@
 "use client";
 
 import type { LearningPath, LearningProgress } from "@/lib/types";
+import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { PathCover } from "./PathCover";
 
 interface PathCardProps {
@@ -8,6 +10,8 @@ interface PathCardProps {
   progress?: LearningProgress | null;
   onClick: (pathId: string) => void;
   onSkillClick?: (skillSlug: string, skillName: string) => void;
+  isSaved?: boolean;
+  onToggleSave?: (path: LearningPath) => void;
 }
 
 const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
@@ -28,7 +32,14 @@ function formatDuration(seconds: number): string {
  * Learning path card for the Learn page grid.
  * Uses PathCover for branded thumbnail treatment.
  */
-export function PathCard({ path, progress, onClick, onSkillClick }: PathCardProps) {
+export function PathCard({
+  path,
+  progress,
+  onClick,
+  onSkillClick,
+  isSaved = false,
+  onToggleSave,
+}: PathCardProps) {
   const percentComplete = progress
     ? progress.items_total > 0
       ? Math.round(
@@ -49,6 +60,36 @@ export function PathCard({ path, progress, onClick, onSkillClick }: PathCardProp
         style={{ borderColor: "var(--sg-shell-border)" }}
       >
         <PathCover path={path} height="h-[200px]" />
+
+        {onToggleSave && (
+          <div className="absolute right-3 top-3 z-10">
+            <Button
+              variant="ghost"
+              size="xs"
+              aria-label={isSaved ? "Remove from queue" : "Save to queue"}
+              className={`w-8 justify-center rounded-full px-0 backdrop-blur-md ${
+                isSaved ? "opacity-100" : "opacity-0 group-hover/card:opacity-100"
+              }`}
+              style={{
+                background: "rgba(15,35,24,0.58)",
+                color: "var(--sg-white)",
+              }}
+              leftIcon={
+                isSaved ? (
+                  <BookmarkCheck size={14} strokeWidth={1.9} />
+                ) : (
+                  <Bookmark size={14} strokeWidth={1.9} />
+                )
+              }
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggleSave(path);
+              }}
+            >
+              {null}
+            </Button>
+          </div>
+        )}
 
         {/* Difficulty badge — matches FeaturedRoom overlay badge pattern */}
         <span

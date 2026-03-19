@@ -11,6 +11,7 @@ import { useCurrentUser } from "@/lib/useCurrentUser";
 import { WORLD_CONFIGS, type WorldConfig, type WorldKey } from "@/lib/worlds";
 import { getHostConfig } from "@/lib/hosts";
 import { SPRINT_DURATION_OPTIONS } from "@/lib/constants";
+import { getRoomRoute } from "@/lib/appRoutes";
 
 const WORLD_KEYS: WorldKey[] = [
   "vibe-coding",
@@ -85,7 +86,7 @@ export function CreatePartyModal({ isOpen, onClose }: CreatePartyModalProps) {
       );
 
       handleClose();
-      router.push(`/practice/${party.id}`);
+      router.push(getRoomRoute(party.id));
     } catch {
       showToast({
         type: "error",

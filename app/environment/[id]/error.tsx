@@ -20,7 +20,7 @@ export default function EnvironmentError({
       </h2>
       <p className="max-w-sm text-sm text-[var(--sg-shell-600)]">
         Something went wrong during your focus session. You can try to resume or
-        head back to Practice.
+        head back to Rooms.
       </p>
       <div className="flex gap-3">
         <button
@@ -31,11 +31,11 @@ export default function EnvironmentError({
           Resume session
         </button>
         <a
-          href="/practice"
+          href="/rooms"
           className="rounded-full border px-5 py-2.5 text-sm font-medium text-[var(--sg-shell-600)] transition-colors hover:text-[var(--sg-shell-900)]"
           style={{ borderColor: "var(--sg-shell-border)" }}
         >
-          Back to Practice
+          Back to Rooms
         </a>
       </div>
     </div>

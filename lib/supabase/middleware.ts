@@ -2,7 +2,23 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Routes that require an authenticated session. */
-const PROTECTED_PREFIXES = ["/practice", "/session", "/settings", "/stats", "/goals", "/onboard", "/admin"];
+const PROTECTED_PREFIXES = [
+  "/home",
+  "/missions",
+  "/rooms",
+  "/progress",
+  "/settings",
+  "/learn",
+  "/practice",
+  "/skills",
+  "/stats",
+  "/goals",
+  "/dashboard",
+  "/profile",
+  "/session",
+  "/onboard",
+  "/admin",
+];
 
 export async function updateSession(request: NextRequest) {
   // Don't interfere with the auth callback — the route handler
@@ -40,12 +56,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Redirect authenticated users from marketing landing to Learn (app home).
+  // Redirect authenticated users from marketing landing to Home (app launchpad).
   const { pathname } = request.nextUrl;
   if (user && pathname === "/") {
-    const learnUrl = request.nextUrl.clone();
-    learnUrl.pathname = "/learn";
-    return NextResponse.redirect(learnUrl);
+    const homeUrl = request.nextUrl.clone();
+    homeUrl.pathname = "/home";
+    return NextResponse.redirect(homeUrl);
   }
 
   // Redirect unauthenticated users away from protected routes.

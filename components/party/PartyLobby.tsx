@@ -61,10 +61,12 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   const [activeSession, setActiveSession] = useState<SessionRow | null>(null);
   const initialStatusRef = useRef<string | null>(null);
   const prevPartyIdRef = useRef(partyId);
-  if (partyId !== prevPartyIdRef.current) {
+
+  useEffect(() => {
+    if (partyId === prevPartyIdRef.current) return;
     prevPartyIdRef.current = partyId;
     initialStatusRef.current = null;
-  }
+  }, [partyId]);
 
   // Presence tracking
   const presence = usePartyPresence({
@@ -244,9 +246,9 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     if (!userId) return;
     try {
       await leaveParty(partyId, userId);
-      router.push("/practice");
+      router.push("/rooms");
     } catch {
-      router.push("/practice");
+      router.push("/rooms");
     }
   };
 
@@ -280,7 +282,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
           This room may have ended or doesn&apos;t exist.
         </p>
         <Link
-          href="/practice"
+          href="/rooms"
           className="mt-4 text-sm font-medium text-forest-500 hover:underline"
         >
           Back to rooms
@@ -297,7 +299,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
           This room has already completed.
         </p>
         <Link
-          href="/practice"
+          href="/rooms"
           className="mt-4 text-sm font-medium text-forest-500 hover:underline"
         >
           Back to rooms
@@ -312,7 +314,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     <div className={ROOM_STATE_CLASS[roomState]}>
       {/* Back link */}
       <Link
-        href="/practice"
+        href="/rooms"
         className="mb-5 inline-flex items-center gap-1.5 text-sm text-shell-600 hover:text-shell-900"
       >
         <ArrowLeft size={16} />
@@ -375,7 +377,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
       <Card variant="default" className="mb-4 p-4">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-medium text-white">
-            {participants.length}/{party.max_participants} focus friends ready
+            {participants.length}/{party.max_participants} ready in the room
           </p>
           {presence.participants.length > 0 && (
             <LiveParticipantsStrip
@@ -403,7 +405,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
             onClick={handleJoin}
             disabled={joiningRoom}
           >
-            {joiningRoom ? "Joining..." : "Join Session"}
+            {joiningRoom ? "Joining..." : "Join Room"}
           </Button>
         )}
         {isParticipant && party.status === "active" && (

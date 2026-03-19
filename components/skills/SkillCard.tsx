@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/Card";
 import { FluencyBadge } from "./FluencyBadge";
 import type { SkillProfileSkill } from "@/lib/useSkillProfile";
 import type { SkillMarketState } from "@/lib/types/intelligence";
+import { getMissionSearchRoute } from "@/lib/appRoutes";
 
 interface SkillCardProps {
   skill: SkillProfileSkill;
@@ -39,7 +40,7 @@ export function SkillCard({ skill, onNavigate, marketState }: SkillCardProps) {
           background: "transparent",
         }}
         onClick={() => {
-          const href = `/learn?q=${encodeURIComponent(skill.skill.name)}`;
+          const href = getMissionSearchRoute(skill.skill.name);
           if (onNavigate) {
             onNavigate(href);
           } else {

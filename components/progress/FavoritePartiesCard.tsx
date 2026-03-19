@@ -14,7 +14,7 @@ export function FavoritePartiesCard({ parties }: FavoritePartiesCardProps) {
     return (
       <Card variant="default" className="p-5">
         <p className="text-center text-sm text-[var(--sg-shell-500)]">
-          Join a party and complete a session to see your favorites
+          Join a room and complete a session to see your favorites
         </p>
       </Card>
     );

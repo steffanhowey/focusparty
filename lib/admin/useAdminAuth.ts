@@ -30,14 +30,14 @@ export function useAdminAuth(): AdminAuthState {
         if (cancelled) return;
 
         if (!data.isAdmin) {
-          router.replace("/practice");
+          router.replace("/home");
           return;
         }
 
         setState({ isAdmin: true, isLoading: false });
       } catch {
         if (!cancelled) {
-          router.replace("/practice");
+          router.replace("/home");
         }
       }
     }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Logo } from "@/components/shell/Logo";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { HOME_ROUTE } from "@/lib/appRoutes";
 
 function friendlyError(raw: string): string {
   const lower = raw.toLowerCase();
@@ -39,7 +40,7 @@ function SignUpForm() {
   const [loading, setLoading] = useState(false);
 
   if (authState === "authenticated") {
-    const next = searchParams.get("next") ?? "/learn";
+    const next = searchParams.get("next") ?? HOME_ROUTE;
     router.replace(next);
     return null;
   }
@@ -150,7 +151,7 @@ function SignUpForm() {
               disabled={!firstName.trim() || !lastName.trim() || !email.trim()}
               className="mt-4"
             >
-              Get Focused
+              Start Building
             </Button>
           </form>
         )}

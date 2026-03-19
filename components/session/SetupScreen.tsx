@@ -128,7 +128,7 @@ export function SetupScreen({
             variant="ghost"
             size="xs"
             leftIcon={<ArrowLeft size={14} />}
-            onClick={() => router.push("/practice")}
+            onClick={() => router.push("/rooms")}
           >
             Back to rooms
           </Button>

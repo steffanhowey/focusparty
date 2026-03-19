@@ -268,9 +268,9 @@ function OnboardContent() {
       // Navigate to the selected path or browse page
       if (selectedPick) {
         // Generate path from the pick topic, then navigate
-        router.push(`/learn?q=${encodeURIComponent(selectedPick.path_topic)}`);
+        router.push(`/missions?q=${encodeURIComponent(selectedPick.path_topic)}`);
       } else {
-        router.push("/learn");
+        router.push("/home");
       }
     },
     [

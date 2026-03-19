@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { Sparkles, ArrowRight, Bookmark, BookmarkCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import type { UsePathGenerationReturn } from "@/lib/usePathGeneration";
 import type { LearningPath } from "@/lib/types";
@@ -34,6 +34,8 @@ interface SearchDropdownProps {
   onSelectPath: (pathId: string) => void;
   onStartGeneration: (query: string) => void;
   onClose: () => void;
+  savedPathIds?: Set<string>;
+  onToggleSave?: (path: LearningPath) => void;
 }
 
 // ─── Component ──────────────────────────────────────────────
@@ -51,7 +53,10 @@ export function SearchDropdown({
   onSelectPath,
   onStartGeneration,
   onClose,
+  savedPathIds,
+  onToggleSave,
 }: SearchDropdownProps) {
+  void shouldOfferGeneration;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape
@@ -102,10 +107,12 @@ export function SearchDropdown({
             generation={generation}
             onSelectPath={onSelectPath}
             onStartGeneration={onStartGeneration}
+            savedPathIds={savedPathIds}
+            onToggleSave={onToggleSave}
           />
         )}
 
-        {/* Divider between Build Path and related results */}
+        {/* Divider between Build Mission and related results */}
         {results.length > 0 && showBuildRow && (
           <div
             className="border-t"
@@ -117,7 +124,7 @@ export function SearchDropdown({
         {results.length > 0 && (
           <div className="px-3 pt-2 pb-1">
             <p className="text-[10px] font-medium uppercase tracking-wider text-shell-500">
-              Related paths
+              Related missions
             </p>
           </div>
         )}
@@ -126,6 +133,8 @@ export function SearchDropdown({
             key={path.id}
             path={path}
             onSelect={() => onSelectPath(path.id)}
+            isSaved={savedPathIds?.has(path.id) ?? false}
+            onToggleSave={onToggleSave}
           />
         ))}
       </div>
@@ -138,87 +147,112 @@ export function SearchDropdown({
 function ResultRow({
   path,
   onSelect,
+  isSaved = false,
+  onToggleSave,
 }: {
   path: LearningPath;
   onSelect: () => void;
+  isSaved?: boolean;
+  onToggleSave?: (path: LearningPath) => void;
 }) {
   const difficulty = DIFFICULTY_CONFIG[path.difficulty_level];
   const moduleCount = path.modules?.length ?? 0;
 
   return (
-    <button
-      type="button"
-      className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-shell-100 cursor-pointer"
-      onClick={onSelect}
-    >
-      {/* Thumbnail — branded cover at small size */}
-      <div
-        className="relative shrink-0 overflow-hidden rounded-md border"
-        style={{
-          width: 96,
-          height: 64,
-          borderColor: "var(--sg-shell-border)",
-        }}
+    <div className="flex items-center gap-2 px-3 py-2.5">
+      <button
+        type="button"
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-1 py-0.5 text-left transition-colors hover:bg-shell-100 cursor-pointer"
+        onClick={onSelect}
       >
-        <PathCover path={path} height="h-full" sizes="96px" />
-      </div>
+        {/* Thumbnail — branded cover at small size */}
+        <div
+          className="relative shrink-0 overflow-hidden rounded-md border"
+          style={{
+            width: 96,
+            height: 64,
+            borderColor: "var(--sg-shell-border)",
+          }}
+        >
+          <PathCover path={path} height="h-full" sizes="96px" />
+        </div>
 
-      {/* Title + meta */}
-      <div className="min-w-0 flex-1">
-        {difficulty && (
-          <span
-            className="inline-block rounded px-1.5 py-0.5 text-[10px] font-medium leading-none mb-1"
-            style={{
-              background: "var(--sg-shell-100)",
-              color: difficulty.color,
-            }}
-          >
-            {difficulty.label}
-          </span>
-        )}
-        <p className="truncate text-sm font-semibold text-shell-900">
-          {path.title}
-        </p>
-        <p className="mt-0.5 text-xs text-shell-500">
-          {formatDuration(path.estimated_duration_seconds)}
-          {moduleCount > 0 && ` · ${moduleCount} modules`}
-        </p>
-        {path.skill_tags && path.skill_tags.length > 0 && (
-          <div className="mt-1 flex flex-wrap gap-1">
-            {path.skill_tags
-              .filter((t) => t.relevance === "primary")
-              .slice(0, 2)
-              .map((tag) => (
-                <span
-                  key={tag.skill_slug}
-                  className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium"
-                  style={{
-                    background: "var(--sg-shell-100)",
-                    color: "var(--sg-shell-500)",
-                  }}
-                >
-                  {tag.skill_name}
-                </span>
-              ))}
-          </div>
-        )}
-      </div>
+        {/* Title + meta */}
+        <div className="min-w-0 flex-1">
+          {difficulty && (
+            <span
+              className="mb-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium leading-none"
+              style={{
+                background: "var(--sg-shell-100)",
+                color: difficulty.color,
+              }}
+            >
+              {difficulty.label}
+            </span>
+          )}
+          <p className="truncate text-sm font-semibold text-shell-900">
+            {path.title}
+          </p>
+          <p className="mt-0.5 text-xs text-shell-500">
+            {formatDuration(path.estimated_duration_seconds)}
+            {moduleCount > 0 && ` · ${moduleCount} modules`}
+          </p>
+          {path.skill_tags && path.skill_tags.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {path.skill_tags
+                .filter((t) => t.relevance === "primary")
+                .slice(0, 2)
+                .map((tag) => (
+                  <span
+                    key={tag.skill_slug}
+                    className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                    style={{
+                      background: "var(--sg-shell-100)",
+                      color: "var(--sg-shell-500)",
+                    }}
+                  >
+                    {tag.skill_name}
+                  </span>
+                ))}
+            </div>
+          )}
+        </div>
 
-      {/* Navigate arrow */}
-      <div
-        className="shrink-0 flex items-center justify-center rounded-full"
-        style={{
-          width: 28,
-          height: 28,
-          background: "var(--sg-shell-100)",
-        }}
-      >
-        <ArrowRight
-          size={14}
-          className="text-shell-500"
-        />
-      </div>
-    </button>
+        {/* Navigate arrow */}
+        <div
+          className="shrink-0 flex items-center justify-center rounded-full"
+          style={{
+            width: 28,
+            height: 28,
+            background: "var(--sg-shell-100)",
+          }}
+        >
+          <ArrowRight
+            size={14}
+            className="text-shell-500"
+          />
+        </div>
+      </button>
+
+      {onToggleSave && (
+        <Button
+          variant="ghost"
+          size="xs"
+          aria-label={isSaved ? "Remove from queue" : "Save to queue"}
+          className="w-8 justify-center rounded-full px-0"
+          leftIcon={
+            isSaved ? (
+              <BookmarkCheck size={14} strokeWidth={1.9} />
+            ) : (
+              <Bookmark size={14} strokeWidth={1.9} />
+            )
+          }
+          onClick={() => onToggleSave(path)}
+        >
+          {null}
+        </Button>
+      )}
+    </div>
   );
 }
 
@@ -247,11 +281,15 @@ function BuildPathRow({
   generation,
   onSelectPath,
   onStartGeneration,
+  savedPathIds,
+  onToggleSave,
 }: {
   query: string;
   generation: UsePathGenerationReturn;
   onSelectPath: (pathId: string) => void;
   onStartGeneration: (query: string) => void;
+  savedPathIds?: Set<string>;
+  onToggleSave?: (path: LearningPath) => void;
 }) {
   const { status, generatedPath, retry } = generation;
 
@@ -261,6 +299,8 @@ function BuildPathRow({
       <ResultRow
         path={generatedPath}
         onSelect={() => onSelectPath(generatedPath.id)}
+        isSaved={savedPathIds?.has(generatedPath.id) ?? false}
+        onToggleSave={onToggleSave}
       />
     );
   }
@@ -272,7 +312,7 @@ function BuildPathRow({
         <BuildPathThumbnail />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-shell-900">
-            Couldn&apos;t build path
+            Couldn&apos;t build mission
           </p>
           <p className="mt-1 text-xs text-shell-500">
             Not enough content available yet
@@ -285,7 +325,7 @@ function BuildPathRow({
     );
   }
 
-  // Idle — show the Start Learning button
+  // Idle — show the Build Mission button
   return (
     <div className="flex w-full items-center gap-3 px-3 py-2.5">
       <BuildPathThumbnail />
@@ -294,7 +334,7 @@ function BuildPathRow({
           {query}
         </p>
         <p className="mt-0.5 text-xs text-shell-500">
-          Custom AI-curated path
+          Custom AI-curated mission set
         </p>
       </div>
       <Button
@@ -303,7 +343,7 @@ function BuildPathRow({
         onClick={() => onStartGeneration(query)}
         className="!border-forest-500 !text-forest-500 hover:!bg-forest-500/10"
       >
-        Start Learning
+        Build Mission
       </Button>
     </div>
   );

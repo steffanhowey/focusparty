@@ -5,10 +5,12 @@
  * Shows market state, practitioner stats, related insights, and related paths.
  */
 
+import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { TrendingUp, TrendingDown, Sparkles, Minus, Users, BookOpen } from "lucide-react";
 import type { SkillMarketState, SkillIntelligence } from "@/lib/types/intelligence";
 import type { LearningPath } from "@/lib/types";
+import { getMissionRoute } from "@/lib/appRoutes";
 
 // ─── Direction config ────────────────────────────────────
 
@@ -26,7 +28,6 @@ const DIR_CONFIG: Record<
 
 interface SkillDetailPageProps {
   skillName: string;
-  skillSlug: string;
   domainName: string;
   marketState: SkillMarketState | null;
   insights: SkillIntelligence[];
@@ -35,7 +36,6 @@ interface SkillDetailPageProps {
 
 export function SkillDetailPage({
   skillName,
-  skillSlug,
   domainName,
   marketState,
   insights,
@@ -197,11 +197,11 @@ export function SkillDetailPage({
       {paths.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
-            Learning Paths
+            Guided Missions
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {paths.map((path) => (
-              <a key={path.id} href={`/learn/paths/${path.id}`}>
+              <Link key={path.id} href={getMissionRoute(path.id)}>
                 <Card className="p-4 space-y-2 transition-colors hover:bg-[var(--sg-shell-50)] cursor-pointer">
                   <div className="flex items-center gap-1.5">
                     <BookOpen
@@ -219,7 +219,7 @@ export function SkillDetailPage({
                     {path.description}
                   </p>
                 </Card>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -230,13 +230,13 @@ export function SkillDetailPage({
         <p className="text-sm text-[var(--sg-shell-500)]">
           Start developing {skillName} today.
         </p>
-        <a
-          href="/learn"
+        <Link
+          href="/missions"
           className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90"
           style={{ background: "var(--sg-forest-500)" }}
         >
-          Start Learning
-        </a>
+          Browse Missions
+        </Link>
       </div>
     </div>
   );

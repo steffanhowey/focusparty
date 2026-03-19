@@ -42,7 +42,7 @@ export function ProgressDashboard() {
       {/* Header */}
       <div>
         <p className="text-sm text-[var(--sg-shell-600)]">
-          Your focus journey at a glance
+          Your room activity at a glance
         </p>
       </div>
 
@@ -129,7 +129,7 @@ export function ProgressDashboard() {
         </div>
         <div>
           <h3 className="mb-2 text-sm font-medium text-[var(--sg-shell-600)]">
-            Favorite Parties
+            Favorite Rooms
           </h3>
           <FavoritePartiesCard parties={progress.favoriteParties} />
         </div>

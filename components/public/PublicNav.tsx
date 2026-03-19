@@ -2,10 +2,12 @@
 
 /**
  * Shared navigation bar for public intelligence pages.
- * Logo → /, Skills Pulse → /pulse, Skills Index → /index, Start Learning CTA → /learn
+ * Logo → /, Skills Pulse → /pulse, Skills Index → /index, primary CTA → /missions
  */
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 
 const NAV_LINKS = [
@@ -15,22 +17,23 @@ const NAV_LINKS = [
 
 export function PublicNav() {
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <nav className="flex items-center justify-between px-4 py-3 md:px-8 border-b border-[var(--sg-shell-border)]">
       <div className="flex items-center gap-6">
         {/* Logo */}
-        <a
+        <Link
           href="/"
           className="text-sm font-bold text-[var(--sg-shell-900)]"
         >
           SkillGap.ai
-        </a>
+        </Link>
 
         {/* Links */}
         <div className="flex items-center gap-4">
           {NAV_LINKS.map((link) => (
-            <a
+            <Link
               key={link.href}
               href={link.href}
               className="text-xs font-medium transition-colors"
@@ -42,13 +45,13 @@ export function PublicNav() {
               }}
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
 
-      <Button variant="cta" size="sm" onClick={() => (window.location.href = "/learn")}>
-        Start Learning
+      <Button variant="cta" size="sm" onClick={() => router.push("/missions")}>
+        Browse Missions
       </Button>
     </nav>
   );

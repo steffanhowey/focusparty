@@ -19,6 +19,7 @@ import {
 import type {
   SkillGaps,
 } from "@/lib/useSkillProfile";
+import { getMissionSearchRoute } from "@/lib/appRoutes";
 
 interface GapSummaryProps {
   gaps: SkillGaps;
@@ -113,7 +114,7 @@ export function GapSummary({ gaps }: GapSummaryProps) {
             {function_gaps.map((g) => (
               <a
                 key={g.skill_slug}
-                href={`/learn?q=${encodeURIComponent(g.skill_name)}`}
+                href={getMissionSearchRoute(g.skill_name)}
                 className="flex items-center gap-1.5 rounded-md border border-dashed border-shell-300 px-3 py-1.5 text-sm text-shell-500 hover:text-shell-700 hover:border-shell-400 transition-colors"
               >
                 {g.skill_name}

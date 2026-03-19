@@ -2,7 +2,7 @@ import { createClient } from "./supabase/client";
 import type { GoalRecord, GoalSystemStatus, TaskRecord } from "./types";
 
 const GOAL_COLS =
-  "id, user_id, title, description, status, position, ai_generated, target_date, completed_at, created_at, updated_at";
+  "id, user_id, title, description, linked_path_id, status, position, ai_generated, target_date, completed_at, created_at, updated_at";
 
 // ─── Queries ─────────────────────────────────────────────────
 
@@ -41,6 +41,7 @@ export async function createGoal(input: {
   user_id: string;
   title: string;
   description?: string | null;
+  linked_path_id?: string | null;
   ai_generated?: boolean;
   target_date?: string | null;
   position?: number;
@@ -51,6 +52,7 @@ export async function createGoal(input: {
       user_id: input.user_id,
       title: input.title,
       description: input.description ?? null,
+      linked_path_id: input.linked_path_id ?? null,
       ai_generated: input.ai_generated ?? false,
       target_date: input.target_date ?? null,
       position: input.position ?? 0,
@@ -67,7 +69,7 @@ export async function updateGoal(
   updates: Partial<
     Pick<
       GoalRecord,
-      "title" | "description" | "status" | "position" | "target_date" | "completed_at"
+      "title" | "description" | "linked_path_id" | "status" | "position" | "target_date" | "completed_at"
     >
   >
 ): Promise<GoalRecord> {

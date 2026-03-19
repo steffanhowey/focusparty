@@ -11,6 +11,10 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { MenuItem } from "@/components/ui/MenuItem";
+import {
+  getProgressEvidenceImageRoute,
+  getProgressEvidenceRoute,
+} from "@/lib/appRoutes";
 
 interface AchievementShareMenuProps {
   shareSlug?: string | null;
@@ -66,17 +70,19 @@ export function AchievementShareMenu({
   if (!shareSlug) {
     return (
       <Button variant="secondary" loading>
-        Preparing credential
+        Preparing evidence
       </Button>
     );
   }
 
+  const resolvedShareSlug = shareSlug;
+
   function getShareUrl(): string {
-    return `${window.location.origin}/learn/achievements/${shareSlug}`;
+    return `${window.location.origin}${getProgressEvidenceRoute(resolvedShareSlug)}`;
   }
 
   function getImageUrl(): string {
-    return `${window.location.origin}/learn/achievements/${shareSlug}/opengraph-image`;
+    return `${window.location.origin}${getProgressEvidenceImageRoute(resolvedShareSlug)}`;
   }
 
   async function handleCopyLink(): Promise<void> {
@@ -116,7 +122,7 @@ export function AchievementShareMenu({
   function handleDownloadImage(): void {
     const link = document.createElement("a");
     link.href = getImageUrl();
-    link.download = `${toFileSlug(pathTitle) || "skillgap-credential"}.png`;
+    link.download = `${toFileSlug(pathTitle) || "skillgap-evidence"}.png`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -130,7 +136,7 @@ export function AchievementShareMenu({
         leftIcon={isCopied ? <CheckCircle2 size={14} /> : <Share2 size={14} />}
         onClick={() => setIsOpen((current) => !current)}
       >
-        {isCopied ? "Link copied" : "Share Credential"}
+        {isCopied ? "Link copied" : "Share Evidence"}
       </Button>
 
       {isOpen && (

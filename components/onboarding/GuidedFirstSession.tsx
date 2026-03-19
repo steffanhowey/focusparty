@@ -164,7 +164,7 @@ interface RoomBridgeProps {
 export function RoomBridge({
   topicName = "AI",
   activeCount = 0,
-  roomHref = "/practice",
+  roomHref = "/rooms",
 }: RoomBridgeProps) {
   const { user } = useAuth();
   const { profile } = useProfile();

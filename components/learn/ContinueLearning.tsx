@@ -4,16 +4,25 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { ArrowRight, BookOpen } from "lucide-react";
 import type { LearningPath, LearningProgress } from "@/lib/types";
+import { getMissionRoute } from "@/lib/appRoutes";
 
 interface ContinueLearningProps {
   paths: { path: LearningPath; progress: LearningProgress }[];
+  title?: string;
+  linkHref?: string;
+  linkLabel?: string;
 }
 
 /**
  * Shows in-progress learning paths for the current user.
  * Renders above the search bar on the Learn home page.
  */
-export function ContinueLearning({ paths }: ContinueLearningProps) {
+export function ContinueLearning({
+  paths,
+  title = "Active Missions",
+  linkHref = "/progress",
+  linkLabel = "Open progress",
+}: ContinueLearningProps) {
   if (paths.length === 0) return null;
 
   return (
@@ -21,13 +30,13 @@ export function ContinueLearning({ paths }: ContinueLearningProps) {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-shell-600 flex items-center gap-2">
           <BookOpen size={14} />
-          Continue Learning
+          {title}
         </h2>
         <Link
-          href="/skills"
+          href={linkHref}
           className="text-xs text-shell-500 hover:text-forest-500 transition-colors flex items-center gap-1"
         >
-          View skills
+          {linkLabel}
           <ArrowRight size={10} />
         </Link>
       </div>
@@ -43,7 +52,7 @@ export function ContinueLearning({ paths }: ContinueLearningProps) {
           return (
             <Link
               key={path.id}
-              href={`/learn/paths/${path.id}`}
+              href={getMissionRoute(path.id)}
               className="block shrink-0 group"
             >
               <Card className="p-3 w-64 space-y-2 hover:border-forest-400 transition-colors">
@@ -68,7 +77,7 @@ export function ContinueLearning({ paths }: ContinueLearningProps) {
                   />
                 </div>
                 <div className="flex items-center gap-1 text-xs text-forest-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Continue</span>
+                  <span>Open mission</span>
                   <ArrowRight size={12} />
                 </div>
               </Card>

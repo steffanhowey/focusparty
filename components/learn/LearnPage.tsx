@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Search, ChevronDown, Loader2, X, TrendingUp } from "lucide-react";
 import { useLearnSearch } from "@/lib/useLearnSearch";
@@ -15,7 +16,12 @@ import { SearchDropdown } from "./SearchDropdown";
 import { SkillRecommendations } from "./SkillRecommendations";
 import { SkillsSnapshot } from "./SkillsSnapshot";
 import { WeeklyDigestCard } from "./WeeklyDigestCard";
+import { ContinueLearning } from "./ContinueLearning";
+import { MyQueueBoard } from "@/components/missions/MyQueueBoard";
 import type { LearningPath, LearningProgress } from "@/lib/types";
+import { getMissionRoute } from "@/lib/appRoutes";
+import { useGoals } from "@/lib/useGoals";
+import { useSkillProfile } from "@/lib/useSkillProfile";
 
 // Popular topics shown as quick-search triggers in the hero
 const POPULAR_TOPICS = [
@@ -220,6 +226,7 @@ const DIFFICULTY_ORDER: Record<string, number> = {
  * Discovery grid below shows popular/recent paths (unchanged by search).
  */
 export function LearnPage() {
+  const searchParams = useSearchParams();
   const {
     query,
     setQuery,
@@ -236,6 +243,8 @@ export function LearnPage() {
   const generation = usePathGeneration();
   const { recommendations } = useSkillRecommendations();
   const { trending } = useSkillMarketState();
+  const { goals, createGoal, updateGoal, archiveGoal } = useGoals();
+  const { achievements } = useSkillProfile();
 
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState<SortOption>("recommended");
@@ -244,6 +253,19 @@ export function LearnPage() {
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
   const [generationQuery, setGenerationQuery] = useState("");
+
+  useEffect(() => {
+    const initialQuery = searchParams.get("q")?.trim();
+    if (!initialQuery || initialQuery === query) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setSkillFilter(null);
+      setQuery(initialQuery);
+      setIsDropdownOpen(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [query, searchParams, setQuery]);
 
   // Navigation is now handled inside GenerationOverlay after the "ready" moment
 
@@ -255,6 +277,16 @@ export function LearnPage() {
     }
     return map;
   }, [inProgressPaths]);
+
+  const savedPathIds = useMemo(
+    () =>
+      new Set(
+        goals
+          .filter((goal) => goal.linked_path_id && goal.status !== "archived")
+          .map((goal) => goal.linked_path_id as string),
+      ),
+    [goals],
+  );
 
   // Merge in-progress paths into the grid (deduplicated, in-progress first)
   const allPaths = useMemo(() => {
@@ -320,14 +352,14 @@ export function LearnPage() {
   const handleSelectPath = useCallback(
     (pathId: string) => {
       setIsDropdownOpen(false);
-      window.location.href = `/learn/paths/${pathId}`;
+      window.location.href = getMissionRoute(pathId);
     },
     [],
   );
 
   const handleCardClick = useCallback(
     (pathId: string) => {
-      window.location.href = `/learn/paths/${pathId}`;
+      window.location.href = getMissionRoute(pathId);
     },
     [],
   );
@@ -351,6 +383,32 @@ export function LearnPage() {
   const handleCloseDropdown = useCallback(() => {
     setIsDropdownOpen(false);
   }, []);
+
+  const handleToggleSave = useCallback(
+    async (path: LearningPath) => {
+      const existingGoal = goals.find((goal) => goal.linked_path_id === path.id);
+
+      if (existingGoal && existingGoal.status !== "archived") {
+        await archiveGoal(existingGoal.id);
+        return;
+      }
+
+      if (existingGoal) {
+        await updateGoal(existingGoal.id, {
+          status: "active",
+          title: path.title,
+          linked_path_id: path.id,
+        });
+        return;
+      }
+
+      await createGoal({
+        title: path.title,
+        linked_path_id: path.id,
+      });
+    },
+    [archiveGoal, createGoal, goals, updateGoal],
+  );
 
   const handleInputFocus = useCallback(() => {
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
@@ -440,13 +498,13 @@ export function LearnPage() {
               className="text-2xl font-bold text-white md:text-4xl"
               style={{ textShadow: "0 2px 12px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.5)" }}
             >
-              What do you want to learn?
+              Pick your next mission
             </h1>
             <p
               className="text-xs text-white/80 md:text-base"
               style={{ textShadow: "0 1px 8px rgba(0,0,0,0.7), 0 1px 2px rgba(0,0,0,0.5)" }}
             >
-              AI-curated learning paths from the best creators across the internet
+              Start a guided mission, save it to your queue, and bring it into a room when you want shared momentum.
             </p>
           </div>
 
@@ -463,7 +521,7 @@ export function LearnPage() {
               onChange={handleQueryChange}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
-              placeholder="Search topics, skills, or keywords..."
+              placeholder="Search missions, skills, or deliverables..."
               className="w-full pl-11 pr-4 py-2.5 md:py-3 text-sm rounded-xl border text-white placeholder:text-white/50 backdrop-blur-md focus:outline-none focus:border-white/30 transition-colors"
               style={{
                 background: "rgba(15,35,24,0.55)",
@@ -487,6 +545,8 @@ export function LearnPage() {
                 onSelectPath={handleSelectPath}
                 onStartGeneration={handleStartGeneration}
                 onClose={handleCloseDropdown}
+                savedPathIds={savedPathIds}
+                onToggleSave={handleToggleSave}
               />
             )}
           </div>
@@ -507,6 +567,23 @@ export function LearnPage() {
         <p className="text-center text-sm text-sg-coral-500">
           {error}
         </p>
+      )}
+
+      {!query && inProgressPaths.length > 0 && (
+        <ContinueLearning
+          paths={inProgressPaths}
+          title="Active Missions"
+          linkHref="/progress"
+          linkLabel="Open progress"
+        />
+      )}
+
+      {!query && (
+        <MyQueueBoard
+          availablePaths={allPaths}
+          activeMissions={inProgressPaths}
+          completedEvidence={achievements}
+        />
       )}
 
       {/* User's skill snapshot (discovery mode only, hides if no skills) */}
@@ -578,7 +655,7 @@ export function LearnPage() {
       {/* Section header + grid */}
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-bold text-shell-900">
-          Learning Paths
+          Mission Library
         </h2>
         <div className="flex items-center gap-2">
           {/* Category dropdown */}
@@ -637,25 +714,27 @@ export function LearnPage() {
               progress={progressMap.get(path.id) ?? null}
               onClick={handleCardClick}
               onSkillClick={handleSkillClick}
+              isSaved={savedPathIds.has(path.id)}
+              onToggleSave={handleToggleSave}
             />
           ))}
         </div>
       ) : category === "in-progress" ? (
         <div className="text-center py-16 space-y-2">
           <p className="text-sm text-shell-500">
-            No paths in progress yet. Start a learning path to track your progress.
+            No missions in progress yet. Start a mission to track visible progress.
           </p>
         </div>
       ) : category !== "all" ? (
         <div className="text-center py-16 space-y-2">
           <p className="text-sm text-shell-500">
-            No paths found in this category yet. Try searching for a specific topic.
+            No missions found in this category yet. Try searching for a specific topic.
           </p>
         </div>
       ) : (
         <div className="text-center py-16 space-y-2">
           <p className="text-sm text-shell-500">
-            Loading learning paths...
+            Loading missions...
           </p>
         </div>
       )}
@@ -822,7 +901,7 @@ function GenerationOverlay({
     if (!cascadeComplete || !generatedPath) return;
 
     navigateTimerRef.current = setTimeout(() => {
-      window.location.href = `/learn/paths/${generatedPath.id}`;
+      window.location.href = getMissionRoute(generatedPath.id);
     }, 600);
 
     return () => {
@@ -882,7 +961,7 @@ function GenerationOverlay({
         {/* Header */}
         <div className="w-full space-y-1.5 mb-6">
           <p className="text-lg font-semibold text-white">
-            Building your learning path
+            Building your mission
           </p>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
             {query}
@@ -905,7 +984,7 @@ function GenerationOverlay({
         {status === "failed" && (
           <div className="mt-6 space-y-3">
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-              We couldn&apos;t build this path
+              We couldn&apos;t build this mission
             </p>
             <div className="flex items-center gap-4">
               <button

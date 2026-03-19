@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { FluencyBadge } from "@/components/skills/FluencyBadge";
 import type { ProfileAchievement } from "@/lib/useSkillProfile";
+import { getProgressEvidenceRoute } from "@/lib/appRoutes";
 
 interface AchievementHistoryProps {
   achievements: ProfileAchievement[];
@@ -50,7 +51,7 @@ export function AchievementHistory({ achievements }: AchievementHistoryProps) {
       <div className="flex items-center gap-1.5 mb-3">
         <Award size={13} style={{ color: "var(--sg-forest-500)" }} />
         <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
-          Recent Achievements
+          Recent Evidence
         </h3>
       </div>
 
@@ -120,10 +121,10 @@ function AchievementRow({ achievement }: { achievement: ProfileAchievement }) {
         <div className="flex items-center gap-2 shrink-0">
           {achievement.share_slug && (
             <a
-              href={`/learn/achievements/${achievement.share_slug}`}
+              href={getProgressEvidenceRoute(achievement.share_slug)}
               onClick={(e) => e.stopPropagation()}
               className="text-[var(--sg-shell-400)] hover:text-[var(--sg-shell-600)] transition-colors"
-              title="View achievement page"
+              title="View evidence page"
             >
               <ExternalLink size={14} />
             </a>

@@ -1,9 +1,5 @@
-import { PartyList } from "@/components/party/PartyList";
+import { redirect } from "next/navigation";
 
-export default function RoomsPage() {
-  return (
-    <main className="flex-1">
-      <PartyList />
-    </main>
-  );
+export default function PracticeRedirect() {
+  redirect("/rooms");
 }

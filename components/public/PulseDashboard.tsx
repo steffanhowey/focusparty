@@ -309,11 +309,11 @@ export function PulseDashboard({
           Start closing your skill gap today.
         </p>
         <a
-          href="/learn"
+          href="/missions"
           className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90"
           style={{ background: "var(--sg-forest-500)" }}
         >
-          Start Learning
+          Browse Missions
         </a>
       </div>
     </div>

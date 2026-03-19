@@ -1,9 +1,8 @@
 "use client";
 
 /**
- * Compact skills snapshot card shown on the Learn hub.
- * Displays user's top active skills with fluency badges.
- * Makes skill growth visible every time the user browses paths.
+ * Compact capability snapshot card shown on mission-focused surfaces.
+ * Displays the user's top active skills with fluency badges.
  */
 
 import Link from "next/link";
@@ -54,15 +53,15 @@ export function SkillsSnapshot() {
             className="text-shell-500"
           />
           <h3 className="text-xs font-semibold uppercase tracking-wider text-shell-500">
-            Your Skills
+            Progress Snapshot
           </h3>
         </div>
         <Link
-          href="/skills"
+          href="/progress"
           className="text-xs font-medium hover:underline"
           style={{ color: "var(--sg-forest-500)" }}
         >
-          View all {summary.total_skills_started}
+          Open progress
         </Link>
       </div>
 

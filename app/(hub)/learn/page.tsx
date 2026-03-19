@@ -1,9 +1,5 @@
-import { LearnPage } from "@/components/learn/LearnPage";
+import { redirect } from "next/navigation";
 
-export default function Learn() {
-  return (
-    <main className="flex-1">
-      <LearnPage />
-    </main>
-  );
+export default function LearnRedirect() {
+  redirect("/missions");
 }

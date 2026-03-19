@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { CHARACTERS } from "@/lib/constants";
 import { joinParty, type Party } from "@/lib/parties";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { getRoomRoute } from "@/lib/appRoutes";
 
 interface JoinCardProps {
   party: Party | null;
@@ -43,7 +44,7 @@ export function JoinCard({
     setJoining(true);
     try {
       await joinParty(party.id, userId!, displayName);
-      router.push(party.status === "active" ? `/environment/${party.id}` : `/rooms/${party.id}`);
+      router.push(getRoomRoute(party.id));
     } catch {
       setJoining(false);
     }
@@ -67,10 +68,10 @@ export function JoinCard({
         {!party && (
           <div className="text-center">
             <h1 className="text-2xl font-semibold text-white">
-              Party not found
+              Room not found
             </h1>
             <p className="mt-2 text-sm text-[var(--sg-shell-600)]">
-              This party may have ended or the link is invalid.
+              This room may have ended or the link is invalid.
             </p>
             <Link
               href="/rooms"
@@ -86,13 +87,13 @@ export function JoinCard({
             {inviterName ? (
               <p className="mb-6 text-sm text-[var(--sg-shell-600)]">
                 <span className="font-medium text-white">{inviterName}</span>{" "}
-                invited you to focus together
+                invited you into a room
               </p>
             ) : (
               <h1
                 className="mb-6 text-2xl font-semibold text-white"
               >
-                Join party
+                Join room
               </h1>
             )}
 
@@ -129,19 +130,19 @@ export function JoinCard({
 
             {isCompleted && (
               <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
-                This party has already ended.
+                This room has already ended.
               </p>
             )}
 
             {isActive && !isFull && (
               <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
-                This party is in progress. Join now to hop in!
+                This room is in progress. Join now to hop in.
               </p>
             )}
 
             {isFull && !isCompleted && (
               <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
-                This party is full.
+                This room is full.
               </p>
             )}
 
@@ -149,7 +150,7 @@ export function JoinCard({
               <>
                 {!isAuthenticated && (
                   <p className="mb-4 text-sm text-[var(--sg-shell-600)]">
-                    Sign in to join this party.
+                    Sign in to join this room.
                   </p>
                 )}
 
@@ -162,7 +163,7 @@ export function JoinCard({
                   {joining
                     ? "Joining..."
                     : isAuthenticated
-                      ? "Join Party"
+                      ? "Join Room"
                       : "Sign in to join"}
                 </Button>
               </>

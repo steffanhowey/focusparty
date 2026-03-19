@@ -17,13 +17,11 @@ const SIDEBAR_WIDTH_RAILS = "w-14 md:w-18";
 const RAILS_INSET_X = "px-2 md:px-4";
 
 /** Shared vertical rhythm tokens (used in both expanded and rails). */
-const SECTION_GAP = "pt-4";
 const NAV_ITEM_GAP = "gap-1.5";
 const BOTTOM_PAD = "pb-5";
 
 interface SidebarProps {
   collapsed?: boolean;
-  onToggleCollapsed?: () => void;
   onNavClick?: (href: string) => void;
 }
 
@@ -32,7 +30,7 @@ const PROFILE_MENU_STYLE = {
   border: "1px solid var(--sg-shell-border)",
 };
 
-export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: SidebarProps) {
+export function Sidebar({ collapsed = false, onNavClick }: SidebarProps) {
   const pathname = usePathname();
   const { authState, signOut } = useAuth();
   const { displayName: rawDisplayName, username, avatarUrl } = useCurrentUser();
@@ -45,7 +43,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
     .join(" ");
   const planLabel = PLAN_LABELS[STUB_PLAN];
 
-  const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "learn";
+  const activeId = NAV_ITEMS.find((item) => pathname === item.href)?.id ?? "home";
 
   useEffect(() => {
     if (!profileMenuOpen) return;
@@ -186,7 +184,7 @@ export function Sidebar({ collapsed = false, onToggleCollapsed, onNavClick }: Si
       ) : (
         <>
           <div className="flex h-14 shrink-0 items-center px-4">
-            <Logo href="/learn" height={22} maxWidth={120} />
+            <Logo href="/home" height={22} maxWidth={120} />
           </div>
           <nav className={`flex flex-col ${NAV_ITEM_GAP} px-3 pt-2`}>
             {NAV_ITEMS.map((item) => {

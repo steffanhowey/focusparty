@@ -10,6 +10,7 @@ export interface GoalRecord {
   user_id: string;
   title: string;
   description: string | null;
+  linked_path_id: string | null;
   status: GoalSystemStatus;
   position: number;
   ai_generated: boolean;

@@ -85,6 +85,7 @@ export function useGoals() {
     async (input: {
       title: string;
       description?: string | null;
+      linked_path_id?: string | null;
       target_date?: string | null;
     }) => {
       if (!userId) return null;
@@ -94,6 +95,7 @@ export function useGoals() {
         user_id: userId,
         title: input.title,
         description: input.description ?? null,
+        linked_path_id: input.linked_path_id ?? null,
         status: "active",
         position: goals.length,
         ai_generated: false,
@@ -109,6 +111,7 @@ export function useGoals() {
           user_id: userId,
           title: input.title,
           description: input.description ?? null,
+          linked_path_id: input.linked_path_id ?? null,
           target_date: input.target_date ?? null,
           position: goals.length,
         });
@@ -128,8 +131,8 @@ export function useGoals() {
   const updateGoal = useCallback(
     async (
       goalId: string,
-      updates: Partial<
-        Pick<GoalRecord, "title" | "description" | "status" | "position" | "target_date" | "completed_at">
+        updates: Partial<
+        Pick<GoalRecord, "title" | "description" | "linked_path_id" | "status" | "position" | "target_date" | "completed_at">
       >
     ) => {
       setGoals((prev) =>

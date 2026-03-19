@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { SkillRecommendation } from "@/lib/useSkillRecommendations";
+import { getMissionRoute } from "@/lib/appRoutes";
 
 // ─── Reason config ──────────────────────────────────────────
 
@@ -74,7 +75,13 @@ function RecommendationCard({
   if (!topPath) return null;
 
   const isContinue = action?.type === "continue_path";
-  const ctaHref = action?.href ?? `/learn/paths/${topPath.id}`;
+  const ctaHref = action?.href ?? getMissionRoute(topPath.id);
+  const ctaLabel =
+    action?.type === "continue_path"
+      ? "Continue mission"
+      : action?.type === "join_room"
+        ? "Open room"
+        : "Start mission";
 
   return (
     <Card
@@ -127,7 +134,7 @@ function RecommendationCard({
                 : "var(--sg-shell-700)",
             }}
           >
-            {action?.label ?? "Start path"}
+            {ctaLabel}
           </span>
         </div>
         {action?.room_name && (
@@ -147,17 +154,19 @@ function RecommendationCard({
 
 interface SkillRecommendationsProps {
   recommendations: SkillRecommendation[];
+  title?: string;
 }
 
 export function SkillRecommendations({
   recommendations,
+  title = "Next Best Reps",
 }: SkillRecommendationsProps) {
   if (recommendations.length === 0) return null;
 
   return (
     <div className="space-y-3 mb-6">
       <h3 className="text-sm font-medium text-shell-600">
-        Recommended for you
+        {title}
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {recommendations.slice(0, 6).map((rec, i) => (

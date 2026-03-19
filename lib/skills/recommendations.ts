@@ -29,6 +29,7 @@ import { getAllMarketStates } from "@/lib/intelligence/marketState";
 import { WORLD_CONFIGS, type WorldKey } from "@/lib/worlds";
 import type { SkillFluency, UserSkill } from "@/lib/types/skills";
 import type { LearningPath } from "@/lib/types";
+import { getMissionRoute } from "@/lib/appRoutes";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -503,7 +504,7 @@ export async function getSkillRecommendations(
       rec.action = {
         type: "continue_path",
         label: `Continue — ${progress}%`,
-        href: `/learn/paths/${topPath.id}`,
+        href: getMissionRoute(topPath.id),
         room_name: matchedRoom?.name,
       };
     } else {
@@ -511,7 +512,7 @@ export async function getSkillRecommendations(
       rec.action = {
         type: "start_path",
         label: "Start path",
-        href: `/learn/paths/${topPath.id}`,
+        href: getMissionRoute(topPath.id),
         room_name: matchedRoom?.name,
       };
     }
