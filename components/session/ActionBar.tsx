@@ -24,7 +24,7 @@ import {
 import { MusicPopover } from "@/components/session/MusicPopover";
 import { CheckInMenu } from "@/components/session/CheckInMenu";
 import { BreakCategoryPopover } from "@/components/session/BreakCategoryPopover";
-import { FocusDropdown } from "@/components/session/FocusDropdown";
+import { FocusDropdown, type MissionSelectionConfig } from "@/components/session/FocusDropdown";
 import { NotesPopover } from "@/components/session/NotesPopover";
 import type { BreakCategory } from "@/lib/breakConstants";
 import type { GoalRecord, TaskRecord } from "@/lib/types";
@@ -33,6 +33,7 @@ import { DurationPills } from "./DurationPills";
 import { useTimerDisplay, type Timer } from "@/lib/useTimer";
 import type { VibeId, MusicStatus } from "@/lib/musicConstants";
 import { usePointerDrag } from "@/lib/usePointerDrag";
+import { useActiveMissions } from "@/lib/useActiveMissions";
 
 export interface MusicProps {
   popoverOpen: boolean;
@@ -83,6 +84,7 @@ interface ActionBarProps {
     continueTask?: TaskRecord | null;
     onContinue?: (taskId: string) => void;
     focusButtonRef?: React.RefObject<HTMLButtonElement | null>;
+    missionSelection?: MissionSelectionConfig;
   };
   settingsActive: boolean;
   momentumActive?: boolean;
@@ -195,6 +197,8 @@ export const ActionBar = memo(function ActionBar({
   breakResetKey,
   notesPopover,
 }: ActionBarProps) {
+  const hasMissionSelection = Boolean(focusPopover?.missionSelection);
+  const { missions: activeMissions } = useActiveMissions(hasMissionSelection);
   const musicWrapperRef = useRef<HTMLDivElement>(null);
   const checkInWrapperRef = useRef<HTMLDivElement>(null);
   const breakWrapperRef = useRef<HTMLDivElement>(null);
@@ -202,11 +206,15 @@ export const ActionBar = memo(function ActionBar({
   const isBreak = phase === "break";
   const isJoining = phase === "joining";
   const isResuming = phase === "resuming";
+  const missionWorkspaceOpen = Boolean(
+    focusPopover?.missionSelection?.missionWorkspaceOpen,
+  );
 
   // Break countdown — independent timer that counts down from breakDurationMinutes
   const [breakRemaining, setBreakRemaining] = useState(0);
   useEffect(() => {
     if (isBreak && breakDurationMinutes) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBreakRemaining(breakDurationMinutes * 60);
       const id = setInterval(() => setBreakRemaining((r) => Math.max(0, r - 1)), 1000);
       return () => clearInterval(id);
@@ -233,7 +241,7 @@ export const ActionBar = memo(function ActionBar({
       {/* ── Floating timer pill ── */}
       <div
         ref={dragRef}
-        className="absolute top-4 left-1/2 z-20"
+        className="absolute top-4 left-1/2 z-40"
         style={dragStyle}
       >
         <div className="relative">
@@ -422,7 +430,7 @@ export const ActionBar = memo(function ActionBar({
 
       {/* ── Action bar ── */}
       <div
-        className="absolute bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border border-white/[0.08] px-2 py-1.5"
+        className="absolute bottom-10 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1 rounded-full border border-white/[0.08] px-2 py-1.5"
         style={{
           background: "rgba(15,35,24,0.55)",
           backdropFilter: "blur(24px)",
@@ -536,17 +544,17 @@ export const ActionBar = memo(function ActionBar({
         <div className="mx-0.5 h-6 w-px bg-white/10" />
 
         <div className="relative">
-          <Tip label="Focus" hidden={focusPopover?.open}>
+          <Tip label="Mission" hidden={focusPopover?.open}>
             <button
               ref={focusPopover?.focusButtonRef}
               type="button"
               onClick={focusPopover?.onToggle}
               className={`${btn} ${
-                focusPopover?.open
+                focusPopover?.open || missionWorkspaceOpen
                   ? "bg-white/15 text-white"
                   : "text-white/70 hover:bg-white/10 hover:text-white"
               }`}
-              aria-label="Focus"
+              aria-label="Mission"
               aria-expanded={focusPopover?.open}
             >
               <Crosshair size={20} strokeWidth={1.8} />
@@ -556,7 +564,6 @@ export const ActionBar = memo(function ActionBar({
           {focusPopover?.open && (
             <FocusDropdown
               open={focusPopover.open}
-              onToggle={focusPopover.onToggle}
               onClose={focusPopover.onClose}
               goalText={focusPopover.goalText}
               onGoalTextChange={focusPopover.onGoalTextChange}
@@ -579,6 +586,14 @@ export const ActionBar = memo(function ActionBar({
               continueTask={focusPopover.continueTask}
               onContinue={focusPopover.onContinue}
               triggerRef={focusPopover.focusButtonRef}
+              missionSelection={
+                focusPopover.missionSelection
+                  ? {
+                      ...focusPopover.missionSelection,
+                      missions: activeMissions,
+                    }
+                  : undefined
+              }
             />
           )}
         </div>

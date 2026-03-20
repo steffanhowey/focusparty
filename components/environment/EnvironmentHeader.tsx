@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { UserPlus, ChevronDown, Check, DoorOpen } from "lucide-react";
 import { InvitePopover } from "@/components/session/InvitePopover";
+import { useNotification } from "@/components/providers/NotificationProvider";
 import { listDiscoverableParties, joinParty, type PartyWithCount } from "@/lib/parties";
 import type { JoinConfig } from "@/components/party/JoinRoomModal";
 import { getWorldConfig } from "@/lib/worlds";
@@ -20,6 +21,7 @@ interface EnvironmentHeaderProps {
   currentPartyId: string;
   userId: string | null;
   displayName: string;
+  hasActiveSession: boolean;
 }
 
 export function EnvironmentHeader({
@@ -28,8 +30,10 @@ export function EnvironmentHeader({
   currentPartyId,
   userId,
   displayName,
+  hasActiveSession,
 }: EnvironmentHeaderProps) {
   const router = useRouter();
+  const { showToast } = useNotification();
   const inviteWrapperRef = useRef<HTMLDivElement>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
 
@@ -64,6 +68,7 @@ export function EnvironmentHeader({
 
     // If we've never fetched yet, show loading state
     if (!hasFetchedRef.current) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInitialLoading(true);
       hasFetchedRef.current = true;
     }
@@ -128,32 +133,48 @@ export function EnvironmentHeader({
       setSwitcherOpen(false);
       if (partyId === currentPartyId) return;
 
+      let shouldSkipJoinModal = false;
+
       // Ensure participant record exists so the room page
       // doesn't show the join modal as if we're a new visitor.
       if (userId) {
         try {
           await joinParty(partyId, userId, displayName);
+          shouldSkipJoinModal = hasActiveSession;
         } catch (err) {
           console.error("Failed to pre-join room:", err);
+          sessionStorage.removeItem("fp_join_config");
+          showToast({
+            type: "error",
+            title: "Couldn’t switch rooms",
+            message: "Please try again.",
+          });
+          return;
         }
+      }
 
-        // Store a minimal join config so the environment page
-        // skips the join modal and enters the countdown directly.
+      if (shouldSkipJoinModal) {
+        // Only preserve a minimal join config when we're carrying an
+        // already-active session into another room. Otherwise let the
+        // destination room show its normal join modal instead of landing
+        // in a non-interactive setup state.
         const config: JoinConfig = {
-          taskId: null,
-          goalId: null,
-          goalText: "",
+          missionId: null,
+          missionTitle: null,
+          missionDomain: null,
           durationSec: 25 * 60,
           autoStart: false,
           commitmentType: "personal",
           musicAutoPlay: false,
         };
         sessionStorage.setItem("fp_join_config", JSON.stringify(config));
+      } else {
+        sessionStorage.removeItem("fp_join_config");
       }
 
       router.push(`/environment/${partyId}`);
     },
-    [currentPartyId, userId, displayName, router]
+    [currentPartyId, userId, displayName, hasActiveSession, router, showToast]
   );
 
   const showLoading = initialLoading && parties.length === 0;

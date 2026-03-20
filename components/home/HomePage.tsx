@@ -13,7 +13,7 @@ import { useLearnSearch } from "@/lib/useLearnSearch";
 import { useSkillRecommendations } from "@/lib/useSkillRecommendations";
 import { useDiscoverableParties } from "@/lib/useDiscoverableParties";
 import { useSkillProfile } from "@/lib/useSkillProfile";
-import { getRoomRoute } from "@/lib/appRoutes";
+import { getCanonicalRoomEntryRoute } from "@/lib/appRoutes";
 
 function getLevelUpCount(skillReceipt: { skills: Array<{ leveled_up: boolean }> } | null): number {
   if (!skillReceipt) return 0;
@@ -127,7 +127,7 @@ export function HomePage() {
                 </div>
                 <div className="rounded-[var(--sg-radius-lg)] bg-shell-50 p-3">
                   <p className="text-xs uppercase tracking-[0.18em] text-shell-500">
-                    Completed
+                    Missions Completed
                   </p>
                   <p className="mt-1 text-xl font-semibold text-shell-900">
                     {summary.total_paths_completed}
@@ -150,7 +150,7 @@ export function HomePage() {
                   {latestOutcome.path_title}
                 </p>
                 <p className="mt-1 text-xs text-shell-500">
-                  Completed {new Date(latestOutcome.completed_at).toLocaleDateString("en-US", {
+                  Mission completed {new Date(latestOutcome.completed_at).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
                   })}
@@ -198,7 +198,7 @@ export function HomePage() {
               <RoomCard
                 key={party.id}
                 party={party}
-                onClick={() => router.push(getRoomRoute(party.id))}
+                onClick={() => router.push(getCanonicalRoomEntryRoute(party))}
               />
             ))}
           </div>

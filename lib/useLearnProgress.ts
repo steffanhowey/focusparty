@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, type Dispatch, type SetStateAction } from "react";
 import type {
   AchievementSummary,
   LearningPath,
@@ -25,13 +25,32 @@ interface UseLearnProgressReturn {
   skillReceipt: SkillReceipt | null;
 }
 
+function resetProgressState(setters: {
+  setPath: Dispatch<SetStateAction<LearningPath | null>>;
+  setProgress: Dispatch<SetStateAction<LearningProgress | null>>;
+  setAchievement: Dispatch<SetStateAction<AchievementSummary | null>>;
+  setCurrentItemIndex: Dispatch<SetStateAction<number>>;
+  setError: Dispatch<SetStateAction<string | null>>;
+  setSkillReceipt: Dispatch<SetStateAction<SkillReceipt | null>>;
+}): void {
+  setters.setPath(null);
+  setters.setProgress(null);
+  setters.setAchievement(null);
+  setters.setCurrentItemIndex(0);
+  setters.setError(null);
+  setters.setSkillReceipt(null);
+}
+
 // ─── Hook ───────────────────────────────────────────────────
 
 /**
  * Manages learning path progress state.
  * Fetches path + progress on mount, provides mutation functions.
  */
-export function useLearnProgress(pathId: string): UseLearnProgressReturn {
+export function useLearnProgress(
+  pathId: string | null,
+  enabled = true,
+): UseLearnProgressReturn {
   const [path, setPath] = useState<LearningPath | null>(null);
   const [progress, setProgress] = useState<LearningProgress | null>(null);
   const [achievement, setAchievement] = useState<AchievementSummary | null>(null);
@@ -41,19 +60,52 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
   const [skillReceipt, setSkillReceipt] = useState<SkillReceipt | null>(null);
   const timeAccum = useRef(0);
   const timeInterval = useRef<ReturnType<typeof setInterval>>(undefined);
+  const previousPathIdRef = useRef<string | null>(null);
 
   // Fetch path and progress on mount
   useEffect(() => {
     let isActive = true;
 
+    if (!pathId) {
+      previousPathIdRef.current = null;
+      timeAccum.current = 0;
+      resetProgressState({
+        setPath,
+        setProgress,
+        setAchievement,
+        setCurrentItemIndex,
+        setError,
+        setSkillReceipt,
+      });
+      setIsLoading(false);
+      return () => {
+        isActive = false;
+      };
+    }
+
+    if (!enabled) {
+      setIsLoading(false);
+      return () => {
+        isActive = false;
+      };
+    }
+
+    const pathChanged = previousPathIdRef.current !== pathId;
+    previousPathIdRef.current = pathId;
+
     async function loadPath(): Promise<void> {
       setIsLoading(true);
       setError(null);
-      setPath(null);
-      setProgress(null);
-      setAchievement(null);
-      setSkillReceipt(null);
-      setCurrentItemIndex(0);
+      if (pathChanged) {
+        resetProgressState({
+          setPath,
+          setProgress,
+          setAchievement,
+          setCurrentItemIndex,
+          setError,
+          setSkillReceipt,
+        });
+      }
 
       try {
         const res = await fetch(`/api/learn/paths/${pathId}`);
@@ -95,7 +147,7 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
     return () => {
       isActive = false;
     };
-  }, [pathId]);
+  }, [pathId, enabled]);
 
   // Time tracking: accumulate every second, flush every 30s (only when authenticated with progress)
   const progressRef = useRef<LearningProgress | null>(progress);
@@ -105,6 +157,8 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
   }, [progress]);
 
   useEffect(() => {
+    if (!pathId || !enabled) return;
+
     timeInterval.current = setInterval(() => {
       timeAccum.current += 1;
       if (timeAccum.current >= 30 && progressRef.current) {
@@ -131,11 +185,11 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
         }).catch(() => {});
       }
     };
-  }, [pathId]);
+  }, [pathId, enabled]);
 
   // Initialize progress if authenticated user has none
   useEffect(() => {
-    if (!path || progress || isLoading) return;
+    if (!pathId || !enabled || !path || progress || isLoading) return;
     // Create initial progress record
     fetch(`/api/learn/paths/${pathId}`, {
       method: "PATCH",
@@ -147,10 +201,12 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
         if (data.progress) setProgress(data.progress);
       })
       .catch(() => {});
-  }, [path, progress, isLoading, pathId]);
+  }, [path, progress, isLoading, pathId, enabled]);
 
   const completeItem = useCallback(
     async (contentId: string, stateData?: Partial<ItemState>) => {
+      if (!pathId) return;
+
       // Optimistic update so transition card works even without auth
       setProgress((prev) => {
         const itemStates = { ...(prev?.item_states ?? {}) };
@@ -205,6 +261,8 @@ export function useLearnProgress(pathId: string): UseLearnProgressReturn {
 
   const advanceToItem = useCallback(
     async (index: number) => {
+      if (!pathId) return;
+
       setCurrentItemIndex(index);
       try {
         const res = await fetch(`/api/learn/paths/${pathId}`, {

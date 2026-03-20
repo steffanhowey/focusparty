@@ -23,7 +23,8 @@ interface PathSidebarProps {
   onSelectItem: (index: number) => void;
   isPlaying?: boolean;
   onTogglePlay?: () => void;
-  title?: string;
+  title?: string | null;
+  showSkills?: boolean;
 }
 
 function formatDuration(seconds: number): string {
@@ -47,6 +48,7 @@ export function PathSidebar({
   isPlaying,
   onTogglePlay,
   title = "Path",
+  showSkills = true,
 }: PathSidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
@@ -96,9 +98,11 @@ export function PathSidebar({
     <div className="h-full overflow-y-auto fp-shell-scroll">
       {/* Header + Progress */}
       <div className="p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-white">
-          {title}
-        </h3>
+        {title ? (
+          <h3 className="text-sm font-semibold text-white">
+            {title}
+          </h3>
+        ) : null}
         {progress && (
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
@@ -136,7 +140,7 @@ export function PathSidebar({
       </div>
 
       {/* Skills */}
-      {path.skill_tags && path.skill_tags.length > 0 && (
+      {showSkills && path.skill_tags && path.skill_tags.length > 0 && (
         <div className="px-4 pb-3">
           <p className="mb-2 text-[10px] font-medium uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)" }}>
             Skills
@@ -166,7 +170,7 @@ export function PathSidebar({
       )}
 
       {/* Sections */}
-      {orderedSections.map(({ key, items }) => {
+      {orderedSections.map(({ key, items }, sectionIndex) => {
         const currentGroupKey = `module-${path.items[currentItemIndex]?.module_index ?? 0}`;
         const isCollapsed = collapsed[key] ?? (key !== currentGroupKey);
         const moduleMeta = modules.find((m) => `module-${m.index}` === key);
@@ -174,9 +178,12 @@ export function PathSidebar({
 
         return (
           <div key={key}>
+            {sectionIndex > 0 ? (
+              <div className="mx-4 border-t border-white/[0.06]" />
+            ) : null}
             <button
               onClick={() => toggleSection(key)}
-              className="w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-white/[0.06]"
+              className="flex min-h-[56px] w-full items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-white/[0.06]"
             >
               <div className="flex items-center gap-1.5">
                 {sectionDone && (
@@ -186,7 +193,7 @@ export function PathSidebar({
                   />
                 )}
                 <span
-                  className="text-[10px] font-semibold uppercase tracking-wider"
+                  className="text-xs font-semibold uppercase tracking-wider"
                   style={{
                     color: sectionDone
                       ? "var(--sg-forest-300)"

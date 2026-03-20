@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 
@@ -19,12 +19,6 @@ export function SwitchTaskModal({
   onSwitch,
   onCancel,
 }: SwitchTaskModalProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   // Escape to dismiss
   useEffect(() => {
     if (!isOpen) return;
@@ -42,7 +36,7 @@ export function SwitchTaskModal({
     [onCancel]
   );
 
-  if (!isOpen || !mounted || typeof document === "undefined") return null;
+  if (!isOpen || typeof document === "undefined") return null;
 
   return createPortal(
     <div
@@ -61,7 +55,7 @@ export function SwitchTaskModal({
         <h3
           className="mb-2 text-base font-semibold text-white"
         >
-          Switch task?
+          Switch step?
         </h3>
         <p className="mb-5 text-sm text-[var(--sg-shell-600)]">
           You&apos;re working on{" "}
@@ -70,10 +64,10 @@ export function SwitchTaskModal({
 
         <div className="flex gap-2">
           <Button variant="primary" size="sm" fullWidth onClick={onComplete}>
-            Mark as done
+            Mark step done
           </Button>
           <Button variant="outline" size="sm" fullWidth onClick={onSwitch}>
-            Switch task
+            Switch step
           </Button>
         </div>
       </div>

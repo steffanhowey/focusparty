@@ -743,7 +743,7 @@ export default function SessionPage() {
                 width: PANEL_WIDTH - 16,
                 height: "calc(100% - 32px)",
                 margin: "16px 16px 16px 0",
-                background: "rgba(10,10,10,0.65)",
+                background: "color-mix(in srgb, var(--sg-forest-900) 78%, transparent)",
                 backdropFilter: "blur(24px)",
                 WebkitBackdropFilter: "blur(24px)",
                 boxShadow: "var(--shadow-float)",

@@ -91,7 +91,7 @@ function AchievementRow({ achievement }: { achievement: ProfileAchievement }) {
         {/* Left: title and meta */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-[var(--sg-shell-900)] truncate">
-            {achievement.path_title || "Completed Path"}
+            {achievement.path_title || "Completed Mission"}
           </p>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-[var(--sg-shell-500)]">

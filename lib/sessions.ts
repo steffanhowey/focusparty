@@ -6,8 +6,6 @@ import type {
   ActivityEvent,
   ActivityEventType,
   SessionPhase,
-  SessionMood,
-  ProductivityRating,
   UserSessionStats,
   UserStreakStats,
   DailySessionCount,
@@ -91,6 +89,7 @@ export async function createSession(input: {
   task_id?: string | null;
   character?: string | null;
   goal_text?: string | null;
+  metadata?: Record<string, unknown> | null;
   planned_duration_sec: number;
 }): Promise<SessionRow> {
   const { data, error } = await createClient()
@@ -104,6 +103,7 @@ export async function createSession(input: {
       planned_duration_sec: input.planned_duration_sec,
       phase: "sprint" as SessionPhase,
       status: "active",
+      metadata: input.metadata ?? {},
     })
     .select(SESSION_COLS)
     .single();
@@ -117,6 +117,8 @@ export async function updateSession(
   updates: Partial<
     Pick<
       SessionRow,
+      | "goal_text"
+      | "party_id"
       | "phase"
       | "status"
       | "actual_duration_sec"
@@ -208,6 +210,7 @@ export async function createGoal(input: {
   task_id?: string | null;
   goal_id?: string | null;
   body: string;
+  metadata?: Record<string, unknown> | null;
 }): Promise<SessionGoal> {
   const { data, error } = await createClient()
     .from("fp_session_goals")
@@ -218,6 +221,7 @@ export async function createGoal(input: {
       task_id: input.task_id ?? null,
       goal_id: input.goal_id ?? null,
       body: input.body,
+      metadata: input.metadata ?? {},
     })
     .select(GOAL_COLS)
     .single();

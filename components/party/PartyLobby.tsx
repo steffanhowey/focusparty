@@ -20,7 +20,7 @@ import {
   type Party,
   type PartyParticipant,
 } from "@/lib/parties";
-import { getActiveSessionForParty } from "@/lib/sessions";
+import { getActiveSession, updateSession } from "@/lib/sessions";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { usePartyRealtime } from "@/lib/usePartyRealtime";
 import { usePartyPresence } from "@/lib/usePartyPresence";
@@ -47,6 +47,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   const router = useRouter();
   const { showToast } = useNotification();
   const { userId, displayName, username, isAuthenticated } = useCurrentUser();
+  const environmentRoute = `/environment/${partyId}`;
 
   const [party, setParty] = useState<Party | null>(null);
   const [participants, setParticipants] = useState<PartyParticipant[]>([]);
@@ -100,10 +101,12 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   // Party summary stats
   const partySummary = usePartySummaryStats(partyId);
 
-  // Check for an existing active session (for resume card)
+  // Check for an existing active session (for resume card).
+  // The environment runtime lets a sprint follow the user across rooms,
+  // so the lobby should reflect that same continuity.
   useEffect(() => {
     if (!userId || !partyId) return;
-    getActiveSessionForParty(userId, partyId)
+    getActiveSession(userId)
       .then(setActiveSession)
       .catch((err) => console.error("Failed to fetch active session:", err));
   }, [userId, partyId]);
@@ -189,9 +192,9 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
       isParticipant &&
       initialStatusRef.current === "waiting"
     ) {
-      router.push("/session");
+      router.push(environmentRoute);
     }
-  }, [party, loading, isParticipant, router]);
+  }, [party, loading, isParticipant, router, environmentRoute]);
 
   usePartyRealtime({
     partyId,
@@ -200,21 +203,34 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   });
 
   const handleResumeSession = useCallback(() => {
-    router.push("/session");
-  }, [router]);
+    router.push(environmentRoute);
+  }, [router, environmentRoute]);
 
   const handleAbandonSession = useCallback(async () => {
-    setActiveSession(null);
-    // The session will remain "active" in DB until the user starts a new one
-    // (at which point the duplicate guard handles it) or it's explicitly ended
-  }, []);
+    if (!activeSession) return;
+
+    try {
+      await updateSession(activeSession.id, {
+        status: "abandoned",
+        ended_at: new Date().toISOString(),
+      });
+      setActiveSession(null);
+    } catch (err) {
+      console.error("Failed to abandon active session:", err);
+      showToast({
+        type: "error",
+        title: "Couldn’t start fresh",
+        message: "Please try again.",
+      });
+    }
+  }, [activeSession, showToast]);
 
   const handleStart = async () => {
     if (starting) return;
     setStarting(true);
     try {
       await updatePartyStatus(partyId, "active");
-      router.push("/session");
+      router.push(environmentRoute);
     } catch {
       showToast({
         type: "error",
@@ -231,7 +247,11 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     try {
       await joinParty(partyId, userId, displayName);
       await refreshParticipants();
-      // If party is active, the redirect effect handles navigation
+      if (party?.status === "active") {
+        router.push(environmentRoute);
+        return;
+      }
+      setJoiningRoom(false);
     } catch {
       showToast({
         type: "error",
@@ -363,7 +383,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
       </div>
 
       {/* Resume session card */}
-      {activeSession && (
+      {activeSession && party.status === "active" && isParticipant && (
         <div className="mb-4">
           <ResumeSessionCard
             session={activeSession}
@@ -412,7 +432,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
           <Button
             variant="cta"
             className="flex-1"
-            onClick={() => router.push("/session")}
+            onClick={() => router.push(environmentRoute)}
           >
             Enter Session
           </Button>

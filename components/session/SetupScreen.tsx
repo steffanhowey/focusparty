@@ -49,9 +49,7 @@ export function SetupScreen({
   activeTasks,
   completedTasks,
   onStartTask,
-  onCompleteTask,
   onAddTask,
-  onDeleteTask,
   onStartSprint,
   roomName,
   roomSubtitle,
@@ -77,7 +75,8 @@ export function SetupScreen({
   useEffect(() => {
     const currentId = activeTask?.id ?? null;
     if (currentId && currentId !== prevTaskIdRef.current) {
-      setTaskPickerOpen(false);
+      const frame = requestAnimationFrame(() => setTaskPickerOpen(false));
+      return () => cancelAnimationFrame(frame);
     }
     prevTaskIdRef.current = currentId;
   }, [activeTask?.id]);
@@ -197,15 +196,15 @@ export function SetupScreen({
           <h2
             className="mb-6 text-2xl font-bold text-[var(--sg-shell-900)]"
           >
-            Ready to focus?
+            Ready to start?
           </h2>
         )}
 
         <div className="space-y-5">
-          {/* Task selector — inline dropdown */}
+          {/* Step selector — inline dropdown */}
           <div>
             <label className="mb-1.5 block text-xs font-medium text-[var(--sg-shell-600)]">
-              What are you working on?
+              What mission step are you starting with?
             </label>
             <div ref={dropdownRef} className="relative">
               <button
@@ -218,7 +217,7 @@ export function SetupScreen({
                     activeTask ? "text-[var(--sg-shell-900)]" : "text-[var(--sg-shell-500)]"
                   }`}
                 >
-                  {activeTask ? activeTask.title : "Select or create a task"}
+                  {activeTask ? activeTask.title : "Select or add a step"}
                 </span>
                 <ChevronDown
                   size={16}
@@ -241,7 +240,7 @@ export function SetupScreen({
                   }}
                 >
                   <div className="max-h-[280px] overflow-y-auto px-3 py-2">
-                    {/* Active tasks */}
+                    {/* Active steps */}
                     {activeTasks.map((task) => {
                       const isSelected = activeTask?.id === task.id;
                       return (
@@ -272,11 +271,11 @@ export function SetupScreen({
                     {/* Empty state */}
                     {!hasTasks && !showAddInput && (
                       <p className="px-2 py-6 text-center text-xs text-[var(--sg-shell-500)]">
-                        No tasks yet
+                        No steps yet
                       </p>
                     )}
 
-                    {/* Add task — toggle or inline input */}
+                    {/* Add step — toggle or inline input */}
                     {showAddInput ? (
                       <div className="flex items-center gap-2 px-2 py-3">
                         <Plus size={14} strokeWidth={1.5} className="shrink-0 text-[var(--sg-shell-500)]" />
@@ -300,7 +299,7 @@ export function SetupScreen({
                               setShowAddInput(false);
                             }
                           }}
-                          placeholder="New task..."
+                          placeholder="New step..."
                           className="min-w-0 flex-1 bg-transparent text-sm text-[var(--sg-shell-600)] placeholder:text-[var(--sg-shell-500)] outline-none"
                         />
                         {newTaskText.trim() && (
@@ -316,7 +315,7 @@ export function SetupScreen({
                         className="flex items-center gap-2 px-2 py-3 text-[var(--sg-shell-500)] transition-colors hover:text-[var(--sg-shell-600)]"
                       >
                         <Plus size={14} strokeWidth={1.5} />
-                        <span className="text-sm">Add task</span>
+                        <span className="text-sm">Add step</span>
                       </button>
                     )}
 
@@ -342,7 +341,7 @@ export function SetupScreen({
             disabled={!activeTask}
             className="mt-2"
           >
-            Let's focus
+            Start sprint
           </Button>
         </div>
       </div>

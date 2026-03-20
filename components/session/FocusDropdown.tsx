@@ -1,13 +1,30 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, memo } from "react";
-import { Play, ListTodo } from "lucide-react";
+import { ChevronDown, Play, ListTodo, Target } from "lucide-react";
+import { MissionSelectionPicker } from "@/components/party/MissionSelectionPicker";
 import { FocusBody } from "./FocusBody";
 import type { GoalRecord, TaskRecord } from "@/lib/types";
+import { getMissionPrimaryArea, getMissionProgressSummary } from "@/lib/missionPresentation";
+import type { ActiveMissionEntry } from "@/lib/useActiveMissions";
+
+export interface MissionSelectionConfig {
+  selectedMissionId: string | null;
+  selectedMissionTitle: string | null;
+  selectedMissionDomain: string | null;
+  missions?: ActiveMissionEntry[];
+  missionWorkspaceOpen?: boolean;
+  canOpenMissionWorkspace?: boolean;
+  onOpenMissionWorkspace?: () => void;
+  onSelectMission: (selection: {
+    missionId: string | null;
+    missionTitle: string | null;
+    missionDomain: string | null;
+  }) => void;
+}
 
 interface FocusDropdownProps {
   open: boolean;
-  onToggle: () => void;
   onClose: () => void;
   goalText: string;
   onGoalTextChange: (text: string) => void;
@@ -33,6 +50,7 @@ interface FocusDropdownProps {
   onContinue?: (taskId: string) => void;
   /** Ref to the trigger button — excluded from click-outside detection */
   triggerRef?: React.RefObject<HTMLElement | null>;
+  missionSelection?: MissionSelectionConfig;
 }
 
 type PendingSelection = {
@@ -44,7 +62,6 @@ type PendingSelection = {
 
 export const FocusDropdown = memo(function FocusDropdown({
   open,
-  onToggle,
   onClose,
   goalText,
   onGoalTextChange,
@@ -67,6 +84,7 @@ export const FocusDropdown = memo(function FocusDropdown({
   continueTask,
   onContinue,
   triggerRef,
+  missionSelection,
 }: FocusDropdownProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -79,6 +97,8 @@ export const FocusDropdown = memo(function FocusDropdown({
   // Snapshot of what was active when the popover opened
   const [prevTaskId, setPrevTaskId] = useState<string | null>(null);
   const [prevGoalId, setPrevGoalId] = useState<string | null>(null);
+  const isMissionMode = Boolean(missionSelection);
+  const activeMissions = missionSelection?.missions ?? [];
 
   // Snapshot state when popover opens
   useEffect(() => {
@@ -132,7 +152,169 @@ export const FocusDropdown = memo(function FocusDropdown({
     onClose();
   }, [pending, onGoalTextChange, onSelectTask, onSelectGoal, onClose]);
 
+  const selectedMission =
+    missionSelection?.selectedMissionId
+      ? activeMissions.find((mission) => mission.path.id === missionSelection.selectedMissionId) ?? null
+      : null;
+  const selectedMissionArea = selectedMission ? getMissionPrimaryArea(selectedMission.path) : null;
+  const selectedMissionTitle =
+    selectedMission?.path.title ?? missionSelection?.selectedMissionTitle ?? null;
+  const selectedMissionDomain =
+    selectedMissionArea?.detail ??
+    selectedMissionArea?.label ??
+    missionSelection?.selectedMissionDomain ??
+    null;
+  const selectedMissionSummary = selectedMission
+    ? getMissionProgressSummary(selectedMission.progress)
+    : null;
+  const canOpenMissionWorkspace =
+    Boolean(selectedMissionTitle) &&
+    missionSelection?.canOpenMissionWorkspace !== false &&
+    Boolean(missionSelection?.onOpenMissionWorkspace);
+
+  const handleSelectMission = useCallback(
+    (missionId: string | null, missionTitle: string | null, missionDomain: string | null) => {
+      missionSelection?.onSelectMission({
+        missionId,
+        missionTitle,
+        missionDomain,
+      });
+      setShowPicker(false);
+    },
+    [missionSelection],
+  );
+
+  const handleOpenMissionWorkspace = useCallback(() => {
+    missionSelection?.onOpenMissionWorkspace?.();
+    onClose();
+  }, [missionSelection, onClose]);
+
   if (!open) return null;
+
+  if (isMissionMode) {
+    return (
+      <div
+        ref={popoverRef}
+        className="absolute bottom-full left-1/2 z-[60] mb-3 w-96 -translate-x-1/2 overflow-visible rounded-xl border border-white/[0.08] p-3 shadow-lg"
+        style={{
+          background: "rgba(15,35,24,0.98)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          boxShadow: "var(--shadow-float)",
+          "--sg-shell-100": "rgba(255,255,255,0.06)",
+          "--sg-shell-200": "rgba(255,255,255,0.08)",
+          "--sg-shell-600": "rgba(255,255,255,0.5)",
+          "--sg-shell-900": "#ffffff",
+        } as React.CSSProperties}
+      >
+        <div className="flex flex-col">
+          <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">
+            What mission are you working on?
+          </p>
+
+          <div
+            className="relative flex items-center rounded-full"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            {canOpenMissionWorkspace ? (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleOpenMissionWorkspace();
+                }}
+                className="ml-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full outline-none transition-all duration-150 hover:scale-[1.03] active:scale-[0.98] focus:outline-none focus-visible:outline-none"
+                style={{
+                  background: `color-mix(in srgb, ${accentColor} ${
+                    missionSelection?.missionWorkspaceOpen ? "22%" : "14%"
+                  }, transparent)`,
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: accentColor,
+                }}
+                aria-label={
+                  missionSelection?.missionWorkspaceOpen
+                    ? "Back to mission"
+                    : "Open mission in room"
+                }
+              >
+                <Play size={12} strokeWidth={2.4} className="fill-current" />
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setShowPicker((openPicker) => !openPicker)}
+              className={`flex min-w-0 flex-1 items-center overflow-hidden rounded-full py-2.5 pr-3 text-left text-sm text-white outline-none ring-0 transition-all focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 ${
+                canOpenMissionWorkspace ? "pl-2.5" : "pl-4"
+              }`}
+            >
+              <span
+                className={`block min-w-0 w-full truncate ${selectedMissionTitle ? "text-white" : "text-white/35"}`}
+              >
+                {selectedMissionTitle ?? "Select an active mission (optional)"}
+              </span>
+            </button>
+
+            <span
+              className="h-5 w-px shrink-0"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+              aria-hidden
+            />
+            <button
+              type="button"
+              onClick={() => setShowPicker((openPicker) => !openPicker)}
+              className="mr-2 flex h-8 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-full px-1.5 text-white/30 outline-none transition hover:bg-white/[0.06] hover:text-white/60 focus:outline-none focus-visible:outline-none"
+              aria-label="Browse active missions"
+            >
+              <Target size={16} />
+              <ChevronDown
+                size={12}
+                strokeWidth={2}
+                className={`transition-transform duration-150 ${showPicker ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {showPicker && (
+              <div
+                className="absolute bottom-full left-0 right-0 z-20 mb-1.5 overflow-hidden rounded-xl shadow-lg"
+                style={{
+                  background: "rgba(15,35,24,0.95)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <MissionSelectionPicker
+                  missions={activeMissions}
+                  selectedMissionId={missionSelection?.selectedMissionId ?? null}
+                  accentColor={accentColor}
+                  onSelectMission={(mission) => {
+                    const area = getMissionPrimaryArea(mission.path);
+                    handleSelectMission(
+                      mission.path.id,
+                      mission.path.title,
+                      area.detail ?? area.label ?? null,
+                    );
+                  }}
+                  onSelectNone={() => handleSelectMission(null, null, null)}
+                  noneDescription="Continue this session without a mission."
+                />
+              </div>
+            )}
+          </div>
+
+          {(selectedMissionTitle || selectedMissionDomain || selectedMissionSummary) && (
+            <p className="mt-2 text-2xs text-white/35">
+              {selectedMissionDomain ?? "Active mission"}
+              {selectedMissionSummary ? ` · ${selectedMissionSummary}` : ""}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // What FocusBody sees as "active" — pending overrides parent's real active IDs
   const displayTaskId = pending?.type === "task" ? pending.id : pending ? null : activeTaskId;
@@ -159,7 +341,7 @@ export const FocusDropdown = memo(function FocusDropdown({
     >
       <div className="flex flex-col">
         {/* Title — top of popover */}
-        <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">What are you working on?</p>
+        <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-[var(--sg-shell-500)]">What mission are you working on?</p>
 
         {/* Goals + Tasks accordions — toggled by ListTodo button */}
         {showPicker && (
@@ -208,7 +390,7 @@ export const FocusDropdown = memo(function FocusDropdown({
             >
               <Play size={12} strokeWidth={2} className="shrink-0 text-white/40" />
               <span className="min-w-0 truncate text-xs text-white/50">
-                Continue: <span className="text-white/70">{continueTask.title}</span>
+                Continue step: <span className="text-white/70">{continueTask.title}</span>
               </span>
             </button>
           </div>
@@ -240,7 +422,7 @@ export const FocusDropdown = memo(function FocusDropdown({
                   onClose();
                 }
               }}
-              placeholder="Write your task or goal..."
+              placeholder="Write your mission or step..."
               className="min-w-0 flex-1 bg-transparent py-1.5 text-sm text-white placeholder-white/30 outline-none"
             />
 
@@ -279,7 +461,7 @@ export const FocusDropdown = memo(function FocusDropdown({
               type="button"
               onClick={() => setShowPicker((v) => !v)}
               className="shrink-0 cursor-pointer rounded p-1.5 text-white/30 transition hover:text-white/60"
-              aria-label="Browse tasks"
+              aria-label="Browse mission steps"
             >
               <ListTodo size={16} />
             </button>

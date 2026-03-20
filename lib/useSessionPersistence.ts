@@ -33,6 +33,9 @@ interface UseSessionPersistenceReturn {
   /** True if a previous active session was found and restored. */
   wasRestored: boolean;
 
+  /** Clear the local session/sprint snapshot without mutating the database. */
+  clearSessionState: () => void;
+
   /** Create a new session row + log session_started event. Returns the session. */
   startSession: (input: {
     user_id: string;
@@ -40,11 +43,21 @@ interface UseSessionPersistenceReturn {
     task_id?: string | null;
     character?: string | null;
     goal_text?: string | null;
+    metadata?: Record<string, unknown> | null;
     planned_duration_sec: number;
   }) => Promise<SessionRow>;
 
   /** Update the session phase in the DB. */
   updatePhase: (phase: SessionPhase) => Promise<void>;
+
+  /** Update the lightweight focus context stored on the session row. */
+  updateSessionFocus: (input: {
+    goalText?: string | null;
+    metadata?: Record<string, unknown> | null;
+  }) => Promise<void>;
+
+  /** Reassign the current session to a different room/party. */
+  reassignSessionParty: (partyId: string | null) => Promise<void>;
 
   /** Create a new sprint row + log sprint_started event. Returns the sprint. */
   startSprint: (input: {
@@ -62,6 +75,7 @@ interface UseSessionPersistenceReturn {
     task_id?: string | null;
     goal_id?: string | null;
     body: string;
+    metadata?: Record<string, unknown> | null;
   }) => Promise<SessionGoal | null>;
 
   /** Mark a goal as completed + log goal_completed event. */
@@ -127,9 +141,13 @@ export function useSessionPersistence(
 
           // Also fetch the latest sprint for this session
           const sprints = await listSprints(active.id);
-          if (!cancelled && sprints.length > 0) {
-            setCurrentSprint(sprints[sprints.length - 1]);
+          if (!cancelled) {
+            setCurrentSprint(sprints.length > 0 ? sprints[sprints.length - 1] : null);
           }
+        } else {
+          setSessionRow(null);
+          setCurrentSprint(null);
+          setWasRestored(false);
         }
       } catch (err) {
         console.error("[useSessionPersistence] hydration error:", err);
@@ -168,6 +186,7 @@ export function useSessionPersistence(
       task_id?: string | null;
       character?: string | null;
       goal_text?: string | null;
+      metadata?: Record<string, unknown> | null;
       planned_duration_sec: number;
     }): Promise<SessionRow> => {
       // Duplicate guard: if starting in a party, check for existing active session
@@ -197,6 +216,7 @@ export function useSessionPersistence(
         payload: {
           character: input.character,
           planned_duration_sec: input.planned_duration_sec,
+          ...(input.metadata ? { mission: input.metadata } : {}),
         },
       }).catch((err) =>
         console.error("[useSessionPersistence] logEvent(session_started) failed:", err)
@@ -217,6 +237,63 @@ export function useSessionPersistence(
         setSessionRow((prev) => (prev ? { ...prev, phase } : null));
       } catch (err) {
         console.error("[useSessionPersistence] updatePhase failed:", err);
+      }
+    },
+    []
+  );
+
+  // ── updateSessionFocus ──
+  const updateSessionFocusFn = useCallback(
+    async (input: {
+      goalText?: string | null;
+      metadata?: Record<string, unknown> | null;
+    }): Promise<void> => {
+      const s = sessionRef.current;
+      if (!s) return;
+
+      const goalText = input.goalText ?? null;
+      const metadata = input.metadata ?? {};
+
+      try {
+        await updateSession(s.id, {
+          goal_text: goalText,
+          metadata,
+        });
+        setSessionRow((prev) =>
+          prev
+            ? {
+                ...prev,
+                goal_text: goalText,
+                metadata,
+              }
+            : null
+        );
+      } catch (err) {
+        console.error("[useSessionPersistence] updateSessionFocus failed:", err);
+      }
+    },
+    []
+  );
+
+  // ── reassignSessionParty ──
+  const reassignSessionPartyFn = useCallback(
+    async (partyId: string | null): Promise<void> => {
+      const s = sessionRef.current;
+      if (!s) return;
+
+      try {
+        await updateSession(s.id, { party_id: partyId });
+        setSessionRow((prev) =>
+          prev
+            ? {
+                ...prev,
+                party_id: partyId,
+              }
+            : null
+        );
+      } catch (err) {
+        console.error("[useSessionPersistence] reassignSessionParty failed:", err);
+        throw err;
       }
     },
     []
@@ -268,6 +345,7 @@ export function useSessionPersistence(
       task_id?: string | null;
       goal_id?: string | null;
       body: string;
+      metadata?: Record<string, unknown> | null;
     }): Promise<SessionGoal | null> => {
       const s = sessionRef.current;
       if (!s) return null;
@@ -279,8 +357,9 @@ export function useSessionPersistence(
           task_id: input.task_id ?? null,
           goal_id: input.goal_id ?? null,
           body: input.body,
+          metadata: input.metadata ?? null,
         });
-        safeLog("goal_declared", input.body);
+        safeLog("goal_declared", input.body, input.metadata ?? undefined);
         return goal;
       } catch (err) {
         console.error("[useSessionPersistence] declareGoal failed:", err);
@@ -356,6 +435,7 @@ export function useSessionPersistence(
         // Clear local state after ending
         setSessionRow(null);
         setCurrentSprint(null);
+        setWasRestored(false);
       } catch (err) {
         console.error("[useSessionPersistence] endSession failed:", err);
       }
@@ -363,13 +443,22 @@ export function useSessionPersistence(
     [safeLog]
   );
 
+  const clearSessionStateFn = useCallback((): void => {
+    setSessionRow(null);
+    setCurrentSprint(null);
+    setWasRestored(false);
+  }, []);
+
   return {
     sessionRow,
     currentSprint,
     isHydrating,
     wasRestored,
+    clearSessionState: clearSessionStateFn,
     startSession: startSessionFn,
     updatePhase: updatePhaseFn,
+    updateSessionFocus: updateSessionFocusFn,
+    reassignSessionParty: reassignSessionPartyFn,
     startSprint: startSprintFn,
     completeSprint: completeSprintFn,
     declareGoal: declareGoalFn,

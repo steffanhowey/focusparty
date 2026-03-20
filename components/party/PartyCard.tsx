@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { FlameIcon } from "@/components/ui/FlameIcon";
 import { CHARACTERS } from "@/lib/constants";
 import type { PartyWithCount } from "@/lib/parties";
-import { getRoomRoute } from "@/lib/appRoutes";
+import { getCanonicalRoomEntryRoute } from "@/lib/appRoutes";
 
 interface PartyCardProps {
   party: PartyWithCount;
@@ -16,7 +16,7 @@ export function PartyCard({ party }: PartyCardProps) {
   const isFull = party.participant_count >= party.max_participants;
 
   return (
-    <Link href={getRoomRoute(party.id)} className="block">
+    <Link href={getCanonicalRoomEntryRoute(party)} className="block">
       <Card
         variant="character"
         character={party.character}

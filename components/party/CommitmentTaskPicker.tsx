@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronRight, ChevronDown, Target, Check, Play } from "lucide-react";
+import { ChevronRight, ChevronDown, Target, Play } from "lucide-react";
 import type { GoalRecord, TaskRecord } from "@/lib/types";
 
 interface CommitmentTaskPickerProps {
@@ -132,7 +132,7 @@ export function CommitmentTaskPicker({
 
               {hasTasks ? (
                 <span className="ml-auto shrink-0 text-2xs text-white/25">
-                  {goalTasks.length} {goalTasks.length === 1 ? "task" : "tasks"}
+                  {goalTasks.length} {goalTasks.length === 1 ? "step" : "steps"}
                 </span>
               ) : (
                 <Play
@@ -173,14 +173,14 @@ export function CommitmentTaskPicker({
         );
       })}
 
-      {/* Standalone tasks */}
+      {/* Standalone steps */}
       {standaloneTasks.length > 0 && (
         <>
           {goals.length > 0 && (
             <div className="mx-2 my-1 h-px bg-white/[0.06]" />
           )}
           <div className="px-3 pt-1.5 pb-1 text-2xs font-semibold uppercase tracking-wider text-white/25">
-            Tasks
+            Steps
           </div>
           {standaloneTasks.map((task) => {
             const isSelected = selectedTaskId === task.id;

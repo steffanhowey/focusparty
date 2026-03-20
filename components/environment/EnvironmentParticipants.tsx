@@ -41,6 +41,7 @@ export interface ParticipantInfo {
 interface EnvironmentParticipantsProps {
   participants: ParticipantInfo[];
   onParticipantClick?: (participant: ParticipantInfo, rect: DOMRect) => void;
+  onWidthChange?: (width: number) => void;
   /** Active camera stream for the current user — replaces their avatar when present */
   cameraStream?: MediaStream | null;
   /** Map of participant id → celebration info for active burst + status text */
@@ -55,6 +56,7 @@ function fallbackAvatar(seed: string): string {
 export const EnvironmentParticipants = memo(function EnvironmentParticipants({
   participants,
   onParticipantClick,
+  onWidthChange,
   cameraStream,
   celebrations,
 }: EnvironmentParticipantsProps) {
@@ -73,13 +75,14 @@ export const EnvironmentParticipants = memo(function EnvironmentParticipants({
       // gap-y-4 = 16px between items → 100px per slot, last has no trailing gap
       const computed = Math.max(1, Math.floor((availableHeight + 16) / 100));
       setItemsPerColumn(computed);
+      onWidthChange?.(el.getBoundingClientRect().width);
     };
 
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [onWidthChange]);
 
   // Reorder so current user is at top of column 2 (or right after host if single column)
   const orderedParticipants = useMemo(() => {
@@ -101,11 +104,12 @@ export const EnvironmentParticipants = memo(function EnvironmentParticipants({
 
   const maxCollapsedSlots = itemsPerColumn * 2;
   const hasOverflow = !expanded && participants.length > maxCollapsedSlots;
+  const isExpanded = expanded && participants.length > maxCollapsedSlots;
 
   const visibleParticipants = useMemo(() => {
-    if (expanded || !hasOverflow) return orderedParticipants;
+    if (isExpanded || !hasOverflow) return orderedParticipants;
     return orderedParticipants.slice(0, maxCollapsedSlots - 1);
-  }, [expanded, hasOverflow, orderedParticipants, maxCollapsedSlots]);
+  }, [isExpanded, hasOverflow, orderedParticipants, maxCollapsedSlots]);
 
   const overflowCount = hasOverflow
     ? participants.length - (maxCollapsedSlots - 1)
@@ -113,13 +117,6 @@ export const EnvironmentParticipants = memo(function EnvironmentParticipants({
 
   const handleExpand = useCallback(() => setExpanded(true), []);
   const handleCollapse = useCallback(() => setExpanded(false), []);
-
-  // Auto-collapse when participants drop below threshold
-  useEffect(() => {
-    if (expanded && participants.length <= maxCollapsedSlots) {
-      setExpanded(false);
-    }
-  }, [expanded, participants.length, maxCollapsedSlots]);
 
   if (participants.length === 0) return null;
 
@@ -135,7 +132,7 @@ export const EnvironmentParticipants = memo(function EnvironmentParticipants({
     <div
       ref={containerRef}
       className={`pointer-events-none absolute left-0 top-0 z-10 flex h-full flex-col flex-wrap content-start items-center gap-x-3 gap-y-4 px-4 pb-24 pt-20 ${
-        expanded ? "" : "overflow-hidden"
+        isExpanded ? "" : "overflow-hidden"
       }`}
     >
       {visibleParticipants.map((p) => (
@@ -232,7 +229,7 @@ export const EnvironmentParticipants = memo(function EnvironmentParticipants({
       )}
 
       {/* Collapse button */}
-      {expanded && participants.length > maxCollapsedSlots && (
+      {isExpanded && (
         <div
           className="pointer-events-auto flex cursor-pointer flex-col items-center gap-1"
           onClick={handleCollapse}

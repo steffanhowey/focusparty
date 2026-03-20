@@ -9,30 +9,30 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { ListTodo } from "lucide-react";
+import { Target } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { JoinRoomHeader } from "./JoinRoomHeader";
-import { FocusBody } from "@/components/session/FocusBody";
+import { MissionSelectionPicker } from "./MissionSelectionPicker";
 import { DurationPills } from "@/components/session/DurationPills";
 import { SPRINT_DURATION_OPTIONS } from "@/lib/constants";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-import { useTasks } from "@/lib/useTasks";
-import { useGoals } from "@/lib/useGoals";
 import type { CommitmentType } from "@/lib/types";
 import { usePartyPresence } from "@/lib/usePartyPresence";
 import { usePartyActivityFeed } from "@/lib/usePartyActivityFeed";
 import { useRoomSprint } from "@/lib/useRoomSprint";
-import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
 import { getParty, joinParty, getSyntheticParticipants, type Party, type SyntheticPresenceInfo } from "@/lib/parties";
-import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
-import { getHostConfig } from "@/lib/hosts";
+import { getWorldConfig } from "@/lib/worlds";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 import type { ActiveBackground } from "@/lib/roomBackgrounds";
+import { getMissionPrimaryArea, getMissionProgressSummary } from "@/lib/missionPresentation";
+import { useActiveMissions } from "@/lib/useActiveMissions";
 
 interface JoinRoomModalProps {
   partyId: string;
   isOpen: boolean;
   onClose: () => void;
+  party?: Party | null;
+  syntheticParticipants?: SyntheticPresenceInfo[];
   backgrounds?: Map<string, ActiveBackground>;
   onJoin?: (config: JoinConfig) => void;
   /** Presence from the parent environment page — avoids duplicate channel. */
@@ -41,56 +41,68 @@ interface JoinRoomModalProps {
 
 /** Config stored in sessionStorage for the environment page to read. */
 export interface JoinConfig {
-  taskId: string | null;
-  goalId: string | null;
-  goalText: string;
+  missionId: string | null;
+  missionTitle: string | null;
+  missionDomain: string | null;
   durationSec: number;
   autoStart: boolean;
   commitmentType: CommitmentType;
   musicAutoPlay: boolean;
 }
 
-export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, presence: externalPresence }: JoinRoomModalProps) {
+export function JoinRoomModal({
+  partyId,
+  isOpen,
+  onClose,
+  party: initialParty,
+  syntheticParticipants: initialSyntheticParticipants,
+  backgrounds,
+  onJoin,
+  presence: externalPresence,
+}: JoinRoomModalProps) {
   const router = useRouter();
   const { userId, displayName, username } = useCurrentUser();
   const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const previousActive = useRef<HTMLElement | null>(null);
   useFocusTrap(overlayRef, isOpen && mounted);
 
   // ─── Party data ──────────────────────────────────────────
-  const [party, setParty] = useState<Party | null>(null);
-  const [partyLoading, setPartyLoading] = useState(true);
+  const [fetchedParty, setFetchedParty] = useState<Party | null>(null);
+  const [partyLoading, setPartyLoading] = useState(!initialParty);
 
   useEffect(() => {
-    if (!isOpen || !partyId) return;
+    if (!isOpen || !partyId || initialParty) return;
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPartyLoading(true);
     getParty(partyId)
-      .then((p) => { if (!cancelled) setParty(p); })
+      .then((p) => { if (!cancelled) setFetchedParty(p); })
       .catch((err) => console.error("Failed to fetch party:", err))
       .finally(() => { if (!cancelled) setPartyLoading(false); });
     return () => { cancelled = true; };
-  }, [isOpen, partyId]);
+  }, [initialParty, isOpen, partyId]);
 
   // ─── Synthetic participants ─────────────────────────────
-  const [syntheticParticipants, setSyntheticParticipants] = useState<SyntheticPresenceInfo[]>([]);
+  const [fetchedSyntheticParticipants, setFetchedSyntheticParticipants] =
+    useState<SyntheticPresenceInfo[]>([]);
+
   useEffect(() => {
-    if (!isOpen || !partyId) return;
+    if (!isOpen || !partyId || initialSyntheticParticipants) return;
     let cancelled = false;
     getSyntheticParticipants(partyId)
-      .then((sp) => { if (!cancelled) setSyntheticParticipants(sp); })
+      .then((sp) => { if (!cancelled) setFetchedSyntheticParticipants(sp); })
       .catch((err) => console.error("Failed to fetch synthetic participants:", err));
     return () => { cancelled = true; };
-  }, [isOpen, partyId]);
+  }, [initialSyntheticParticipants, isOpen, partyId]);
+
+  const party = initialParty ?? fetchedParty;
+  const syntheticParticipants =
+    initialSyntheticParticipants ?? fetchedSyntheticParticipants;
 
   const world = party ? getWorldConfig(party.world_key) : getWorldConfig("default");
   const aiBg = backgrounds?.get(party?.world_key ?? "default");
   const coverSrc = aiBg?.thumbUrl ?? null;
-  const hostConfig = party
-    ? getHostConfig(getPartyHostPersonality(party))
-    : getHostConfig("default");
 
   // ─── Presence + activity ─────────────────────────────────
   // Use parent's presence when available to avoid a duplicate channel
@@ -115,47 +127,38 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
   );
 
   const roomSprint = useRoomSprint(events, presence.participants);
-  const roomState = useMemo(
-    () => computeRoomState(events, presence.participants.length),
-    [events, presence.participants.length]
-  );
-  const roomStateDisplay = ROOM_STATE_CONFIG[roomState];
-
-  // ─── Tasks + Goals ──────────────────────────────────────────
-  const { activeTasks, activeTask, selectTask, addTask, completeTask, deleteTask, editTask } = useTasks();
-  const { activeGoals, createGoal, completeGoal, deleteGoal, updateGoal } = useGoals();
+  const { missions: activeMissions, isLoading: activeMissionsLoading } = useActiveMissions();
 
   // ─── Form state ────────────────────────────────────────────
-  const [goalText, setGoalText] = useState("");
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [commitmentType, setCommitmentType] = useState<CommitmentType>("personal");
+  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
   const [freshDuration, setFreshDuration] = useState(25);
   const [isJoining, setIsJoining] = useState(false);
-  const [showTaskPicker, setShowTaskPicker] = useState(false);
+  const [showMissionPicker, setShowMissionPicker] = useState(false);
   const [formStep, setFormStep] = useState<1 | 2>(1);
+  const commitmentType: CommitmentType = "personal";
 
   // Reset form state when modal opens
   useEffect(() => {
     if (isOpen) {
-      setGoalText("");
-      setSelectedTaskId(null);
-      setSelectedGoalId(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedMissionId(null);
       setFreshDuration(25);
       setIsJoining(false);
-      setShowTaskPicker(false);
-      setCommitmentType("personal");
+      setShowMissionPicker(false);
       setFormStep(1);
     }
-  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
-  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
-
-  const selectedTask = useMemo(
-    () => activeTasks.find((t) => t.id === selectedTaskId) ?? null,
-    [activeTasks, selectedTaskId]
+  const selectedMission = useMemo(
+    () => activeMissions.find((mission) => mission.path.id === selectedMissionId) ?? null,
+    [activeMissions, selectedMissionId],
   );
-
-  const hasGoal = goalText.trim().length > 0 || selectedTaskId !== null || selectedGoalId !== null;
+  const selectedMissionArea = selectedMission ? getMissionPrimaryArea(selectedMission.path) : null;
+  const selectedMissionDomain =
+    selectedMissionArea?.detail ?? selectedMissionArea?.label ?? null;
+  const selectedMissionSummary = selectedMission
+    ? getMissionProgressSummary(selectedMission.progress)
+    : null;
 
   // ─── Computed sprint info ─────────────────────────────────
   const durationSec = freshDuration * 60;
@@ -163,73 +166,27 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
   const buttonLabel = "Join Session";
 
   // ─── Handlers ──────────────────────────────────────────────
-
-  // ─── FocusBody adapter callbacks ────────────────────────
-  const handleFocusAddTask = useCallback(
-    (title: string, goalId: string | null) => {
-      addTask({ title, goal_id: goalId });
-    },
-    [addTask]
-  );
-
-  const handleFocusAddGoal = useCallback(
-    (title: string) => {
-      createGoal({ title });
-    },
-    [createGoal]
-  );
-
-  const handleFocusEditGoal = useCallback(
-    (goalId: string, newTitle: string) => {
-      updateGoal(goalId, { title: newTitle });
-    },
-    [updateGoal]
-  );
-
-  const handleGoalChange = useCallback((text: string) => {
-    setGoalText(text);
-    setSelectedTaskId(null);
-    setSelectedGoalId(null);
+  const handleMissionSelect = useCallback((missionId: string) => {
+    setSelectedMissionId(missionId);
+    setShowMissionPicker(false);
   }, []);
 
-  const handleTaskPickerSelect = useCallback(
-    (taskId: string, taskTitle: string, goalId: string | null) => {
-      setSelectedTaskId(taskId);
-      setSelectedGoalId(goalId);
-      if (goalId) {
-        const goal = activeGoals.find((g) => g.id === goalId);
-        setGoalText(goal ? `${goal.title}: ${taskTitle}` : taskTitle);
-      } else {
-        setGoalText(taskTitle);
-      }
-      setShowTaskPicker(false);
-    },
-    [activeGoals]
-  );
-
-  const handleGoalSelect = useCallback(
-    (goalId: string, goalTitle: string) => {
-      setSelectedGoalId(goalId);
-      setSelectedTaskId(null);
-      setGoalText(goalTitle);
-      setShowTaskPicker(false);
-    },
-    []
-  );
+  const handleContinueWithoutMission = useCallback(() => {
+    setSelectedMissionId(null);
+    setShowMissionPicker(false);
+  }, []);
 
   const handleJoin = useCallback(async () => {
-    if (!userId || !hasGoal || isJoining) return;
+    if (!userId || isJoining) return;
     setIsJoining(true);
 
     try {
       await joinParty(partyId, userId, displayName);
 
-      if (selectedTaskId) selectTask(selectedTaskId);
-
       const config: JoinConfig = {
-        taskId: selectedTaskId,
-        goalId: selectedGoalId,
-        goalText: selectedTask?.title || goalText.trim(),
+        missionId: selectedMission?.path.id ?? null,
+        missionTitle: selectedMission?.path.title ?? null,
+        missionDomain: selectedMissionDomain,
         durationSec,
         autoStart: true,
         commitmentType,
@@ -248,13 +205,24 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
       setIsJoining(false);
     }
   }, [
-    userId, hasGoal, isJoining, partyId, displayName,
-    selectedTaskId, selectedGoalId, goalText, selectedTask, durationSec,
-    commitmentType, selectTask, onJoin, onClose, router,
+    userId,
+    isJoining,
+    partyId,
+    displayName,
+    selectedMission,
+    selectedMissionDomain,
+    durationSec,
+    commitmentType,
+    onJoin,
+    onClose,
+    router,
   ]);
 
   // ─── Modal plumbing ────────────────────────────────────────
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
 
   useEffect(() => {
@@ -318,7 +286,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
             {/* ── Fixed-height form body — both steps always mounted ── */}
             <div className="relative" style={{ height: 168 }}>
 
-              {/* ── STEP 1: Task input ──────────────────────── */}
+              {/* ── STEP 1: Mission selection ────────────────── */}
               <div
                 className="absolute inset-0 flex flex-col transition-opacity duration-200"
                 style={{
@@ -328,24 +296,27 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
               >
                 <div className="px-5 pt-4">
                   <label className="mb-2 block text-sm font-semibold text-white">
-                    What are you working on?
+                    What mission are you working on?
                   </label>
 
-                  {/* Text input */}
                   <div className="relative">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={goalText}
-                      onChange={(e) => handleGoalChange(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter" && hasGoal) { setShowTaskPicker(false); setFormStep(2); } }}
-                      placeholder="Write your task or goal..."
-                      className="w-full rounded-full py-2.5 pl-4 pr-10 text-sm text-white placeholder-white/30 outline-none ring-0 ring-white/0 transition-all focus:ring-1 focus:ring-white/12"
+                    <button
+                      type="button"
+                      onClick={() => setShowMissionPicker((open) => !open)}
+                      className="flex w-full items-center gap-2 rounded-full py-2.5 pl-4 pr-10 text-left text-sm text-white outline-none ring-0 ring-white/0 transition-all hover:border-white/12 focus:ring-1 focus:ring-white/12"
                       style={{
                         background: "rgba(255,255,255,0.06)",
                         border: "1px solid rgba(255,255,255,0.08)",
                       }}
-                    />
+                    >
+                      <span
+                        className={`min-w-0 flex-1 truncate ${selectedMission ? "text-white" : "text-white/35"}`}
+                      >
+                        {selectedMission
+                          ? selectedMission.path.title
+                          : "Select an active mission (optional)"}
+                      </span>
+                    </button>
                     <span
                       className="absolute right-9 top-1/2 h-5 w-px -translate-y-1/2"
                       style={{ background: "rgba(255,255,255,0.08)" }}
@@ -353,44 +324,47 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
                     />
                     <button
                       type="button"
-                      onClick={() => setShowTaskPicker(!showTaskPicker)}
+                      onClick={() => setShowMissionPicker((open) => !open)}
                       className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer rounded p-1 text-white/30 transition hover:text-white/60"
-                      aria-label="Browse tasks"
+                      aria-label="Browse active missions"
                     >
-                      <ListTodo size={16} />
+                      <Target size={16} />
                     </button>
+
+                    {/* Mission picker dropdown */}
+                    {showMissionPicker && (
+                      <div
+                        className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-xl shadow-lg"
+                        style={{
+                          background: "rgba(15,35,24,0.95)",
+                          backdropFilter: "blur(16px)",
+                          WebkitBackdropFilter: "blur(16px)",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                        }}
+                      >
+                        {activeMissionsLoading ? (
+                          <div className="flex items-center justify-center px-4 py-4">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/[0.24] border-t-white/[0.72]" />
+                          </div>
+                        ) : (
+                          <MissionSelectionPicker
+                            missions={activeMissions}
+                            selectedMissionId={selectedMissionId}
+                            accentColor={world.accentColor}
+                            onSelectMission={(mission) => handleMissionSelect(mission.path.id)}
+                            onSelectNone={handleContinueWithoutMission}
+                          />
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Task/goal picker dropdown */}
-                  {showTaskPicker && (activeTasks.length > 0 || activeGoals.length > 0) && (
-                    <div
-                      className="absolute left-0 right-0 z-20 mx-5 mt-1.5 overflow-hidden rounded-xl shadow-lg"
-                      style={{
-                        background: "rgba(15,35,24,0.95)",
-                        backdropFilter: "blur(16px)",
-                        WebkitBackdropFilter: "blur(16px)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                      }}
-                    >
-                      <FocusBody
-                        activeTaskId={selectedTaskId}
-                        activeGoalId={selectedGoalId}
-                        goals={activeGoals}
-                        tasks={activeTasks}
-                        accentColor={world.accentColor}
-                        onSelectTask={handleTaskPickerSelect}
-                        onSelectGoal={handleGoalSelect}
-                        onCompleteTask={completeTask}
-                        onDeleteTask={deleteTask}
-                        onCompleteGoal={completeGoal}
-                        onDeleteGoal={deleteGoal}
-                        onAddTask={handleFocusAddTask}
-                        onAddGoal={handleFocusAddGoal}
-                        onEditTask={editTask}
-                        onEditGoal={handleFocusEditGoal}
-                        maxHeight="max-h-56"
-                      />
-                    </div>
+                  {selectedMission && (
+                    <p className="mt-2 text-2xs text-white/35">
+                      {selectedMissionArea?.detail ?? selectedMissionArea?.label}
+                      {" · "}
+                      {selectedMissionSummary}
+                    </p>
                   )}
                 </div>
 
@@ -399,10 +373,9 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
                   <Button
                     variant="cta"
                     size="sm"
-                    onClick={() => { setShowTaskPicker(false); setFormStep(2); }}
-                    disabled={!hasGoal}
+                    onClick={() => { setShowMissionPicker(false); setFormStep(2); }}
                   >
-                    Next
+                    Continue
                   </Button>
                 </div>
               </div>
@@ -439,7 +412,7 @@ export function JoinRoomModal({ partyId, isOpen, onClose, backgrounds, onJoin, p
                     variant="cta"
                     size="sm"
                     onClick={handleJoin}
-                    disabled={!hasGoal || isJoining}
+                    disabled={isJoining}
                     loading={isJoining}
                   >
                     {isJoining ? "Joining..." : buttonLabel}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, type ReactNode } from "react";
 import {
   Copy,
   Check,
@@ -10,6 +10,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import {
+  RoomStagePanel,
+  RoomStageScaffold,
+  RoomStageSecondaryButton,
+} from "./RoomStageScaffold";
 import type { PathItem, ItemState, AiTool } from "@/lib/types";
 
 // ─── Types ──────────────────────────────────────────────────
@@ -18,6 +23,7 @@ interface MissionViewerProps {
   item: PathItem;
   isCompleted: boolean;
   onComplete: (stateData: Partial<ItemState>) => void;
+  variant?: "default" | "roomOverlay";
 }
 
 type MissionPhase = "briefing" | "working" | "submission" | "feedback";
@@ -59,9 +65,10 @@ export function MissionViewer({
   item,
   isCompleted,
   onComplete,
+  variant = "default",
 }: MissionViewerProps) {
-  const mission = item.mission;
-  if (!mission) return null;
+  const mission = item.mission!;
+  const isRoomOverlay = variant === "roomOverlay";
 
   const [phase, setPhase] = useState<MissionPhase>("briefing");
   const [submission, setSubmission] = useState("");
@@ -78,7 +85,20 @@ export function MissionViewer({
     setAttempts(0);
   }, [item.item_id]);
 
+  useEffect(() => {
+    if (!toastMessage) return;
+
+    const timer = setTimeout(() => setToastMessage(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toastMessage]);
+
   const tool: AiTool = mission.tool;
+  const guidanceLabel =
+    GUIDANCE_LABELS[mission.guidance_level] ?? mission.guidance_level;
+  const roomDescription =
+    item.title.trim() !== mission.objective.trim()
+      ? mission.objective
+      : mission.context || null;
 
   const handleCopyAndOpen = useCallback(() => {
     navigator.clipboard.writeText(mission.tool_prompt).then(
@@ -158,6 +178,293 @@ export function MissionViewer({
   const handleSkip = useCallback(() => {
     onComplete({ skipped: true });
   }, [onComplete]);
+
+  if (isRoomOverlay) {
+    if (isCompleted) {
+      return (
+        <RoomStageScaffold
+          eyebrow="Build"
+          title={item.title}
+          description={roomDescription}
+          badge={
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/55">
+              {guidanceLabel}
+            </span>
+          }
+          footerMeta="Build · Completed"
+          contentClassName="max-w-[760px] space-y-4"
+        >
+          <RoomStagePanel className="space-y-2 text-center">
+            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-[var(--sg-forest-300)]">
+              <Check size={14} />
+              Step complete
+            </div>
+            <p className="text-sm leading-6 text-white/55">
+              Your work for this step has already been saved.
+            </p>
+          </RoomStagePanel>
+        </RoomStageScaffold>
+      );
+    }
+
+    let footerMeta = `Build · ${tool.name} · ${guidanceLabel}`;
+    let primaryAction: ReactNode = null;
+    let secondaryAction: ReactNode = null;
+    let body: ReactNode = null;
+
+    if (phase === "briefing") {
+      primaryAction = (
+        <Button
+          variant="cta"
+          size="sm"
+          rightIcon={<ExternalLink size={14} />}
+          onClick={handleCopyAndOpen}
+        >
+          Copy Prompt & Open {tool.name}
+        </Button>
+      );
+      secondaryAction = (
+        <RoomStageSecondaryButton onClick={handleSkip}>
+          Skip
+        </RoomStageSecondaryButton>
+      );
+      body = (
+        <>
+          {toastMessage ? (
+            <RoomStagePanel className="py-3 text-sm text-white/65">
+              {toastMessage}
+            </RoomStagePanel>
+          ) : null}
+
+          {mission.context && roomDescription !== mission.context ? (
+            <RoomStagePanel>
+              <p className="text-sm leading-7 text-white/65">{mission.context}</p>
+            </RoomStagePanel>
+          ) : null}
+
+          {mission.steps.length > 0 ? (
+            <RoomStagePanel className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
+                What to do
+              </p>
+              <ol className="space-y-2 pl-5 list-decimal text-sm leading-7 text-white/70">
+                {mission.steps.map((step, i) => (
+                  <li key={i}>{step}</li>
+                ))}
+              </ol>
+            </RoomStagePanel>
+          ) : null}
+
+          <RoomStagePanel className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
+              Prompt
+            </p>
+            <CodeBlock code={mission.tool_prompt} variant="roomOverlay" />
+          </RoomStagePanel>
+
+          {mission.starter_code ? (
+            <RoomStagePanel className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
+                Starter code
+              </p>
+              <CodeBlock code={mission.starter_code} variant="roomOverlay" />
+            </RoomStagePanel>
+          ) : null}
+
+          {mission.success_criteria.length > 0 ? (
+            <RoomStagePanel className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
+                Success criteria
+              </p>
+              <div className="space-y-2 text-sm leading-7 text-white/65">
+                {mission.success_criteria.map((criterion, i) => (
+                  <p key={i} className="flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0 text-[var(--sg-forest-300)]">
+                      •
+                    </span>
+                    <span>{criterion}</span>
+                  </p>
+                ))}
+              </div>
+            </RoomStagePanel>
+          ) : null}
+        </>
+      );
+    }
+
+    if (phase === "working") {
+      footerMeta = `Build · Working in ${tool.name}`;
+      primaryAction = (
+        <Button variant="cta" size="sm" onClick={() => setPhase("submission")}>
+          I&apos;m Ready To Submit
+        </Button>
+      );
+      secondaryAction = (
+        <RoomStageSecondaryButton onClick={handleRecopy}>
+          Re-copy Prompt
+        </RoomStageSecondaryButton>
+      );
+      body = (
+        <>
+          {toastMessage ? (
+            <RoomStagePanel className="py-3 text-sm text-white/65">
+              {toastMessage}
+            </RoomStagePanel>
+          ) : null}
+
+          <RoomStagePanel className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
+              Current objective
+            </p>
+            <p className="text-sm leading-7 text-white/70">{mission.objective}</p>
+          </RoomStagePanel>
+
+          <RoomStagePanel className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
+              Prompt
+            </p>
+            <CodeBlock code={mission.tool_prompt} variant="roomOverlay" />
+          </RoomStagePanel>
+
+          {mission.success_criteria.length > 0 ? (
+            <RoomStagePanel className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
+                Success looks like
+              </p>
+              <p className="text-sm leading-7 text-white/65">
+                {mission.success_criteria.join(" · ")}
+              </p>
+            </RoomStagePanel>
+          ) : null}
+        </>
+      );
+    }
+
+    if (phase === "submission") {
+      footerMeta =
+        mission.submission_type === "screenshot"
+          ? "Build · Describe or paste what you built"
+          : "Build · Paste your output for review";
+      primaryAction = (
+        <Button
+          variant="cta"
+          size="sm"
+          onClick={handleSubmit}
+          loading={loading}
+          disabled={!submission.trim()}
+        >
+          Submit For Review
+        </Button>
+      );
+      secondaryAction = (
+        <RoomStageSecondaryButton onClick={handleSkip}>
+          Skip Step
+        </RoomStageSecondaryButton>
+      );
+      body = (
+        <>
+          <RoomStagePanel>
+            <p className="text-sm leading-7 text-white/65">
+              {mission.submission_type === "screenshot"
+                ? "Describe what you built, paste your output, or capture the result in a way that shows the work clearly."
+                : "Paste your output here so we can check it against the success criteria before you move on."}
+            </p>
+          </RoomStagePanel>
+
+          <RoomStagePanel>
+            <textarea
+              value={submission}
+              onChange={(e) => setSubmission(e.target.value)}
+              placeholder="Paste your output here..."
+              rows={9}
+              className="w-full resize-none bg-transparent text-sm leading-7 text-white placeholder:text-white/25 focus:outline-none"
+            />
+          </RoomStagePanel>
+        </>
+      );
+    }
+
+    if (phase === "feedback" && feedback) {
+      footerMeta = `Build · ${QUALITY_LABELS[feedback.quality] ?? "Feedback"}`;
+      primaryAction = (
+        <Button variant="cta" size="sm" onClick={handleComplete}>
+          Continue
+        </Button>
+      );
+      secondaryAction = (
+        <RoomStageSecondaryButton onClick={handleTryAgain}>
+          Try Again
+        </RoomStageSecondaryButton>
+      );
+      body = (
+        <>
+          <div className="flex items-center">
+            <span
+              className="rounded-full px-2.5 py-1 text-xs font-semibold"
+              style={{
+                background: `${QUALITY_COLORS[feedback.quality]}20`,
+                color: QUALITY_COLORS[feedback.quality],
+              }}
+            >
+              {QUALITY_LABELS[feedback.quality] ?? feedback.quality}
+            </span>
+          </div>
+
+          {feedback.criteria_results && feedback.criteria_results.length > 0 ? (
+            <RoomStagePanel className="space-y-2.5">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
+                Criteria check
+              </p>
+              {feedback.criteria_results.map((criterion, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-2 text-sm leading-6 text-white/65"
+                >
+                  {criterion.passed ? (
+                    <CheckCircle2
+                      size={14}
+                      className="mt-0.5 shrink-0"
+                      style={{ color: "var(--sg-forest-300)" }}
+                    />
+                  ) : (
+                    <XCircle
+                      size={14}
+                      className="mt-0.5 shrink-0"
+                      style={{ color: "var(--sg-gold-600)" }}
+                    />
+                  )}
+                  <span>{criterion.criterion}</span>
+                </div>
+              ))}
+            </RoomStagePanel>
+          ) : null}
+
+          <RoomStagePanel>
+            <p className="text-sm leading-7 text-white/70">{feedback.feedback}</p>
+          </RoomStagePanel>
+        </>
+      );
+    }
+
+    return (
+      <RoomStageScaffold
+        eyebrow="Build"
+        title={item.title}
+        description={roomDescription}
+        badge={
+          <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/55">
+            {guidanceLabel}
+          </span>
+        }
+        footerMeta={footerMeta}
+        primaryAction={primaryAction}
+        secondaryAction={secondaryAction}
+        contentClassName="max-w-[760px] space-y-5"
+      >
+        {body}
+      </RoomStageScaffold>
+    );
+  }
 
   if (isCompleted) {
     return (
@@ -447,7 +754,13 @@ export function MissionViewer({
 
 // ─── Sub-components ──────────────────────────────────────────
 
-function CodeBlock({ code }: { code: string }) {
+function CodeBlock({
+  code,
+  variant = "default",
+}: {
+  code: string;
+  variant?: "default" | "roomOverlay";
+}) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(() => {
@@ -460,16 +773,28 @@ function CodeBlock({ code }: { code: string }) {
     <div
       className="relative rounded-lg overflow-hidden"
       style={{
-        background: "var(--sg-shell-50)",
-        border: "1px solid var(--sg-shell-border)",
+        background:
+          variant === "roomOverlay" ? "rgba(0,0,0,0.2)" : "var(--sg-shell-50)",
+        border:
+          variant === "roomOverlay"
+            ? "1px solid rgba(255,255,255,0.08)"
+            : "1px solid var(--sg-shell-border)",
       }}
     >
-      <pre className="p-3 text-xs font-mono overflow-x-auto text-shell-600 leading-relaxed">
+      <pre
+        className={`overflow-x-auto p-3 text-xs leading-relaxed font-mono ${
+          variant === "roomOverlay" ? "text-white/75" : "text-shell-600"
+        }`}
+      >
         {code}
       </pre>
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 p-1.5 rounded transition-colors hover:bg-shell-200"
+        className={`absolute top-2 right-2 rounded p-1.5 transition-colors ${
+          variant === "roomOverlay"
+            ? "hover:bg-white/[0.08]"
+            : "hover:bg-shell-200"
+        }`}
         title="Copy"
       >
         {copied ? (

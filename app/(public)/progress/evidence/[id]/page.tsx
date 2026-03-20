@@ -39,17 +39,17 @@ export async function generateMetadata({
     achievement.skill_receipt,
   );
   const description = highlightedSkills.length
-    ? `${user_name} completed ${achievement.path_title} on SkillGap. Skills demonstrated: ${highlightedSkills.join(", ")}. ${formatAchievementDuration(achievement.time_invested_seconds)} invested.`
-    : `${user_name} completed ${achievement.path_title} on SkillGap. ${achievement.items_completed} steps completed in ${formatAchievementDuration(achievement.time_invested_seconds)}.`;
+    ? `${user_name} completed the mission ${achievement.path_title} on SkillGap. Skills demonstrated: ${highlightedSkills.join(", ")}. ${formatAchievementDuration(achievement.time_invested_seconds)} invested.`
+    : `${user_name} completed the mission ${achievement.path_title} on SkillGap. ${achievement.items_completed} steps completed in ${formatAchievementDuration(achievement.time_invested_seconds)}.`;
 
   return {
-    title: `${achievement.path_title} — SkillGap Evidence`,
+    title: `${achievement.path_title} — Mission Evidence`,
     description,
     alternates: {
       canonical: pageUrl,
     },
     openGraph: {
-      title: `${user_name} completed ${achievement.path_title} on SkillGap`,
+      title: `${user_name} completed the mission ${achievement.path_title} on SkillGap`,
       description,
       type: "article",
       url: pageUrl,
@@ -58,13 +58,13 @@ export async function generateMetadata({
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: `${achievement.path_title} evidence`,
+          alt: `${achievement.path_title} mission evidence`,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${user_name} completed ${achievement.path_title} on SkillGap`,
+      title: `${user_name} completed the mission ${achievement.path_title} on SkillGap`,
       description,
       images: [imageUrl],
     },
@@ -119,8 +119,8 @@ export default async function ProgressEvidencePage({
     ? `${highlightedSkills[0]} demonstrated in practice`
     : "Mission evidence, captured in practice";
   const subtitle = levelUpCount
-    ? `${user_name} completed ${achievement.path_title} on ${formatAchievementDate(achievement.completed_at)} and advanced ${levelUpCount} skill${levelUpCount > 1 ? "s" : ""}.`
-    : `${user_name} completed ${achievement.path_title} on ${formatAchievementDate(achievement.completed_at)}. The skills below were captured at completion.`;
+    ? `${user_name} completed the mission ${achievement.path_title} on ${formatAchievementDate(achievement.completed_at)} and advanced ${levelUpCount} skill${levelUpCount > 1 ? "s" : ""}.`
+    : `${user_name} completed the mission ${achievement.path_title} on ${formatAchievementDate(achievement.completed_at)}. The skills below were captured at completion.`;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[var(--sg-cream-50)]">

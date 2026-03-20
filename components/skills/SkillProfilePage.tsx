@@ -122,7 +122,7 @@ export function SkillProfilePage({
           icon={<Layers size={18} />}
         />
         <StatsCard
-          label="Paths Completed"
+          label="Missions Completed"
           value={summary.total_paths_completed}
           icon={<BookOpen size={18} />}
         />

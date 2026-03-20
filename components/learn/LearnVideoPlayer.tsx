@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { CheckCircle, Play, Pause } from "lucide-react";
 
@@ -9,12 +9,15 @@ interface LearnVideoPlayerProps {
   title: string;
   onComplete: () => void;
   isCompleted: boolean;
+  immersive?: boolean;
   onPlayStateChange?: (playing: boolean) => void;
   togglePlayRef?: React.MutableRefObject<(() => void) | null>;
   /** Clip start time in seconds — play from here instead of 0 */
   clipStartSeconds?: number | null;
   /** Clip end time in seconds — stop here instead of video end */
   clipEndSeconds?: number | null;
+  immersiveLayout?: "aspect" | "fill";
+  footer?: ReactNode;
 }
 
 /** Format seconds to m:ss display */
@@ -48,10 +51,13 @@ export function LearnVideoPlayer({
   title,
   onComplete,
   isCompleted,
+  immersive = false,
   onPlayStateChange,
   togglePlayRef,
   clipStartSeconds,
   clipEndSeconds,
+  immersiveLayout = "aspect",
+  footer,
 }: LearnVideoPlayerProps) {
   const clipStart = clipStartSeconds ?? 0;
   const clipEnd = clipEndSeconds ?? null;
@@ -62,6 +68,9 @@ export function LearnVideoPlayer({
   const [shieldVisible, setShieldVisible] = useState(true);
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
+  const usesImmersiveLayout = immersive || immersiveLayout === "fill";
+  const immersiveFrameClass =
+    immersiveLayout === "fill" ? "min-h-0 flex-1 w-full" : "aspect-video w-full";
 
   const handleStateChange = useCallback(
     (event: { data: number }) => {
@@ -81,7 +90,7 @@ export function LearnVideoPlayer({
         onComplete();
       }
     },
-    [onComplete, isCompleted]
+    [onComplete, isCompleted, onPlayStateChange]
   );
 
   const handleTogglePlayPause = useCallback(() => {
@@ -228,7 +237,15 @@ export function LearnVideoPlayer({
 
   if (!ytId) {
     return (
-      <div className="aspect-video bg-white flex flex-col items-center justify-center rounded-lg gap-3">
+      <div
+        className={`bg-white flex flex-col items-center justify-center gap-3 ${
+          usesImmersiveLayout
+            ? immersiveLayout === "fill"
+              ? "min-h-0 flex-1 w-full"
+              : "aspect-video"
+            : "rounded-lg"
+        }`}
+      >
         <p className="text-sm text-shell-500">
           Video unavailable in player
         </p>
@@ -246,8 +263,22 @@ export function LearnVideoPlayer({
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 gap-3">
-      <div className="relative flex-1 min-h-0 bg-black rounded-lg overflow-hidden group border border-shell-border">
+    <div
+      className={
+        usesImmersiveLayout
+          ? immersiveLayout === "fill"
+            ? "flex h-full w-full flex-col"
+            : "w-full"
+          : "flex flex-1 min-h-0 flex-col gap-3"
+      }
+    >
+      <div
+        className={`relative overflow-hidden bg-black group ${
+          usesImmersiveLayout
+            ? immersiveFrameClass
+            : "flex-1 min-h-0 rounded-lg border border-shell-border"
+        }`}
+      >
         {/* YouTube player container */}
         <div
           ref={containerRef}
@@ -336,20 +367,23 @@ export function LearnVideoPlayer({
           </div>
         )}
       </div>
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-shell-900 line-clamp-1">
-          {title}
-        </h3>
-        <Button
-          variant={isCompleted ? "ghost" : "primary"}
-          size="sm"
-          leftIcon={<CheckCircle size={14} />}
-          onClick={onComplete}
-          disabled={isCompleted}
-        >
-          {isCompleted ? "Completed" : "Mark Complete"}
-        </Button>
-      </div>
+      {usesImmersiveLayout && footer ? footer : null}
+      {!usesImmersiveLayout && (
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-shell-900 line-clamp-1">
+            {title}
+          </h3>
+          <Button
+            variant={isCompleted ? "ghost" : "primary"}
+            size="sm"
+            leftIcon={<CheckCircle size={14} />}
+            onClick={onComplete}
+            disabled={isCompleted}
+          >
+            {isCompleted ? "Completed" : "Mark Complete"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

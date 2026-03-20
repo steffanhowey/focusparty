@@ -29,7 +29,7 @@ export interface FocusBodyProps {
 }
 
 // ─── Inline add input ─────────────────────────────────────
-function InlineAdd({ onAdd, label = "task" }: { onAdd: (title: string) => void; label?: string }) {
+function InlineAdd({ onAdd, label = "step" }: { onAdd: (title: string) => void; label?: string }) {
   const [active, setActive] = useState(false);
   const [text, setText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -370,7 +370,7 @@ export function FocusBody({
                 setMenuOpenId(isMenuOpen ? null : menuKey);
               }}
               className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-white/20 opacity-0 transition-opacity hover:bg-white/[0.08] hover:text-white/50 group-hover:opacity-100"
-              aria-label="Task actions"
+              aria-label="Step actions"
             >
               <MoreHorizontal size={14} strokeWidth={2} />
             </button>
@@ -393,7 +393,7 @@ export function FocusBody({
     <div
       className={`${maxHeight} ${className} overflow-y-auto [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10 hover:[&::-webkit-scrollbar-thumb]:bg-white/20`}
     >
-      {/* ── Goals accordion ── */}
+      {/* ── Missions accordion ── */}
       <div className="flex w-full items-center gap-1.5 px-4 py-3.5">
         <button
           type="button"
@@ -406,14 +406,14 @@ export function FocusBody({
             className={`shrink-0 text-white/30 transition-transform duration-200 ${goalsOpen ? "rotate-90" : ""}`}
           />
           <span className="text-xs font-semibold uppercase tracking-wider text-white/30">
-            Goals
+            Missions
           </span>
         </button>
         <button
           type="button"
           onClick={() => { if (!goalsOpen) setGoalsOpen(true); setAddingGoal(true); setAddingTask(false); setAddText(""); requestAnimationFrame(() => addInputRef.current?.focus()); }}
           className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-white/20 transition-colors hover:bg-white/[0.06] hover:text-white/40"
-          aria-label="Add goal"
+          aria-label="Add mission"
         >
           <Plus size={11} strokeWidth={2} />
         </button>
@@ -457,7 +457,7 @@ export function FocusBody({
                   setAddText("");
                   setAddingGoal(false);
                 }}
-                placeholder="New goal…"
+                placeholder="New mission…"
                 className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder-white/25 outline-none"
               />
               {addText.trim() && (
@@ -565,7 +565,7 @@ export function FocusBody({
                         setMenuOpenId(isMenuOpen ? null : menuKey);
                       }}
                       className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-white/20 opacity-0 transition-opacity hover:bg-white/[0.08] hover:text-white/50 group-hover:opacity-100"
-                      aria-label="Goal actions"
+                      aria-label="Mission actions"
                     >
                       <MoreHorizontal size={14} strokeWidth={2} />
                     </button>
@@ -600,7 +600,7 @@ export function FocusBody({
                 {isExpanded && (
                   <div className="border-b border-white/[0.06]">
                     {goalTasks.map(renderTaskRow)}
-                    <InlineAdd onAdd={(title) => onAddTask(title, goal.id)} label="task" />
+                    <InlineAdd onAdd={(title) => onAddTask(title, goal.id)} label="step" />
                   </div>
                 )}
               </div>
@@ -624,14 +624,14 @@ export function FocusBody({
             className={`shrink-0 text-white/30 transition-transform duration-200 ${tasksOpen ? "rotate-90" : ""}`}
           />
           <span className="text-xs font-semibold uppercase tracking-wider text-white/30">
-            Tasks
+            Steps
           </span>
         </button>
         <button
           type="button"
           onClick={() => { if (!tasksOpen) setTasksOpen(true); setAddingTask(true); setAddingGoal(false); setAddText(""); requestAnimationFrame(() => addInputRef.current?.focus()); }}
           className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-white/20 transition-colors hover:bg-white/[0.06] hover:text-white/40"
-          aria-label="Add task"
+          aria-label="Add step"
         >
           <Plus size={11} strokeWidth={2} />
         </button>
@@ -675,7 +675,7 @@ export function FocusBody({
                   setAddText("");
                   setAddingTask(false);
                 }}
-                placeholder="New task…"
+                placeholder="New step…"
                 className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder-white/25 outline-none"
               />
               {addText.trim() && (

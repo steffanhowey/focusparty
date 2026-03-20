@@ -2,6 +2,10 @@
 
 import { Button } from "@/components/ui/Button";
 import { CheckCircle, Clock, User, BookOpen } from "lucide-react";
+import {
+  RoomStagePanel,
+  RoomStageScaffold,
+} from "./RoomStageScaffold";
 
 interface ArticleViewerProps {
   title: string;
@@ -12,6 +16,8 @@ interface ArticleViewerProps {
   publishedAt: string | null;
   onComplete: () => void;
   isCompleted: boolean;
+  variant?: "default" | "roomOverlay";
+  contextText?: string | null;
 }
 
 /**
@@ -27,6 +33,8 @@ export function ArticleViewer({
   publishedAt,
   onComplete,
   isCompleted,
+  variant = "default",
+  contextText = null,
 }: ArticleViewerProps) {
   const readTime = wordCount ? Math.ceil(wordCount / 200) : null;
 
@@ -41,6 +49,75 @@ export function ArticleViewer({
   })();
 
   const isShortDescription = !description || description.length < 100;
+  const roomDescription = contextText || description;
+
+  if (variant === "roomOverlay") {
+    return (
+      <RoomStageScaffold
+        eyebrow="Read"
+        title={title}
+        description={roomDescription}
+        footerMeta={[
+          "Read",
+          creatorName ?? sourceName ?? "Source",
+          readTime ? `${readTime} min` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+        primaryAction={
+          <Button
+            variant="cta"
+            size="sm"
+            leftIcon={<CheckCircle size={14} />}
+            onClick={onComplete}
+            disabled={isCompleted}
+          >
+            {isCompleted ? "Completed" : "Mark Complete"}
+          </Button>
+        }
+        contentClassName="max-w-[720px] space-y-4"
+      >
+        <RoomStagePanel className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-white/45">
+            {creatorName ? (
+              <span className="inline-flex items-center gap-1.5">
+                <User size={13} />
+                {creatorName}
+              </span>
+            ) : null}
+            {readTime ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Clock size={13} />
+                {readTime} min read
+              </span>
+            ) : null}
+            {publishedAt ? (
+              <span>
+                {new Date(publishedAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+            ) : null}
+          </div>
+
+          {description ? (
+            <p className="text-sm leading-7 text-white/70 whitespace-pre-line">
+              {description}
+            </p>
+          ) : null}
+
+          {sourceName ? (
+            <div className="flex items-center gap-2 text-xs text-white/45">
+              <BookOpen size={14} />
+              <span>Referenced from {sourceName}</span>
+            </div>
+          ) : null}
+        </RoomStagePanel>
+      </RoomStageScaffold>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 py-8 px-4">

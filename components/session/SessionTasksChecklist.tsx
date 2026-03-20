@@ -43,7 +43,7 @@ export const SessionTasksChecklist = memo(function SessionTasksChecklist({
     <div className="px-4 py-3">
       {/* Section header */}
       <p className="mb-1 text-xs font-semibold text-[var(--sg-shell-500)] uppercase tracking-wider">
-        Goal Tasks
+        Mission Steps
       </p>
 
       {/* Active tasks */}

@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import {
+  RoomStagePanel,
+  RoomStageScaffold,
+  RoomStageSecondaryButton,
+} from "./RoomStageScaffold";
 import type { PathItem, ItemState } from "@/lib/types";
 
 // ─── Types ──────────────────────────────────────────────────
@@ -12,6 +17,7 @@ interface ReflectionViewerProps {
   item: PathItem;
   isCompleted: boolean;
   onComplete: (stateData: Partial<ItemState>) => void;
+  variant?: "default" | "roomOverlay";
 }
 
 interface ReflectionFeedback {
@@ -37,13 +43,20 @@ export function ReflectionViewer({
   item,
   isCompleted,
   onComplete,
+  variant = "default",
 }: ReflectionViewerProps) {
-  const reflection = item.reflection;
-  if (!reflection) return null;
+  const reflection = item.reflection!;
+  const isRoomOverlay = variant === "roomOverlay";
 
   const [response, setResponse] = useState("");
   const [feedback, setFeedback] = useState<ReflectionFeedback | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setResponse("");
+    setFeedback(null);
+    setLoading(false);
+  }, [item.item_id]);
 
   const minLength = reflection.min_length ?? 50;
   const meetsMinLength = response.trim().length >= minLength;
@@ -93,6 +106,90 @@ export function ReflectionViewer({
   const handleSkip = useCallback(() => {
     onComplete({ skipped: true });
   }, [onComplete]);
+
+  if (isRoomOverlay) {
+    if (isCompleted) {
+      return (
+        <RoomStageScaffold
+          eyebrow="Reflect"
+          title={item.title}
+          description={reflection.prompt}
+          footerMeta="Reflect · Completed"
+          contentClassName="max-w-[720px] space-y-4"
+        >
+          <RoomStagePanel className="space-y-2 text-center">
+            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-[var(--sg-forest-300)]">
+              <Check size={14} />
+              Step complete
+            </div>
+            <p className="text-sm leading-6 text-white/55">
+              Your reflection for this step has already been saved.
+            </p>
+          </RoomStagePanel>
+        </RoomStageScaffold>
+      );
+    }
+
+    return (
+      <RoomStageScaffold
+        eyebrow="Reflect"
+        title={item.title}
+        description={reflection.prompt}
+        footerMeta={
+          feedback
+            ? "Reflect · Review complete"
+            : `Reflect · ${minLength}+ characters`
+        }
+        primaryAction={
+          feedback ? (
+            <Button variant="cta" size="sm" onClick={handleComplete}>
+              Continue
+            </Button>
+          ) : (
+            <Button
+              variant="cta"
+              size="sm"
+              onClick={handleSubmit}
+              loading={loading}
+              disabled={!meetsMinLength}
+            >
+              Submit Reflection
+            </Button>
+          )
+        }
+        secondaryAction={
+          feedback ? null : (
+            <RoomStageSecondaryButton onClick={handleSkip}>
+              Skip
+            </RoomStageSecondaryButton>
+          )
+        }
+        contentClassName="max-w-[720px] space-y-4"
+      >
+        {!feedback ? (
+          <>
+            <RoomStagePanel>
+              <textarea
+                value={response}
+                onChange={(e) => setResponse(e.target.value)}
+                placeholder="Take a moment to reflect..."
+                rows={8}
+                className="w-full resize-none bg-transparent text-sm leading-7 text-white placeholder:text-white/25 focus:outline-none"
+              />
+            </RoomStagePanel>
+
+            <div className="text-xs text-white/40">
+              {response.trim().length}/{minLength} characters
+            </div>
+          </>
+        ) : (
+          <RoomStagePanel>
+            <p className="text-sm leading-7 text-white/70">{feedback.feedback}</p>
+          </RoomStagePanel>
+        )}
+      </RoomStageScaffold>
+    );
+  }
 
   if (isCompleted) {
     return (

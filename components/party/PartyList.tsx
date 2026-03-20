@@ -11,7 +11,8 @@ import { EmptyState } from "./EmptyState";
 import { CreatePartyModal } from "./CreatePartyModal";
 import { useActiveBackgrounds } from "@/lib/useActiveBackgrounds";
 import { ChevronDown } from "lucide-react";
-import { getRoomRoute } from "@/lib/appRoutes";
+import { getCanonicalRoomEntryRoute } from "@/lib/appRoutes";
+import type { PartyWithCount } from "@/lib/parties";
 
 type RoomFilter = "all" | "most-active" | "coding" | "writing" | "calm";
 
@@ -51,11 +52,11 @@ export function PartyList() {
     return () => clearInterval(id);
   }, []);
 
-  const handleOpenRoom = (partyId: string) => {
+  const handleOpenRoom = (party: PartyWithCount) => {
     if (!requireAuth()) return;
     // Stop any active preview before navigating
     preview.stopPreview();
-    router.push(getRoomRoute(partyId));
+    router.push(getCanonicalRoomEntryRoute(party));
   };
 
   // Pick the featured room: most participants among persistent rooms
@@ -104,7 +105,7 @@ export function PartyList() {
                 <FeaturedRoom
                   party={featuredRoom}
                   backgrounds={backgrounds}
-                  onClick={() => handleOpenRoom(featuredRoom.id)}
+                  onClick={() => handleOpenRoom(featuredRoom)}
                   isPreviewPlaying={preview.previewingWorldKey === featuredRoom.world_key && (preview.status === "playing" || preview.status === "loading")}
                   previewStatus={preview.status}
                   onTogglePreview={() => preview.togglePreview(featuredRoom.world_key)}
@@ -144,7 +145,7 @@ export function PartyList() {
                       key={party.id}
                       party={party}
                       backgrounds={backgrounds}
-                      onClick={() => handleOpenRoom(party.id)}
+                      onClick={() => handleOpenRoom(party)}
                       isPreviewPlaying={
                         party.persistent &&
                         preview.previewingWorldKey === party.world_key &&

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import Image from "next/image";
 
 interface EnvironmentBackgroundProps {
@@ -15,17 +14,11 @@ export function EnvironmentBackground({
   overlay,
   placeholderGradient,
 }: EnvironmentBackgroundProps) {
-  const [loaded, setLoaded] = useState(false);
-  const handleLoad = useCallback(() => setLoaded(true), []);
-
   return (
     <div className="absolute inset-0 z-0">
       {imageUrl ? (
-        /* Ken Burns animated image — fades in when loaded */
-        <div
-          className="absolute inset-0 animate-env-drift transition-opacity duration-700 ease-out"
-          style={{ opacity: loaded ? 1 : 0 }}
-        >
+        /* Ken Burns animated image */
+        <div className="absolute inset-0 animate-env-drift">
           <Image
             src={imageUrl}
             alt=""
@@ -33,7 +26,6 @@ export function EnvironmentBackground({
             priority
             sizes="100vw"
             className="object-cover"
-            onLoad={handleLoad}
           />
         </div>
       ) : (
@@ -61,17 +53,6 @@ export function EnvironmentBackground({
         }
         .animate-env-drift {
           animation: env-drift 30s ease-in-out infinite;
-        }
-        @keyframes env-fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        .animate-env-fade-in {
-          animation: env-fade-in 0.5s ease-out both;
         }
       `}</style>
     </div>
