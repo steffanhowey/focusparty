@@ -38,11 +38,15 @@ const FLUENCY_BAR_SEGMENTS: {
 interface SkillProfilePageProps {
   showSubtitle?: boolean;
   showAchievementHistory?: boolean;
+  showGapSummary?: boolean;
+  showDomainSections?: boolean;
 }
 
 export function SkillProfilePage({
   showSubtitle = true,
   showAchievementHistory = true,
+  showGapSummary = true,
+  showDomainSections = true,
 }: SkillProfilePageProps) {
   const { domains, summary, gaps, achievements, isLoading, error } = useSkillProfile();
   const { states: marketStates } = useSkillMarketState();
@@ -82,7 +86,7 @@ export function SkillProfilePage({
         </div>
         <div>
           <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
-            Your skill profile starts here
+            Your capability record starts here
           </h2>
           <p className="mt-1 text-sm text-[var(--sg-shell-500)] max-w-sm">
             Complete missions to develop verified AI skills and build a durable capability record.
@@ -116,7 +120,7 @@ export function SkillProfilePage({
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatsCard
-          label="Skills"
+          label="Capabilities"
           value={totalStarted}
           sublabel={`of ${summary.total_skills_available}`}
           icon={<Layers size={18} />}
@@ -181,7 +185,7 @@ export function SkillProfilePage({
       )}
 
       {/* Gap summary */}
-      {gaps && <GapSummary gaps={gaps} />}
+      {showGapSummary && gaps && <GapSummary gaps={gaps} />}
 
       {/* Achievement history */}
       {showAchievementHistory && (
@@ -189,16 +193,18 @@ export function SkillProfilePage({
       )}
 
       {/* Domain sections */}
-      <div className="divide-y divide-[var(--sg-shell-border)]">
-        {domains.map((domain, i) => (
-          <SkillDomainSection
-            key={domain.domain.slug}
-            domain={domain}
-            index={i}
-            marketStates={marketStates}
-          />
-        ))}
-      </div>
+      {showDomainSections && (
+        <div className="divide-y divide-[var(--sg-shell-border)]">
+          {domains.map((domain, i) => (
+            <SkillDomainSection
+              key={domain.domain.slug}
+              domain={domain}
+              index={i}
+              marketStates={marketStates}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

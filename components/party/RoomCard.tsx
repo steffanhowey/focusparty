@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Users, Play, Pause } from "lucide-react";
+import type { ReactNode } from "react";
+import { Users, Play } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { getWorldConfig } from "@/lib/worlds";
 import type { PartyWithCount, SyntheticPresenceInfo } from "@/lib/parties";
@@ -13,6 +14,8 @@ interface RoomCardProps {
   backgrounds?: Map<string, ActiveBackground>;
   onClick?: () => void;
   isJoining?: boolean;
+  tone?: "default" | "dark";
+  badge?: ReactNode;
   /** Whether this room's vibe is currently being previewed */
   isPreviewPlaying?: boolean;
   /** Preview player status (for loading state) */
@@ -25,9 +28,11 @@ interface RoomCardProps {
 function AvatarCluster({
   participants,
   totalCount,
+  overflowTextClassName = "text-shell-500",
 }: {
   participants: SyntheticPresenceInfo[];
   totalCount: number;
+  overflowTextClassName?: string;
 }) {
   if (totalCount === 0) return null;
   const visible = participants.slice(0, 3);
@@ -59,7 +64,7 @@ function AvatarCluster({
         ))}
       </span>
       {overflow > 0 && (
-        <span className="ml-1 text-2xs text-shell-500">
+        <span className={`ml-1 text-2xs ${overflowTextClassName}`}>
           +{overflow}
         </span>
       )}
@@ -89,6 +94,8 @@ export function RoomCard({
   backgrounds,
   onClick,
   isJoining,
+  tone = "default",
+  badge,
   isPreviewPlaying,
   previewStatus,
   onTogglePreview,
@@ -117,6 +124,14 @@ export function RoomCard({
   const s = statusConfig[status];
 
   const isPreviewLoading = previewStatus === "loading" && isPreviewPlaying;
+  const titleTextClassName = tone === "dark" ? "text-white" : "text-shell-900";
+  const bodyTextClassName = tone === "dark" ? "text-white/60" : "text-shell-500";
+  const metaTextClassName = tone === "dark" ? "text-white/65" : "text-shell-600";
+  const overflowTextClassName = tone === "dark" ? "text-white/55" : "text-shell-500";
+  const imageCardShadowClassName =
+    tone === "dark"
+      ? "shadow-none"
+      : "shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)]";
 
   const cardContent = party.persistent ? (
     <div
@@ -126,13 +141,20 @@ export function RoomCard({
     >
       {/* Image card */}
       <div
-        className="group/card relative h-[200px] w-full overflow-hidden rounded-md border shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)]"
+        className={`group/card relative h-[200px] w-full overflow-hidden rounded-md border transition-all duration-200 ${imageCardShadowClassName}`}
         style={{
-          borderColor: isPreviewPlaying
-            ? `${world.accentColor}60`
-            : "var(--sg-shell-border)",
+          borderColor:
+            tone === "dark"
+              ? isPreviewPlaying
+                ? `${world.accentColor}60`
+                : "transparent"
+              : isPreviewPlaying
+                ? `${world.accentColor}60`
+                : "var(--sg-shell-border)",
           boxShadow: isPreviewPlaying
-            ? `0 0 0 1px ${world.accentColor}30, var(--shadow-sm)`
+            ? tone === "dark"
+              ? `0 0 0 1px ${world.accentColor}30`
+              : `0 0 0 1px ${world.accentColor}30, var(--shadow-sm)`
             : undefined,
         }}
       >
@@ -169,6 +191,12 @@ export function RoomCard({
             )}
           </>
         )}
+
+        {badge ? (
+          <div className="absolute left-3 top-3 z-10">
+            {badge}
+          </div>
+        ) : null}
 
         {/* Vibe check overlay — visible on hover (desktop) or always (mobile/touch) */}
         {onTogglePreview && !isJoining && (
@@ -212,16 +240,17 @@ export function RoomCard({
       {/* Text + avatars outside card */}
       <div className="flex items-center gap-2 px-1 pt-2">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-semibold text-shell-900">
+          <h3 className={`truncate text-sm font-semibold ${titleTextClassName}`}>
             {party.name}
           </h3>
-          <p className="mt-0.5 line-clamp-1 text-xs text-shell-500">
+          <p className={`mt-0.5 line-clamp-1 text-xs ${bodyTextClassName}`}>
             {world.description}
           </p>
         </div>
         <AvatarCluster
           participants={party.synthetic_participants}
           totalCount={party.participant_count}
+          overflowTextClassName={overflowTextClassName}
         />
       </div>
     </div>
@@ -247,7 +276,7 @@ export function RoomCard({
 
       <div className="p-4">
         <div className="mb-3 flex items-center justify-end">
-          <span className="flex items-center gap-1.5 text-2xs text-shell-500">
+          <span className={`flex items-center gap-1.5 text-2xs ${bodyTextClassName}`}>
             <span
               className="inline-block h-2 w-2 rounded-full"
               style={{ background: s.dot }}
@@ -256,15 +285,15 @@ export function RoomCard({
           </span>
         </div>
 
-        <h3 className="truncate text-sm font-semibold text-shell-900">
+        <h3 className={`truncate text-sm font-semibold ${titleTextClassName}`}>
           {party.name}
         </h3>
 
-        <p className="mt-0.5 line-clamp-1 text-xs text-shell-500">
+        <p className={`mt-0.5 line-clamp-1 text-xs ${bodyTextClassName}`}>
           {world.description}
         </p>
 
-        <div className="mt-3 flex items-center gap-3 text-xs text-shell-600">
+        <div className={`mt-3 flex items-center gap-3 text-xs ${metaTextClassName}`}>
           <span className="flex items-center gap-1">
             <Users size={12} strokeWidth={1.8} />
             {party.participant_count}/{party.max_participants}

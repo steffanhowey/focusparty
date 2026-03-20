@@ -10,6 +10,7 @@ import { Plus } from "lucide-react";
 import type { GoalRecord, TaskRecord } from "@/lib/types";
 import { GOAL_STATUS_CONFIG } from "@/lib/goalConstants";
 import { GoalBoardCard } from "./GoalBoardCard";
+import { BoardColumnFrame } from "./BoardColumnFrame";
 
 interface GoalColumnProps {
   status: "active" | "in_progress" | "completed";
@@ -61,18 +62,11 @@ export const GoalColumn = memo(function GoalColumn({
   const goalIds = goals.map((g) => g.id);
 
   return (
-    <div className="flex min-w-0 flex-1 basis-0 flex-col rounded-md bg-[var(--sg-shell-100)] p-3">
-      {/* Column header */}
-      <div className="mb-3 flex items-center gap-2">
-        <span className="text-sm font-medium" style={{ color: cfg.color }}>
-          {cfg.label}
-        </span>
-        <span className="text-xs text-[var(--sg-shell-500)]">
-          {goals.length}
-        </span>
-      </div>
-
-      {/* Droppable area */}
+    <BoardColumnFrame
+      label={cfg.label}
+      count={goals.length}
+      labelColor={cfg.color}
+    >
       <div
         ref={setNodeRef}
         className={`flex min-h-[80px] flex-1 flex-col gap-2.5 rounded-lg transition-colors ${
@@ -147,6 +141,6 @@ export const GoalColumn = memo(function GoalColumn({
           </>
         )}
       </div>
-    </div>
+    </BoardColumnFrame>
   );
 });

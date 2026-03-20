@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useSkillProfile } from "@/lib/useSkillProfile";
 import { FluencyBadge } from "@/components/skills/FluencyBadge";
 import { TrendingUp } from "lucide-react";
+import { formatMissionUnit } from "@/lib/missionLanguage";
 import type { SkillFluency } from "@/lib/types/skills";
 
 export function SkillsSnapshot() {
@@ -53,7 +54,7 @@ export function SkillsSnapshot() {
             className="text-shell-500"
           />
           <h3 className="text-xs font-semibold uppercase tracking-wider text-shell-500">
-            Progress Snapshot
+            Capability Snapshot
           </h3>
         </div>
         <Link
@@ -76,7 +77,7 @@ export function SkillsSnapshot() {
             </span>
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-xs text-shell-500">
-                {skill.paths} {skill.paths === 1 ? "path" : "paths"}
+                {formatMissionUnit(skill.paths)}
               </span>
               <FluencyBadge level={skill.fluency} size="sm" />
             </div>
@@ -86,7 +87,7 @@ export function SkillsSnapshot() {
 
       {summary.total_paths_completed > 0 && (
         <div className="mt-3 pt-3 border-t border-shell-200 text-xs text-shell-500">
-          {summary.total_paths_completed} {summary.total_paths_completed === 1 ? "path" : "paths"} completed across {summary.total_skills_started} skills
+          {formatMissionUnit(summary.total_paths_completed)} completed across {summary.total_skills_started} skills
         </div>
       )}
     </section>

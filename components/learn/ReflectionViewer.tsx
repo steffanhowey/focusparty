@@ -17,7 +17,7 @@ interface ReflectionViewerProps {
   item: PathItem;
   isCompleted: boolean;
   onComplete: (stateData: Partial<ItemState>) => void;
-  variant?: "default" | "roomOverlay";
+  variant?: "default" | "roomOverlay" | "missionPage";
 }
 
 interface ReflectionFeedback {
@@ -46,7 +46,8 @@ export function ReflectionViewer({
   variant = "default",
 }: ReflectionViewerProps) {
   const reflection = item.reflection!;
-  const isRoomOverlay = variant === "roomOverlay";
+  const isImmersiveStage = variant === "roomOverlay" || variant === "missionPage";
+  const stageVariant = variant === "missionPage" ? "missionPage" : "default";
 
   const [response, setResponse] = useState("");
   const [feedback, setFeedback] = useState<ReflectionFeedback | null>(null);
@@ -107,10 +108,11 @@ export function ReflectionViewer({
     onComplete({ skipped: true });
   }, [onComplete]);
 
-  if (isRoomOverlay) {
+  if (isImmersiveStage) {
     if (isCompleted) {
       return (
         <RoomStageScaffold
+          variant={stageVariant}
           eyebrow="Reflect"
           title={item.title}
           description={reflection.prompt}
@@ -132,6 +134,7 @@ export function ReflectionViewer({
 
     return (
       <RoomStageScaffold
+        variant={stageVariant}
         eyebrow="Reflect"
         title={item.title}
         description={reflection.prompt}

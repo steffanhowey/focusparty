@@ -23,6 +23,8 @@ import {
 import { useRouter } from "next/navigation";
 import type { SkillRecommendation } from "@/lib/useSkillRecommendations";
 import { getMissionRoute } from "@/lib/appRoutes";
+import { getWhyThisNextLine } from "@/lib/missionLanguage";
+import { getMissionFraming, getMissionRepSummary } from "@/lib/missionPresentation";
 
 // ─── Reason config ──────────────────────────────────────────
 
@@ -103,24 +105,36 @@ function RecommendationCard({
         </span>
       </div>
 
-      {/* Skill + reasoning */}
+      {/* Mission-first heading */}
       <div className="space-y-0.5">
         <h4 className="text-sm font-medium text-shell-900 leading-snug">
-          {rec.skill.name}
+          {topPath.title}
         </h4>
-        <p className="text-xs text-shell-500">
-          {rec.reason_text}
+        <p className="text-xs text-shell-600 line-clamp-2">
+          {getMissionFraming(topPath)}
         </p>
       </div>
 
-      {/* Path title */}
-      <p className="text-xs text-shell-600 truncate">
-        {topPath.title}
+      <p className="text-xs text-shell-500 line-clamp-2">
+        {getWhyThisNextLine(rec.reason_text)}
       </p>
 
       {/* Primary CTA + optional room hint */}
       <div className="flex items-center justify-between pt-1 border-t border-shell-200">
-        <div className="flex items-center gap-1.5">
+        <div className="min-w-0 space-y-1">
+          <p className="text-xs text-shell-500">
+            {getMissionRepSummary(topPath)}
+          </p>
+          {action?.room_name ? (
+            <div className="flex items-center gap-1 text-[10px] text-shell-400">
+              <Users size={9} />
+              <span className="truncate max-w-[120px]">
+                {action.room_name}
+              </span>
+            </div>
+          ) : null}
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
           {isContinue ? (
             <Play size={11} style={{ color: "var(--sg-forest-500)" }} />
           ) : (
@@ -137,14 +151,6 @@ function RecommendationCard({
             {ctaLabel}
           </span>
         </div>
-        {action?.room_name && (
-          <div className="flex items-center gap-1 text-[10px] text-shell-400">
-            <Users size={9} />
-            <span className="truncate max-w-[100px]">
-              {action.room_name}
-            </span>
-          </div>
-        )}
       </div>
     </Card>
   );

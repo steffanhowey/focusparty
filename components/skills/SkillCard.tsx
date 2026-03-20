@@ -12,6 +12,7 @@ import { FluencyBadge } from "./FluencyBadge";
 import type { SkillProfileSkill } from "@/lib/useSkillProfile";
 import type { SkillMarketState } from "@/lib/types/intelligence";
 import { getMissionSearchRoute } from "@/lib/appRoutes";
+import { formatMissionUnit } from "@/lib/missionLanguage";
 
 interface SkillCardProps {
   skill: SkillProfileSkill;
@@ -69,7 +70,7 @@ export function SkillCard({ skill, onNavigate, marketState }: SkillCardProps) {
       <div className="mt-1 flex items-center gap-2">
         {progress.paths_completed > 0 && (
           <span className="text-xs text-[var(--sg-shell-500)]">
-            {progress.paths_completed} path{progress.paths_completed !== 1 ? "s" : ""}
+            {formatMissionUnit(progress.paths_completed)}
           </span>
         )}
         {marketState && marketState.direction !== "stable" && (() => {

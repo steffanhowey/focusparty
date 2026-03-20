@@ -119,6 +119,10 @@ export function HubShell({ children }: { children: ReactNode }) {
   // Single source of truth: clientTab (after first nav click) or pathname (initial server render)
   const effectivePath = resolvedClientTab ?? pathname;
   const title = getTitleForPath(effectivePath);
+  const hideTopChrome =
+    effectivePath === "/home" ||
+    effectivePath === "/rooms" ||
+    effectivePath === "/missions";
 
   const toggleMobileMenu = useCallback(() => {
     setMobileMenuOpen((prev) => !prev);
@@ -188,7 +192,7 @@ export function HubShell({ children }: { children: ReactNode }) {
         className="min-w-0 flex-1 flex flex-col overflow-hidden"
         style={{ background: "var(--sg-white)" }}
       >
-        {effectivePath !== "/rooms" && effectivePath !== "/missions" && (
+        {!hideTopChrome && (
           <div className="shrink-0 px-4 md:px-5 lg:px-6">
             <div className="mx-auto flex h-16 items-center justify-between gap-4" style={{ maxWidth: "var(--sg-max-width)" }}>
               <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -205,18 +209,15 @@ export function HubShell({ children }: { children: ReactNode }) {
                 </span>
               </div>
               {effectivePath !== "/rooms" && (
-                <a
-                  href="/rooms"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleNavClick("/rooms");
-                  }}
+                <button
+                  type="button"
+                  onClick={() => handleNavClick("/rooms")}
                   className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-[var(--sg-radius-btn)] bg-[var(--sg-forest-500)] px-4 text-white sm:px-5"
                   aria-label="Open rooms"
                 >
                   <PanelsTopLeft size={18} strokeWidth={1.8} className="shrink-0" />
                   <span className="hidden text-sm font-semibold sm:inline">Open Rooms</span>
-                </a>
+                </button>
               )}
             </div>
           </div>

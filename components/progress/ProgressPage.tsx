@@ -8,10 +8,11 @@ import { useSkillRecommendations } from "@/lib/useSkillRecommendations";
 import { useSkillProfile } from "@/lib/useSkillProfile";
 import { MissionOutcomeCard } from "@/components/progress/MissionOutcomeCard";
 import { Card } from "@/components/ui/Card";
+import { ProgressMovementSummary } from "@/components/progress/ProgressMovementSummary";
 
 export function ProgressPage() {
   const { recommendations } = useSkillRecommendations();
-  const { achievements, isLoading } = useSkillProfile();
+  const { achievements, gaps, isLoading } = useSkillProfile();
 
   return (
     <div className="space-y-8">
@@ -21,7 +22,22 @@ export function ProgressPage() {
         </p>
       </div>
 
-      <SkillProfilePage showSubtitle={false} showAchievementHistory={false} />
+      <section className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold text-shell-900">
+            Capability Summary
+          </h2>
+          <p className="text-sm text-shell-500">
+            Where you stand right now, based on the missions you have already completed.
+          </p>
+        </div>
+        <SkillProfilePage
+          showSubtitle={false}
+          showAchievementHistory={false}
+          showGapSummary={false}
+          showDomainSections={false}
+        />
+      </section>
 
       <section className="space-y-4">
         <div className="space-y-1">
@@ -52,6 +68,8 @@ export function ProgressPage() {
           </Card>
         )}
       </section>
+
+      <ProgressMovementSummary gaps={gaps} achievements={achievements} />
 
       {recommendations.length > 0 && (
         <SkillRecommendations

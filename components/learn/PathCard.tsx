@@ -3,7 +3,7 @@
 import type { LearningPath, LearningProgress } from "@/lib/types";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { PathCover } from "./PathCover";
+import { PathCardFrame } from "./PathCardFrame";
 
 interface PathCardProps {
   path: LearningPath;
@@ -54,15 +54,24 @@ export function PathCard({
       onClick={() => onClick(path.id)}
       role="button"
     >
-      {/* Image card */}
-      <div
-        className="group/card relative w-full overflow-hidden rounded-md border shadow-sm transition-all duration-200 hover:shadow-md"
-        style={{ borderColor: "var(--sg-shell-border)" }}
-      >
-        <PathCover path={path} height="h-[200px]" />
-
-        {onToggleSave && (
-          <div className="absolute right-3 top-3 z-10">
+      <PathCardFrame
+        path={path}
+        badge={(
+          <span
+            className="inline-flex items-center rounded-full px-2.5 py-1 text-2xs font-semibold backdrop-blur-md"
+            style={{
+              background:
+                "color-mix(in srgb, var(--sg-shell-900) 52%, transparent)",
+              color:
+                DIFFICULTY_CONFIG[path.difficulty_level]?.color ??
+                "var(--sg-teal-500)",
+            }}
+          >
+            {DIFFICULTY_CONFIG[path.difficulty_level]?.label ?? path.difficulty_level}
+          </span>
+        )}
+        topRight={
+          onToggleSave ? (
             <Button
               variant="ghost"
               size="xs"
@@ -71,7 +80,8 @@ export function PathCard({
                 isSaved ? "opacity-100" : "opacity-0 group-hover/card:opacity-100"
               }`}
               style={{
-                background: "rgba(15,35,24,0.58)",
+                background:
+                  "color-mix(in srgb, var(--sg-forest-900) 58%, transparent)",
                 color: "var(--sg-white)",
               }}
               leftIcon={
@@ -88,35 +98,22 @@ export function PathCard({
             >
               {null}
             </Button>
-          </div>
-        )}
-
-        {/* Difficulty badge — matches FeaturedRoom overlay badge pattern */}
-        <span
-          className="absolute top-3 left-3 rounded-full px-2.5 py-1 text-2xs font-semibold backdrop-blur-md"
-          style={{
-            background: "rgba(0,0,0,0.5)",
-            color:
-              DIFFICULTY_CONFIG[path.difficulty_level]?.color ??
-              "var(--sg-teal-500)",
-          }}
-        >
-          {DIFFICULTY_CONFIG[path.difficulty_level]?.label ?? path.difficulty_level}
-        </span>
-
-        {/* Progress bar overlay at bottom */}
-        {percentComplete !== null && percentComplete > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-10">
-            <div
-              className="h-full transition-all"
-              style={{
-                width: `${percentComplete}%`,
-                background: "var(--sg-forest-500)",
-              }}
-            />
-          </div>
-        )}
-      </div>
+          ) : null
+        }
+        bottomOverlay={
+          percentComplete !== null && percentComplete > 0 ? (
+            <div className="absolute bottom-0 left-0 right-0 z-10 h-1 bg-white/10">
+              <div
+                className="h-full transition-all"
+                style={{
+                  width: `${percentComplete}%`,
+                  background: "var(--sg-forest-500)",
+                }}
+              />
+            </div>
+          ) : null
+        }
+      />
 
       {/* Title + meta below card */}
       <div className="flex items-center gap-2 px-1 pt-2">

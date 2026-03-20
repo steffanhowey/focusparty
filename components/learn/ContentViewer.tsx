@@ -8,7 +8,10 @@ import { MissionViewer } from "./MissionViewer";
 import { QuickCheckViewer } from "./QuickCheckViewer";
 import { ReflectionViewer } from "./ReflectionViewer";
 import { Button } from "@/components/ui/Button";
-import { RoomStageFooter } from "./RoomStageScaffold";
+import {
+  RoomStageFooter,
+  RoomStageScaffold,
+} from "./RoomStageScaffold";
 import type { PathItem, ItemState } from "@/lib/types";
 
 interface ContentViewerProps {
@@ -16,7 +19,7 @@ interface ContentViewerProps {
   isCompleted: boolean;
   onComplete: () => void;
   onCompleteWithState: (stateData: Partial<ItemState>) => void;
-  variant?: "default" | "roomOverlay";
+  variant?: "default" | "roomOverlay" | "missionPage";
   onPlayStateChange?: (playing: boolean) => void;
   togglePlayRef?: React.MutableRefObject<(() => void) | null>;
 }
@@ -42,6 +45,7 @@ export function ContentViewer({
   togglePlayRef,
 }: ContentViewerProps) {
   const taskType = item.task_type ?? "watch";
+  const isImmersiveStage = variant === "roomOverlay" || variant === "missionPage";
 
   // ── Do tasks → MissionViewer ──
   if (taskType === "do" && item.mission) {
@@ -81,15 +85,54 @@ export function ContentViewer({
 
   // ── Watch tasks (default) — route by content_type ──
   if (item.content_type === "video" && item.source_url) {
-    if (variant === "roomOverlay") {
-      const footerMeta = [
-        "Watch",
-        item.creator_name ?? "Video",
-        formatDuration(item.duration_seconds),
-      ]
-        .filter(Boolean)
-        .join(" · ");
+    const footerMeta = [
+      "Watch",
+      item.creator_name ?? "Video",
+      formatDuration(item.duration_seconds),
+    ]
+      .filter(Boolean)
+      .join(" · ");
 
+    if (variant === "missionPage") {
+      return (
+        <RoomStageScaffold
+          variant="missionPage"
+          eyebrow="Watch"
+          title={item.title}
+          description={item.connective_text}
+          footerMeta={footerMeta}
+          primaryAction={
+            <Button
+              variant="cta"
+              size="sm"
+              leftIcon={<CheckCircle size={14} />}
+              onClick={onComplete}
+              disabled={isCompleted}
+            >
+              {isCompleted ? "Completed" : "Mark Complete"}
+            </Button>
+          }
+          contentClassName="max-w-[960px] space-y-4"
+        >
+          <div className="overflow-hidden rounded-[var(--sg-radius-lg)] border border-white/[0.08] bg-black">
+            <LearnVideoPlayer
+              sourceUrl={item.source_url}
+              title={item.title}
+              onComplete={onComplete}
+              isCompleted={isCompleted}
+              immersive
+              immersiveLayout="aspect"
+              onPlayStateChange={onPlayStateChange}
+              togglePlayRef={togglePlayRef}
+              clipStartSeconds={item.clip_start_seconds}
+              clipEndSeconds={item.clip_end_seconds}
+            />
+          </div>
+        </RoomStageScaffold>
+      );
+    }
+
+    if (variant === "roomOverlay") {
       return (
         <div className="h-full w-full">
           <LearnVideoPlayer
@@ -151,7 +194,7 @@ export function ContentViewer({
       publishedAt={null}
       onComplete={onComplete}
       isCompleted={isCompleted}
-      variant={variant}
+      variant={isImmersiveStage ? variant : "default"}
       contextText={item.connective_text}
     />
   );

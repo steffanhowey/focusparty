@@ -16,7 +16,7 @@ interface ArticleViewerProps {
   publishedAt: string | null;
   onComplete: () => void;
   isCompleted: boolean;
-  variant?: "default" | "roomOverlay";
+  variant?: "default" | "roomOverlay" | "missionPage";
   contextText?: string | null;
 }
 
@@ -50,10 +50,12 @@ export function ArticleViewer({
 
   const isShortDescription = !description || description.length < 100;
   const roomDescription = contextText || description;
+  const stageVariant = variant === "missionPage" ? "missionPage" : "default";
 
-  if (variant === "roomOverlay") {
+  if (variant === "roomOverlay" || variant === "missionPage") {
     return (
       <RoomStageScaffold
+        variant={stageVariant}
         eyebrow="Read"
         title={title}
         description={roomDescription}

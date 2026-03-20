@@ -19,6 +19,7 @@ interface RoomStageScaffoldProps {
   primaryAction?: ReactNode;
   secondaryAction?: ReactNode;
   contentClassName?: string;
+  variant?: "default" | "missionPage";
 }
 
 interface RoomStagePanelProps {
@@ -65,11 +66,24 @@ export function RoomStageScaffold({
   primaryAction,
   secondaryAction,
   contentClassName = "max-w-[680px] space-y-5",
+  variant = "default",
 }: RoomStageScaffoldProps) {
+  const rootBackground =
+    variant === "missionPage"
+      ? "color-mix(in srgb, var(--sg-forest-900) 90%, transparent)"
+      : undefined;
+  const rootShadow =
+    variant === "missionPage"
+      ? "var(--sg-shadow-dark-md)"
+      : "var(--sg-shadow-dark-sm)";
+
   return (
     <div
       className="flex h-full w-full flex-col overflow-hidden rounded-[var(--sg-radius-xl)] border border-white/[0.08] bg-white/[0.04]"
-      style={{ boxShadow: "var(--sg-shadow-dark-sm)" }}
+      style={{
+        boxShadow: rootShadow,
+        background: rootBackground,
+      }}
     >
       <div className="border-b border-white/[0.06] px-6 py-5 md:px-8">
         <div className="flex items-start justify-between gap-4">

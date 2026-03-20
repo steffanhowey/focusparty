@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useState,
   useEffect,
   useRef,
   useCallback,
@@ -16,16 +15,20 @@ interface ModalProps {
   onClose: () => void;
   title?: string;
   children: ReactNode;
+  panelClassName?: string;
+  variant?: "default" | "immersive";
 }
 
-export function Modal({ isOpen, onClose, title, children }: ModalProps) {
-  const [mounted, setMounted] = useState(false);
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  panelClassName = "",
+  variant = "default",
+}: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const previousActive = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
@@ -44,18 +47,44 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     };
   }, [isOpen]);
 
-  useFocusTrap(overlayRef, isOpen && mounted);
+  useFocusTrap(overlayRef, isOpen);
 
   useEffect(() => {
-    if (!isOpen || !mounted) return;
+    if (!isOpen) return;
     const focusable = overlayRef.current?.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
     const first = focusable?.[0];
     first?.focus();
-  }, [isOpen, mounted]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const overlayClassName =
+    variant === "immersive"
+      ? "absolute inset-0 bg-black/50 backdrop-blur-[10px]"
+      : "absolute inset-0 bg-shell-900/40 backdrop-blur-[8px]";
+  const containerClassName =
+    variant === "immersive"
+      ? "relative max-h-[90vh] w-full max-w-[480px] overflow-auto rounded-[var(--sg-radius-xl)] border border-white/[0.08] p-8"
+      : "relative max-h-[90vh] w-full max-w-[480px] overflow-auto rounded-[var(--sg-radius-lg)] border border-shell-border bg-white p-8 shadow-xl";
+  const containerStyle =
+    variant === "immersive"
+      ? {
+          background: "color-mix(in srgb, var(--sg-forest-900) 88%, transparent)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          boxShadow: "var(--sg-shadow-dark-lg)",
+        }
+      : undefined;
+  const titleClassName =
+    variant === "immersive"
+      ? "mb-4 text-xl font-bold text-white"
+      : "mb-4 text-xl font-bold text-shell-900";
+  const closeButtonClassName =
+    variant === "immersive"
+      ? "absolute right-2 top-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-white/55 transition-colors hover:bg-white/10 hover:text-white"
+      : "absolute right-2 top-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-shell-500 hover:text-shell-900";
 
   const content = (
     <div
@@ -68,18 +97,19 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       onKeyDown={handleKeyDown}
     >
       <div
-        className="absolute inset-0 bg-shell-900/40 backdrop-blur-[8px]"
+        className={overlayClassName}
         aria-hidden
         onClick={onClose}
       />
       <div
-        className="relative max-h-[90vh] w-full max-w-[480px] overflow-auto rounded-[var(--sg-radius-lg)] border border-shell-border bg-white p-8 shadow-xl"
+        className={`${containerClassName} ${panelClassName}`}
+        style={containerStyle}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
           <h2
             id="modal-title"
-            className="mb-4 text-xl font-bold text-shell-900"
+            className={titleClassName}
           >
             {title}
           </h2>
@@ -88,7 +118,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-2 top-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-shell-500 hover:text-shell-900"
+          className={closeButtonClassName}
           aria-label="Close"
         >
           <span className="text-xl leading-none">&times;</span>
@@ -97,7 +127,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     </div>
   );
 
-  return mounted && typeof document !== "undefined"
+  return typeof document !== "undefined"
     ? createPortal(content, document.body)
     : null;
 }

@@ -17,11 +17,8 @@ import { SkillRecommendations } from "./SkillRecommendations";
 import { SkillsSnapshot } from "./SkillsSnapshot";
 import { WeeklyDigestCard } from "./WeeklyDigestCard";
 import { ContinueLearning } from "./ContinueLearning";
-import { MyQueueBoard } from "@/components/missions/MyQueueBoard";
 import type { LearningPath, LearningProgress } from "@/lib/types";
 import { getMissionRoute } from "@/lib/appRoutes";
-import { useGoals } from "@/lib/useGoals";
-import { useSkillProfile } from "@/lib/useSkillProfile";
 
 // Popular topics shown as quick-search triggers in the hero
 const POPULAR_TOPICS = [
@@ -243,8 +240,6 @@ export function LearnPage() {
   const generation = usePathGeneration();
   const { recommendations } = useSkillRecommendations();
   const { trending } = useSkillMarketState();
-  const { goals, createGoal, updateGoal, archiveGoal } = useGoals();
-  const { achievements } = useSkillProfile();
 
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState<SortOption>("recommended");
@@ -277,16 +272,6 @@ export function LearnPage() {
     }
     return map;
   }, [inProgressPaths]);
-
-  const savedPathIds = useMemo(
-    () =>
-      new Set(
-        goals
-          .filter((goal) => goal.linked_path_id && goal.status !== "archived")
-          .map((goal) => goal.linked_path_id as string),
-      ),
-    [goals],
-  );
 
   // Merge in-progress paths into the grid (deduplicated, in-progress first)
   const allPaths = useMemo(() => {
@@ -384,32 +369,6 @@ export function LearnPage() {
     setIsDropdownOpen(false);
   }, []);
 
-  const handleToggleSave = useCallback(
-    async (path: LearningPath) => {
-      const existingGoal = goals.find((goal) => goal.linked_path_id === path.id);
-
-      if (existingGoal && existingGoal.status !== "archived") {
-        await archiveGoal(existingGoal.id);
-        return;
-      }
-
-      if (existingGoal) {
-        await updateGoal(existingGoal.id, {
-          status: "active",
-          title: path.title,
-          linked_path_id: path.id,
-        });
-        return;
-      }
-
-      await createGoal({
-        title: path.title,
-        linked_path_id: path.id,
-      });
-    },
-    [archiveGoal, createGoal, goals, updateGoal],
-  );
-
   const handleInputFocus = useCallback(() => {
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     if (query.trim()) setIsDropdownOpen(true);
@@ -504,7 +463,7 @@ export function LearnPage() {
               className="text-xs text-white/80 md:text-base"
               style={{ textShadow: "0 1px 8px rgba(0,0,0,0.7), 0 1px 2px rgba(0,0,0,0.5)" }}
             >
-              Start a guided mission, save it to your queue, and bring it into a room when you want shared momentum.
+              Start a guided mission and bring it into a room when you want shared momentum.
             </p>
           </div>
 
@@ -545,8 +504,6 @@ export function LearnPage() {
                 onSelectPath={handleSelectPath}
                 onStartGeneration={handleStartGeneration}
                 onClose={handleCloseDropdown}
-                savedPathIds={savedPathIds}
-                onToggleSave={handleToggleSave}
               />
             )}
           </div>
@@ -575,14 +532,6 @@ export function LearnPage() {
           title="Active Missions"
           linkHref="/progress"
           linkLabel="Open progress"
-        />
-      )}
-
-      {!query && (
-        <MyQueueBoard
-          availablePaths={allPaths}
-          activeMissions={inProgressPaths}
-          completedEvidence={achievements}
         />
       )}
 
@@ -714,8 +663,6 @@ export function LearnPage() {
               progress={progressMap.get(path.id) ?? null}
               onClick={handleCardClick}
               onSkillClick={handleSkillClick}
-              isSaved={savedPathIds.has(path.id)}
-              onToggleSave={handleToggleSave}
             />
           ))}
         </div>

@@ -105,8 +105,8 @@ export function getMissionRepSummary(path: LearningPath): string {
   const effort = formatMissionDuration(path.estimated_duration_seconds);
 
   if (repCount === 0) return effort;
-  if (repCount === 1) return `${effort} · 1 work rep`;
-  return `${effort} · ${repCount} work reps`;
+  if (repCount === 1) return `${effort} · 1 step`;
+  return `${effort} · ${repCount} steps`;
 }
 
 /**

@@ -8,7 +8,7 @@ import {
   useMemo,
 } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Target } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { JoinRoomHeader } from "./JoinRoomHeader";
@@ -26,6 +26,11 @@ import { useFocusTrap } from "@/lib/useFocusTrap";
 import type { ActiveBackground } from "@/lib/roomBackgrounds";
 import { getMissionPrimaryArea, getMissionProgressSummary } from "@/lib/missionPresentation";
 import { useActiveMissions } from "@/lib/useActiveMissions";
+import {
+  clearMissionRoomHandoff,
+  readMissionRoomHandoff,
+  type MissionRoomHandoff,
+} from "@/lib/missionRoomHandoff";
 
 interface JoinRoomModalProps {
   partyId: string;
@@ -50,6 +55,30 @@ export interface JoinConfig {
   musicAutoPlay: boolean;
 }
 
+function readMissionRoomHandoffFromSearchParams(
+  searchParams:
+    | {
+        get(name: string): string | null;
+      }
+    | null
+): MissionRoomHandoff | null {
+  if (!searchParams) return null;
+
+  const missionId = searchParams.get("missionId");
+  const missionTitle = searchParams.get("missionTitle");
+  const missionDomain = searchParams.get("missionDomain");
+
+  if (!missionId && !missionTitle && !missionDomain) {
+    return null;
+  }
+
+  return {
+    missionId,
+    missionTitle,
+    missionDomain,
+  };
+}
+
 export function JoinRoomModal({
   partyId,
   isOpen,
@@ -61,11 +90,13 @@ export function JoinRoomModal({
   presence: externalPresence,
 }: JoinRoomModalProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { userId, displayName, username } = useCurrentUser();
-  const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const previousActive = useRef<HTMLElement | null>(null);
-  useFocusTrap(overlayRef, isOpen && mounted);
+  const initializedOpenRef = useRef(false);
+  useFocusTrap(overlayRef, isOpen);
 
   // ─── Party data ──────────────────────────────────────────
   const [fetchedParty, setFetchedParty] = useState<Party | null>(null);
@@ -131,23 +162,50 @@ export function JoinRoomModal({
 
   // ─── Form state ────────────────────────────────────────────
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
+  const [prefilledMission, setPrefilledMission] = useState<MissionRoomHandoff | null>(null);
   const [freshDuration, setFreshDuration] = useState(25);
   const [isJoining, setIsJoining] = useState(false);
   const [showMissionPicker, setShowMissionPicker] = useState(false);
   const [formStep, setFormStep] = useState<1 | 2>(1);
   const commitmentType: CommitmentType = "personal";
+  const searchMissionHandoff = useMemo(
+    () => readMissionRoomHandoffFromSearchParams(searchParams),
+    [searchParams],
+  );
 
   // Reset form state when modal opens
   useEffect(() => {
-    if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedMissionId(null);
-      setFreshDuration(25);
-      setIsJoining(false);
-      setShowMissionPicker(false);
-      setFormStep(1);
+    if (!isOpen) {
+      initializedOpenRef.current = false;
+      return;
     }
-  }, [isOpen]);
+
+    if (initializedOpenRef.current) return;
+    initializedOpenRef.current = true;
+
+    const missionHandoff = searchMissionHandoff ?? readMissionRoomHandoff();
+    clearMissionRoomHandoff();
+
+    if (searchMissionHandoff && pathname) {
+      const nextParams = new URLSearchParams(searchParams.toString());
+      nextParams.delete("missionId");
+      nextParams.delete("missionTitle");
+      nextParams.delete("missionDomain");
+      const nextQuery = nextParams.toString();
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+        scroll: false,
+      });
+    }
+
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setPrefilledMission(missionHandoff);
+    setSelectedMissionId(missionHandoff?.missionId ?? null);
+    setFreshDuration(25);
+    setIsJoining(false);
+    setShowMissionPicker(false);
+    setFormStep(1);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [isOpen, pathname, router, searchMissionHandoff, searchParams]);
 
   const selectedMission = useMemo(
     () => activeMissions.find((mission) => mission.path.id === selectedMissionId) ?? null,
@@ -159,6 +217,12 @@ export function JoinRoomModal({
   const selectedMissionSummary = selectedMission
     ? getMissionProgressSummary(selectedMission.progress)
     : null;
+  const resolvedMissionId =
+    selectedMission?.path.id ?? selectedMissionId ?? prefilledMission?.missionId ?? null;
+  const resolvedMissionTitle =
+    selectedMission?.path.title ?? prefilledMission?.missionTitle ?? null;
+  const resolvedMissionDomain =
+    selectedMissionDomain ?? prefilledMission?.missionDomain ?? null;
 
   // ─── Computed sprint info ─────────────────────────────────
   const durationSec = freshDuration * 60;
@@ -168,11 +232,13 @@ export function JoinRoomModal({
   // ─── Handlers ──────────────────────────────────────────────
   const handleMissionSelect = useCallback((missionId: string) => {
     setSelectedMissionId(missionId);
+    setPrefilledMission(null);
     setShowMissionPicker(false);
   }, []);
 
   const handleContinueWithoutMission = useCallback(() => {
     setSelectedMissionId(null);
+    setPrefilledMission(null);
     setShowMissionPicker(false);
   }, []);
 
@@ -184,9 +250,9 @@ export function JoinRoomModal({
       await joinParty(partyId, userId, displayName);
 
       const config: JoinConfig = {
-        missionId: selectedMission?.path.id ?? null,
-        missionTitle: selectedMission?.path.title ?? null,
-        missionDomain: selectedMissionDomain,
+        missionId: resolvedMissionId,
+        missionTitle: resolvedMissionTitle,
+        missionDomain: resolvedMissionDomain,
         durationSec,
         autoStart: true,
         commitmentType,
@@ -209,8 +275,9 @@ export function JoinRoomModal({
     isJoining,
     partyId,
     displayName,
-    selectedMission,
-    selectedMissionDomain,
+    resolvedMissionDomain,
+    resolvedMissionId,
+    resolvedMissionTitle,
     durationSec,
     commitmentType,
     onJoin,
@@ -219,12 +286,6 @@ export function JoinRoomModal({
   ]);
 
   // ─── Modal plumbing ────────────────────────────────────────
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
-
-
   useEffect(() => {
     if (!isOpen) return;
     previousActive.current = document.activeElement as HTMLElement | null;
@@ -235,7 +296,7 @@ export function JoinRoomModal({
     };
   }, [isOpen]);
 
-  if (!isOpen || !mounted || typeof document === "undefined") return null;
+  if (!isOpen || typeof document === "undefined") return null;
 
   const content = (
     <div
@@ -310,10 +371,10 @@ export function JoinRoomModal({
                       }}
                     >
                       <span
-                        className={`min-w-0 flex-1 truncate ${selectedMission ? "text-white" : "text-white/35"}`}
+                        className={`min-w-0 flex-1 truncate ${resolvedMissionTitle ? "text-white" : "text-white/35"}`}
                       >
-                        {selectedMission
-                          ? selectedMission.path.title
+                        {resolvedMissionTitle
+                          ? resolvedMissionTitle
                           : "Select an active mission (optional)"}
                       </span>
                     </button>
@@ -349,7 +410,7 @@ export function JoinRoomModal({
                         ) : (
                           <MissionSelectionPicker
                             missions={activeMissions}
-                            selectedMissionId={selectedMissionId}
+                            selectedMissionId={resolvedMissionId}
                             accentColor={world.accentColor}
                             onSelectMission={(mission) => handleMissionSelect(mission.path.id)}
                             onSelectNone={handleContinueWithoutMission}
@@ -359,10 +420,10 @@ export function JoinRoomModal({
                     )}
                   </div>
 
-                  {selectedMission && (
+                  {(resolvedMissionDomain || selectedMissionSummary) && (
                     <p className="mt-2 text-2xs text-white/35">
-                      {selectedMissionArea?.detail ?? selectedMissionArea?.label}
-                      {" · "}
+                      {resolvedMissionDomain}
+                      {resolvedMissionDomain && selectedMissionSummary ? " · " : null}
                       {selectedMissionSummary}
                     </p>
                   )}

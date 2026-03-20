@@ -23,7 +23,7 @@ interface MissionViewerProps {
   item: PathItem;
   isCompleted: boolean;
   onComplete: (stateData: Partial<ItemState>) => void;
-  variant?: "default" | "roomOverlay";
+  variant?: "default" | "roomOverlay" | "missionPage";
 }
 
 type MissionPhase = "briefing" | "working" | "submission" | "feedback";
@@ -68,7 +68,8 @@ export function MissionViewer({
   variant = "default",
 }: MissionViewerProps) {
   const mission = item.mission!;
-  const isRoomOverlay = variant === "roomOverlay";
+  const isImmersiveStage = variant === "roomOverlay" || variant === "missionPage";
+  const stageVariant = variant === "missionPage" ? "missionPage" : "default";
 
   const [phase, setPhase] = useState<MissionPhase>("briefing");
   const [submission, setSubmission] = useState("");
@@ -179,10 +180,11 @@ export function MissionViewer({
     onComplete({ skipped: true });
   }, [onComplete]);
 
-  if (isRoomOverlay) {
+  if (isImmersiveStage) {
     if (isCompleted) {
       return (
         <RoomStageScaffold
+          variant={stageVariant}
           eyebrow="Build"
           title={item.title}
           description={roomDescription}
@@ -259,7 +261,7 @@ export function MissionViewer({
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
               Prompt
             </p>
-            <CodeBlock code={mission.tool_prompt} variant="roomOverlay" />
+            <CodeBlock code={mission.tool_prompt} variant={variant} />
           </RoomStagePanel>
 
           {mission.starter_code ? (
@@ -267,7 +269,7 @@ export function MissionViewer({
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
                 Starter code
               </p>
-              <CodeBlock code={mission.starter_code} variant="roomOverlay" />
+              <CodeBlock code={mission.starter_code} variant={variant} />
             </RoomStagePanel>
           ) : null}
 
@@ -323,7 +325,7 @@ export function MissionViewer({
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">
               Prompt
             </p>
-            <CodeBlock code={mission.tool_prompt} variant="roomOverlay" />
+            <CodeBlock code={mission.tool_prompt} variant={variant} />
           </RoomStagePanel>
 
           {mission.success_criteria.length > 0 ? (
@@ -448,6 +450,7 @@ export function MissionViewer({
 
     return (
       <RoomStageScaffold
+        variant={stageVariant}
         eyebrow="Build"
         title={item.title}
         description={roomDescription}
@@ -759,7 +762,7 @@ function CodeBlock({
   variant = "default",
 }: {
   code: string;
-  variant?: "default" | "roomOverlay";
+  variant?: "default" | "roomOverlay" | "missionPage";
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -774,16 +777,16 @@ function CodeBlock({
       className="relative rounded-lg overflow-hidden"
       style={{
         background:
-          variant === "roomOverlay" ? "rgba(0,0,0,0.2)" : "var(--sg-shell-50)",
+          variant !== "default" ? "rgba(0,0,0,0.2)" : "var(--sg-shell-50)",
         border:
-          variant === "roomOverlay"
+          variant !== "default"
             ? "1px solid rgba(255,255,255,0.08)"
             : "1px solid var(--sg-shell-border)",
       }}
     >
       <pre
         className={`overflow-x-auto p-3 text-xs leading-relaxed font-mono ${
-          variant === "roomOverlay" ? "text-white/75" : "text-shell-600"
+          variant !== "default" ? "text-white/75" : "text-shell-600"
         }`}
       >
         {code}
@@ -791,7 +794,7 @@ function CodeBlock({
       <button
         onClick={handleCopy}
         className={`absolute top-2 right-2 rounded p-1.5 transition-colors ${
-          variant === "roomOverlay"
+          variant !== "default"
             ? "hover:bg-white/[0.08]"
             : "hover:bg-shell-200"
         }`}

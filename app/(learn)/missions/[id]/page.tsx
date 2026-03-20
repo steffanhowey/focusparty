@@ -7,5 +7,5 @@ export default async function MissionPage({
 }) {
   const { id } = await params;
 
-  return <MissionDetailPage pathId={id} />;
+  return <MissionDetailPage key={id} pathId={id} />;
 }

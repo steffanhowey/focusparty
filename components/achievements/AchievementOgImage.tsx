@@ -131,7 +131,7 @@ export function AchievementOgImage({ data }: AchievementOgImageProps) {
                   color: SHELL_700,
                 }}
               >
-                {`${user_name} completed this SkillGap path in ${formatAchievementDuration(
+                {`${user_name} completed this SkillGap mission in ${formatAchievementDuration(
                   achievement.time_invested_seconds,
                 )}.`}
               </div>

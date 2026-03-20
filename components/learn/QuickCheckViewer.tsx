@@ -17,7 +17,7 @@ interface QuickCheckViewerProps {
   item: PathItem;
   isCompleted: boolean;
   onComplete: (stateData: Partial<ItemState>) => void;
-  variant?: "default" | "roomOverlay";
+  variant?: "default" | "roomOverlay" | "missionPage";
 }
 
 interface CheckFeedback {
@@ -47,7 +47,8 @@ export function QuickCheckViewer({
   variant = "default",
 }: QuickCheckViewerProps) {
   const check = item.check!;
-  const isRoomOverlay = variant === "roomOverlay";
+  const isImmersiveStage = variant === "roomOverlay" || variant === "missionPage";
+  const stageVariant = variant === "missionPage" ? "missionPage" : "default";
 
   const [selected, setSelected] = useState<string>("");
   const [freeText, setFreeText] = useState("");
@@ -125,10 +126,11 @@ export function QuickCheckViewer({
     onComplete({ skipped: true });
   }, [onComplete]);
 
-  if (isRoomOverlay) {
+  if (isImmersiveStage) {
     if (isCompleted) {
       return (
         <RoomStageScaffold
+          variant={stageVariant}
           eyebrow="Check"
           title={item.title}
           description={check.question}
@@ -150,6 +152,7 @@ export function QuickCheckViewer({
 
     return (
       <RoomStageScaffold
+        variant={stageVariant}
         eyebrow="Check"
         title={item.title}
         description={check.question}
