@@ -23,7 +23,7 @@ import { useRoomSprint } from "@/lib/useRoomSprint";
 import { getParty, joinParty, getSyntheticParticipants, type Party, type SyntheticPresenceInfo } from "@/lib/parties";
 import {
   getPartyLaunchDisplayName,
-  getPartyLaunchShortDescription,
+  getPartyLaunchLobbyFraming,
 } from "@/lib/launchRooms";
 import { getPartyRuntimeWorldKey, getWorldConfig } from "@/lib/worlds";
 import { useFocusTrap } from "@/lib/useFocusTrap";
@@ -46,6 +46,52 @@ interface JoinRoomModalProps {
   onJoin?: (config: JoinConfig) => void;
   /** Presence from the parent environment page — avoids duplicate channel. */
   presence?: { participants: import("@/lib/types").PresencePayload[]; count: number };
+}
+
+function JoinRoomModalSkeleton() {
+  return (
+    <>
+      <div className="flex gap-4 p-6 pb-0" aria-hidden="true">
+        <div className="h-[110px] w-[150px] shrink-0 animate-pulse rounded-md bg-white/[0.08]" />
+
+        <div className="min-w-0 flex-1 py-0.5">
+          <div className="h-6 w-40 animate-pulse rounded bg-white/[0.12]" />
+
+          <div className="mt-2 space-y-2">
+            <div className="h-3 w-full max-w-[16rem] animate-pulse rounded bg-white/[0.08]" />
+            <div className="h-3 w-full max-w-[13rem] animate-pulse rounded bg-white/[0.06]" />
+            <div className="h-3 w-full max-w-[10rem] animate-pulse rounded bg-white/[0.06]" />
+          </div>
+
+          <div className="mt-3 flex items-center gap-2">
+            <div className="h-3 w-14 animate-pulse rounded bg-white/[0.08]" />
+            <div className="h-3 w-10 animate-pulse rounded bg-white/[0.06]" />
+          </div>
+
+          <div className="mt-3 flex items-center gap-1.5">
+            {Array.from({ length: 4 }, (_, index) => (
+              <div
+                key={index}
+                className="h-[26px] w-[26px] animate-pulse rounded-full bg-white/[0.08]"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-5 mt-4 border-t border-white/[0.06]" />
+
+      <div className="relative" style={{ height: 168 }} aria-hidden="true">
+        <div className="px-5 pt-4">
+          <div className="mb-2 h-4 w-44 animate-pulse rounded bg-white/[0.10]" />
+          <div className="h-10 w-full animate-pulse rounded-full bg-white/[0.08]" />
+          <div className="mt-3 h-3 w-32 animate-pulse rounded bg-white/[0.06]" />
+        </div>
+
+        <div className="absolute bottom-5 right-5 h-9 w-24 animate-pulse rounded-[var(--sg-radius-btn)] bg-white/[0.10]" />
+      </div>
+    </>
+  );
 }
 
 /** Config stored in sessionStorage for the environment page to read. */
@@ -140,7 +186,7 @@ export function JoinRoomModal({
   const aiBg = backgrounds?.get(runtimeWorldKey);
   const coverSrc = aiBg?.thumbUrl ?? null;
   const roomName = getPartyLaunchDisplayName(party);
-  const roomDescription = getPartyLaunchShortDescription(party);
+  const roomFraming = getPartyLaunchLobbyFraming(party);
 
   // ─── Presence + activity ─────────────────────────────────
   // Use parent's presence when available to avoid a duplicate channel
@@ -317,6 +363,9 @@ export function JoinRoomModal({
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-shell-900/40 backdrop-blur-[4px]"
+        style={{
+          animation: "fp-room-entry-backdrop 180ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        }}
         aria-hidden
       />
 
@@ -329,19 +378,18 @@ export function JoinRoomModal({
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
           boxShadow: "var(--shadow-xl)",
+          animation: "fp-room-entry-panel 220ms cubic-bezier(0.16, 1, 0.3, 1) both",
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {partyLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-          </div>
+          <JoinRoomModalSkeleton />
         ) : (
           <>
             <JoinRoomHeader
               world={world}
               roomName={roomName}
-              roomDescription={roomDescription}
+              roomFraming={roomFraming}
               coverSrc={coverSrc}
               focusingCount={roomSprint.focusingCount}
               hasActiveSprint={roomSprint.hasActiveSprint}
@@ -493,6 +541,28 @@ export function JoinRoomModal({
           </>
         )}
       </div>
+
+      <style jsx global>{`
+        @keyframes fp-room-entry-backdrop {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes fp-room-entry-panel {
+          from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.985);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 

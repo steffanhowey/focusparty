@@ -1,10 +1,13 @@
-import { getMissionPrimaryArea } from "@/lib/missionPresentation";
+import {
+  getLaunchRoomPreferenceOrder,
+  getMissionLaunchDomain,
+} from "@/lib/launchTaxonomy";
 import type { PartyWithCount } from "@/lib/parties";
 import type { LearningPath } from "@/lib/types";
 import {
   getPartyLaunchRoomEntry,
-  getPartyLaunchSupportedMissionDomains,
   isPartyLaunchVisible,
+  type LaunchRoomKey,
 } from "@/lib/launchRooms";
 import { getPartyRuntimeWorldKey } from "@/lib/worlds";
 
@@ -15,25 +18,11 @@ interface MissionRoomRecommendations {
   missionDomainSlug: string | null;
 }
 
-const DOMAIN_NAME_TO_SLUG: Record<string, string> = {
-  "writing & communication": "writing-communication",
-  "technical building": "technical-building",
-  "visual & design": "visual-design",
-  "strategy & planning": "strategy-planning",
-  "workflow automation": "workflow-automation",
-  "persuasion & sales": "persuasion-sales",
-  "operations & execution": "operations-execution",
-  "operations execution": "operations-execution",
-};
-
-function normalizeDomainName(value: string | null | undefined): string | null {
-  if (!value) return null;
-  return DOMAIN_NAME_TO_SLUG[value.trim().toLowerCase()] ?? null;
-}
+const ROOM_PREFERENCE_SCORES = [120, 90, 78, 70];
 
 /**
- * Ranks persistent rooms for a mission using the room world's supported
- * capability domains, with `default` and `gentle-start` as stable fallbacks.
+ * Ranks persistent rooms for a mission using the launch-domain room preference
+ * order first, then live relevance, then the existing general fallbacks.
  */
 export function getMissionRoomRecommendations(
   path: LearningPath,
@@ -51,32 +40,47 @@ export function getMissionRoomRecommendations(
     };
   }
 
-  const primaryArea = getMissionPrimaryArea(path);
-  const missionDomainLabel = primaryArea.detail ?? primaryArea.label ?? null;
-  const missionDomainSlug =
-    normalizeDomainName(primaryArea.detail) ??
-    normalizeDomainName(primaryArea.label);
+  const launchDomain = getMissionLaunchDomain(path);
+  const missionDomainLabel = launchDomain.label;
+  const missionDomainSlug = launchDomain.key;
+  const preferredRooms =
+    launchDomain.source === "fallback"
+      ? []
+      : getLaunchRoomPreferenceOrder(launchDomain.key);
 
   const scoredRooms = persistentRooms
     .map((party, index) => {
       const launchRoom = getPartyLaunchRoomEntry(party);
       const runtimeWorldKey = getPartyRuntimeWorldKey(party);
-      const supportedDomains = getPartyLaunchSupportedMissionDomains(party);
-      const matchesDomain =
-        !!missionDomainSlug && supportedDomains.includes(missionDomainSlug);
+      const launchRoomKey = launchRoom?.key ?? null;
+      const preferredRoomIndex = launchRoomKey
+        ? preferredRooms.indexOf(launchRoomKey)
+        : -1;
 
       let score = 0;
 
-      if (matchesDomain) {
-        score += 100;
-      } else if (launchRoom?.key === "research-room" || runtimeWorldKey === "default") {
+      if (
+        preferredRoomIndex >= 0 &&
+        preferredRoomIndex < ROOM_PREFERENCE_SCORES.length
+      ) {
+        score += ROOM_PREFERENCE_SCORES[preferredRoomIndex];
+      } else if (
+        preferredRooms.length === 0 &&
+        (launchRoom?.key === "research-room" || runtimeWorldKey === "default")
+      ) {
         score += 24;
-      } else if (launchRoom?.key === "open-studio" || runtimeWorldKey === "gentle-start") {
+      } else if (
+        preferredRooms.length === 0 &&
+        (launchRoom?.key === "open-studio" || runtimeWorldKey === "gentle-start")
+      ) {
         score += 18;
-      } else if (!missionDomainSlug) {
+      } else if (preferredRooms.length === 0) {
         score += 8;
       }
 
+      if (party.status === "active") {
+        score += 12;
+      }
       score += Math.min(party.participant_count, 12);
 
       return { party, index, score };

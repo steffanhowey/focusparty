@@ -1,5 +1,5 @@
-export const HOME_ROUTE = "/home";
 export const MISSIONS_ROUTE = "/missions";
+export const HOME_ROUTE = MISSIONS_ROUTE;
 export const ROOMS_ROUTE = "/rooms";
 export const PROGRESS_ROUTE = "/progress";
 export const SETTINGS_ROUTE = "/settings";

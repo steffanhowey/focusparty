@@ -20,6 +20,7 @@ interface RoomCardProps {
   isJoining?: boolean;
   tone?: "default" | "dark";
   badge?: ReactNode;
+  descriptionOverride?: string;
   /** Whether this room's vibe is currently being previewed */
   isPreviewPlaying?: boolean;
   /** Preview player status (for loading state) */
@@ -100,6 +101,7 @@ export function RoomCard({
   isJoining,
   tone = "default",
   badge,
+  descriptionOverride,
   isPreviewPlaying,
   previewStatus,
   onTogglePreview,
@@ -109,7 +111,8 @@ export function RoomCard({
   const aiBg = backgrounds?.get(runtimeWorldKey);
   const coverSrc = aiBg?.thumbUrl ?? null;
   const roomName = getPartyLaunchDisplayName(party);
-  const roomDescription = getPartyLaunchShortDescription(party);
+  const roomDescription =
+    descriptionOverride ?? getPartyLaunchShortDescription(party);
   const isFull = !party.persistent && party.participant_count >= party.max_participants;
 
   // Persistent rooms always show "Open"; others: active > waiting > full
@@ -250,7 +253,7 @@ export function RoomCard({
           <h3 className={`truncate text-sm font-semibold ${titleTextClassName}`}>
             {roomName}
           </h3>
-          <p className={`mt-0.5 line-clamp-1 text-xs ${bodyTextClassName}`}>
+          <p className={`mt-0.5 line-clamp-2 text-xs ${bodyTextClassName}`}>
             {roomDescription}
           </p>
         </div>
@@ -296,7 +299,7 @@ export function RoomCard({
           {roomName}
         </h3>
 
-        <p className={`mt-0.5 line-clamp-1 text-xs ${bodyTextClassName}`}>
+        <p className={`mt-0.5 line-clamp-2 text-xs ${bodyTextClassName}`}>
           {roomDescription}
         </p>
 

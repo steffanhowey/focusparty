@@ -1,9 +1,5 @@
-import { HomePage } from "@/components/home/HomePage";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <main className="flex-1">
-      <HomePage />
-    </main>
-  );
+  redirect("/missions");
 }

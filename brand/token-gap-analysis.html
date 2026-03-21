@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillGap — Token Gap Analysis &amp; Migration Map</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap');
+
+  :root {
+    --sg-forest-900: #0F2318;
+    --sg-forest-800: #162E21;
+    --sg-forest-700: #1E3A2C;
+    --sg-forest-600: #2A5340;
+    --sg-forest-500: #3A7D53;
+    --sg-forest-400: #4A9E6A;
+    --sg-forest-300: #6BBF87;
+    --sg-forest-200: #A3D9B5;
+    --sg-forest-100: #D1ECDA;
+    --sg-forest-50:  #EEF5EC;
+    --sg-sage-700: #5A7A5E;
+    --sg-sage-500: #8BAF8E;
+    --sg-sage-300: #C4D9C6;
+    --sg-sage-200: #DCE9DD;
+    --sg-sage-100: #EDF4EE;
+    --sg-sage-50:  #F5F9F5;
+    --sg-teal-600: #3D8E8B;
+    --sg-teal-500: #4AA8A4;
+    --sg-teal-400: #5EC2BE;
+    --sg-teal-100: #E8F5F3;
+    --sg-gold-900: #5C4D0E;
+    --sg-gold-600: #B89C1E;
+    --sg-gold-500: #D4B52A;
+    --sg-gold-200: #F0ECB8;
+    --sg-gold-100: #F8F6DC;
+    --sg-shell-900: #262626;
+    --sg-shell-800: #3D3D3D;
+    --sg-shell-700: #525252;
+    --sg-shell-600: #6B6B6B;
+    --sg-shell-500: #8A8A8A;
+    --sg-shell-400: #A3A3A3;
+    --sg-shell-300: #D4D4D4;
+    --sg-shell-border: #E8E8E8;
+    --sg-shell-200: #EEEEEE;
+    --sg-shell-100: #F5F5F5;
+    --sg-shell-50:  #FAFAFA;
+    --sg-white: #FFFFFF;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px; line-height: 1.65; color: var(--sg-shell-800);
+    background: var(--sg-shell-50); padding: 40px 20px;
+  }
+
+  .page { max-width: 960px; margin: 0 auto; }
+
+  h1 {
+    font-family: 'Fraunces', Georgia, serif; font-size: 32px; font-weight: 600;
+    color: var(--sg-forest-900); margin-bottom: 8px; letter-spacing: -0.02em;
+  }
+  .subtitle { font-size: 15px; color: var(--sg-shell-600); margin-bottom: 40px; }
+
+  h2 {
+    font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700;
+    color: var(--sg-forest-800); margin: 48px 0 16px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--sg-forest-100);
+  }
+  h3 {
+    font-size: 15px; font-weight: 600; color: var(--sg-forest-700);
+    margin: 28px 0 10px;
+  }
+
+  p { margin-bottom: 12px; color: var(--sg-shell-700); }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 13px; }
+  th {
+    text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--sg-shell-500); padding: 8px 12px;
+    border-bottom: 2px solid var(--sg-shell-border); background: var(--sg-shell-100);
+  }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--sg-shell-border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .swatch {
+    display: inline-block; width: 16px; height: 16px; border-radius: 3px;
+    vertical-align: middle; margin-right: 6px; border: 1px solid rgba(0,0,0,0.08);
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px;
+    background: var(--sg-sage-50); padding: 1px 5px; border-radius: 4px;
+    color: var(--sg-forest-700);
+  }
+
+  /* Gap severity badges */
+  .gap-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 9999px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .gap-critical { background: #FDECEB; color: #C0392B; }
+  .gap-medium { background: var(--sg-gold-100); color: var(--sg-gold-900); }
+  .gap-low { background: var(--sg-sage-100); color: var(--sg-sage-700); }
+  .gap-covered { background: var(--sg-forest-50); color: var(--sg-forest-600); }
+
+  /* Status markers */
+  .status-ok { color: var(--sg-forest-500); font-weight: 600; }
+  .status-gap { color: #C0392B; font-weight: 600; }
+  .status-partial { color: var(--sg-gold-600); font-weight: 600; }
+
+  /* Section cards */
+  .section-card {
+    background: var(--sg-white); border: 1px solid var(--sg-shell-border);
+    border-radius: 14px; padding: 24px; margin: 16px 0;
+  }
+
+  /* Recommendation callout */
+  .reco {
+    background: var(--sg-forest-50); border-left: 4px solid var(--sg-forest-400);
+    padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0;
+    font-size: 13px; color: var(--sg-forest-800);
+  }
+  .reco strong { color: var(--sg-forest-700); }
+
+  /* Arrow separator */
+  .arrow { color: var(--sg-shell-400); font-weight: 400; padding: 0 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Token Gap Analysis &amp; Migration Map</h1>
+<p class="subtitle">
+  Mapping every old <code>--color-*</code> token and <code>palette.ts</code> export to the new <code>--sg-*</code> system.
+  Gaps flagged with severity and recommended actions. Based on ref-learn-paths.html and ref-rooms.html proof-of-coverage.
+</p>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 1: OVERALL VERDICT
+     ═══════════════════════════════════════════════════════════ -->
+<h2>1. Overall Coverage Verdict</h2>
+
+<div class="section-card">
+  <table>
+    <tr>
+      <th style="width:200px;">Category</th>
+      <th>Status</th>
+      <th>Details</th>
+    </tr>
+    <tr>
+      <td>Primary brand color</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>Purple (<code>#535AEE</code>) → Forest (<code>--sg-forest-500</code>). Full 10-step scale.</td>
+    </tr>
+    <tr>
+      <td>Dark backgrounds</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>Navy (<code>#0A0A0A</code>) → Forest-900 (<code>#0F2318</code>). Richer, warmer darks.</td>
+    </tr>
+    <tr>
+      <td>Neutral / text scale</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>Navy grays → Shell scale. Full 900–50 range with semantic border token.</td>
+    </tr>
+    <tr>
+      <td>Success / positive</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>Green-700 (<code>#5BC682</code>) → Forest-300/400. Natural fit.</td>
+    </tr>
+    <tr>
+      <td>Secondary accent</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>Cyan-700 → Teal-500/600. Cooled down, more professional.</td>
+    </tr>
+    <tr>
+      <td>Warning / gold</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>Gold-700/Amber-700 → Gold-600/500. Consolidated to one warm accent.</td>
+    </tr>
+    <tr>
+      <td>Error / danger / red</td>
+      <td><span class="status-gap">Gap</span></td>
+      <td>Coral-700 (<code>#E96861</code>) and Red-700 (<code>#EF5555</code>) have <strong>no <code>--sg-*</code> token</strong>.</td>
+    </tr>
+    <tr>
+      <td>Character theming</td>
+      <td><span class="status-gap">Gap</span></td>
+      <td>Ember / Moss / Byte territories have no new-system equivalent. Strategy needed.</td>
+    </tr>
+    <tr>
+      <td>Purple / Violet / Indigo</td>
+      <td><span class="status-partial">Retired</span></td>
+      <td>No purple/violet in new system. Intentional brand shift — but some in-app uses need migration paths.</td>
+    </tr>
+    <tr>
+      <td>Typography</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>App mode = Inter only. Website = Fraunces + DM Sans. Clear separation.</td>
+    </tr>
+    <tr>
+      <td>Spacing</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>4px base, 13 steps from 2px to 128px. Comprehensive.</td>
+    </tr>
+    <tr>
+      <td>Radius</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>7 tokens with function-based assignment (buttons always 8px, pills always 9999px).</td>
+    </tr>
+    <tr>
+      <td>Shadows</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>5 light + 3 dark levels. Replaces ad-hoc <code>shadow-float</code>.</td>
+    </tr>
+    <tr>
+      <td>Motion</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>3 durations × 4 easings. Standardized.</td>
+    </tr>
+    <tr>
+      <td>Z-index</td>
+      <td><span class="status-ok">Covered</span></td>
+      <td>7 named layers. Replaces magic numbers.</td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 2: COLOR TOKEN MAP (old → new)
+     ═══════════════════════════════════════════════════════════ -->
+<h2>2. Full Color Token Migration Map</h2>
+
+<h3>2a. Core Palette — Direct Replacements</h3>
+
+<div class="section-card">
+  <table>
+    <tr>
+      <th>Old Token / Export</th>
+      <th>Old Hex</th>
+      <th></th>
+      <th>New Token</th>
+      <th>New Hex</th>
+      <th>Notes</th>
+    </tr>
+    <!-- Purple → Forest -->
+    <tr>
+      <td><code>--color-purple-700</code></td>
+      <td><span class="swatch" style="background:#535AEE"></span>#535AEE</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-500</code></td>
+      <td><span class="swatch" style="background:#3A7D53"></span>#3A7D53</td>
+      <td>Primary accent / CTA. Core brand shift.</td>
+    </tr>
+    <tr>
+      <td><code>--color-purple-800</code></td>
+      <td><span class="swatch" style="background:#3E43B2"></span>#3E43B2</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-600</code></td>
+      <td><span class="swatch" style="background:#2A5340"></span>#2A5340</td>
+      <td>Hover / pressed state</td>
+    </tr>
+    <tr>
+      <td><code>--color-purple-900</code></td>
+      <td><span class="swatch" style="background:#292D77"></span>#292D77</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-700</code></td>
+      <td><span class="swatch" style="background:#1E3A2C"></span>#1E3A2C</td>
+      <td>Deep accent</td>
+    </tr>
+    <tr>
+      <td><code>--color-purple-500</code></td>
+      <td><span class="swatch" style="background:#A9ADF7"></span>#A9ADF7</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-200</code></td>
+      <td><span class="swatch" style="background:#A3D9B5"></span>#A3D9B5</td>
+      <td>Light accent</td>
+    </tr>
+    <tr>
+      <td><code>--color-purple-300</code></td>
+      <td><span class="swatch" style="background:#EEEEFD"></span>#EEEEFD</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-50</code></td>
+      <td><span class="swatch" style="background:#EEF5EC"></span>#EEF5EC</td>
+      <td>Tinted background</td>
+    </tr>
+
+    <!-- Navy → Shell + Forest dark -->
+    <tr>
+      <td><code>--color-navy-800</code></td>
+      <td><span class="swatch" style="background:#0A0A0A"></span>#0A0A0A</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-900</code></td>
+      <td><span class="swatch" style="background:#0F2318"></span>#0F2318</td>
+      <td>App dark background. Warm forest instead of cold black.</td>
+    </tr>
+    <tr>
+      <td><code>--color-navy-750</code></td>
+      <td><span class="swatch" style="background:#0E0E0E"></span>#0E0E0E</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-800</code></td>
+      <td><span class="swatch" style="background:#162E21"></span>#162E21</td>
+      <td>Elevated dark surface</td>
+    </tr>
+    <tr>
+      <td><code>--color-navy-700</code></td>
+      <td><span class="swatch" style="background:#141414"></span>#141414</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-700</code></td>
+      <td><span class="swatch" style="background:#1E3A2C"></span>#1E3A2C</td>
+      <td>Card on dark bg</td>
+    </tr>
+    <tr>
+      <td><code>--color-navy-500</code></td>
+      <td><span class="swatch" style="background:#888888"></span>#888</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-shell-500</code></td>
+      <td><span class="swatch" style="background:#8A8A8A"></span>#8A8A8A</td>
+      <td>Muted/tertiary text. Almost 1:1.</td>
+    </tr>
+    <tr>
+      <td><code>--color-navy-400</code></td>
+      <td><span class="swatch" style="background:#C0C0C0"></span>#C0C0C0</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-shell-300</code></td>
+      <td><span class="swatch" style="background:#D4D4D4"></span>#D4D4D4</td>
+      <td>Light text / borders</td>
+    </tr>
+    <tr>
+      <td><code>--color-navy-300</code></td>
+      <td><span class="swatch" style="background:#E5E5E5"></span>#E5E5E5</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-shell-border</code></td>
+      <td><span class="swatch" style="background:#E8E8E8"></span>#E8E8E8</td>
+      <td>Border default</td>
+    </tr>
+    <tr>
+      <td><code>--color-navy-200</code></td>
+      <td><span class="swatch" style="background:#F2F2F2"></span>#F2F2F2</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-shell-100</code></td>
+      <td><span class="swatch" style="background:#F5F5F5"></span>#F5F5F5</td>
+      <td>Section bg</td>
+    </tr>
+
+    <!-- Green → Forest light -->
+    <tr>
+      <td><code>--color-green-700</code></td>
+      <td><span class="swatch" style="background:#5BC682"></span>#5BC682</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-300</code></td>
+      <td><span class="swatch" style="background:#6BBF87"></span>#6BBF87</td>
+      <td>Success/positive. Very close match.</td>
+    </tr>
+    <tr>
+      <td><code>--color-green-900</code></td>
+      <td><span class="swatch" style="background:#2E6341"></span>#2E6341</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-600</code></td>
+      <td><span class="swatch" style="background:#2A5340"></span>#2A5340</td>
+      <td>Deep green. Close match.</td>
+    </tr>
+
+    <!-- Cyan → Teal -->
+    <tr>
+      <td><code>--color-cyan-700</code></td>
+      <td><span class="swatch" style="background:#5CC2EC"></span>#5CC2EC</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-teal-500</code></td>
+      <td><span class="swatch" style="background:#4AA8A4"></span>#4AA8A4</td>
+      <td>Secondary accent. Shifts from sky-blue to teal-green.</td>
+    </tr>
+    <tr>
+      <td><code>--color-cyan-300</code></td>
+      <td><span class="swatch" style="background:#EFF9FD"></span>#EFF9FD</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-teal-100</code></td>
+      <td><span class="swatch" style="background:#E8F5F3"></span>#E8F5F3</td>
+      <td>Tinted bg</td>
+    </tr>
+
+    <!-- Gold / Amber → Gold -->
+    <tr>
+      <td><code>--color-gold-700</code></td>
+      <td><span class="swatch" style="background:#F5C54E"></span>#F5C54E</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-gold-500</code></td>
+      <td><span class="swatch" style="background:#D4B52A"></span>#D4B52A</td>
+      <td>Slightly deeper, more refined gold.</td>
+    </tr>
+    <tr>
+      <td><code>--color-amber-700</code></td>
+      <td><span class="swatch" style="background:#F59E0B"></span>#F59E0B</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-gold-600</code></td>
+      <td><span class="swatch" style="background:#B89C1E"></span>#B89C1E</td>
+      <td>Amber consolidated into gold scale.</td>
+    </tr>
+
+    <!-- Coral → ??? -->
+    <tr style="background: #FFF5F5;">
+      <td><code>--color-coral-700</code></td>
+      <td><span class="swatch" style="background:#E96861"></span>#E96861</td>
+      <td class="arrow">→</td>
+      <td><span class="gap-badge gap-critical">No Token</span></td>
+      <td>—</td>
+      <td>Used for: advanced difficulty, danger buttons, error states, Ember character.</td>
+    </tr>
+    <tr style="background: #FFF5F5;">
+      <td><code>--color-red-700</code></td>
+      <td><span class="swatch" style="background:#EF5555"></span>#EF5555</td>
+      <td class="arrow">→</td>
+      <td><span class="gap-badge gap-critical">No Token</span></td>
+      <td>—</td>
+      <td>Used for priority-urgent. Needs a semantic error/danger token.</td>
+    </tr>
+  </table>
+</div>
+
+<h3>2b. Semantic Token Map</h3>
+
+<div class="section-card">
+  <table>
+    <tr>
+      <th>Old Semantic</th>
+      <th>Old Value</th>
+      <th></th>
+      <th>New Semantic</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td><code>--color-accent-primary</code></td>
+      <td>#535AEE (purple)</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-500</code></td>
+      <td>Brand primary</td>
+    </tr>
+    <tr>
+      <td><code>--color-accent-secondary</code></td>
+      <td>#4636D3 (deep purple)</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-600</code></td>
+      <td>Pressed / hover</td>
+    </tr>
+    <tr>
+      <td><code>--color-accent-success</code></td>
+      <td>#5BC682</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-300</code></td>
+      <td>Success. Natural fit.</td>
+    </tr>
+    <tr>
+      <td><code>--color-accent-warning</code></td>
+      <td>#EE984B</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-gold-600</code></td>
+      <td>Warning. Orange → warm gold.</td>
+    </tr>
+    <tr style="background: #FFF5F5;">
+      <td><code>--color-accent-error</code></td>
+      <td>#E96861</td>
+      <td class="arrow">→</td>
+      <td><span class="gap-badge gap-critical">Needs Token</span></td>
+      <td>Critical gap — no error/danger red in new system.</td>
+    </tr>
+    <tr>
+      <td><code>--color-bg-primary</code></td>
+      <td>#0A0A0A (dark) / #E5E5E5 (light)</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-900</code> / <code>--sg-white</code></td>
+      <td>Dark mode becomes forest-tinted, not grey</td>
+    </tr>
+    <tr>
+      <td><code>--color-bg-elevated</code></td>
+      <td>#141414</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-800</code></td>
+      <td>Cards/panels on dark</td>
+    </tr>
+    <tr>
+      <td><code>--color-bg-hover</code></td>
+      <td>rgba(255,255,255,0.08)</td>
+      <td class="arrow">→</td>
+      <td>Same pattern works</td>
+      <td>White-alpha hover still valid on forest-dark.</td>
+    </tr>
+    <tr>
+      <td><code>--color-text-primary</code></td>
+      <td>#FFFFFF (dark) / shell-900 (light)</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-white</code> / <code>--sg-shell-900</code></td>
+      <td>Same approach, tokens ready.</td>
+    </tr>
+    <tr>
+      <td><code>--color-text-secondary</code></td>
+      <td>#C0C0C0</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-shell-400</code> (dark) / <code>--sg-shell-600</code> (light)</td>
+      <td>Contextual pairing needed</td>
+    </tr>
+    <tr>
+      <td><code>--color-border-default</code></td>
+      <td>rgba(255,255,255,0.08)</td>
+      <td class="arrow">→</td>
+      <td>Same on dark; <code>--sg-shell-border</code> on light</td>
+      <td>Two-mode border strategy</td>
+    </tr>
+    <tr>
+      <td><code>--color-border-focus</code></td>
+      <td>#535AEE (purple)</td>
+      <td class="arrow">→</td>
+      <td><code>--sg-forest-400</code></td>
+      <td>Focus rings become green</td>
+    </tr>
+  </table>
+</div>
+
+<h3>2c. palette.ts Export Map</h3>
+
+<div class="section-card">
+  <table>
+    <tr>
+      <th>JS Export</th>
+      <th>Old Hex</th>
+      <th></th>
+      <th>New Token</th>
+      <th>Status</th>
+    </tr>
+    <tr><td><code>GREEN_700</code></td><td>#5BC682</td><td class="arrow">→</td><td><code>--sg-forest-300</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+    <tr><td><code>CYAN_700</code></td><td>#5CC2EC</td><td class="arrow">→</td><td><code>--sg-teal-500</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+    <tr><td><code>GOLD_700</code></td><td>#F5C54E</td><td class="arrow">→</td><td><code>--sg-gold-500</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+    <tr><td><code>AMBER_700</code></td><td>#F59E0B</td><td class="arrow">→</td><td><code>--sg-gold-600</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+    <tr><td><code>ORANGE_700</code></td><td>#EE984B</td><td class="arrow">→</td><td><code>--sg-gold-600</code></td><td><span class="gap-badge gap-low">Approximate</span></td></tr>
+    <tr><td><code>CORAL_700</code></td><td>#E96861</td><td class="arrow">→</td><td>—</td><td><span class="gap-badge gap-critical">Gap</span></td></tr>
+    <tr><td><code>RED_700</code></td><td>#EF5555</td><td class="arrow">→</td><td>—</td><td><span class="gap-badge gap-critical">Gap</span></td></tr>
+    <tr><td><code>PURPLE_700</code></td><td>#535AEE</td><td class="arrow">→</td><td><code>--sg-forest-500</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+    <tr><td><code>INDIGO_700</code></td><td>#7C5CFC</td><td class="arrow">→</td><td><code>--sg-forest-500</code></td><td><span class="gap-badge gap-low">Collapsed</span></td></tr>
+    <tr><td><code>VIOLET_700</code></td><td>#8C55EF</td><td class="arrow">→</td><td><code>--sg-teal-600</code></td><td><span class="gap-badge gap-low">Re-mapped</span></td></tr>
+    <tr><td><code>NAVY_800</code></td><td>#0A0A0A</td><td class="arrow">→</td><td><code>--sg-forest-900</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+    <tr><td><code>NAVY_500</code></td><td>#888888</td><td class="arrow">→</td><td><code>--sg-shell-500</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+    <tr><td><code>NAVY_400</code></td><td>#C0C0C0</td><td class="arrow">→</td><td><code>--sg-shell-300</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 3: IDENTIFIED GAPS
+     ═══════════════════════════════════════════════════════════ -->
+<h2>3. Identified Token Gaps</h2>
+
+<!-- GAP 1 -->
+<div class="section-card">
+  <h3 style="margin-top:0;">Gap 1: No Error / Danger / Red Token <span class="gap-badge gap-covered">Resolved</span></h3>
+
+  <p>The new <code>--sg-*</code> system has forest (green), teal (blue-green), gold (warm), sage (muted green), and shell (neutral). There is no red anywhere in the palette. The old system used two reds:</p>
+
+  <table>
+    <tr><th>Old Token</th><th>Hex</th><th>Where Used</th></tr>
+    <tr>
+      <td><code>CORAL_700</code> / <code>--color-coral-700</code></td>
+      <td><span class="swatch" style="background:#E96861"></span>#E96861</td>
+      <td>Advanced difficulty badge, danger button variant, error accent, Ember character primary, "end session" button, delete confirmations</td>
+    </tr>
+    <tr>
+      <td><code>RED_700</code> / <code>--color-red-700</code></td>
+      <td><span class="swatch" style="background:#EF5555"></span>#EF5555</td>
+      <td>Priority-urgent marker</td>
+    </tr>
+  </table>
+
+  <p>Both reference mockups had to fall back to raw <code>#E96861</code> — the only hardcoded hex in either file.</p>
+
+  <div class="reco">
+    <strong>Recommendation:</strong> Add a minimal red/coral scale to the token system. It doesn't need 10 steps — 4 is enough for most UI needs:
+
+    <table style="margin-top: 8px; font-size: 12px;">
+      <tr><th>Proposed Token</th><th>Hex</th><th>Usage</th></tr>
+      <tr><td><code>--sg-red-600</code></td><td>#D64540</td><td>Error text, danger button bg</td></tr>
+      <tr><td><code>--sg-red-500</code></td><td>#E96861</td><td>Default error/danger color (maps from coral-700)</td></tr>
+      <tr><td><code>--sg-red-100</code></td><td>#FDECEB</td><td>Error tint background</td></tr>
+      <tr><td><code>--sg-red-on-dark</code></td><td>rgba(233,104,97,0.2)</td><td>Error tint on forest-dark surfaces</td></tr>
+    </table>
+
+    <p style="margin-top:8px; margin-bottom:0;">Alternatively, name them <code>--sg-coral-*</code> to feel less clinical and more on-brand. Either way, this is a functional requirement — error states and destructive actions need a red.</p>
+  </div>
+</div>
+
+<!-- GAP 2 -->
+<div class="section-card">
+  <h3 style="margin-top:0;">Gap 2: Character Territory Theming <span class="gap-badge gap-medium">Medium</span></h3>
+
+  <p>The current app has three AI characters (Ember, Moss, Byte), each with a 4-token color territory:</p>
+
+  <table>
+    <tr><th>Character</th><th>Primary</th><th>Secondary</th><th>Accent</th><th>Tint BG</th></tr>
+    <tr>
+      <td>Ember</td>
+      <td><span class="swatch" style="background:#E96861"></span>#E96861 (coral)</td>
+      <td><span class="swatch" style="background:#EE984B"></span>#EE984B (orange)</td>
+      <td><span class="swatch" style="background:#F5C54E"></span>#F5C54E (gold)</td>
+      <td><span class="swatch" style="background:#FEF8F7"></span>#FEF8F7</td>
+    </tr>
+    <tr>
+      <td>Moss</td>
+      <td><span class="swatch" style="background:#5BC682"></span>#5BC682 (green)</td>
+      <td><span class="swatch" style="background:#5CC2EC"></span>#5CC2EC (cyan)</td>
+      <td><span class="swatch" style="background:#ADE2C0"></span>#ADE2C0</td>
+      <td><span class="swatch" style="background:#F7FCF9"></span>#F7FCF9</td>
+    </tr>
+    <tr>
+      <td>Byte</td>
+      <td><span class="swatch" style="background:#535AEE"></span>#535AEE (purple)</td>
+      <td><span class="swatch" style="background:#8C55EF"></span>#8C55EF (violet)</td>
+      <td><span class="swatch" style="background:#4636D3"></span>#4636D3</td>
+      <td><span class="swatch" style="background:#F6F7FE"></span>#F6F7FE</td>
+    </tr>
+  </table>
+
+  <p>In the new system, Moss maps naturally to forest/teal. Ember partially maps to gold (but loses its red primary). Byte has no home — purple/violet are completely gone.</p>
+
+  <div class="reco">
+    <strong>Recommendation — choose one of three strategies:</strong>
+    <ol style="margin: 8px 0 0 20px; font-size: 13px;">
+      <li><strong>Retire character colors.</strong> All AI hosts use a single neutral treatment (forest-tinted glass), differentiated by avatar/name only. Simplest option. Reduces the token surface by 12 values.</li>
+      <li><strong>Re-map to the new palette.</strong> Ember → Gold (primary: gold-600, secondary: gold-500). Moss → Forest (primary: forest-400, secondary: teal-500). Byte → Teal (primary: teal-600, secondary: teal-400). Narrower differentiation but stays within the system.</li>
+      <li><strong>Keep character colors as override tokens.</strong> Define <code>--sg-char-ember-*</code>, <code>--sg-char-moss-*</code>, <code>--sg-char-byte-*</code> as a separate layer that overrides the base system. Most flexible, most complex.</li>
+    </ol>
+    <p style="margin-top:8px; margin-bottom:0;">Strategy 1 (retire) is recommended given the brand shift away from playful multi-color toward professional forest-first. Characters can still feel distinct through tone, avatar, and naming without needing unique color territories.</p>
+  </div>
+</div>
+
+<!-- GAP 3 -->
+<div class="section-card">
+  <h3 style="margin-top:0;">Gap 3: Room State Color Mapping <span class="gap-badge gap-low">Low — Solved in Ref</span></h3>
+
+  <p>Room states (quiet, warming, focused, flowing, cooling) had these old colors:</p>
+
+  <table>
+    <tr><th>State</th><th>Old Color</th><th>New Mapping</th><th>Status</th></tr>
+    <tr><td>Quiet</td><td><code>NAVY_500</code> #888</td><td><code>--sg-shell-500</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+    <tr><td>Warming</td><td><code>AMBER_700</code> #F59E0B</td><td><code>--sg-gold-600</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+    <tr><td>Focused</td><td><code>CORAL_700</code> #E96861</td><td><code>--sg-forest-400</code></td><td><span class="gap-badge gap-low">Re-mapped</span></td></tr>
+    <tr><td>Flowing</td><td><code>VIOLET_700</code> #8C55EF</td><td><code>--sg-teal-500</code></td><td><span class="gap-badge gap-low">Re-mapped</span></td></tr>
+    <tr><td>Cooling</td><td><code>CYAN_700</code> #5CC2EC</td><td><code>--sg-sage-500</code></td><td><span class="gap-badge gap-covered">Covered</span></td></tr>
+  </table>
+
+  <p>The ref-rooms mockup solved this by defining semantic aliases. "Focused" shifts from red (energetic) to green (productive) — a better fit for the brand story. "Flowing" shifts from violet to teal — again, within the palette.</p>
+
+  <div class="reco">
+    <strong>Recommendation:</strong> Formalize the five semantic state tokens in the brand kit:
+    <code>--sg-state-quiet</code>, <code>--sg-state-warming</code>, <code>--sg-state-focused</code>, <code>--sg-state-flowing</code>, <code>--sg-state-cooling</code>. These are already used in ref-rooms.html and should be canonicalized.
+  </div>
+</div>
+
+<!-- GAP 4 -->
+<div class="section-card">
+  <h3 style="margin-top:0;">Gap 4: Fluency Badge On-Dark Variants <span class="gap-badge gap-low">Low — Solved in Ref</span></h3>
+
+  <p>Fluency levels (Exploring, Practicing, Proficient, Advanced) each have a badge color. On light backgrounds, the brand kit tokens work directly. On dark (forest-900/800) backgrounds, the ref mockups used rgba tints:</p>
+
+  <table>
+    <tr><th>Level</th><th>On-Light</th><th>On-Dark (rgba tint)</th></tr>
+    <tr><td>Exploring</td><td>sage-100 bg / sage-700 text</td><td>rgba(197,217,198,0.15) / sage-300</td></tr>
+    <tr><td>Practicing</td><td>teal-100 bg / teal-600 text</td><td>rgba(74,168,164,0.15) / teal-400</td></tr>
+    <tr><td>Proficient</td><td>forest-100 bg / forest-600 text</td><td>rgba(74,158,106,0.15) / forest-300</td></tr>
+    <tr><td>Advanced</td><td>gold-100 bg / gold-900 text</td><td>rgba(184,156,30,0.15) / gold-200</td></tr>
+  </table>
+
+  <div class="reco">
+    <strong>Recommendation:</strong> Document the on-dark recipe in the brand kit as a pattern, not 8 additional tokens. The recipe is: <code>background: rgba([base-color], 0.15); color: [lighter-step]</code>. This keeps the token count manageable while giving implementers a clear rule.
+  </div>
+</div>
+
+<!-- GAP 5 -->
+<div class="section-card">
+  <h3 style="margin-top:0;">Gap 5: Progress Bar Gradient Recipe <span class="gap-badge gap-low">Low</span></h3>
+
+  <p>Learning path progress bars in the current app use a simple fill. The ref mockups used a <code>forest-400 → teal-500</code> gradient for visual interest. This works well but isn't formally defined.</p>
+
+  <div class="reco">
+    <strong>Recommendation:</strong> Add a "progress gradient" recipe to the brand kit:
+    <code>background: linear-gradient(90deg, var(--sg-forest-400), var(--sg-teal-500))</code>.
+    Used for: progress bars, completion indicators, skill graph fill. Optional — solid forest-400 is the simpler fallback.
+  </div>
+</div>
+
+<!-- GAP 6 -->
+<div class="section-card">
+  <h3 style="margin-top:0;">Gap 6: Purple/Violet/Indigo Retirement <span class="gap-badge gap-medium">Medium — Requires Decision</span></h3>
+
+  <p>The old system had three purple-family scales (purple, violet, indigo) totaling 21 tokens. The new system has zero purple. This is intentional — the brand is moving from tech-purple to forest-green. But several in-app uses need explicit migration decisions:</p>
+
+  <table>
+    <tr><th>Old Use</th><th>Old Color</th><th>Suggested New</th></tr>
+    <tr><td>STATUS_IN_PROGRESS</td><td>Indigo-700 (#7C5CFC)</td><td><code>--sg-teal-600</code> — active work = teal</td></tr>
+    <tr><td>Byte character primary</td><td>Purple-700 (#535AEE)</td><td>Depends on character strategy (Gap 2)</td></tr>
+    <tr><td>ROOM_FLOWING state</td><td>Violet-700 (#8C55EF)</td><td><code>--sg-teal-500</code> — solved in ref</td></tr>
+    <tr><td>PROJECT_COLORS array</td><td>Includes indigo, red, orange, amber, green, cyan</td><td>Rebuild with: forest-500, teal-600, gold-600, forest-300, sage-500, shell-500</td></tr>
+    <tr><td>Focus ring / border-focus</td><td>Purple-700</td><td><code>--sg-forest-400</code></td></tr>
+    <tr><td>Dropdown bg</td><td>rgba(10,10,10,0.95)</td><td>rgba(15,35,24,0.95) — forest-tinted glass</td></tr>
+  </table>
+
+  <div class="reco">
+    <strong>Recommendation:</strong> No action needed on the token system — purple is intentionally gone. But during migration, every <code>purple-*</code>, <code>violet-*</code>, and <code>indigo-*</code> reference in the codebase needs an explicit replacement target. Create a find-and-replace checklist from this table when starting the code migration.
+  </div>
+</div>
+
+<!-- GAP 7 -->
+<div class="section-card">
+  <h3 style="margin-top:0;">Gap 7: Orange Scale Consolidation <span class="gap-badge gap-low">Low</span></h3>
+
+  <p>The old system had separate orange (<code>#EE984B</code>) and amber (<code>#F59E0B</code>) scales. The new system has only gold. Orange is currently used for <code>PRIORITY_HIGH</code> and <code>accent-warning</code>.</p>
+
+  <div class="reco">
+    <strong>Recommendation:</strong> Map both to <code>--sg-gold-600</code> / <code>--sg-gold-500</code>. If a visual distinction between "warning" and "high priority" is needed, use gold-600 for warning and gold-900 (dark text on gold-100 bg) for priority. This is a minor semantic collapse that shouldn't cause confusion.
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 4: SCREEN-BY-SCREEN COVERAGE SUMMARY
+     ═══════════════════════════════════════════════════════════ -->
+<h2>4. Screen-by-Screen Coverage Summary</h2>
+
+<div class="section-card">
+  <table>
+    <tr>
+      <th>Screen</th>
+      <th>Ref File</th>
+      <th>Coverage</th>
+      <th>Gaps</th>
+    </tr>
+    <tr>
+      <td>Learn Hub (discovery)</td>
+      <td>ref-learn-paths.html #1</td>
+      <td><span class="gap-badge gap-covered">98%</span></td>
+      <td>Advanced difficulty badge uses raw #E96861 (Gap 1)</td>
+    </tr>
+    <tr>
+      <td>Immersive Path Experience</td>
+      <td>ref-learn-paths.html #2</td>
+      <td><span class="gap-badge gap-covered">100%</span></td>
+      <td>Glass sidebar, all content types, fluency badges — all covered</td>
+    </tr>
+    <tr>
+      <td>Transition + Completion</td>
+      <td>ref-learn-paths.html #3-4</td>
+      <td><span class="gap-badge gap-covered">100%</span></td>
+      <td>Achievement card, skill receipt, share flow — all covered</td>
+    </tr>
+    <tr>
+      <td>Path Generation Overlay</td>
+      <td>ref-learn-paths.html #5</td>
+      <td><span class="gap-badge gap-covered">100%</span></td>
+      <td>None — simple dark surface with forest accents</td>
+    </tr>
+    <tr>
+      <td>Room Discovery</td>
+      <td>ref-rooms.html #1</td>
+      <td><span class="gap-badge gap-covered">100%</span></td>
+      <td>Room state colors re-mapped successfully</td>
+    </tr>
+    <tr>
+      <td>Room Lobby</td>
+      <td>ref-rooms.html #2</td>
+      <td><span class="gap-badge gap-covered">100%</span></td>
+      <td>None — forest dark surfaces + gold/teal/forest activity icons</td>
+    </tr>
+    <tr>
+      <td>Join Room Modal</td>
+      <td>ref-rooms.html #3</td>
+      <td><span class="gap-badge gap-covered">100%</span></td>
+      <td>None — form elements use forest-tinted dark patterns</td>
+    </tr>
+    <tr>
+      <td>Active Sprint Session</td>
+      <td>ref-rooms.html #4</td>
+      <td><span class="gap-badge gap-covered">95%</span></td>
+      <td>"End session" danger button uses raw #E96861 (Gap 1)</td>
+    </tr>
+    <tr>
+      <td>Session Review</td>
+      <td>ref-rooms.html #5</td>
+      <td><span class="gap-badge gap-covered">100%</span></td>
+      <td>None — forest dark modal with white-on-dark CTAs</td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 5: ACTION ITEMS
+     ═══════════════════════════════════════════════════════════ -->
+<h2>5. Recommended Actions (Priority Order)</h2>
+
+<div class="section-card">
+  <table>
+    <tr><th style="width:40px;">#</th><th>Action</th><th>Severity</th><th>Effort</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Add <code>--sg-red-*</code> (or <code>--sg-coral-*</code>) tokens to the brand kit.</strong> Minimum 4 values: 600 (dark), 500 (default), 100 (tint), on-dark (rgba). Without this, every error state and danger button requires a hardcoded hex.</td>
+      <td><span class="gap-badge gap-critical">Critical</span></td>
+      <td>Small — 4 tokens + brand kit HTML update</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Decide character theming strategy.</strong> Retire character colors (recommended), re-map within palette, or create override layer. This affects how AI host UIs render in rooms.</td>
+      <td><span class="gap-badge gap-medium">Medium</span></td>
+      <td>Decision only — no code yet</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Add room state semantic tokens to the brand kit.</strong> <code>--sg-state-quiet/warming/focused/flowing/cooling</code>. Already proven in ref-rooms.html — just needs to be canonicalized.</td>
+      <td><span class="gap-badge gap-low">Low</span></td>
+      <td>Small — 5 aliases</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Document on-dark badge pattern in brand kit.</strong> Recipe: <code>rgba([base], 0.15)</code> bg + lighter-step text. Covers fluency badges, status badges, and any chip/tag on dark surfaces.</td>
+      <td><span class="gap-badge gap-low">Low</span></td>
+      <td>Small — documentation only</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>Document progress gradient recipe.</strong> <code>linear-gradient(90deg, forest-400, teal-500)</code> for progress bars and completion indicators.</td>
+      <td><span class="gap-badge gap-low">Low</span></td>
+      <td>Tiny — one line in brand kit</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>Create migration find-and-replace checklist</strong> mapping every <code>--color-*</code> CSS var and <code>palette.ts</code> export to its new <code>--sg-*</code> equivalent. Reference this document's Section 2 tables.</td>
+      <td><span class="gap-badge gap-medium">Medium</span></td>
+      <td>Medium — when starting code migration</td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════════════════ -->
+<div style="margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--sg-shell-border); font-size: 12px; color: var(--sg-shell-500);">
+  <strong>Source files:</strong> brand/skillgap-brand-kit.html (token definitions), brand/ref-learn-paths.html (learn screens proof), brand/ref-rooms.html (rooms screens proof), lib/palette.ts (old JS colors), app/globals.css (old CSS vars).
+  <br>Generated March 17, 2026.
+</div>
+
+</div><!-- /.page -->
+</body>
+</html>

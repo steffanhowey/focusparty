@@ -2,14 +2,12 @@
 
 /**
  * Shared nav config for Hub sidebar and session menu drawer.
- * Phase 1 shell recenter:
- * Home → Missions → Rooms → Progress → Settings.
+ * Mission-first hub shell:
+ * Missions → Progress → Rooms.
  */
 
 import {
-  House,
   PanelsTopLeft,
-  Settings,
   Target,
   TrendingUp,
   type LucideIcon,
@@ -23,15 +21,16 @@ export const NAV_ITEMS: Array<{
   label: string;
   icon: LucideIcon;
 }> = [
-  { id: "home", href: "/home", label: "Home", icon: House },
   { id: "missions", href: "/missions", label: "Missions", icon: Target },
-  { id: "rooms", href: "/rooms", label: "Rooms", icon: PanelsTopLeft },
   { id: "progress", href: "/progress", label: "Progress", icon: TrendingUp },
-  { id: "settings", href: "/settings", label: "Settings", icon: Settings },
+  { id: "rooms", href: "/rooms", label: "Rooms", icon: PanelsTopLeft },
 ];
 
 /** Set of hrefs that support client-side tab switching (no server round-trip). */
-export const CLIENT_NAV_HREFS = new Set(NAV_ITEMS.map((item) => item.href));
+export const CLIENT_NAV_HREFS = new Set([
+  ...NAV_ITEMS.map((item) => item.href),
+  "/settings",
+]);
 
 /** Render a nav icon with consistent size (for sidebar/drawer). */
 export function NavIcon({ icon: Icon }: { icon: LucideIcon }) {

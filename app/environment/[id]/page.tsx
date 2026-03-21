@@ -351,6 +351,9 @@ export default function EnvironmentPage() {
   const persistence = useSessionPersistence(userId);
   const [phase, setPhase] = useState<SessionPhase>("setup");
   const [showJoinModal, setShowJoinModal] = useState(true);
+  const [roomChromeRevealState, setRoomChromeRevealState] = useState<
+    "hidden" | "revealing" | "visible"
+  >("hidden");
   const [goal, setGoal] = useState("");
   const [selectedMissionContext, setSelectedMissionContext] =
     useState<MissionSelectionState | null>(null);
@@ -2147,6 +2150,34 @@ export default function EnvironmentPage() {
 
   // ─── Render ────────────────────────────────────────────
 
+  const showRoomEntryOverlay =
+    showJoinModal &&
+    !persistence.isHydrating &&
+    (!persistence.wasRestored ||
+      (phase === "setup" && !persistence.sessionRow));
+
+  useEffect(() => {
+    if (showRoomEntryOverlay) {
+      setRoomChromeRevealState("hidden");
+      return;
+    }
+
+    setRoomChromeRevealState("revealing");
+    let frameOne: number | null = null;
+    let frameTwo: number | null = null;
+
+    frameOne = window.requestAnimationFrame(() => {
+      frameTwo = window.requestAnimationFrame(() => {
+        setRoomChromeRevealState("visible");
+      });
+    });
+
+    return () => {
+      if (frameOne !== null) window.cancelAnimationFrame(frameOne);
+      if (frameTwo !== null) window.cancelAnimationFrame(frameTwo);
+    };
+  }, [partyId, showRoomEntryOverlay]);
+
   if (partyLoading || persistence.isHydrating) {
     return (
       <EnvironmentLoadingShell
@@ -2156,6 +2187,12 @@ export default function EnvironmentPage() {
       />
     );
   }
+
+  const showEnvironmentChrome = roomChromeRevealState !== "hidden";
+  const environmentChromeMotionClass =
+    roomChromeRevealState === "visible"
+      ? "opacity-100 translate-y-0"
+      : "pointer-events-none opacity-0 translate-y-2";
 
   return (
     <div className="relative flex h-full w-full overflow-hidden bg-forest-900">
@@ -2183,297 +2220,303 @@ export default function EnvironmentPage() {
         <div id={music.playerContainerId} />
       </div>
 
-      {/* Left-side participant strip (always visible — shown behind join modal too) */}
-      <EnvironmentParticipants
-        participants={participantInfos}
-        onParticipantClick={handleParticipantClick}
-        onWidthChange={setParticipantStripWidth}
-        cameraStream={camera.stream}
-        celebrations={celebrations}
-      />
-      {selectedParticipant && phase !== "setup" && (
-        <ParticipantCard
-          participant={selectedParticipant.participant}
-          feedEvents={feedEvents}
-          onHighFive={handleHighFive}
-          highFiveCooldownUntil={
-            highFiveCooldowns.get(
-              selectedParticipant.participant.id
-            ) ?? null
-          }
-          onClose={handleCloseCard}
-          anchorRect={selectedParticipant.anchorRect}
-          onJoinBreak={handleJoinBreak}
-        />
-      )}
-
-      {/* Sprint goal — ~25% above dead center */}
-      {phase === "sprint" && goal && !selectedMissionContext?.missionId && (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center" style={{ paddingBottom: "25vh" }}>
-          <SprintGoalBanner
-            goalText={goal}
-            parentGoalTitle={activeGoalForTask?.title ?? null}
-          />
-        </div>
-      )}
-
-      {/* Main content — full width, flyout overlays on top */}
-      <div className="flex w-full flex-col pl-24">
-            {/* Room header */}
-            <EnvironmentHeader
-              roomName={roomDisplayName}
-              inviteCode={party?.invite_code ?? null}
-              currentPartyId={partyId}
-              userId={userId}
-              displayName={displayName}
-              hasActiveSession={Boolean(persistence.sessionRow)}
-            />
-
-            {/* Center content area (spacer + click-away) */}
-            <div className="relative flex flex-1 flex-col">
-              {/* Click-away to close timer dropdown */}
-              {sprintGoalCardOpen && (
-                <div
-                  className="absolute inset-0 z-10"
-                  onClick={handleCloseGoalCard}
-                />
-              )}
-            </div>
-
-            {/* Action bar (identical to existing session) */}
-            {(phase === "sprint" || phase === "break" || phase === "joining" || phase === "resuming") && (
-              <ActionBar
-                micActive={micActive}
-                onToggleMic={handleToggleMic}
-                cameraActive={camera.isActive}
-                onToggleCamera={camera.toggle}
-                onOpenChat={handleToggleChat}
-                onOpenSettings={handleToggleSettings}
-                chatActive={activePanel === "chat"}
-                focusPopover={{
-                  open: focusPopoverOpen,
-                  onToggle: handleToggleFocusPopover,
-                  onClose: handleCloseFocusPopover,
-                  goalText: goal,
-                  onGoalTextChange: setGoal,
-                  activeTaskId: activeTask?.id ?? null,
-                  activeGoalId,
-                  goals: activeGoals,
-                  tasks: activeTasks,
-                  accentColor: world.accentColor,
-                  onSelectTask: handlePopoverSelectTask,
-                  onSelectGoal: handlePopoverSelectGoal,
-                  onCompleteTask: handleCompleteTask,
-                  onDeleteTask: deleteTask,
-                  onCompleteGoal: handleCompleteGoal,
-                  onDeleteGoal: deleteGoalApi,
-                  onAddTask: (title: string, goalId: string | null) => addTask({ title, goal_id: goalId }),
-                  onAddGoal: (title: string) => createGoal({ title }),
-                  onEditTask: editTask,
-                  onEditGoal: (goalId: string, newTitle: string) => updateGoal(goalId, { title: newTitle }),
-                  onComplete: () => {
-                    if (activeTask) {
-                      handleCompleteTask(activeTask.id);
-                    } else if (activeGoalId) {
-                      handleCompleteGoal(activeGoalId);
-                    } else if (goal.trim()) {
-                      // Freeform text — fire celebration and clear
-                      if (userId) {
-                        logEvent({
-                          party_id: partyId,
-                          session_id: persistence.sessionRow?.id ?? null,
-                          user_id: userId,
-                          event_type: "task_completed",
-                          body: goal,
-                        }).catch(() => {});
-                        setCelebrations((prev) => new Map(prev).set(userId, { color: FOREST_300, text: "Done!" }));
-                        setTimeout(() => {
-                          setCelebrations((prev) => { const next = new Map(prev); next.delete(userId!); return next; });
-                        }, 2000);
-                      }
-                      setGoal("");
-                    }
-                    handleCloseFocusPopover();
-                  },
-                  focusButtonRef,
-                  missionSelection: {
-                    selectedMissionId: selectedMissionContext?.missionId ?? null,
-                    selectedMissionTitle: selectedMissionContext?.missionTitle ?? null,
-                    selectedMissionDomain: selectedMissionContext?.missionDomain ?? null,
-                    missionWorkspaceOpen,
-                    canOpenMissionWorkspace: phase === "sprint",
-                    onOpenMissionWorkspace: handleOpenMissionWorkspace,
-                    onSelectMission: handleFocusMissionSelection,
-                  },
-                }}
-                settingsActive={activePanel === "settings"}
-                momentumActive={activePanel === "momentum"}
-                onOpenMomentum={handleToggleMomentum}
-                onEndSession={handleLeaveClick}
-                music={{
-                  popoverOpen: music.popoverOpen,
-                  togglePopover: music.togglePopover,
-                  closePopover: music.closePopover,
-                  activeVibe: music.activeVibe,
-                  selectVibe: music.selectVibe,
-                  isPlaying: music.isPlaying,
-                  togglePlayPause: music.togglePlayPause,
-                  volume: music.volume,
-                  setVolume: music.setVolume,
-                  status: music.status,
-                  roomControlled: true,
-                }}
-                phase={phase === "break" ? "break" : phase === "joining" ? "joining" : phase === "resuming" ? "resuming" : "sprint"}
-                joiningCountdown={joiningCountdown}
-                resumingCountdown={resumingCountdown}
-                breakDurationMinutes={breakDuration}
-                onChangeBreakDuration={handleChangeBreakDuration}
-                onResetBreakTimer={handleResetBreakTimer}
-                onEndBreak={handleBreakVideoFinish}
-                breakResetKey={breakResetKey}
-                timer={timer}
-                currentDurationMin={currentDurationMin}
-                onChangeDuration={handleChangeDuration}
-                onResetTimer={handleResetTimer}
-                goalCardOpen={sprintGoalCardOpen}
-                onToggleGoalCard={handleToggleGoalCard}
-                roomStateLabel={roomStateDisplay.label}
-                roomStateIcon={roomStateDisplay.icon}
-                roomStateColor={roomStateDisplay.color}
-                checkInOpen={checkInOpen}
-                onToggleCheckIn={handleToggleCheckIn}
-                onCloseCheckIn={handleCloseCheckIn}
-                onCheckIn={handleCheckIn}
-                breaksActive={breakPopoverOpen || activePanel === "breaks"}
-                breakPopoverOpen={breakPopoverOpen}
-                onToggleBreakPopover={handleToggleBreakPopover}
-                onCloseBreakPopover={handleCloseBreakPopover}
-                onSelectBreakCategory={handleSelectBreakCategory}
-                notesPopover={{
-                  open: notesPopoverOpen,
-                  onToggle: handleToggleNotesPopover,
-                  text: notes.text,
-                  setText: notes.setText,
-                  isSaving: notes.isSaving,
-                  onBlur: notes.onBlur,
-                  onExpand: () => {
-                    setNotesPopoverOpen(false);
-                    setFloatingNotesOpen(true);
-                  },
-                  onClose: handleCloseNotesPopover,
-                  notesButtonRef,
-                }}
-              />
-            )}
-      </div>
-
-      {/* Right flyout panel — absolutely positioned overlay */}
-      {phase !== "setup" && (
+      {showEnvironmentChrome && (
         <div
-          className={`absolute right-0 top-0 z-20 h-full ${
-            shouldAnimatePanel
-              ? "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-              : ""
-          }`}
-          style={{ width: panelOpen ? PANEL_WIDTH : 0, overflow: "hidden" }}
+          className={`h-full w-full transition-[opacity,transform] duration-200 ease-out ${environmentChromeMotionClass}`}
         >
-          <aside
-            className="flex flex-col rounded-xl border border-white/[0.08]"
-            style={{
-              width: PANEL_WIDTH - 16,
-              height: "calc(100% - 32px)",
-              margin: "16px 16px 16px 0",
-              background: "color-mix(in srgb, var(--sg-forest-900) 78%, transparent)",
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              boxShadow: "var(--shadow-float)",
-            }}
-            role="complementary"
-            aria-label={
-              activePanel === "momentum"
-                ? "Momentum"
-                : activePanel === "chat"
-                  ? "Chat"
-                  : activePanel === "breaks"
-                    ? "Breaks"
-                    : activePanel === "mission"
-                      ? "Mission map"
-                      : "Settings"
-            }
-          >
-            {activePanel === "momentum" && (
-              <EnvironmentRail
-                activityEvents={feedEvents}
-                displayNameMap={feedDisplayNameMap}
-                onClose={closePanel}
+          {/* Left-side participant strip */}
+          <EnvironmentParticipants
+            participants={participantInfos}
+            onParticipantClick={handleParticipantClick}
+            onWidthChange={setParticipantStripWidth}
+            cameraStream={camera.stream}
+            celebrations={celebrations}
+          />
+          {selectedParticipant && phase !== "setup" && (
+            <ParticipantCard
+              participant={selectedParticipant.participant}
+              feedEvents={feedEvents}
+              onHighFive={handleHighFive}
+              highFiveCooldownUntil={
+                highFiveCooldowns.get(
+                  selectedParticipant.participant.id
+                ) ?? null
+              }
+              onClose={handleCloseCard}
+              anchorRect={selectedParticipant.anchorRect}
+              onJoinBreak={handleJoinBreak}
+            />
+          )}
+
+          {/* Sprint goal — ~25% above dead center */}
+          {phase === "sprint" && goal && !selectedMissionContext?.missionId && (
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center" style={{ paddingBottom: "25vh" }}>
+              <SprintGoalBanner
+                goalText={goal}
+                parentGoalTitle={activeGoalForTask?.title ?? null}
               />
-            )}
-            {activePanel === "chat" && (
-              <SideDrawer
-                onClose={closePanel}
-                panel="chat"
-                messages={chat.messages}
-                onSendMessage={chat.sendMessage}
-              />
-            )}
-            {activePanel === "settings" && (
-              <SettingsPanel
-                onClose={closePanel}
-                settings={settings}
-                onUpdateSetting={updateSetting}
-              />
-            )}
-            {activePanel === "breaks" && (
-              breakCategory === "learning" && curriculum ? (
-                <CurriculumBreakFlyout
-                  curriculum={curriculum}
-                  currentPosition={currentPosition}
-                  roomWorldKey={world.worldKey}
-                  onClose={closePanel}
-                  onSelectContent={handleSelectBreakContent}
-                />
-              ) : (
-                <BreaksFlyout
-                  roomWorldKey={world.worldKey}
-                  worldLabel={roomDisplayName}
-                  category={breakCategory}
-                  onClose={closePanel}
-                  onSelectContent={handleSelectBreakContent}
-                />
-              )
-            )}
-            {activePanel === "mission" && (
-              <>
-                <PanelHeader
-                  title="Mission Map"
-                  onClose={handleCloseMissionFlyout}
+            </div>
+          )}
+
+          {/* Main content — full width, flyout overlays on top */}
+          <div className="flex w-full flex-col pl-24">
+                {/* Room header */}
+                <EnvironmentHeader
+                  roomName={roomDisplayName}
+                  inviteCode={party?.invite_code ?? null}
+                  currentPartyId={partyId}
+                  userId={userId}
+                  displayName={displayName}
+                  hasActiveSession={Boolean(persistence.sessionRow)}
                 />
 
-                <div className="min-h-0 flex-1">
-                  {roomMissionLoading && !roomMissionPath ? (
-                    <div className="flex h-full items-center justify-center">
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-transparent" />
-                    </div>
-                  ) : roomMissionError || !roomMissionPath ? (
-                    <div className="flex h-full items-center justify-center px-6 text-center">
-                      <p className="text-sm text-white/45">
-                        {roomMissionError ?? "Select an active mission to open it in this room."}
-                      </p>
-                    </div>
-                  ) : (
-                    <PathSidebar
-                      path={roomMissionPath}
-                      progress={roomMissionProgress}
-                      currentItemIndex={roomMissionCurrentItemIndex}
-                      onSelectItem={handleSelectMissionWorkspaceItem}
-                      title={null}
-                      showSkills={false}
+                {/* Center content area (spacer + click-away) */}
+                <div className="relative flex flex-1 flex-col">
+                  {/* Click-away to close timer dropdown */}
+                  {sprintGoalCardOpen && (
+                    <div
+                      className="absolute inset-0 z-10"
+                      onClick={handleCloseGoalCard}
                     />
                   )}
                 </div>
-              </>
-            )}
-          </aside>
+
+                {/* Action bar (identical to existing session) */}
+                {(phase === "sprint" || phase === "break" || phase === "joining" || phase === "resuming") && (
+                  <ActionBar
+                    micActive={micActive}
+                    onToggleMic={handleToggleMic}
+                    cameraActive={camera.isActive}
+                    onToggleCamera={camera.toggle}
+                    onOpenChat={handleToggleChat}
+                    onOpenSettings={handleToggleSettings}
+                    chatActive={activePanel === "chat"}
+                    focusPopover={{
+                      open: focusPopoverOpen,
+                      onToggle: handleToggleFocusPopover,
+                      onClose: handleCloseFocusPopover,
+                      goalText: goal,
+                      onGoalTextChange: setGoal,
+                      activeTaskId: activeTask?.id ?? null,
+                      activeGoalId,
+                      goals: activeGoals,
+                      tasks: activeTasks,
+                      accentColor: world.accentColor,
+                      onSelectTask: handlePopoverSelectTask,
+                      onSelectGoal: handlePopoverSelectGoal,
+                      onCompleteTask: handleCompleteTask,
+                      onDeleteTask: deleteTask,
+                      onCompleteGoal: handleCompleteGoal,
+                      onDeleteGoal: deleteGoalApi,
+                      onAddTask: (title: string, goalId: string | null) => addTask({ title, goal_id: goalId }),
+                      onAddGoal: (title: string) => createGoal({ title }),
+                      onEditTask: editTask,
+                      onEditGoal: (goalId: string, newTitle: string) => updateGoal(goalId, { title: newTitle }),
+                      onComplete: () => {
+                        if (activeTask) {
+                          handleCompleteTask(activeTask.id);
+                        } else if (activeGoalId) {
+                          handleCompleteGoal(activeGoalId);
+                        } else if (goal.trim()) {
+                          // Freeform text — fire celebration and clear
+                          if (userId) {
+                            logEvent({
+                              party_id: partyId,
+                              session_id: persistence.sessionRow?.id ?? null,
+                              user_id: userId,
+                              event_type: "task_completed",
+                              body: goal,
+                            }).catch(() => {});
+                            setCelebrations((prev) => new Map(prev).set(userId, { color: FOREST_300, text: "Done!" }));
+                            setTimeout(() => {
+                              setCelebrations((prev) => { const next = new Map(prev); next.delete(userId!); return next; });
+                            }, 2000);
+                          }
+                          setGoal("");
+                        }
+                        handleCloseFocusPopover();
+                      },
+                      focusButtonRef,
+                      missionSelection: {
+                        selectedMissionId: selectedMissionContext?.missionId ?? null,
+                        selectedMissionTitle: selectedMissionContext?.missionTitle ?? null,
+                        selectedMissionDomain: selectedMissionContext?.missionDomain ?? null,
+                        missionWorkspaceOpen,
+                        canOpenMissionWorkspace: phase === "sprint",
+                        onOpenMissionWorkspace: handleOpenMissionWorkspace,
+                        onSelectMission: handleFocusMissionSelection,
+                      },
+                    }}
+                    settingsActive={activePanel === "settings"}
+                    momentumActive={activePanel === "momentum"}
+                    onOpenMomentum={handleToggleMomentum}
+                    onEndSession={handleLeaveClick}
+                    music={{
+                      popoverOpen: music.popoverOpen,
+                      togglePopover: music.togglePopover,
+                      closePopover: music.closePopover,
+                      activeVibe: music.activeVibe,
+                      selectVibe: music.selectVibe,
+                      isPlaying: music.isPlaying,
+                      togglePlayPause: music.togglePlayPause,
+                      volume: music.volume,
+                      setVolume: music.setVolume,
+                      status: music.status,
+                      roomControlled: true,
+                    }}
+                    phase={phase === "break" ? "break" : phase === "joining" ? "joining" : phase === "resuming" ? "resuming" : "sprint"}
+                    joiningCountdown={joiningCountdown}
+                    resumingCountdown={resumingCountdown}
+                    breakDurationMinutes={breakDuration}
+                    onChangeBreakDuration={handleChangeBreakDuration}
+                    onResetBreakTimer={handleResetBreakTimer}
+                    onEndBreak={handleBreakVideoFinish}
+                    breakResetKey={breakResetKey}
+                    timer={timer}
+                    currentDurationMin={currentDurationMin}
+                    onChangeDuration={handleChangeDuration}
+                    onResetTimer={handleResetTimer}
+                    goalCardOpen={sprintGoalCardOpen}
+                    onToggleGoalCard={handleToggleGoalCard}
+                    roomStateLabel={roomStateDisplay.label}
+                    roomStateIcon={roomStateDisplay.icon}
+                    roomStateColor={roomStateDisplay.color}
+                    checkInOpen={checkInOpen}
+                    onToggleCheckIn={handleToggleCheckIn}
+                    onCloseCheckIn={handleCloseCheckIn}
+                    onCheckIn={handleCheckIn}
+                    breaksActive={breakPopoverOpen || activePanel === "breaks"}
+                    breakPopoverOpen={breakPopoverOpen}
+                    onToggleBreakPopover={handleToggleBreakPopover}
+                    onCloseBreakPopover={handleCloseBreakPopover}
+                    onSelectBreakCategory={handleSelectBreakCategory}
+                    notesPopover={{
+                      open: notesPopoverOpen,
+                      onToggle: handleToggleNotesPopover,
+                      text: notes.text,
+                      setText: notes.setText,
+                      isSaving: notes.isSaving,
+                      onBlur: notes.onBlur,
+                      onExpand: () => {
+                        setNotesPopoverOpen(false);
+                        setFloatingNotesOpen(true);
+                      },
+                      onClose: handleCloseNotesPopover,
+                      notesButtonRef,
+                    }}
+                  />
+                )}
+          </div>
+
+          {/* Right flyout panel — absolutely positioned overlay */}
+          {phase !== "setup" && (
+            <div
+              className={`absolute right-0 top-0 z-20 h-full ${
+                shouldAnimatePanel
+                  ? "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                  : ""
+              }`}
+              style={{ width: panelOpen ? PANEL_WIDTH : 0, overflow: "hidden" }}
+            >
+              <aside
+                className="flex flex-col rounded-xl border border-white/[0.08]"
+                style={{
+                  width: PANEL_WIDTH - 16,
+                  height: "calc(100% - 32px)",
+                  margin: "16px 16px 16px 0",
+                  background: "color-mix(in srgb, var(--sg-forest-900) 78%, transparent)",
+                  backdropFilter: "blur(24px)",
+                  WebkitBackdropFilter: "blur(24px)",
+                  boxShadow: "var(--shadow-float)",
+                }}
+                role="complementary"
+                aria-label={
+                  activePanel === "momentum"
+                    ? "Momentum"
+                    : activePanel === "chat"
+                      ? "Chat"
+                      : activePanel === "breaks"
+                        ? "Breaks"
+                        : activePanel === "mission"
+                          ? "Mission map"
+                          : "Settings"
+                }
+              >
+                {activePanel === "momentum" && (
+                  <EnvironmentRail
+                    activityEvents={feedEvents}
+                    displayNameMap={feedDisplayNameMap}
+                    onClose={closePanel}
+                  />
+                )}
+                {activePanel === "chat" && (
+                  <SideDrawer
+                    onClose={closePanel}
+                    panel="chat"
+                    messages={chat.messages}
+                    onSendMessage={chat.sendMessage}
+                  />
+                )}
+                {activePanel === "settings" && (
+                  <SettingsPanel
+                    onClose={closePanel}
+                    settings={settings}
+                    onUpdateSetting={updateSetting}
+                  />
+                )}
+                {activePanel === "breaks" && (
+                  breakCategory === "learning" && curriculum ? (
+                    <CurriculumBreakFlyout
+                      curriculum={curriculum}
+                      currentPosition={currentPosition}
+                      roomWorldKey={world.worldKey}
+                      onClose={closePanel}
+                      onSelectContent={handleSelectBreakContent}
+                    />
+                  ) : (
+                    <BreaksFlyout
+                      roomWorldKey={world.worldKey}
+                      worldLabel={roomDisplayName}
+                      category={breakCategory}
+                      onClose={closePanel}
+                      onSelectContent={handleSelectBreakContent}
+                    />
+                  )
+                )}
+                {activePanel === "mission" && (
+                  <>
+                    <PanelHeader
+                      title="Mission Map"
+                      onClose={handleCloseMissionFlyout}
+                    />
+
+                    <div className="min-h-0 flex-1">
+                      {roomMissionLoading && !roomMissionPath ? (
+                        <div className="flex h-full items-center justify-center">
+                          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-transparent" />
+                        </div>
+                      ) : roomMissionError || !roomMissionPath ? (
+                        <div className="flex h-full items-center justify-center px-6 text-center">
+                          <p className="text-sm text-white/45">
+                            {roomMissionError ?? "Select an active mission to open it in this room."}
+                          </p>
+                        </div>
+                      ) : (
+                        <PathSidebar
+                          path={roomMissionPath}
+                          progress={roomMissionProgress}
+                          currentItemIndex={roomMissionCurrentItemIndex}
+                          onSelectItem={handleSelectMissionWorkspaceItem}
+                          title={null}
+                          showSkills={false}
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
+              </aside>
+            </div>
+          )}
         </div>
       )}
 
@@ -2507,10 +2550,7 @@ export default function EnvironmentPage() {
 
       {/* Join room modal — shown on first visit before joining.
           Gated on hydration so it never flashes during session restore. */}
-      {showJoinModal &&
-        !persistence.isHydrating &&
-        (!persistence.wasRestored ||
-          (phase === "setup" && !persistence.sessionRow)) && (
+      {showRoomEntryOverlay && (
         <JoinRoomModal
           partyId={partyId}
           isOpen={showJoinModal}

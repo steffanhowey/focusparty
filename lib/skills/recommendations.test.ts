@@ -62,6 +62,7 @@ interface RecommendationFixture {
   skillTagRows: Array<Record<string, unknown>>;
   pathRows: Array<Record<string, unknown>>;
   activeRooms: Array<Record<string, unknown>>;
+  participantRows: Array<Record<string, unknown>>;
 }
 
 let fixture: RecommendationFixture;
@@ -184,6 +185,25 @@ function createAdminClientFixture() {
         };
       }
 
+      if (table === "fp_party_participants") {
+        return {
+          select() {
+            return {
+              in() {
+                return {
+                  is() {
+                    return Promise.resolve({
+                      data: fixture.participantRows,
+                      error: null,
+                    });
+                  },
+                };
+              },
+            };
+          },
+        };
+      }
+
       throw new Error(`Unexpected table: ${table}`);
     },
   };
@@ -199,6 +219,7 @@ describe("getSkillRecommendations", () => {
       skillTagRows: [],
       pathRows: [],
       activeRooms: [],
+      participantRows: [],
     };
 
     vi.clearAllMocks();
@@ -305,5 +326,99 @@ describe("getSkillRecommendations", () => {
     expect(recommendations.every((rec) => rec.action?.type === "start_path")).toBe(
       true,
     );
+  });
+
+  it("uses the launch room preference for marketer-facing room hints", async () => {
+    const skillsWithDomains = [
+      {
+        id: "content-skill",
+        slug: "content-strategy",
+        name: "Content Strategy",
+        description: "Build a repeatable content system",
+        domain_id: "domain-content",
+        relevant_functions: ["marketing"],
+        sort_order: 1,
+        domain: {
+          id: "domain-content",
+          slug: "writing-communication",
+          name: "Writing & Communication",
+        },
+      },
+    ];
+
+    getSkillsWithDomainsMock.mockResolvedValue(skillsWithDomains);
+    getSkillsMock.mockResolvedValue(
+      skillsWithDomains.map((skill) => ({
+        id: skill.id,
+        slug: skill.slug,
+        name: skill.name,
+        description: skill.description,
+        domain_id: skill.domain_id,
+        relevant_functions: skill.relevant_functions,
+        sort_order: skill.sort_order,
+      })),
+    );
+
+    fixture.skillTagRows = [{ path_id: "content-path", skill_id: "content-skill" }];
+    fixture.pathRows = [
+      {
+        id: "content-path",
+        created_at: "2026-03-20T12:00:00.000Z",
+        completion_count: 4,
+      },
+    ];
+    fixture.activeRooms = [
+      {
+        id: "messaging-room",
+        name: "Messaging Lab",
+        status: "active",
+        world_key: "writer-room",
+        launch_room_key: "messaging-lab",
+        launch_visible: true,
+        runtime_profile_key: "writer-room",
+        persistent: true,
+        blueprint_id: null,
+      },
+      {
+        id: "content-room",
+        name: "Content Systems",
+        status: "waiting",
+        world_key: "writer-room",
+        launch_room_key: "content-systems",
+        launch_visible: true,
+        runtime_profile_key: "writer-room",
+        persistent: true,
+        blueprint_id: null,
+      },
+    ];
+    fixture.participantRows = [
+      { party_id: "messaging-room" },
+      { party_id: "messaging-room" },
+      { party_id: "messaging-room" },
+      { party_id: "content-room" },
+    ];
+    loadSkillTagsForPathsMock.mockResolvedValue(
+      new Map([
+        [
+          "content-path",
+          [
+            {
+              skill_slug: "content-strategy",
+              skill_name: "Content Strategy",
+              domain_name: "Writing & Communication",
+              relevance: "primary",
+            },
+          ],
+        ],
+      ]),
+    );
+
+    const recommendations = await getSkillRecommendations(
+      "user-1",
+      "marketing",
+      1,
+    );
+
+    expect(recommendations[0]?.action?.room_name).toBe("Content Systems");
   });
 });

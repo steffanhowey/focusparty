@@ -12,7 +12,7 @@ function formatMinutes(seconds: number): string {
 interface JoinRoomHeaderProps {
   world: WorldConfig;
   roomName: string;
-  roomDescription: string;
+  roomFraming: string;
   coverSrc: string | null;
   focusingCount: number;
   hasActiveSprint: boolean;
@@ -70,7 +70,7 @@ function AvatarCluster({
 export function JoinRoomHeader({
   world,
   roomName,
-  roomDescription,
+  roomFraming,
   coverSrc,
   focusingCount,
   hasActiveSprint,
@@ -116,8 +116,8 @@ export function JoinRoomHeader({
           {roomName}
         </h2>
 
-        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-white/40">
-          {roomDescription}
+        <p className="mt-0.5 line-clamp-3 text-xs leading-relaxed text-white/40">
+          {roomFraming}
         </p>
 
         {/* Meta line */}

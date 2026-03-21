@@ -2,14 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { RoomCard } from "@/components/party/RoomCard";
 import { useActiveBackgrounds } from "@/lib/useActiveBackgrounds";
 import { getCanonicalRoomEntryRoute, ROOMS_ROUTE } from "@/lib/appRoutes";
-import { isPartyLaunchVisible } from "@/lib/launchRooms";
+import {
+  getLaunchRoomCatalogEntries,
+  getLaunchRoomMissionFitHint,
+  getPartyLaunchPickerDescription,
+  isPartyLaunchVisible,
+} from "@/lib/launchRooms";
 import { writeMissionRoomHandoff } from "@/lib/missionRoomHandoff";
 import { getMissionRoomRecommendations } from "@/lib/missionRoomRecommendations";
 import { useDiscoverableParties } from "@/lib/useDiscoverableParties";
@@ -22,6 +26,9 @@ interface MissionRoomPickerModalProps {
   path: LearningPath;
   progress?: LearningProgress | null;
 }
+
+const ROOM_PICKER_GRID_CLASS_NAME = "grid gap-5 sm:grid-cols-2 lg:grid-cols-3";
+const ROOM_PICKER_SKELETON_COUNT = getLaunchRoomCatalogEntries().length;
 
 export function MissionRoomPickerModal({
   isOpen,
@@ -42,6 +49,10 @@ export function MissionRoomPickerModal({
   const orderedRooms = useMemo(
     () => (recommendedRoom ? [recommendedRoom, ...otherRooms] : otherRooms),
     [recommendedRoom, otherRooms],
+  );
+  const recommendedRoomFitHint = useMemo(
+    () => getLaunchRoomMissionFitHint(recommendedRoom),
+    [recommendedRoom],
   );
 
   const handleSelectRoom = (party: PartyWithCount) => {
@@ -74,20 +85,24 @@ export function MissionRoomPickerModal({
       variant="immersive"
       panelClassName="max-w-[1120px] p-6 sm:p-8"
     >
-      <div className="space-y-6">
+      <div className={`space-y-6 ${loading ? "min-h-[560px] sm:min-h-[620px]" : ""}`}>
         {loading ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <Card
-                key={index}
-                className="animate-pulse border-white/[0.08] bg-white/[0.04] p-4"
-              >
-                <div className="h-[200px] rounded-md bg-white/10" />
-                <div className="mt-3 h-4 w-3/5 rounded-full bg-white/10" />
-                <div className="mt-2 h-3 w-4/5 rounded-full bg-white/10" />
-              </Card>
-            ))}
-          </div>
+          <>
+            <div
+              className="h-4 w-40 animate-pulse rounded-full"
+              style={{ background: "rgba(255,255,255,0.10)" }}
+            />
+            <section>
+              <div className={ROOM_PICKER_GRID_CLASS_NAME}>
+                {Array.from({ length: ROOM_PICKER_SKELETON_COUNT }).map((_, index) => (
+                  <RoomPickerCardSkeleton
+                    key={index}
+                    showRecommendedBadge={index === 0}
+                  />
+                ))}
+              </div>
+            </section>
+          </>
         ) : error ? (
           <Card className="border-white/[0.08] bg-white/[0.04] p-5">
             <div className="space-y-3">
@@ -118,8 +133,14 @@ export function MissionRoomPickerModal({
           </Card>
         ) : (
           <>
+            {recommendedRoomFitHint ? (
+              <p className="text-sm text-white/55">
+                {recommendedRoomFitHint}
+              </p>
+            ) : null}
+
             <section>
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className={ROOM_PICKER_GRID_CLASS_NAME}>
                 {orderedRooms.map((party, index) => (
                   <RoomCard
                     key={party.id}
@@ -140,26 +161,77 @@ export function MissionRoomPickerModal({
                         </span>
                       ) : null
                     }
+                    descriptionOverride={getPartyLaunchPickerDescription(party)}
                     onClick={() => handleSelectRoom(party)}
                     isJoining={joiningRoomId === party.id}
                   />
                 ))}
               </div>
             </section>
-
-            <div className="flex justify-end">
-              <Button
-                variant="link"
-                size="sm"
-                rightIcon={<ArrowRight size={14} />}
-                onClick={handleSeeAllRooms}
-              >
-                See all rooms
-              </Button>
-            </div>
           </>
         )}
       </div>
     </Modal>
+  );
+}
+
+function RoomPickerCardSkeleton({
+  showRecommendedBadge = false,
+}: {
+  showRecommendedBadge?: boolean;
+}) {
+  return (
+    <div className="animate-pulse">
+      <div
+        className="relative h-[200px] w-full overflow-hidden rounded-md border"
+        style={{
+          borderColor: "rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.04)",
+        }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{ background: "rgba(255,255,255,0.03)" }}
+        />
+        {showRecommendedBadge ? (
+          <div
+            className="absolute left-3 top-3 h-6 w-28 rounded-full"
+            style={{ background: "rgba(255,255,255,0.10)" }}
+          />
+        ) : null}
+      </div>
+
+      <div className="flex items-center gap-2 px-1 pt-2">
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div
+            className="h-4 w-3/5 rounded-full"
+            style={{ background: "rgba(255,255,255,0.10)" }}
+          />
+          <div
+            className="h-3 w-4/5 rounded-full"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          />
+          <div
+            className="h-3 w-2/3 rounded-full"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          />
+        </div>
+
+        <div className="flex shrink-0 items-center">
+          {[0, 1, 2].map((index) => (
+            <div
+              key={index}
+              className={`h-5 w-5 rounded-full border ${
+                index === 0 ? "" : "-ml-[6px]"
+              }`}
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                borderColor: "rgba(15,35,24,0.45)",
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -47,6 +47,14 @@
     --sg-gold-300: #E5DF8A;
     --sg-gold-200: #F0ECB8;
     --sg-gold-100: #F8F6DC;
+    --sg-coral-700: #C0392B;
+    --sg-coral-600: #D64540;
+    --sg-coral-500: #E96861;
+    --sg-coral-400: #F08C86;
+    --sg-coral-300: #F5B0AC;
+    --sg-coral-200: #FADBD9;
+    --sg-coral-100: #FDECEB;
+    --sg-coral-on-dark: rgba(233, 104, 97, 0.18);
     --sg-cream-100: #FDFAF3;
     --sg-cream-50:  #FEFCF8;
 
@@ -196,6 +204,17 @@
     --sg-accent-highlight: var(--sg-gold-500);
     --sg-cta-bg:           var(--sg-forest-700);
     --sg-success:          var(--sg-forest-400);
+    --sg-error:            var(--sg-coral-500);
+    --sg-error-dark:       var(--sg-coral-700);
+    --sg-error-tint:       var(--sg-coral-100);
+    --sg-warning:          var(--sg-gold-600);
+
+    /* ── Room State Semantics ── */
+    --sg-state-quiet:      var(--sg-shell-500);
+    --sg-state-warming:    var(--sg-gold-600);
+    --sg-state-focused:    var(--sg-forest-400);
+    --sg-state-flowing:    var(--sg-teal-500);
+    --sg-state-cooling:    var(--sg-sage-500);
   }
 
   body {
@@ -971,6 +990,7 @@
   <a href="#foundations">Foundations</a>
   <a href="#patterns">Patterns</a>
   <a href="#components">Components</a>
+  <a href="#app-recipes">App Recipes</a>
   <a href="#app-preview">App Preview</a>
   <a href="#photography">Photo</a>
   <a href="#tokens">Tokens</a>
@@ -1099,6 +1119,23 @@
       <div class="swatch dk" style="background:#E5DF8A" onclick="copy('#E5DF8A')"><span class="swatch-label">300</span><span class="swatch-hex">#E5DF8A</span></div>
       <div class="swatch dk" style="background:#F0ECB8" onclick="copy('#F0ECB8')"><span class="swatch-label">200</span><span class="swatch-hex">#F0ECB8</span></div>
       <div class="swatch dk" style="background:#F8F6DC" onclick="copy('#F8F6DC')"><span class="swatch-label">100</span><span class="swatch-hex">#F8F6DC</span></div>
+    </div>
+  </div>
+
+  <div class="color-group">
+    <div class="color-group-title">Coral — Error / Danger / Destructive</div>
+    <div class="swatch-row">
+      <div class="swatch lt" style="background:#C0392B" onclick="copy('#C0392B')"><span class="swatch-label">700</span><span class="swatch-hex">#C0392B</span></div>
+      <div class="swatch lt" style="background:#D64540" onclick="copy('#D64540')"><span class="swatch-label">600</span><span class="swatch-hex">#D64540</span></div>
+      <div class="swatch lt" style="background:#E96861" onclick="copy('#E96861')"><span class="swatch-label">500</span><span class="swatch-hex">#E96861</span></div>
+      <div class="swatch dk" style="background:#F08C86" onclick="copy('#F08C86')"><span class="swatch-label">400</span><span class="swatch-hex">#F08C86</span></div>
+      <div class="swatch dk" style="background:#F5B0AC" onclick="copy('#F5B0AC')"><span class="swatch-label">300</span><span class="swatch-hex">#F5B0AC</span></div>
+      <div class="swatch dk" style="background:#FADBD9" onclick="copy('#FADBD9')"><span class="swatch-label">200</span><span class="swatch-hex">#FADBD9</span></div>
+      <div class="swatch dk" style="background:#FDECEB" onclick="copy('#FDECEB')"><span class="swatch-label">100</span><span class="swatch-hex">#FDECEB</span></div>
+    </div>
+    <div style="font-size: 12px; color: var(--sg-sage-500); margin-top: 8px; line-height: 1.5;">
+      Use sparingly. Coral appears only for: error states, danger/destructive buttons, advanced difficulty badges, form validation, and the "end session" action. Never as decoration.
+      <br>On dark surfaces: <code style="font-size:11px; background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px;">background: var(--sg-coral-on-dark)</code> → <code style="font-size:11px; background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px;">rgba(233,104,97,0.18)</code>
     </div>
   </div>
 </section>
@@ -3358,6 +3395,113 @@
 
 </section>
 </div><!-- /.mode-shared (Components) -->
+
+<!-- ═══════════════ APP UI RECIPES ═══════════════ -->
+<div class="mode-shared">
+<section id="app-recipes">
+  <div class="section-title">App UI Recipes</div>
+  <p class="section-sub">Reusable token patterns for common app surfaces. Use these recipes instead of inventing ad-hoc combinations.</p>
+
+  <!-- Room State Colors -->
+  <div class="label">Room State Semantic Colors</div>
+  <p class="section-sub" style="margin-bottom: 16px;">Five states describe room energy. Each maps to a semantic alias defined in <code>:root</code>.</p>
+  <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 32px;">
+    <div style="text-align: center;">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--sg-state-quiet); margin: 0 auto 8px;"></div>
+      <div style="font-size: 12px; font-weight: 600; color: white;">Quiet</div>
+      <div style="font-size: 11px; color: var(--sg-sage-500);">shell-500</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--sg-state-warming); margin: 0 auto 8px;"></div>
+      <div style="font-size: 12px; font-weight: 600; color: white;">Warming</div>
+      <div style="font-size: 11px; color: var(--sg-sage-500);">gold-600</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--sg-state-focused); margin: 0 auto 8px;"></div>
+      <div style="font-size: 12px; font-weight: 600; color: white;">Focused</div>
+      <div style="font-size: 11px; color: var(--sg-sage-500);">forest-400</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--sg-state-flowing); margin: 0 auto 8px;"></div>
+      <div style="font-size: 12px; font-weight: 600; color: white;">Flowing</div>
+      <div style="font-size: 11px; color: var(--sg-sage-500);">teal-500</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--sg-state-cooling); margin: 0 auto 8px;"></div>
+      <div style="font-size: 12px; font-weight: 600; color: white;">Cooling</div>
+      <div style="font-size: 11px; color: var(--sg-sage-500);">sage-500</div>
+    </div>
+  </div>
+
+  <!-- Fluency Badges -->
+  <div class="label">Fluency Badge System</div>
+  <p class="section-sub" style="margin-bottom: 16px;">Four fluency levels, each with on-light and on-dark variants. On-dark recipe: <code>rgba([base], 0.15)</code> background + lighter-step text.</p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;">
+    <!-- On Light -->
+    <div style="background: var(--sg-shell-50); border: 1px solid var(--sg-shell-border); border-radius: 12px; padding: 20px;">
+      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sg-shell-500); margin-bottom: 12px;">On Light</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: var(--sg-sage-100); color: var(--sg-sage-700);">Exploring</span>
+        <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: var(--sg-teal-100); color: var(--sg-teal-600);">Practicing</span>
+        <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: var(--sg-forest-100); color: var(--sg-forest-600);">Proficient</span>
+        <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: var(--sg-gold-100); color: var(--sg-gold-900);">Advanced</span>
+      </div>
+    </div>
+    <!-- On Dark -->
+    <div style="background: var(--sg-forest-900); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px;">
+      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sg-sage-500); margin-bottom: 12px;">On Dark</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: rgba(197,217,198,0.15); color: var(--sg-sage-300);">Exploring</span>
+        <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: rgba(74,168,164,0.15); color: var(--sg-teal-400);">Practicing</span>
+        <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: rgba(74,158,106,0.15); color: var(--sg-forest-300);">Proficient</span>
+        <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: rgba(184,156,30,0.15); color: var(--sg-gold-200);">Advanced</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Difficulty Badges -->
+  <div class="label">Difficulty Badges</div>
+  <p class="section-sub" style="margin-bottom: 16px;">Three levels using forest, teal, and coral. Same on-light / on-dark recipe as fluency badges.</p>
+  <div style="display: flex; gap: 8px; margin-bottom: 32px;">
+    <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: var(--sg-forest-100); color: var(--sg-forest-600);">Beginner</span>
+    <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: var(--sg-teal-100); color: var(--sg-teal-600);">Intermediate</span>
+    <span style="padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background: var(--sg-coral-100); color: var(--sg-coral-600);">Advanced</span>
+  </div>
+
+  <!-- Progress Gradient -->
+  <div class="label">Progress Gradient</div>
+  <p class="section-sub" style="margin-bottom: 16px;">Use for progress bars, completion indicators, and skill graph fills. Solid <code>forest-400</code> is an acceptable simpler fallback.</p>
+  <div style="margin-bottom: 8px;">
+    <div style="height: 8px; border-radius: 9999px; background: rgba(255,255,255,0.06); width: 100%; overflow: hidden;">
+      <div style="height: 100%; width: 65%; border-radius: 9999px; background: linear-gradient(90deg, var(--sg-forest-400), var(--sg-teal-500));"></div>
+    </div>
+  </div>
+  <div style="font-size: 11px; color: var(--sg-sage-500); font-family: monospace;">
+    background: linear-gradient(90deg, var(--sg-forest-400), var(--sg-teal-500));
+  </div>
+
+  <!-- Error/Danger Pattern -->
+  <div class="label" style="margin-top: 32px;">Error &amp; Danger States</div>
+  <p class="section-sub" style="margin-bottom: 16px;">Coral is the only non-green/gold accent. Use it exclusively for error, danger, and destructive actions.</p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;">
+    <div style="background: var(--sg-shell-50); border: 1px solid var(--sg-shell-border); border-radius: 12px; padding: 20px;">
+      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sg-shell-500); margin-bottom: 12px;">On Light</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding: 10px 16px; border-radius: 8px; background: var(--sg-coral-100); border: 1px solid var(--sg-coral-200); color: var(--sg-coral-700); font-size: 13px;">Error message on light surface</div>
+        <button style="padding: 8px 16px; border-radius: 8px; background: var(--sg-coral-500); color: white; border: none; font-size: 13px; font-weight: 600; cursor: pointer;">Delete Item</button>
+      </div>
+    </div>
+    <div style="background: var(--sg-forest-900); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px;">
+      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sg-sage-500); margin-bottom: 12px;">On Dark</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding: 10px 16px; border-radius: 8px; background: var(--sg-coral-on-dark); border: 1px solid rgba(233,104,97,0.25); color: var(--sg-coral-400); font-size: 13px;">Error message on dark surface</div>
+        <button style="padding: 8px 16px; border-radius: 8px; background: var(--sg-coral-500); color: white; border: none; font-size: 13px; font-weight: 600; cursor: pointer;">End Session</button>
+      </div>
+    </div>
+  </div>
+
+</section>
+</div><!-- /.mode-shared (App UI Recipes) -->
 
 <!-- ═══════════════ SHELL PALETTE ═══════════════ -->
 <div class="mode-shared">

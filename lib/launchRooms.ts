@@ -23,6 +23,9 @@ export interface LaunchRoomCatalogEntry {
   name: string;
   shortDescription: string;
   pickerDescription: string;
+  lobbyFraming: string;
+  switcherSupportLine: string;
+  missionFitHint: string;
   roomClass: LaunchRoomClass;
   supportedMissionDomains: string[];
   discoveryTags: LaunchRoomDiscoveryTag[];
@@ -62,8 +65,13 @@ export const LAUNCH_ROOM_CATALOG: Record<LaunchRoomKey, LaunchRoomCatalogEntry> 
   "messaging-lab": {
     key: "messaging-lab",
     name: "Messaging Lab",
-    shortDescription: "Draft sharper pitches, outreach, and messaging with other communicators in motion.",
-    pickerDescription: "Best for messaging, sales notes, outreach, and high-stakes communication work.",
+    shortDescription:
+      "Best for messaging work that needs clarity, pressure-testing, and stronger language.",
+    pickerDescription: "Sharpen positioning, offers, and copy.",
+    lobbyFraming:
+      "Use this room when the work is about what you're saying, how you're saying it, and why it should land.",
+    switcherSupportLine: "For positioning, offers, and copy",
+    missionFitHint: "Best for messaging work",
     roomClass: "messaging",
     supportedMissionDomains: ["writing-communication", "persuasion-sales"],
     discoveryTags: ["writing"],
@@ -75,8 +83,13 @@ export const LAUNCH_ROOM_CATALOG: Record<LaunchRoomKey, LaunchRoomCatalogEntry> 
   "research-room": {
     key: "research-room",
     name: "Research Room",
-    shortDescription: "Read, analyze, and synthesize without losing the thread.",
-    pickerDescription: "Best for research, analysis, reading, and working through source material.",
+    shortDescription:
+      "Best for research, synthesis, and making sense of messy information.",
+    pickerDescription: "Turn inputs into usable insight.",
+    lobbyFraming:
+      "Use this room when the work starts with inputs, evidence, or questions, and your job is to turn that into clarity.",
+    switcherSupportLine: "For research, synthesis, and insight work",
+    missionFitHint: "Good for research and synthesis",
     roomClass: "research",
     supportedMissionDomains: ["strategy-planning", "operations-execution"],
     discoveryTags: ["writing"],
@@ -88,8 +101,13 @@ export const LAUNCH_ROOM_CATALOG: Record<LaunchRoomKey, LaunchRoomCatalogEntry> 
   "campaign-sprint": {
     key: "campaign-sprint",
     name: "Campaign Sprint",
-    shortDescription: "Push launches, plans, and deadline-driven work over the line.",
-    pickerDescription: "Best for launch pushes, campaign execution, and time-boxed planning work.",
+    shortDescription:
+      "Best for turning ideas into launchable campaigns, tests, and live marketing moves.",
+    pickerDescription: "Plan, test, and shape live campaigns.",
+    lobbyFraming:
+      "Use this room when the work is about getting a campaign, launch, or experiment into shape and into motion.",
+    switcherSupportLine: "For campaigns, launches, and experiments",
+    missionFitHint: "Best fit for campaigns and experiments",
     roomClass: "campaign",
     supportedMissionDomains: [
       "operations-execution",
@@ -105,8 +123,13 @@ export const LAUNCH_ROOM_CATALOG: Record<LaunchRoomKey, LaunchRoomCatalogEntry> 
   "content-systems": {
     key: "content-systems",
     name: "Content Systems",
-    shortDescription: "Build repeatable content workflows, calendars, and editorial assets.",
-    pickerDescription: "Best for content ops, editorial systems, and repeatable publishing workflows.",
+    shortDescription:
+      "Best for designing content systems, repurposing workflows, and repeatable AI-assisted production.",
+    pickerDescription: "Build repeatable content workflows.",
+    lobbyFraming:
+      "Use this room when the goal is not one asset, but a better way to keep creating the right assets over time.",
+    switcherSupportLine: "For repeatable content workflows",
+    missionFitHint: "Good for repeatable content workflows",
     roomClass: "content",
     supportedMissionDomains: [
       "writing-communication",
@@ -122,8 +145,13 @@ export const LAUNCH_ROOM_CATALOG: Record<LaunchRoomKey, LaunchRoomCatalogEntry> 
   "workflow-studio": {
     key: "workflow-studio",
     name: "Workflow Studio",
-    shortDescription: "Design automations, tools, and AI-assisted workflows that actually run.",
-    pickerDescription: "Best for automations, tooling, systems design, and builder workflows.",
+    shortDescription:
+      "Best for workflows, handoffs, operations, and AI-assisted process design.",
+    pickerDescription: "Improve how the work gets done.",
+    lobbyFraming:
+      "Use this room when the bottleneck is not the idea itself, but the system, workflow, or handoff around it.",
+    switcherSupportLine: "For workflows, ops, and systems design",
+    missionFitHint: "Best fit for workflows and ops",
     roomClass: "workflow",
     supportedMissionDomains: ["technical-building", "workflow-automation"],
     discoveryTags: ["coding"],
@@ -135,8 +163,13 @@ export const LAUNCH_ROOM_CATALOG: Record<LaunchRoomKey, LaunchRoomCatalogEntry> 
   "open-studio": {
     key: "open-studio",
     name: "Open Studio",
-    shortDescription: "Bring any task and get moving in a low-pressure room.",
-    pickerDescription: "Best for mixed work, early momentum, and open-ended focus sessions.",
+    shortDescription:
+      "Best for mixed work, messy starting points, and missions that don't need a specialized room.",
+    pickerDescription: "Bring any mission and get moving.",
+    lobbyFraming:
+      "Use this room when you want a live place to work and you don't need the room to be highly specialized.",
+    switcherSupportLine: "For mixed work and flexible sessions",
+    missionFitHint: "Good for mixed work",
     roomClass: "open",
     supportedMissionDomains: [],
     discoveryTags: ["calm"],
@@ -157,6 +190,35 @@ export function getLaunchRoomCatalogEntry(
 ): LaunchRoomCatalogEntry | null {
   if (!isLaunchRoomKey(key)) return null;
   return LAUNCH_ROOM_CATALOG[key];
+}
+
+function normalizeLaunchRoomLookupValue(
+  value: string | null | undefined,
+): string | null {
+  if (!value) return null;
+
+  const normalized = value.trim().toLowerCase().replace(/\s+/g, " ");
+  return normalized || null;
+}
+
+const LAUNCH_ROOM_ENTRY_BY_DISPLAY_NAME = new Map<string, LaunchRoomCatalogEntry>(
+  Object.values(LAUNCH_ROOM_CATALOG).flatMap((entry) => {
+    const keyLookup = normalizeLaunchRoomLookupValue(entry.key);
+    const nameLookup = normalizeLaunchRoomLookupValue(entry.name);
+
+    return [
+      ...(keyLookup ? [[keyLookup, entry] as const] : []),
+      ...(nameLookup ? [[nameLookup, entry] as const] : []),
+    ];
+  }),
+);
+
+export function getLaunchRoomCatalogEntryByDisplayName(
+  value: string | null | undefined,
+): LaunchRoomCatalogEntry | null {
+  const normalized = normalizeLaunchRoomLookupValue(value);
+  if (!normalized) return null;
+  return LAUNCH_ROOM_ENTRY_BY_DISPLAY_NAME.get(normalized) ?? null;
 }
 
 function getLegacyFallbackLaunchRoomKey(
@@ -216,6 +278,36 @@ export function getPartyLaunchPickerDescription(
   const launchRoom = getPartyLaunchRoomEntry(party);
   if (launchRoom) return launchRoom.pickerDescription;
   return getPartyLaunchShortDescription(party);
+}
+
+export function getPartyLaunchLobbyFraming(
+  party: LaunchRoomBindingLike | null | undefined,
+): string {
+  const launchRoom = getPartyLaunchRoomEntry(party);
+  if (launchRoom) return launchRoom.lobbyFraming;
+  return getPartyLaunchShortDescription(party);
+}
+
+export function getPartyLaunchSwitcherSupportLine(
+  party: LaunchRoomBindingLike | null | undefined,
+): string {
+  const launchRoom = getPartyLaunchRoomEntry(party);
+  if (launchRoom) return launchRoom.switcherSupportLine;
+  return getPartyLaunchPickerDescription(party);
+}
+
+export function getLaunchRoomMissionFitHint(
+  room: LaunchRoomBindingLike | string | null | undefined,
+): string | null {
+  if (!room) return null;
+
+  const launchRoom =
+    typeof room === "string"
+      ? getLaunchRoomCatalogEntry(room) ??
+        getLaunchRoomCatalogEntryByDisplayName(room)
+      : getPartyLaunchRoomEntry(room);
+
+  return launchRoom?.missionFitHint ?? null;
 }
 
 export function getPartyLaunchSupportedMissionDomains(

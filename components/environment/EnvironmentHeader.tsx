@@ -10,7 +10,7 @@ import { listDiscoverableParties, joinParty, type PartyWithCount } from "@/lib/p
 import type { JoinConfig } from "@/components/party/JoinRoomModal";
 import {
   getPartyLaunchDisplayName,
-  getPartyLaunchPickerDescription,
+  getPartyLaunchSwitcherSupportLine,
   isPartyLaunchVisible,
 } from "@/lib/launchRooms";
 import { getPartyRuntimeWorldKey, getWorldConfig } from "@/lib/worlds";
@@ -264,7 +264,7 @@ export function EnvironmentHeader({
                 const world = getWorldConfig(runtimeWorldKey);
                 const switcherThumb = backgrounds.get(runtimeWorldKey)?.thumbUrl ?? null;
                 const roomName = getPartyLaunchDisplayName(p);
-                const roomDescription = getPartyLaunchPickerDescription(p);
+                const roomDescription = getPartyLaunchSwitcherSupportLine(p);
                 return (
                   <div key={p.id}>
                     {i > 0 && (

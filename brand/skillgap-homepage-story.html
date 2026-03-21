@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillGap.ai — Homepage Story</title>
+<style>
+/* ═══════════════ TOKENS ═══════════════ */
+:root {
+  --sg-forest-900: #0F1D15;
+  --sg-forest-800: #162B1E;
+  --sg-forest-700: #1E3A2C;
+  --sg-forest-600: #2A5340;
+  --sg-forest-500: #3A7D53;
+  --sg-forest-400: #4A9D66;
+  --sg-forest-300: #6BBF87;
+  --sg-forest-200: #A8DDB8;
+  --sg-forest-100: #D4F0DC;
+  --sg-forest-50:  #EFF9F2;
+
+  --sg-shell-900: #1A1A1A;
+  --sg-shell-800: #2E2E2E;
+  --sg-shell-700: #424242;
+  --sg-shell-600: #5C5C5C;
+  --sg-shell-500: #787878;
+  --sg-shell-400: #9E9E9E;
+  --sg-shell-300: #BFBFBF;
+  --sg-shell-200: #E0E0E0;
+  --sg-shell-100: #F0F0F0;
+  --sg-shell-50:  #F7F7F7;
+  --sg-shell-border: #E5E5E5;
+
+  --sg-sage-900: #1A1F1B;
+  --sg-sage-700: #2E3830;
+  --sg-sage-500: #6B7C6F;
+  --sg-sage-300: #A8B5AB;
+  --sg-sage-100: #E8EDE9;
+
+  --sg-gold-600: #B89C1E;
+  --sg-gold-100: #F8F6DC;
+
+  --sg-teal-600: #3D8E8B;
+  --sg-teal-100: #E8F5F3;
+
+  --sg-radius-sm: 6px;
+  --sg-radius-md: 10px;
+  --sg-radius-lg: 14px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--sg-shell-50);
+  color: var(--sg-shell-900);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════ LAYOUT ═══════════════ */
+.doc-header {
+  background: var(--sg-forest-700);
+  color: white;
+  padding: 64px 48px 56px;
+}
+.doc-header .logo {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 32px;
+  letter-spacing: -0.01em;
+}
+.doc-header .logo span { color: var(--sg-forest-300); }
+.doc-header h1 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+.doc-header .subtitle {
+  font-size: 17px;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+  max-width: 640px;
+}
+.doc-header .meta {
+  margin-top: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.35);
+}
+
+.content {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+
+/* ═══════════════ SECTIONS ═══════════════ */
+.section {
+  margin-bottom: 64px;
+}
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sg-forest-500);
+  margin-bottom: 12px;
+}
+h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 20px;
+  letter-spacing: -0.01em;
+}
+h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 32px 0 12px;
+  color: var(--sg-shell-800);
+}
+p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--sg-shell-700);
+  margin-bottom: 16px;
+}
+p strong { color: var(--sg-shell-900); }
+p em { color: var(--sg-shell-600); font-style: italic; }
+
+.divider {
+  height: 1px;
+  background: var(--sg-shell-200);
+  margin: 56px 0;
+}
+
+/* ═══════════════ SCROLL SECTION CARD ═══════════════ */
+.scroll-section {
+  background: white;
+  border: 1px solid var(--sg-shell-border);
+  border-radius: var(--sg-radius-lg);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.scroll-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--sg-shell-200);
+}
+.scroll-section-number {
+  width: 32px;
+  height: 32px;
+  background: var(--sg-forest-700);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.scroll-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sg-shell-900);
+}
+.scroll-section-subtitle {
+  font-size: 13px;
+  color: var(--sg-shell-500);
+  margin-top: 1px;
+}
+.scroll-section-body {
+  padding: 24px;
+}
+.scroll-section-body p {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--sg-shell-700);
+  margin-bottom: 14px;
+}
+.scroll-section-body p:last-child { margin-bottom: 0; }
+
+/* Sub-sections within a card */
+.subsection-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sg-shell-400);
+  margin-bottom: 8px;
+  margin-top: 20px;
+}
+.subsection-label:first-child { margin-top: 0; }
+
+/* Copy examples */
+.copy-example {
+  background: var(--sg-shell-50);
+  border-left: 3px solid var(--sg-forest-500);
+  padding: 16px 20px;
+  margin: 12px 0 16px;
+  border-radius: 0 var(--sg-radius-sm) var(--sg-radius-sm) 0;
+}
+.copy-example .copy-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sg-forest-500);
+  margin-bottom: 6px;
+}
+.copy-example .copy-text {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--sg-shell-900);
+  line-height: 1.35;
+}
+.copy-example .copy-text.body-copy {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--sg-shell-700);
+}
+.copy-example .copy-text.body-copy strong {
+  color: var(--sg-shell-900);
+}
+
+/* Emotional beat tag */
+.beat-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+.beat-recognition { background: var(--sg-forest-50); color: var(--sg-forest-600); }
+.beat-tension { background: #FEF3C7; color: #92400E; }
+.beat-relief { background: var(--sg-teal-100); color: var(--sg-teal-600); }
+.beat-proof { background: var(--sg-shell-100); color: var(--sg-shell-700); }
+.beat-desire { background: #EDE9FE; color: #6D28D9; }
+.beat-action { background: var(--sg-forest-700); color: white; }
+
+/* Visual direction */
+.visual-note {
+  background: var(--sg-sage-100);
+  border-radius: var(--sg-radius-sm);
+  padding: 12px 16px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--sg-sage-700);
+  line-height: 1.6;
+}
+.visual-note strong { color: var(--sg-sage-900); }
+
+/* Callout */
+.callout {
+  background: var(--sg-forest-50);
+  border: 1px solid var(--sg-forest-100);
+  border-radius: var(--sg-radius-md);
+  padding: 20px 24px;
+  margin: 24px 0;
+}
+.callout-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sg-forest-700);
+  margin-bottom: 8px;
+}
+.callout-body {
+  font-size: 14px;
+  color: var(--sg-shell-700);
+  line-height: 1.65;
+}
+
+/* Arc diagram */
+.arc-strip {
+  display: flex;
+  gap: 2px;
+  margin: 24px 0;
+  border-radius: var(--sg-radius-md);
+  overflow: hidden;
+}
+.arc-step {
+  flex: 1;
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+}
+.arc-step .arc-num {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+/* Responsive */
+@media (max-width: 680px) {
+  .doc-header { padding: 40px 24px 36px; }
+  .doc-header h1 { font-size: 30px; }
+  .content { padding: 32px 20px 64px; }
+  .arc-strip { flex-wrap: wrap; }
+  .arc-step { min-width: 48%; }
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- HEADER                                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="doc-header">
+  <div class="logo">Skill<span>Gap</span>.ai</div>
+  <h1>Homepage Story</h1>
+  <div class="subtitle">The complete scroll narrative — section by section, with copy direction, emotional beats, visual notes, and strategic rationale. Conversion-focused. Masterclass energy.</div>
+  <div class="meta">Living document · v1.0 · March 2026</div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- STRATEGIC FRAMING                               -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Strategic Frame</div>
+  <h2>The story this page needs to tell</h2>
+
+  <p>The homepage has one job: <strong>convert a skeptical, time-poor professional into a signup.</strong> That professional has tried to learn AI before. They opened YouTube, got overwhelmed, and closed the tab. They bought a course and watched 20%. They scrolled threads and felt informed for a day. They are the "closed-tab professional" from our positioning canvas — and they need to believe that <em>this time will be different.</em></p>
+
+  <p>The page structure follows the classic Masterclass/Brilliant pattern: aspirational hook → problem amplification → credible solution → proof it works → clear next step. But our version is grounded in the brand voice: calm, specific, warm, and direct. No hype. No "revolutionize." No exclamation marks doing emotional labor. Every section earns the next scroll.</p>
+
+  <h3>The emotional arc</h3>
+  <p>Each section moves the visitor through a deliberate emotional sequence. This isn't a feature tour — it's a story with rising action. Community runs through the whole thing like a thread — it's not a section, it's the texture.</p>
+
+  <div class="arc-strip">
+    <div class="arc-step" style="background: var(--sg-forest-700); color: white;">
+      <div class="arc-num">1</div>
+      Recognition
+    </div>
+    <div class="arc-step" style="background: var(--sg-forest-600); color: white;">
+      <div class="arc-num">2</div>
+      Tension
+    </div>
+    <div class="arc-step" style="background: var(--sg-forest-500); color: white;">
+      <div class="arc-num">3</div>
+      Relief
+    </div>
+    <div class="arc-step" style="background: var(--sg-forest-400); color: white;">
+      <div class="arc-num">4</div>
+      Desire
+    </div>
+    <div class="arc-step" style="background: var(--sg-forest-300); color: var(--sg-forest-900);">
+      <div class="arc-num">5</div>
+      Belonging
+    </div>
+    <div class="arc-step" style="background: var(--sg-forest-200); color: var(--sg-forest-900);">
+      <div class="arc-num">6</div>
+      Proof
+    </div>
+    <div class="arc-step" style="background: var(--sg-forest-100); color: var(--sg-forest-900);">
+      <div class="arc-num">7</div>
+      Action
+    </div>
+  </div>
+
+  <p><strong>Recognition</strong> → "That's me." The hero names the feeling they already have — and hints they're not the only one feeling it.<br>
+  <strong>Tension</strong> → "It's worse than I thought." The problem gets specific and urgent.<br>
+  <strong>Relief</strong> → "There's a way through this." The solution appears — calm, clear, structured.<br>
+  <strong>Desire</strong> → "I want that." Real paths for every function, every gap, every level. The skill graph. The growth trajectory.<br>
+  <strong>Belonging</strong> → "Other people are doing this right now." The rooms, the live activity, the end of isolation.<br>
+  <strong>Proof</strong> → "It works." Social proof, credentials, real outcomes.<br>
+  <strong>Action</strong> → "I'm starting now." The signup moment, with the friction removed.</p>
+
+  <div class="callout">
+    <div class="callout-title">Two principles</div>
+    <div class="callout-body"><strong>Conversion:</strong> Every section should be strong enough to convert on its own. CTAs appear at natural decision points. The page never goes more than two sections without a conversion opportunity.<br><br><strong>Community as texture:</strong> Community doesn't live in one section — it's threaded throughout. The hero has a live counter. Path cards show active learners. The skill graph shows peer benchmarks. The rooms section is the crescendo, not the introduction. By the time someone reaches section 6, they've already absorbed that SkillGap is a place with people in it — the rooms section just makes it explicit and irresistible.</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 1: HERO                                 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">The Scroll Story</div>
+  <h2>Section by section</h2>
+
+  <div class="scroll-section">
+    <div class="scroll-section-header">
+      <div class="scroll-section-number">1</div>
+      <div>
+        <div class="scroll-section-title">Hero</div>
+        <div class="scroll-section-subtitle">Above the fold · 5 seconds to land</div>
+      </div>
+    </div>
+    <div class="scroll-section-body">
+      <div class="beat-tag beat-recognition">Recognition</div>
+
+      <p><strong>Job:</strong> Name the feeling they walked in with. Make them feel seen in the first line. Convert the 10% who are already convinced.</p>
+
+      <p><strong>Strategic logic:</strong> The hero doesn't explain the product. It articulates the visitor's internal state — the "competent anxiety" from our positioning canvas. Masterclass opens with the aspirational end state (learn from the best). Brilliant opens with the intellectual hook (think like a scientist). We open with the <em>emotional truth</em> of our audience: AI is moving fast and you feel behind. This works because our best-fit customer doesn't need to be told the problem exists — they've lived it. They need to feel recognized, not educated.</p>
+
+      <div class="subsection-label">Headline direction</div>
+      <div class="copy-example">
+        <div class="copy-label">Primary option</div>
+        <div class="copy-text">The gap is growing.<br>Close it.</div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Alternative A</div>
+        <div class="copy-text">AI is moving fast.<br>You don't have to fall behind.</div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Alternative B</div>
+        <div class="copy-text">Build the skills that matter.<br>Before the market moves on.</div>
+      </div>
+
+      <div class="subsection-label">Subhead</div>
+      <div class="copy-example">
+        <div class="copy-label">Direction</div>
+        <div class="copy-text body-copy">SkillGap turns the AI skills that matter into hands-on paths you can finish in 40 minutes. Real tools. Real feedback. Built for working professionals.</div>
+      </div>
+
+      <p><strong>CTA:</strong> "Start learning free" — primary button. No "Get started" (too vague), no "Sign up" (too transactional). The word "free" removes the last objection at the hero level. Secondary link: "See how it works" → smooth scroll to section 3.</p>
+
+      <div class="visual-note">
+        <strong>Visual direction:</strong> Dark background (forest-700 or darker). Cinematic, not corporate. Think Masterclass's dark, rich hero — but with our forest palette instead of their black. Subtle ambient movement (a slow gradient shift or particle field) to signal premium quality. The SkillGap logo in the nav is the only color accent above the fold. No stock photos. No illustrations of abstract people. The mood is: quiet confidence.
+      </div>
+
+      <div class="subsection-label">Community thread — hero</div>
+      <p>Below the CTA, a live activity line: <strong>"2,400 professionals building AI fluency this week"</strong> — with a subtle green dot indicating real-time. This isn't decoration. It's the first signal that SkillGap is a place with people in it, not a catalog you browse alone. The number must be real. If it's early and the number is small, frame it differently: "Join the first 200 professionals closing the gap." Honesty > inflation.</p>
+
+      <p>Consider a subtle strip of small, anonymous avatars beside the activity line — a row of 8-10 circles that suggest real humans without requiring real photos. The visual says "people are here" without saying "look at these specific people."</p>
+
+      <p><strong>Above-the-fold elements:</strong> Nav bar (logo, "How it works," "Paths," "Pricing," login, CTA). Headline. Subhead. Primary CTA + secondary text link. Live activity line with count. No stock photos. No illustrations of abstract people. The mood is: quiet confidence, shared purpose.</p>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 2: THE PROBLEM                          -->
+<!-- ═══════════════════════════════════════════════ -->
+  <div class="scroll-section">
+    <div class="scroll-section-header">
+      <div class="scroll-section-number">2</div>
+      <div>
+        <div class="scroll-section-title">The Problem</div>
+        <div class="scroll-section-subtitle">First scroll · Making the pain specific</div>
+      </div>
+    </div>
+    <div class="scroll-section-body">
+      <div class="beat-tag beat-tension">Tension</div>
+
+      <p><strong>Job:</strong> Articulate the problem better than the visitor can articulate it themselves. Make the invisible gap visible. Raise the stakes just enough that doing nothing feels worse than trying.</p>
+
+      <p><strong>Strategic logic:</strong> This section is Dunford's "setup" — teaching the customer how to think about the market before pitching the solution. The five competitive alternatives from our positioning canvas all fail in specific ways. This section names those failures without naming the alternatives. The visitor recognizes their own behavior in each one.</p>
+
+      <div class="subsection-label">Section headline</div>
+      <div class="copy-example">
+        <div class="copy-label">Direction</div>
+        <div class="copy-text">You've tried to learn AI.<br>Here's why it didn't stick.</div>
+      </div>
+
+      <div class="subsection-label">Copy structure</div>
+      <p>Three or four failure patterns, each rendered as a short, punchy card. Not paragraphs — visual blocks that the eye can scan in 3 seconds each. The visitor should see their own experience reflected back at them.</p>
+
+      <div class="copy-example">
+        <div class="copy-label">Failure pattern 1</div>
+        <div class="copy-text body-copy"><strong>You watched the tutorial.</strong> All 45 minutes of it. Then you opened the tool and stared at a blank screen. Watching someone do the thing is not the same as doing the thing.</div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Failure pattern 2</div>
+        <div class="copy-text body-copy"><strong>You bought the course.</strong> Great first module. Then life happened. You're on lesson 4 of 47 and it's been three months. The course was designed for someone with unlimited free time. That's not you.</div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Failure pattern 3</div>
+        <div class="copy-text body-copy"><strong>You followed the feed.</strong> Every AI thread, every launch announcement, every "10 tools you need." You felt informed for a day. Then last week's tools became this week's noise. Staying current by scrolling is a full-time job.</div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Failure pattern 4</div>
+        <div class="copy-text body-copy"><strong>You did nothing and hoped.</strong> Told yourself you'd get to it next week. Rationalized that your current skills are fine. Meanwhile the gap between where you are and where your field is heading grew a little wider. Quietly. Every week.</div>
+      </div>
+
+      <p><strong>Closing line:</strong> Something that transitions from "the problem" to "the solution" without being salesy. Direction: "The problem isn't motivation. It's that nothing you've tried was built for how you actually learn."</p>
+
+      <div class="visual-note">
+        <strong>Visual direction:</strong> Light background shift — move from the dark hero into a cream or light sage. Each failure pattern as a card with a subtle icon or visual marker. The cards should feel like a diagnostic, not an accusation. Generous whitespace. The visual tone says "we understand" not "you failed." Consider subtle animation: each card fading in as you scroll past it (intersection observer, staggered).
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 3: THE SOLUTION                         -->
+<!-- ═══════════════════════════════════════════════ -->
+  <div class="scroll-section">
+    <div class="scroll-section-header">
+      <div class="scroll-section-number">3</div>
+      <div>
+        <div class="scroll-section-title">The Solution</div>
+        <div class="scroll-section-subtitle">The reveal · What SkillGap actually is</div>
+      </div>
+    </div>
+    <div class="scroll-section-body">
+      <div class="beat-tag beat-relief">Relief</div>
+
+      <p><strong>Job:</strong> Explain what SkillGap is in one clear pass. Show the learning loop. Make 40 minutes feel like enough. This is where the "how" lives.</p>
+
+      <p><strong>Strategic logic:</strong> The positioning statement lands here: "For working professionals who see AI transforming their field, SkillGap is the learning system that turns that urgency into fluency." But we don't say it that formally. We show it through the learning loop. Masterclass shows you what you'll learn from. Brilliant shows you how you'll think. We show you what you'll <em>do.</em></p>
+
+      <div class="subsection-label">Section headline</div>
+      <div class="copy-example">
+        <div class="copy-label">Direction</div>
+        <div class="copy-text">40 minutes. One skill. Real tools.</div>
+      </div>
+
+      <div class="subsection-label">The learning loop</div>
+      <p>This is the product's core mechanism, rendered visually as a four-step loop. Each step gets a short label and a one-line description. The loop should feel tight, intentional, and finishable.</p>
+
+      <div class="copy-example">
+        <div class="copy-label">Step 1 — Watch</div>
+        <div class="copy-text body-copy">A focused segment from a trusted creator. Not 45 minutes of filler — the 6 minutes that actually matter.</div>
+      </div>
+      <div class="copy-example">
+        <div class="copy-label">Step 2 — Do</div>
+        <div class="copy-text body-copy">Open the real tool. Follow a structured mission. Build something that didn't exist before you sat down.</div>
+      </div>
+      <div class="copy-example">
+        <div class="copy-label">Step 3 — Check</div>
+        <div class="copy-text body-copy">Submit what you built. Get AI feedback on whether it actually works — not a quiz, a real evaluation.</div>
+      </div>
+      <div class="copy-example">
+        <div class="copy-label">Step 4 — Reflect</div>
+        <div class="copy-text body-copy">Connect what you just did to your actual work. Write one sentence about what changed. Move on with your day.</div>
+      </div>
+
+      <p><strong>Key message below the loop:</strong> "Every path ends with something you built, feedback you can use, and a skill added to your portfolio. Not 'hours watched.' Not 'modules completed.' Proof."</p>
+
+      <p><strong>CTA:</strong> "Browse paths" or "Find your first path" — this is the mid-page conversion point. Many visitors are ready here.</p>
+
+      <div class="visual-note">
+        <strong>Visual direction:</strong> This is the product showcase section. Consider a stylized UI mockup or short looping video showing the learning path interface. The four-step loop could be rendered as a horizontal timeline or a 2×2 grid with icons. Each step should feel tangible — not abstract. Think Brilliant's interactive problem previews: you can almost feel what it's like to use the product. The visual energy picks up here — this is the "relief" beat, so the design should feel open, clear, and inviting after the tension of section 2.
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 4: PATH SHOWCASE                        -->
+<!-- ═══════════════════════════════════════════════ -->
+  <div class="scroll-section">
+    <div class="scroll-section-header">
+      <div class="scroll-section-number">4</div>
+      <div>
+        <div class="scroll-section-title">Every Gap Has a Path</div>
+        <div class="scroll-section-subtitle">Breadth + specificity · "They have a path for exactly my problem"</div>
+      </div>
+    </div>
+    <div class="scroll-section-body">
+      <div class="beat-tag beat-desire">Desire</div>
+
+      <p><strong>Job:</strong> Show that SkillGap covers the entire AI skills landscape — every function, every fluency level, every emerging tool. The visitor should feel that whatever their gap is, there's a path waiting. Then they should find the specific one that matches their situation. Desire is created by breadth first, then specificity.</p>
+
+      <p><strong>Strategic logic:</strong> Masterclass shows the instructor roster — breadth is the whole point. "120+ instructors." You scroll through and inevitably find someone you admire. We need the same moment: "80+ paths across 8 skill domains." You filter to your function and find the path that names your exact problem. The key shift from v1 of this section: it's not "here are some sample paths" — it's "we've mapped every AI skill gap for your profession."</p>
+
+      <div class="subsection-label">Section headline</div>
+      <div class="copy-example">
+        <div class="copy-label">Primary option</div>
+        <div class="copy-text">Every AI skill gap. A path to close it.</div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Alternative</div>
+        <div class="copy-text">Whatever your gap, there's a path waiting.</div>
+      </div>
+
+      <div class="subsection-label">Content structure</div>
+      <p><strong>Layer 1 — Breadth signal:</strong> A horizontal row of function filter tabs: Marketing, Engineering, Product, Design, Data, Sales, Operations. Above or beside the tabs, a total counter: "80+ paths across 8 skill domains." The tabs are interactive — clicking one filters the grid below. This interaction is critical: the visitor self-identifies by function, and the grid becomes <em>their</em> grid.</p>
+
+      <p><strong>Layer 2 — Path cards:</strong> A grid of 8-12 cards, filtered by the selected function. Each card shows:</p>
+
+      <div class="copy-example">
+        <div class="copy-label">Card anatomy</div>
+        <div class="copy-text body-copy">
+          <strong>Path title</strong> — e.g., "AI for Content Strategy"<br>
+          <strong>Duration + modules</strong> — e.g., "38 min · 4 modules"<br>
+          <strong>Skill tags</strong> — e.g., "Writing & Communication + Prompt Engineering"<br>
+          <strong>Fluency range</strong> — e.g., "Exploring → Practicing"<br>
+          <strong>Live activity</strong> — e.g., "47 practicing this week" <em>(community thread)</em><br>
+          <strong>Freshness signal</strong> — e.g., "Updated 3 days ago" or "New this week"
+        </div>
+      </div>
+
+      <p>The live activity count on each card is the community thread for this section — it signals that real people are doing this path right now. The freshness timestamp is the intelligence engine thread — it signals this isn't a static catalog.</p>
+
+      <p><strong>Layer 3 — Path types:</strong> Below the main grid, a compact row showing the three path types to signal depth of coverage:</p>
+
+      <div class="copy-example">
+        <div class="copy-label">Path type cards</div>
+        <div class="copy-text body-copy">
+          <strong>Role-specific</strong> — "AI for Content Strategy," "Ship a Feature with Cursor." Built for the exact workflow you do every day.<br>
+          <strong>Skill-building</strong> — "Prompt Engineering," "Research Synthesis." The same skill, adapted differently for marketers vs. engineers vs. PMs.<br>
+          <strong>Trending</strong> — "Claude Code just launched," "GPT-4o for Data Analysis." Generated when the AI landscape shifts. Ready before you search.
+        </div>
+      </div>
+
+      <p>This three-type taxonomy tells the visitor: we cover your current job (role-specific), the skills underneath it (skill-building), and whatever just changed (trending). There's no gap we don't address.</p>
+
+      <p><strong>Below the paths:</strong> "New paths every week. Our intelligence engine monitors the AI landscape and generates learning experiences from this week's best content, adapted for your role and level."</p>
+
+      <p><strong>CTA:</strong> "Browse all paths" or "Find your first path" — mid-page conversion point.</p>
+
+      <div class="visual-note">
+        <strong>Visual direction:</strong> The function filter tabs are the visual anchor — prominent, clickable, with the selected tab highlighted in forest-500. The path cards should look like the real product (same design tokens, same border radius, same skill tag pills). Each card should feel alive: the activity count uses a green dot, the freshness timestamp is small but visible. The grid should hold at least 8 cards to convey breadth — a 2×4 or 3×3 grid on desktop, horizontal swipe on mobile. Below the grid, the three path-type cards sit in a compact row. Background: white or shell-50, letting the cards carry the visual weight. The overall impression should be: "this is a lot of content, all of it relevant to me."
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 5: THE SKILL GRAPH                      -->
+<!-- ═══════════════════════════════════════════════ -->
+  <div class="scroll-section">
+    <div class="scroll-section-header">
+      <div class="scroll-section-number">5</div>
+      <div>
+        <div class="scroll-section-title">Your Skill Graph</div>
+        <div class="scroll-section-subtitle">The differentiator · "I can see where I am and where I'm going"</div>
+      </div>
+    </div>
+    <div class="scroll-section-body">
+      <div class="beat-tag beat-desire">Desire</div>
+
+      <p><strong>Job:</strong> Show two things simultaneously — where you are now, and where you're headed next. The skill graph isn't just a mirror. It's a map. It shows your current capabilities, the gaps the market cares about, and the specific paths that bridge from here to there. The visitor should want their own graph — not just to see themselves, but to see the trajectory.</p>
+
+      <p><strong>Strategic logic:</strong> The positioning canvas identifies "verified skill graph" as a unique attribute. But the value isn't just "see yourself" — it's "see yourself <em>relative to where you need to be</em>, and see every step to get there." This is the growth path story. The skill graph answers the question our audience can't stop asking: "Am I falling behind, and what do I do about it?" The graph says: here's exactly where you stand, here's where the market is moving, and here are the 3 paths that close the gap fastest. That specificity is what makes it covetable.</p>
+
+      <div class="subsection-label">Section headline</div>
+      <div class="copy-example">
+        <div class="copy-label">Primary option</div>
+        <div class="copy-text">See where you are.<br>See where you're going.</div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Alternative</div>
+        <div class="copy-text">A map of every skill you have<br>and every one you need.</div>
+      </div>
+
+      <div class="subsection-label">Copy direction — three beats</div>
+
+      <div class="copy-example">
+        <div class="copy-label">Beat 1 — Where you are</div>
+        <div class="copy-text body-copy">Every path you complete adds to your skill graph — a personal record of what you can actually do, at what level, backed by work you submitted and feedback you received. Not self-reported. Not endorsed by a colleague who's being polite. <strong>Verified by what you built.</strong></div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Beat 2 — Where the market is</div>
+        <div class="copy-text body-copy">Your graph doesn't exist in a vacuum. It shows how your skills compare to what the market demands — which skills are surging, which are becoming table stakes, where the biggest gaps are for your function. <strong>The gap isn't abstract anymore. It's specific, and it's yours.</strong></div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Beat 3 — The bridge</div>
+        <div class="copy-text body-copy">The graph shows adjacencies — skills you're 70% of the way to based on what you've already demonstrated. Three paths to close the gap. Not "you should learn everything." <strong>Here's the highest-leverage move for your career, right now.</strong></div>
+      </div>
+
+      <p>The three-beat structure tells a story: here's who you are → here's what the market wants → here's how to get there. That progression is what makes someone think "I need to start building mine."</p>
+
+      <div class="subsection-label">Community thread — skill graph</div>
+      <p>The graph includes a subtle benchmark layer: "Your Prompt Engineering fluency: Practicing. Market average for marketers: Proficient." This peer comparison isn't competitive — it's clarifying. It answers "am I on track?" with data, not anxiety. The benchmark is anonymous and aggregated, powered by the community of professionals developing the same skills.</p>
+
+      <p><strong>CTA:</strong> "Start building your skill graph" — desire-driven. The visitor wants the artifact <em>and</em> the trajectory it reveals.</p>
+
+      <div class="visual-note">
+        <strong>Visual direction:</strong> The single most important visual on the page. Dark background (forest-700) to make the visualization pop. The mockup should show three layers of the graph: (1) current skills with fluency levels — a card or radial layout showing 4-5 skills at various levels, (2) a market benchmark overlay — subtle dotted lines or indicators showing where the market average sits for each skill, (3) adjacency arrows or highlighted "next" paths — showing the growth trajectory. Consider an animation where the graph "builds" on scroll: first the current skills appear, then the market benchmarks fade in, then the adjacency paths light up. The visual narrative mirrors the copy: where you are → where the market is → how to get there. The overall impression should be "this is beautiful, this is mine, and it shows me exactly what to do next."
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 6: PRACTICE TOGETHER (ROOMS)            -->
+<!-- ═══════════════════════════════════════════════ -->
+  <div class="scroll-section">
+    <div class="scroll-section-header">
+      <div class="scroll-section-number">6</div>
+      <div>
+        <div class="scroll-section-title">Practice Together</div>
+        <div class="scroll-section-subtitle">The community crescendo · "I'm not doing this alone"</div>
+      </div>
+    </div>
+    <div class="scroll-section-body">
+      <div class="beat-tag beat-desire">Belonging</div>
+
+      <p><strong>Job:</strong> This is the emotional peak of the page. Every section before this has been "you" — your gap, your learning, your skills, your graph. This section breaks the frame wide open: <strong>you're not the only one.</strong> Other professionals — with your job title, your anxiety, your Tuesday-night urgency — are here right now, doing the same hard thing. The isolation ends.</p>
+
+      <p><strong>Strategic logic:</strong> "You're not learning alone" is the fifth messaging pillar — and arguably the one with the most emotional weight. Every competitive alternative is lonely: YouTube alone, courses alone, scrolling alone. No learning product in this space has live rooms. Masterclass doesn't. Brilliant doesn't. Coursera doesn't. This is our structural advantage, and it addresses the deepest part of the "closed-tab professional's" experience: the feeling that everyone else has figured this out and you're the only one still struggling. Rooms kill that feeling.</p>
+
+      <p>The key insight: <strong>the room doesn't need to be explained in detail. It just needs to feel alive.</strong> Don't describe the sprint timer mechanics. Don't explain the AI host. Show a room with people in it, mid-sprint, with energy. The visitor should feel like they're looking through a window into a place they want to be.</p>
+
+      <div class="subsection-label">Section headline</div>
+      <div class="copy-example">
+        <div class="copy-label">Primary option</div>
+        <div class="copy-text">You're not doing this alone.</div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Alternative</div>
+        <div class="copy-text">Practice alongside professionals<br>who share your urgency.</div>
+      </div>
+
+      <div class="subsection-label">Copy direction</div>
+      <div class="copy-example">
+        <div class="copy-label">Body</div>
+        <div class="copy-text body-copy">Drop into a live room. Declare what you're working on. Sprint for 25 minutes alongside other professionals building the same skills. The presence of other people doing the hard thing makes the hard thing easier. That's not a theory — it's why gyms exist.</div>
+      </div>
+
+      <div class="subsection-label">The three layers (compact)</div>
+      <p>Show the three room types as a compact row beneath the main copy — not as a feature breakdown, but as proof of depth:</p>
+
+      <div class="copy-example">
+        <div class="copy-label">Room types</div>
+        <div class="copy-text body-copy">
+          <strong>Domain rooms</strong> — Always open. AI + Marketing, AI + Engineering, AI + Product. Drop in anytime. People are always here.<br>
+          <strong>Scheduled sessions</strong> — Focused practice hours. "Cursor Practice" Tuesdays at noon. "Prompt Engineering Lab" daily at 9am.<br>
+          <strong>Live events</strong> — Monthly sessions with tool teams and creators. Limited seats. Real curriculum. The energy of learning something together for the first time.
+        </div>
+      </div>
+
+      <div class="subsection-label">Live activity signal</div>
+      <p>A real-time indicator, prominent: <strong>"89 professionals practicing right now."</strong> With a green dot. This is the proof that makes the section visceral instead of theoretical. Even early on, any number above zero signals life. Below the indicator, a compact schedule strip: "Next session: Cursor Practice Hour — starts in 2h 14m. 23 registered."</p>
+
+      <div class="visual-note">
+        <strong>Visual direction:</strong> This section needs to feel <em>alive</em> and warm — the most human section on the page. A stylized mockup of a room mid-sprint: a countdown timer (18:42), a few participant avatars with function labels ("Marketing · Practicing"), an AI host message ("Both you and Sarah are working on Prompt Engineering — compare notes at the break"), a sprint prompt visible. The mockup is a designed representation, not a screenshot — polished but believable. Background shifts to warm sage or cream to contrast with the dark skill graph above. Subtle animation: avatars gently pulsing or a timer ticking. The energy is "people are here right now, and there's a seat for you." Consider making the "Join sprint" button in the mockup look clickable — it's the visual CTA even before the real CTA below.
+      </div>
+
+      <p><strong>CTA:</strong> "Join a room" or "See who's practicing" — this CTA is unique because it implies real-time, live activity. The visitor isn't signing up for a product — they're walking into a room.</p>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 7: SOCIAL PROOF                         -->
+<!-- ═══════════════════════════════════════════════ -->
+  <div class="scroll-section">
+    <div class="scroll-section-header">
+      <div class="scroll-section-number">7</div>
+      <div>
+        <div class="scroll-section-title">Proof It Works</div>
+        <div class="scroll-section-subtitle">Credibility · "People like me got real results"</div>
+      </div>
+    </div>
+    <div class="scroll-section-body">
+      <div class="beat-tag beat-proof">Proof</div>
+
+      <p><strong>Job:</strong> Concrete evidence that this works for real professionals. Not "social proof" as a marketing tactic — proof as earned credibility. Numbers, testimonials, and credentials. The visitor who's been nodding along for six sections needs someone who looks like them to say "I did this and it changed my Tuesday."</p>
+
+      <p><strong>Strategic logic:</strong> Our audience's anxiety includes social comparison — "has everyone else figured this out already?" Proof that peers are actively building AI fluency normalizes the behavior and reduces the perceived risk of signing up. The key is specificity: not "thousands of learners" (Udemy language) but "847 marketers practiced this week" (SkillGap language). The community thread culminates here — the rooms showed people are present, and this section shows what those people accomplished.</p>
+
+      <div class="subsection-label">Structure options</div>
+      <p>Two approaches depending on where we are with real data:</p>
+
+      <p><strong>Option A — Metric-forward (preferred if numbers are real):</strong> Three big numbers in a horizontal row. "2,400+ professionals." "12,000+ missions completed." "47 companies." Below that, 3-4 testimonial cards with real names, titles, and photos. Then a logo strip of recognizable companies.</p>
+
+      <p><strong>Option B — Testimonial-forward (better for early stage):</strong> Lead with 3 compelling pull quotes from real users. Each quote paired with name, title, and company. Below, a smaller metric bar. No logo strip unless we have permission.</p>
+
+      <div class="subsection-label">Testimonial direction</div>
+      <p>The testimonials should reflect the emotional journey, not product features. We want quotes that sound like our positioning canvas's "internal monologue" — transformed by the product:</p>
+
+      <div class="copy-example">
+        <div class="copy-label">Testimonial tone — what we want</div>
+        <div class="copy-text body-copy">"I'd tried three different AI courses and never finished one. SkillGap was the first time I actually built something by the end of the session. 38 minutes and I was using Cursor for real work the next day."</div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Testimonial tone — what we don't want</div>
+        <div class="copy-text body-copy">"SkillGap is an amazing platform! 10/10 would recommend to anyone who wants to learn AI. The community is so supportive!!" — Generic, inflated, could be about any product.</div>
+      </div>
+
+      <div class="visual-note">
+        <strong>Visual direction:</strong> Clean, minimal, credible. Testimonials as cards on white with subtle borders. Real photos are critical. Large, readable numbers for the metrics. Company logos in a muted grayscale strip. Consider showing 1-2 real credential cards alongside the testimonials — actual skill receipts from completed paths, with specific skills and fluency levels visible. This ties the proof section back to the skill graph and credentials sections, reinforcing that the system produces real, specific, shareable outcomes. The vibe is understated confidence — not "look how popular we are" but "here are real people who closed real gaps."
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 8: FRESHNESS / INTELLIGENCE ENGINE      -->
+<!-- ═══════════════════════════════════════════════ -->
+  <div class="scroll-section">
+    <div class="scroll-section-header">
+      <div class="scroll-section-number">8</div>
+      <div>
+        <div class="scroll-section-title">Always Current</div>
+        <div class="scroll-section-subtitle">The trust builder · "This won't go stale"</div>
+      </div>
+    </div>
+    <div class="scroll-section-body">
+      <div class="beat-tag beat-proof">Proof</div>
+
+      <p><strong>Job:</strong> Address the "everything is outdated" objection head-on. Show that SkillGap stays current automatically. This isn't a feature flex — it's a trust builder. The visitor who bought a course six months ago and found it outdated needs to know this is structurally different.</p>
+
+      <p><strong>Strategic logic:</strong> "We show you what matters right now" is the first messaging pillar, mapped to the intelligence engine's value. But on the homepage, we don't explain the engine — we show its output. The best proof of freshness is specificity: naming an actual trending topic, showing a path that was generated this week, displaying a real "last updated" timestamp.</p>
+
+      <div class="subsection-label">Section headline</div>
+      <div class="copy-example">
+        <div class="copy-label">Direction</div>
+        <div class="copy-text">New paths every week.<br>Because AI doesn't wait.</div>
+      </div>
+
+      <div class="subsection-label">Copy direction</div>
+      <div class="copy-example">
+        <div class="copy-label">Body</div>
+        <div class="copy-text body-copy">We monitor the AI landscape across YouTube, developer communities, industry feeds, and tool releases — 24/7. When something matters, there's a structured learning path ready within hours. Not months. Not "we'll update the curriculum next quarter." <strong>This week's tools. This week's paths.</strong></div>
+      </div>
+
+      <p>Consider a "live feed" element showing recent path additions with timestamps: "Research Synthesis for Marketing — added 2 days ago." "Claude 4 for Product Managers — added yesterday." The timestamps are the proof.</p>
+
+      <div class="visual-note">
+        <strong>Visual direction:</strong> A compact, data-forward section. Not as visually expansive as the skill graph or rooms sections — more of a supporting beat. Could be rendered as a horizontal strip with recent paths and timestamps, or a compact "what's trending" module. The design language should feel like a live dashboard — clean data, real timestamps, no decoration. This section can be shorter than the others.
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 9: CREDENTIAL / SHARE                   -->
+<!-- ═══════════════════════════════════════════════ -->
+  <div class="scroll-section">
+    <div class="scroll-section-header">
+      <div class="scroll-section-number">9</div>
+      <div>
+        <div class="scroll-section-title">Worth Sharing</div>
+        <div class="scroll-section-subtitle">The vanity hook · "I'd actually post this"</div>
+      </div>
+    </div>
+    <div class="scroll-section-body">
+      <div class="beat-tag beat-desire">Desire</div>
+
+      <p><strong>Job:</strong> Show the credential card as something the visitor would be proud to share on LinkedIn. This serves two purposes: it gives the visitor a tangible artifact to desire (driving signup), and it previews the growth loop (every share brings new users).</p>
+
+      <p><strong>Strategic logic:</strong> The credential loop is our primary organic growth mechanism. But on the homepage, we don't talk about growth. We show the credential as a premium, professional artifact that says something meaningful about the person who earned it. The visitor should think "I'd share that" — not because we told them to, but because it looks like something worth sharing.</p>
+
+      <div class="subsection-label">Section headline</div>
+      <div class="copy-example">
+        <div class="copy-label">Direction</div>
+        <div class="copy-text">Credentials that mean something.</div>
+      </div>
+
+      <div class="subsection-label">Copy direction</div>
+      <div class="copy-example">
+        <div class="copy-label">Body</div>
+        <div class="copy-text body-copy">Not a certificate of attendance. A specific record of skills you demonstrated, tools you used, and work you submitted. <strong>Share it because it's true — not because we asked you to.</strong></div>
+      </div>
+
+      <div class="visual-note">
+        <strong>Visual direction:</strong> Show a beautifully designed credential card — the same one from our email system, but rendered at hero scale. Dark background (forest-700), the credential card centered and slightly elevated with a subtle shadow. The card should show specific skills with fluency levels, the path title, and completion date. Below or beside it, a mock LinkedIn post showing the credential shared in context. The visual hierarchy says: this is premium, specific, and real. This section should make the visitor want to earn one.
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 10: FINAL CTA                           -->
+<!-- ═══════════════════════════════════════════════ -->
+  <div class="scroll-section">
+    <div class="scroll-section-header">
+      <div class="scroll-section-number">10</div>
+      <div>
+        <div class="scroll-section-title">Final CTA</div>
+        <div class="scroll-section-subtitle">The close · No friction, no objections</div>
+      </div>
+    </div>
+    <div class="scroll-section-body">
+      <div class="beat-tag beat-action">Action</div>
+
+      <p><strong>Job:</strong> Convert everyone who scrolled this far. Remove every remaining objection. Make starting feel effortless.</p>
+
+      <p><strong>Strategic logic:</strong> The visitor who reaches the bottom has been convinced — they just need the final nudge. The job here is to collapse the distance between "I want this" and "I'm doing this." Three things work: restating the core promise, removing friction (free, no credit card, magic link auth), and adding urgency through truth (the gap is growing whether you act or not).</p>
+
+      <div class="subsection-label">Headline</div>
+      <div class="copy-example">
+        <div class="copy-label">Primary option</div>
+        <div class="copy-text">The gap won't close itself.</div>
+      </div>
+
+      <div class="copy-example">
+        <div class="copy-label">Alternative</div>
+        <div class="copy-text">40 minutes from now,<br>you'll have your first skill.</div>
+      </div>
+
+      <div class="subsection-label">Supporting elements</div>
+      <p>Below the headline, three compact objection-killers in a row:</p>
+
+      <div class="copy-example">
+        <div class="copy-label">Objection busters</div>
+        <div class="copy-text body-copy">
+          <strong>Free to start.</strong> No credit card. No trial that auto-charges. Just your email.<br>
+          <strong>40 minutes.</strong> Your first path takes less time than a meeting that could've been an email.<br>
+          <strong>Real skills.</strong> Not "hours watched." A verified skill on your portfolio by the end.
+        </div>
+      </div>
+
+      <p><strong>CTA:</strong> "Start learning free" — same as hero, full circle. Large button, plenty of breathing room. Consider an email input field inline: just type your email and go (magic link auth means no password step).</p>
+
+      <p><strong>Final line beneath the CTA:</strong> "Join [N] professionals building AI fluency this week." Small, understated, warm. The page ends on community — the thread that started in the hero's live counter and wove through every section arrives at its natural conclusion: you're not just signing up for a product. You're joining a room full of people who share your urgency. That's the feeling the page closes on.</p>
+
+      <div class="visual-note">
+        <strong>Visual direction:</strong> Return to dark background (forest-700 or full forest-900). Full-width section. The headline is large — Fraunces at display size. The CTA button is the brightest element on screen. Generous vertical padding above and below. The mood mirrors the hero — we've come full circle. The page opened with "the gap is growing" and closes with "close it." Clean. Confident. No clutter.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- STRUCTURAL NOTES                                -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Structural Notes</div>
+  <h2>Page-level decisions</h2>
+
+  <h3>CTA placement</h3>
+  <p>Primary CTAs appear in four positions: the hero (section 1), the solution section (section 3), the path showcase (section 4), and the final close (section 10). Secondary CTAs appear in sections 5 (skill graph), 6 (rooms), and 9 (credentials). The page never goes more than two sections without a conversion opportunity. Each CTA is worded differently to match the emotional beat: "Start learning free" (hero), "Find your first path" (paths), "Start building your skill graph" (graph), "Join a room" (rooms), the final close returns to "Start learning free" for full-circle closure.</p>
+
+  <h3>Navigation</h3>
+  <p>Sticky top nav with: Logo (left), "How it works" / "Paths" / "Pricing" (center links), "Log in" (right, text), "Start free" (right, button). The nav should be transparent over the dark hero, then gain a white background with subtle border on scroll. Standard pattern — no need to reinvent.</p>
+
+  <h3>Mobile considerations</h3>
+  <p>The scroll story works naturally on mobile — single column, top to bottom. The path showcase (section 4) becomes a horizontal swipe carousel. The skill graph mockup scales to a simplified card view. The room mockup simplifies to participant count + timer. Testimonials stack vertically. All animations should be reduced or removed on mobile to preserve performance.</p>
+
+  <h3>Page length</h3>
+  <p>Ten sections sounds long. It isn't — if each section is focused and scannable. The target is 4-5 viewport heights on desktop. Sections 6 (social proof) and 8 (freshness) are deliberately compact. The page should feel like a smooth, continuous story — not a marathon. If the visitor is scanning, they should be able to get the gist from headlines alone in under 20 seconds.</p>
+
+  <h3>Loading and performance</h3>
+  <p>The Masterclass-inspired dark hero with ambient motion needs to feel instant. No loading spinners, no layout shift. The hero renders server-side with the animation layered on after hydration. Images below the fold are lazy-loaded. Path cards in section 4 can be fetched client-side if needed, but the first 6 should be in the initial payload. Target: LCP under 2.5s, CLS zero.</p>
+
+  <h3>The community thread — summary</h3>
+  <p>Community isn't a section. It's a texture that runs through the entire page. Here's where it appears:</p>
+
+  <div class="copy-example">
+    <div class="copy-label">Community signals by section</div>
+    <div class="copy-text body-copy">
+      <strong>Section 1 (Hero)</strong> — Live counter: "2,400 professionals building AI fluency this week." Avatar strip.<br>
+      <strong>Section 4 (Paths)</strong> — Activity on each card: "47 practicing this week." Paths feel alive, not static.<br>
+      <strong>Section 5 (Skill Graph)</strong> — Peer benchmarks: "Market average for marketers: Proficient." Your graph exists in a community context.<br>
+      <strong>Section 6 (Rooms)</strong> — The crescendo. Full room mockup, real-time indicator, session schedule. This is where the thread becomes explicit.<br>
+      <strong>Section 7 (Proof)</strong> — Real testimonials and credential cards. The community produces outcomes.<br>
+      <strong>Section 10 (CTA)</strong> — "Join [N] professionals." The page ends on belonging.
+    </div>
+  </div>
+
+  <p>By the time the visitor reaches Section 6, they've already absorbed — consciously or not — that SkillGap is a place with people in it. The rooms section doesn't introduce community. It delivers the payoff for a promise the page has been making since the first scroll.</p>
+
+  <h3>What this page does NOT include</h3>
+  <p>No pricing section on the homepage — pricing gets its own page (linked from nav). No detailed feature comparison. No FAQ accordion. No blog feed. No partner logos until we have real ones. No "as seen in" press strip until we have press. Every element that doesn't directly serve the scroll story gets cut. The homepage is a funnel, not a brochure.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- HEADLINE TEST MATRIX                            -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Appendix</div>
+  <h2>Hero headline candidates</h2>
+
+  <p>The hero headline is the single highest-leverage piece of copy on the entire site. These are the candidates, ranked by how well they satisfy three criteria: (1) names the feeling the visitor already has, (2) implies the solution without explaining it, (3) works in under 8 words.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
+    <thead>
+      <tr style="border-bottom: 2px solid var(--sg-shell-200);">
+        <th style="text-align: left; padding: 10px 12px; color: var(--sg-shell-500); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;">Headline</th>
+        <th style="text-align: center; padding: 10px 12px; color: var(--sg-shell-500); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;">Recognition</th>
+        <th style="text-align: center; padding: 10px 12px; color: var(--sg-shell-500); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;">Implies solution</th>
+        <th style="text-align: center; padding: 10px 12px; color: var(--sg-shell-500); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;">Brevity</th>
+        <th style="text-align: left; padding: 10px 12px; color: var(--sg-shell-500); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid var(--sg-shell-100);">
+        <td style="padding: 10px 12px; font-weight: 600;">The gap is growing. Close it.</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●●</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●●</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●●</td>
+        <td style="padding: 10px 12px; color: var(--sg-shell-600);">Tagline as hero. Direct. Urgent without being alarming. Risk: cold for first-time visitors who don't know what "the gap" refers to.</td>
+      </tr>
+      <tr style="border-bottom: 1px solid var(--sg-shell-100);">
+        <td style="padding: 10px 12px; font-weight: 600;">AI is moving fast. You don't have to fall behind.</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●●</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●○</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●○</td>
+        <td style="padding: 10px 12px; color: var(--sg-shell-600);">Accessible to cold traffic. The second line flips the anxiety into agency. Slightly longer. Might feel like every other AI product.</td>
+      </tr>
+      <tr style="border-bottom: 1px solid var(--sg-shell-100);">
+        <td style="padding: 10px 12px; font-weight: 600;">Build the skills that matter. Before the market moves on.</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●○</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●●</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●○</td>
+        <td style="padding: 10px 12px; color: var(--sg-shell-600);">Skills-forward. Good for SEO. The second line adds urgency. Feels more product-y than emotional.</td>
+      </tr>
+      <tr style="border-bottom: 1px solid var(--sg-shell-100);">
+        <td style="padding: 10px 12px; font-weight: 600;">Close the gap.</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●○</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●●</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●●</td>
+        <td style="padding: 10px 12px; color: var(--sg-shell-600);">Maximum brevity. Works if the brand is known. Might be too cryptic for cold traffic. Better as a tagline than a hero headline.</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; font-weight: 600;">Where working professionals build AI fluency.</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●○○</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●●</td>
+        <td style="text-align: center; padding: 10px 12px; color: var(--sg-forest-500);">●●○</td>
+        <td style="padding: 10px 12px; color: var(--sg-shell-600);">Descriptive. Clear positioning. Zero emotional hook. Better as a subhead or meta description than a hero headline.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Recommendation:</strong> Lead with "The gap is growing. Close it." for audiences who arrive with context (referral, credential click, social). A/B test against "AI is moving fast. You don't have to fall behind." for cold paid traffic where the visitor needs more orientation before the tagline lands.</p>
+</div>
+
+</div><!-- /.content -->
+
+</body>
+</html>

@@ -5,6 +5,7 @@ import type {
   MissionBriefing,
   PathItem,
 } from "@/lib/types";
+import { getMissionLaunchDomain } from "@/lib/launchTaxonomy";
 
 export type MissionUiState = "ready" | "saved" | "active" | "completed";
 
@@ -67,6 +68,7 @@ export function getMissionBriefing(
 export function getMissionPrimaryArea(
   path: LearningPath,
 ): { label: string; detail: string | null } {
+  const launchDomain = getMissionLaunchDomain(path);
   const primarySkill =
     path.skill_tags?.find((tag) => tag.relevance === "primary") ??
     path.skill_tags?.[0] ??
@@ -75,13 +77,13 @@ export function getMissionPrimaryArea(
   if (primarySkill) {
     return {
       label: primarySkill.skill_name,
-      detail: primarySkill.domain_name,
+      detail: launchDomain.label,
     };
   }
 
   return {
     label: path.topics[0] ? formatTopicLabel(path.topics[0]) : "AI Mission",
-    detail: null,
+    detail: launchDomain.label,
   };
 }
 

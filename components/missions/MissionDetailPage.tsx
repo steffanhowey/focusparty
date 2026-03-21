@@ -33,8 +33,11 @@ import {
 } from "@/components/onboarding/GuidedFirstSession";
 import {
   getMissionExpectedOutput,
-  getMissionPrimaryArea,
 } from "@/lib/missionPresentation";
+import {
+  getMissionLaunchDomain,
+  getMissionLaunchDomainShortLabel,
+} from "@/lib/launchTaxonomy";
 import { createClient } from "@/lib/supabase/client";
 import { trackFirstMissionCompleted } from "@/lib/onboarding/tracking";
 import { PanelHeader } from "@/components/session/PanelHeader";
@@ -69,37 +72,21 @@ function MissionPageStage({
 function getMissionPageWorldKey(path: LearningPath | null): WorldKey {
   if (!path) return "default";
 
-  const primaryArea = getMissionPrimaryArea(path);
-  const scanTarget = `${primaryArea.label} ${primaryArea.detail ?? ""}`.toLowerCase();
+  const launchDomain = getMissionLaunchDomain(path);
 
-  if (
-    scanTarget.includes("technical") ||
-    scanTarget.includes("automation")
-  ) {
+  if (launchDomain.key === "workflow-design-operations") {
     return "vibe-coding";
   }
 
   if (
-    scanTarget.includes("writing") ||
-    scanTarget.includes("communication") ||
-    scanTarget.includes("sales")
+    launchDomain.key === "positioning-messaging" ||
+    launchDomain.key === "content-systems"
   ) {
     return "writer-room";
   }
 
-  if (
-    scanTarget.includes("strategy") ||
-    scanTarget.includes("operations") ||
-    scanTarget.includes("execution")
-  ) {
+  if (launchDomain.key === "campaigns-experiments") {
     return "yc-build";
-  }
-
-  if (
-    scanTarget.includes("visual") ||
-    scanTarget.includes("design")
-  ) {
-    return "gentle-start";
   }
 
   return "default";
@@ -184,6 +171,7 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
     ? getMissionExpectedOutput(path, progress)
     : "A finished step you can carry into your next rep.";
   const missionWorld = getWorldConfig(getMissionPageWorldKey(path ?? null));
+  const launchDomainLabel = path ? getMissionLaunchDomain(path).label : null;
   const {
     paths: recommendedPaths,
     isLoading: recommendedPathsLoading,
@@ -465,9 +453,16 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
         </div>
 
         <div className="min-w-0 px-2">
-          <h1 className="truncate text-center text-sm font-medium text-white/90">
-            {pageTitle}
-          </h1>
+          <div className="space-y-1 text-center">
+            <h1 className="truncate text-sm font-medium text-white/90">
+              {pageTitle}
+            </h1>
+            {launchDomainLabel ? (
+              <p className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                {launchDomainLabel}
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <div className="justify-self-end">
@@ -605,7 +600,9 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
       {showMissionCelebration ? (
         <MissionCelebration onDismiss={() => setShowMissionCelebration(false)} />
       ) : null}
-      {isCompleted && path ? <RoomBridge topicName={path.topics[0] ?? "AI"} /> : null}
+      {isCompleted && path ? (
+        <RoomBridge topicName={getMissionLaunchDomainShortLabel(path)} />
+      ) : null}
     </div>
   );
 }

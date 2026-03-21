@@ -8,7 +8,10 @@ import { Card } from "@/components/ui/Card";
 import { FlameIcon } from "@/components/ui/FlameIcon";
 import { Button } from "@/components/ui/Button";
 import { CHARACTERS } from "@/lib/constants";
-import { getPartyLaunchDisplayName } from "@/lib/launchRooms";
+import {
+  getPartyLaunchDisplayName,
+  getPartyLaunchPickerDescription,
+} from "@/lib/launchRooms";
 import {
   getParty,
   getPartyParticipants,
@@ -34,6 +37,7 @@ export default function JoinPartyPage({
   const [notFound, setNotFound] = useState(false);
   const [joining, setJoining] = useState(false);
   const roomName = getPartyLaunchDisplayName(party);
+  const roomPurpose = party ? getPartyLaunchPickerDescription(party) : null;
 
   const loadParty = useCallback(async () => {
     try {
@@ -145,6 +149,11 @@ export default function JoinPartyPage({
                     </span>{" "}
                     hosting
                   </p>
+                  {roomPurpose ? (
+                    <p className="mt-2 text-sm text-[var(--sg-shell-500)]">
+                      {roomPurpose}
+                    </p>
+                  ) : null}
                   <p className="mt-2 text-xs text-[var(--sg-shell-500)]">
                     {participants.length}/{party.max_participants} participants
                     joined

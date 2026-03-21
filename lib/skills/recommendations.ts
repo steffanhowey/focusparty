@@ -27,11 +27,15 @@ import {
 import { mapPathRow } from "@/lib/learn/pathGenerator";
 import { getAllMarketStates } from "@/lib/intelligence/marketState";
 import {
-  getLaunchRoomCatalogEntries,
+  getLaunchRoomPreferenceOrder,
+  getMissionLaunchDomain,
+} from "@/lib/launchTaxonomy";
+import {
   getPartyLaunchDisplayName,
   getPartyLaunchRoomEntry,
   isPartyLaunchVisible,
 } from "@/lib/launchRooms";
+import type { LaunchRoomKey } from "@/lib/launchRooms";
 import type { SkillFluency, UserSkill } from "@/lib/types/skills";
 import type { LearningPath } from "@/lib/types";
 import { getMissionRoute } from "@/lib/appRoutes";
@@ -454,24 +458,41 @@ export async function getSkillRecommendations(
   }
 
   // ── Resolve actions: best next step for each recommendation ──
-  // Build domain → launch-room mapping from the launch catalog
-  const domainToLaunchRooms = new Map<string, string[]>();
-  for (const room of getLaunchRoomCatalogEntries()) {
-    for (const domain of room.supportedMissionDomains) {
-      const existing = domainToLaunchRooms.get(domain) ?? [];
-      existing.push(room.key);
-      domainToLaunchRooms.set(domain, existing);
-    }
-  }
-
-  // Load active persistent rooms with participant counts
+  // Room hints stay launch-facing: preferred launch room by mission domain
+  // first, then active/live rooms within that bucket, then safe fallbacks.
   const { data: activeRooms } = await admin
     .from("fp_parties")
-    .select("id, name, world_key, launch_room_key, launch_visible, runtime_profile_key, persistent, blueprint_id")
+    .select("id, name, status, world_key, launch_room_key, launch_visible, runtime_profile_key, persistent, blueprint_id")
     .eq("persistent", true)
     .in("status", ["waiting", "active"]);
 
-  const roomsByLaunchKey = new Map<string, Array<{ id: string; name: string }>>();
+  const roomIds = (activeRooms ?? []).map((room) => room.id as string);
+  const { data: participantRows } = roomIds.length
+    ? await admin
+        .from("fp_party_participants")
+        .select("party_id")
+        .in("party_id", roomIds)
+        .is("left_at", null)
+    : { data: [] as Array<Record<string, unknown>> };
+
+  const participantCountByRoomId = new Map<string, number>();
+  for (const row of participantRows ?? []) {
+    const roomId = row.party_id as string;
+    participantCountByRoomId.set(
+      roomId,
+      (participantCountByRoomId.get(roomId) ?? 0) + 1,
+    );
+  }
+
+  const roomsByLaunchKey = new Map<
+    LaunchRoomKey,
+    Array<{
+      id: string;
+      name: string;
+      status: "waiting" | "active";
+      participant_count: number;
+    }>
+  >();
   for (const room of activeRooms ?? []) {
     if (!isPartyLaunchVisible(room)) continue;
     const launchRoom = getPartyLaunchRoomEntry(room);
@@ -480,23 +501,40 @@ export async function getSkillRecommendations(
     existing.push({
       id: room.id as string,
       name: getPartyLaunchDisplayName(room),
+      status: room.status as "waiting" | "active",
+      participant_count: participantCountByRoomId.get(room.id as string) ?? 0,
     });
     roomsByLaunchKey.set(launchRoom.key, existing);
+  }
+  for (const rooms of roomsByLaunchKey.values()) {
+    rooms.sort((left, right) => {
+      if (left.status !== right.status) {
+        return left.status === "active" ? -1 : 1;
+      }
+      if (right.participant_count !== left.participant_count) {
+        return right.participant_count - left.participant_count;
+      }
+      return left.name.localeCompare(right.name);
+    });
   }
 
   // ── Resolve actions: deterministic CTA per recommendation ──
   // Priority: Continue (in-progress) > Start Path + room hint > Start Path
 
-  // Find the best matching room for a skill domain
-  function findRoomForDomain(
-    domainSlug: string,
+  function findRoomForPath(
+    path: LearningPath,
   ): { id: string; name: string } | null {
-    const matchingLaunchRooms = domainToLaunchRooms.get(domainSlug) ?? [];
+    const launchDomain = getMissionLaunchDomain(path);
+    const matchingLaunchRooms =
+      launchDomain.source === "fallback"
+        ? []
+        : getLaunchRoomPreferenceOrder(launchDomain.key);
+
     for (const launchRoomKey of matchingLaunchRooms) {
       const rooms = roomsByLaunchKey.get(launchRoomKey);
       if (rooms && rooms.length > 0) return rooms[0];
     }
-    // Fallback: Research Room or Open Studio
+
     return (
       roomsByLaunchKey.get("research-room")?.[0] ??
       roomsByLaunchKey.get("open-studio")?.[0] ??
@@ -509,7 +547,7 @@ export async function getSkillRecommendations(
 
     const topPath = rec.paths[0];
     const progress = inProgressMap.get(topPath.id);
-    const matchedRoom = findRoomForDomain(rec.skill.domain_slug);
+    const matchedRoom = findRoomForPath(topPath);
 
     if (progress !== undefined) {
       // User has already started this path — Continue

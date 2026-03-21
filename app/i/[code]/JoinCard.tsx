@@ -8,7 +8,10 @@ import { Card } from "@/components/ui/Card";
 import { FlameIcon } from "@/components/ui/FlameIcon";
 import { Button } from "@/components/ui/Button";
 import { CHARACTERS } from "@/lib/constants";
-import { getPartyLaunchDisplayName } from "@/lib/launchRooms";
+import {
+  getPartyLaunchDisplayName,
+  getPartyLaunchPickerDescription,
+} from "@/lib/launchRooms";
 import { joinParty, type Party } from "@/lib/parties";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { getRoomRoute } from "@/lib/appRoutes";
@@ -35,6 +38,7 @@ export function JoinCard({
   const isActive = party?.status === "active";
   const canJoin = !isFull && !isCompleted && isAuthenticated;
   const roomName = getPartyLaunchDisplayName(party);
+  const roomPurpose = party ? getPartyLaunchPickerDescription(party) : null;
 
   const handleJoin = async () => {
     if (joining || !party) return;
@@ -122,6 +126,11 @@ export function JoinCard({
                     </span>{" "}
                     hosting
                   </p>
+                  {roomPurpose ? (
+                    <p className="mt-2 text-sm text-[var(--sg-shell-500)]">
+                      {roomPurpose}
+                    </p>
+                  ) : null}
                   <p className="mt-2 text-xs text-[var(--sg-shell-500)]">
                     {participantCount}/{party.max_participants} participants
                     joined

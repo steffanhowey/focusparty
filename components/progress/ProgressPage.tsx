@@ -1,17 +1,19 @@
 "use client";
 
 import { BarChart3 } from "lucide-react";
-import { SkillRecommendations } from "@/components/learn/SkillRecommendations";
 import { SkillProfilePage } from "@/components/skills/SkillProfilePage";
 import { ProgressDashboard } from "@/components/progress/ProgressDashboard";
-import { useSkillRecommendations } from "@/lib/useSkillRecommendations";
 import { useSkillProfile } from "@/lib/useSkillProfile";
 import { MissionOutcomeCard } from "@/components/progress/MissionOutcomeCard";
 import { Card } from "@/components/ui/Card";
 import { ProgressMovementSummary } from "@/components/progress/ProgressMovementSummary";
+import { useMissionRecommendations } from "@/lib/useMissionRecommendations";
+import { MissionRecommendations } from "@/components/missions/MissionRecommendations";
 
 export function ProgressPage() {
-  const { recommendations } = useSkillRecommendations();
+  const { recommendations } = useMissionRecommendations({
+    surface: "progress",
+  });
   const { achievements, gaps, isLoading } = useSkillProfile();
 
   return (
@@ -72,10 +74,11 @@ export function ProgressPage() {
       <ProgressMovementSummary gaps={gaps} achievements={achievements} />
 
       {recommendations.length > 0 && (
-        <SkillRecommendations
+        <MissionRecommendations
           recommendations={recommendations.slice(0, 3)}
           title="Recommended Next Rep"
           featuredFirst
+          badgeLabel="Next Rep"
         />
       )}
 

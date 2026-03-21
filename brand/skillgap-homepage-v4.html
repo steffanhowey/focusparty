@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillGap.ai — Close the Gap in AI Fluency</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Token System */
+    :root {
+      --forest-900: #0F2318;
+      --forest-800: #162E21;
+      --forest-700: #1E3A2C;
+      --forest-600: #2A5340;
+      --forest-500: #3A7D53;
+      --forest-400: #4A9E6A;
+      --forest-300: #6BBF87;
+      --forest-200: #A3D9B5;
+      --forest-100: #D1ECDA;
+      --forest-50: #EEF5EC;
+      --sage-50: #F5F9F5;
+      --sage-100: #EDF4EE;
+      --sage-200: #DCE9DD;
+      --sage-300: #C4D9C6;
+      --sage-500: #8BAF8E;
+      --sage-700: #5A7A5E;
+      --teal-600: #3D8E8B;
+      --teal-100: #E8F5F3;
+      --gold-900: #5C4D0E;
+      --gold-600: #B89C1E;
+      --gold-200: #F0ECB8;
+      --gold-100: #F8F6DC;
+      --shell-900: #262626;
+      --shell-800: #3D3D3D;
+      --shell-700: #525252;
+      --shell-600: #6B6B6B;
+      --shell-500: #8A8A8A;
+      --shell-400: #A3A3A3;
+      --shell-300: #D4D4D4;
+      --shell-border: #E8E8E8;
+      --shell-200: #EEEEEE;
+      --shell-100: #F5F5F5;
+      --shell-50: #FAFAFA;
+      --white: #FFFFFF;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 20px;
+    }
+
+    /* Global */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--shell-700);
+      background: var(--white);
+      line-height: 1.6;
+    }
+
+    /* Scroll reveal animation */
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(15, 35, 24, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+    }
+
+    .nav-logo {
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--white);
+      text-decoration: none;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .nav-logo .ai {
+      color: var(--forest-300);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.45);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .nav-live {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .nav-live::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--forest-400);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .nav-cta {
+      padding: 7px 18px;
+      background: var(--forest-500);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: var(--font-body);
+    }
+
+    .nav-cta:hover {
+      background: var(--forest-400);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      background: var(--forest-900);
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 32px 60px;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, rgba(58, 125, 83, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 1080px;
+    }
+
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--forest-300);
+      margin-bottom: 24px;
+    }
+
+    .hero-label::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--forest-400);
+      border-radius: 50%;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: 56px;
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 em {
+      color: var(--forest-300);
+      font-style: normal;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.4);
+      line-height: 1.6;
+      margin-bottom: 60px;
+      max-width: 620px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Session Window */
+    .session-window {
+      max-width: 1080px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -8px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .session-topbar {
+      height: 44px;
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+
+    .session-path {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .session-path-name {
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .session-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--forest-300);
+    }
+
+    .session-timer {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      font-family: monospace;
+    }
+
+    .session-room-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(58, 125, 83, 0.15);
+      border: 1px solid rgba(58, 125, 83, 0.3);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--forest-300);
+    }
+
+    .session-body {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      min-height: 380px;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .session-mission {
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .session-progress {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .session-progress-bar {
+      height: 3px;
+      flex: 1;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .session-progress-bar.done {
+      background: var(--forest-500);
+    }
+
+    .session-progress-bar.active {
+      background: var(--forest-300);
+    }
+
+    .session-progress-label {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .session-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      flex: 1;
+    }
+
+    .session-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+
+    .session-prompt {
+      background: rgba(0, 0, 0, 0.2);
+      border-left: 3px solid var(--forest-600);
+      padding: 12px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.5;
+      margin-bottom: 12px;
+      border-radius: 4px;
+    }
+
+    .session-button {
+      padding: 8px 16px;
+      background: var(--forest-500);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: var(--font-body);
+    }
+
+    .session-button:hover {
+      background: var(--forest-400);
+    }
+
+    .session-sidebar {
+      background: rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .session-sidebar-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .session-participant {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .session-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .session-tool {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 8px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .session-tools {
+      display: flex;
+      gap: 4px;
+    }
+
+    .session-host {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 12px;
+    }
+
+    .session-host-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--forest-300);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .session-host-message {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.5;
+      border-left: 3px solid var(--forest-500);
+      padding-left: 10px;
+      padding-top: 2px;
+    }
+
+    /* Interstitial (Dark) */
+    .interstitial-dark {
+      background: var(--forest-900);
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      padding: 64px 32px;
+      text-align: center;
+      font-size: 17px;
+      color: rgba(255, 255, 255, 0.35);
+      line-height: 1.8;
+    }
+
+    .interstitial-dark strong {
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+    }
+
+    /* Problem Section */
+    .problems {
+      background: var(--white);
+      padding: 100px 32px;
+      text-align: center;
+    }
+
+    .problems-title {
+      font-family: var(--font-display);
+      font-size: 40px;
+      font-weight: 600;
+      color: var(--shell-900);
+      margin-bottom: 60px;
+    }
+
+    .problems-grid {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .problem-item {
+      text-align: left;
+    }
+
+    .problem-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--shell-900);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .problem-bullet {
+      width: 8px;
+      height: 8px;
+      background: var(--forest-500);
+      border-radius: 50%;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+
+    .problem-description {
+      font-size: 15px;
+      color: var(--shell-600);
+      line-height: 1.7;
+    }
+
+    /* Paths Section */
+    .paths {
+      background: var(--white);
+      padding: 100px 32px;
+    }
+
+    .paths-header {
+      max-width: 1200px;
+      margin: 0 auto 60px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .paths-title {
+      font-family: var(--font-display);
+      font-size: 40px;
+      font-weight: 600;
+      color: var(--shell-900);
+    }
+
+    .paths-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .filter-btn {
+      padding: 7px 16px;
+      background: var(--shell-100);
+      color: var(--shell-700);
+      border: 1px solid var(--shell-border);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-body);
+    }
+
+    .filter-btn.active {
+      background: var(--forest-500);
+      color: var(--white);
+      border-color: var(--forest-500);
+    }
+
+    .filter-btn:hover {
+      border-color: var(--forest-500);
+    }
+
+    .paths-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .path-card {
+      background: var(--white);
+      border: 1px solid var(--shell-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      transition: all 0.3s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .path-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      border-color: var(--forest-300);
+    }
+
+    .path-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .path-meta {
+      display: flex;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--shell-500);
+    }
+
+    .path-time {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .path-tools {
+      display: flex;
+      gap: 6px;
+    }
+
+    .path-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--shell-900);
+      flex: 1;
+    }
+
+    .path-skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .skill-tag {
+      display: inline-block;
+      padding: 5px 10px;
+      background: var(--forest-50);
+      color: var(--forest-700);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .path-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid var(--shell-border);
+      font-size: 13px;
+      color: var(--shell-500);
+    }
+
+    .path-activity {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .path-activity::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--forest-400);
+      border-radius: 50%;
+    }
+
+    .path-arrow {
+      color: var(--forest-500);
+      font-weight: 700;
+    }
+
+    /* Rooms Section */
+    .rooms {
+      background: var(--forest-900);
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      padding: 100px 32px;
+    }
+
+    .rooms-header {
+      max-width: 1200px;
+      margin: 0 auto 60px;
+    }
+
+    .rooms-title {
+      font-family: var(--font-display);
+      font-size: 40px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 20px;
+    }
+
+    .rooms-subtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.4);
+      max-width: 640px;
+    }
+
+    .rooms-schedule {
+      max-width: 1200px;
+      margin: 0 auto 40px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .schedule-chip {
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .schedule-chip:hover,
+    .schedule-chip.active {
+      background: rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.8);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .rooms-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+    }
+
+    .room-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .room-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .room-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .room-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--white);
+      flex: 1;
+    }
+
+    .room-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      background: rgba(58, 125, 83, 0.2);
+      color: var(--forest-300);
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .room-members {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .room-avatars {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .room-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--forest-500);
+      margin-left: -6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 10px;
+      font-weight: 700;
+      border: 2px solid var(--forest-900);
+    }
+
+    .room-avatar:first-child {
+      margin-left: 0;
+    }
+
+    .room-schedule {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Interstitial (Light) */
+    .interstitial-light {
+      background: var(--white);
+      padding: 64px 32px;
+      text-align: center;
+      font-size: 17px;
+      color: var(--shell-400);
+      line-height: 1.8;
+    }
+
+    .interstitial-light strong {
+      color: var(--shell-800);
+      font-weight: 600;
+    }
+
+    /* Skill Graph Section */
+    .skill-graph {
+      background: var(--sage-50);
+      padding: 100px 32px;
+    }
+
+    .skill-graph-header {
+      max-width: 1200px;
+      margin: 0 auto 60px;
+      text-align: center;
+    }
+
+    .skill-graph-title {
+      font-family: var(--font-display);
+      font-size: 40px;
+      font-weight: 600;
+      color: var(--shell-900);
+      margin-bottom: 16px;
+    }
+
+    .skill-graph-subtitle {
+      font-size: 16px;
+      color: var(--shell-600);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .skill-graph-picker {
+      max-width: 1200px;
+      margin: 40px auto;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .function-btn {
+      padding: 8px 16px;
+      background: var(--shell-50);
+      color: var(--shell-700);
+      border: 1px solid var(--shell-border);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-body);
+    }
+
+    .function-btn.active {
+      background: var(--white);
+      color: var(--forest-500);
+      border-color: var(--forest-500);
+      font-weight: 600;
+    }
+
+    .function-btn:hover {
+      border-color: var(--forest-500);
+    }
+
+    .skill-graph-viz {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--white);
+      border: 1px solid var(--shell-border);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .skill-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 80px;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .skill-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .skill-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--shell-800);
+      word-break: break-word;
+    }
+
+    .skill-bar-container {
+      position: relative;
+      height: 8px;
+      background: var(--shell-100);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .skill-bar-fill {
+      height: 100%;
+      background: var(--forest-500);
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .skill-bar-benchmark {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 2px;
+      background: var(--forest-300);
+      opacity: 0.6;
+    }
+
+    .skill-level {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--forest-500);
+      text-align: right;
+    }
+
+    /* Proof Section */
+    .proof {
+      background: var(--shell-50);
+      padding: 100px 32px;
+    }
+
+    .proof-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 40px;
+      margin-bottom: 80px;
+    }
+
+    .metric {
+      text-align: center;
+    }
+
+    .metric-number {
+      font-family: var(--font-display);
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--shell-900);
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .metric-label {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--shell-500);
+    }
+
+    .testimonials {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .testimonial-card {
+      background: var(--white);
+      border: 1px solid var(--shell-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .testimonial-text {
+      font-size: 15px;
+      color: var(--shell-700);
+      line-height: 1.65;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--shell-border);
+    }
+
+    .testimonial-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: var(--forest-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .testimonial-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .testimonial-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--shell-900);
+    }
+
+    .testimonial-role {
+      font-size: 12px;
+      color: var(--shell-400);
+    }
+
+    /* Pricing Section */
+    .pricing {
+      background: var(--white);
+      padding: 100px 32px;
+      text-align: center;
+    }
+
+    .pricing-header {
+      margin-bottom: 60px;
+    }
+
+    .pricing-title {
+      font-family: var(--font-display);
+      font-size: 40px;
+      font-weight: 600;
+      color: var(--shell-900);
+      margin-bottom: 20px;
+    }
+
+    .pricing-subtitle {
+      font-size: 16px;
+      color: var(--shell-600);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      max-width: 500px;
+      margin: 0 auto;
+      background: var(--white);
+      border: 2px solid var(--forest-500);
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      position: relative;
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -12px;
+      right: 24px;
+      display: inline-block;
+      padding: 5px 12px;
+      background: var(--gold-600);
+      color: var(--white);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .pricing-label {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--shell-500);
+      margin-bottom: 12px;
+    }
+
+    .pricing-main {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .pricing-price {
+      font-family: var(--font-display);
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--shell-900);
+    }
+
+    .pricing-period {
+      font-size: 14px;
+      color: var(--shell-500);
+    }
+
+    .pricing-features {
+      text-align: left;
+      margin: 32px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pricing-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--shell-700);
+      line-height: 1.6;
+    }
+
+    .pricing-checkmark {
+      color: var(--forest-500);
+      font-weight: 700;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .pricing-cta {
+      width: 100%;
+      padding: 14px 28px;
+      background: var(--forest-500);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: var(--font-body);
+      margin-bottom: 20px;
+    }
+
+    .pricing-cta:hover {
+      background: var(--forest-400);
+    }
+
+    .pricing-note {
+      font-size: 13px;
+      color: var(--shell-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pricing-note span {
+      display: inline-block;
+    }
+
+    /* Final CTA */
+    .final-cta {
+      background: var(--forest-900);
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      position: relative;
+      overflow: hidden;
+      padding: 100px 32px;
+      text-align: center;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .final-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(58, 125, 83, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .final-cta-content {
+      position: relative;
+      z-index: 2;
+      max-width: 640px;
+    }
+
+    .final-cta h2 {
+      font-family: var(--font-display);
+      font-size: 48px;
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 40px;
+    }
+
+    .final-cta-form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .final-cta-input {
+      flex: 1;
+      min-width: 220px;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .final-cta-input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .final-cta-input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .final-cta-button {
+      padding: 14px 28px;
+      background: var(--forest-500);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: var(--font-body);
+      white-space: nowrap;
+    }
+
+    .final-cta-button:hover {
+      background: var(--forest-400);
+    }
+
+    .final-cta-objections {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      flex-wrap: wrap;
+    }
+
+    .final-cta-objection {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .final-cta-dot {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      background: var(--forest-300);
+      border-radius: 50%;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .session-body {
+        grid-template-columns: 1fr;
+      }
+
+      .session-mission {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .paths-header {
+        flex-direction: column;
+      }
+
+      .paths-filters {
+        justify-content: flex-start;
+      }
+
+      .skill-row {
+        grid-template-columns: 100px 1fr 60px;
+      }
+
+      .final-cta-form {
+        flex-direction: column;
+      }
+
+      .final-cta-input {
+        min-width: 100%;
+      }
+
+      .final-cta h2 {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <a href="#" class="nav-logo">
+      SkillGap
+      <span class="ai">.ai</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#paths">Learning Paths</a></li>
+      <li><a href="#rooms">Live Rooms</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+    <div class="nav-live">
+      <span id="nav-count">89</span> live
+    </div>
+    <button class="nav-cta">Start Free</button>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-label">For busy professionals</div>
+      <h1>Stop watching. <em>Start building.</em></h1>
+      <p>30-60 minute learning paths where you build real things with AI tools, get evaluated on skills you develop, and prove fluency you can share.</p>
+
+      <!-- Session Window Product Mockup -->
+      <div class="session-window">
+        <div class="session-topbar">
+          <div class="session-path">
+            <span class="session-path-name">Build with Claude Code</span>
+            <span class="session-tag">Practicing</span>
+          </div>
+          <div style="display: flex; gap: 20px; align-items: center;">
+            <div class="session-timer">24:36</div>
+            <div class="session-room-pill">AI + Engineering</div>
+          </div>
+        </div>
+        <div class="session-body">
+          <div class="session-mission">
+            <div class="session-progress">
+              <div class="session-progress-bar done"></div>
+              <div class="session-progress-bar active"></div>
+              <div class="session-progress-bar"></div>
+              <span class="session-progress-label">2 of 3</span>
+            </div>
+            <div class="session-card">
+              <div class="session-card-title">Build a React component with Claude Code</div>
+              <div class="session-prompt">Create a reusable Button component that accepts variant prop (primary, secondary, outline). Include hover states.</div>
+              <button class="session-button">Open in Claude</button>
+            </div>
+          </div>
+          <div class="session-sidebar">
+            <div class="session-sidebar-label">Practicing Now</div>
+            <div class="session-participant">
+              <div class="session-avatar" style="background: linear-gradient(135deg, #3A7D53 0%, #6BBF87 100%);">S</div>
+              <div style="flex: 1;">
+                <div style="font-size: 12px; color: rgba(255,255,255,0.8);">Sarah</div>
+              </div>
+              <div class="session-tools">
+                <div class="session-tool" style="background: #1E3A2C;">Cu</div>
+              </div>
+            </div>
+            <div class="session-participant">
+              <div class="session-avatar" style="background: linear-gradient(135deg, #3D8E8B 0%, #6BBFAF 100%);">M</div>
+              <div style="flex: 1;">
+                <div style="font-size: 12px; color: rgba(255,255,255,0.8);">Marcus</div>
+              </div>
+              <div class="session-tools">
+                <div class="session-tool" style="background: #3D8E8B;">C</div>
+              </div>
+            </div>
+            <div class="session-participant">
+              <div class="session-avatar" style="background: linear-gradient(135deg, #B89C1E 0%, #F0ECB8 100%); color: #5C4D0E;">J</div>
+              <div style="flex: 1;">
+                <div style="font-size: 12px; color: rgba(255,255,255,0.8);">Jasmine</div>
+              </div>
+              <div class="session-tools">
+                <div class="session-tool" style="background: #8B7D1E;">C</div>
+              </div>
+            </div>
+            <div class="session-host">
+              <div class="session-host-label">Host</div>
+              <div class="session-host-message">You're building momentum. Marcus just nailed that refactor.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interstitial -->
+  <section class="interstitial-dark">
+    <p>You're not learning alone in a tab. You're sprinting with 89 other professionals closing the same gap. The presence of others doing the hard thing makes the hard thing easier.</p>
+  </section>
+
+  <!-- Problems / Sound Familiar -->
+  <section class="problems">
+    <h2 class="problems-title">Sound familiar?</h2>
+    <div class="problems-grid">
+      <div class="problem-item reveal">
+        <div class="problem-title">
+          <div class="problem-bullet"></div>
+          <div>"I watched the tutorial but I can't do the thing"</div>
+        </div>
+        <p class="problem-description">Every learning platform has the same failure mode: passive consumption masquerading as learning. You watch a 20-minute video, feel like you understand, and then open the tool and stare at a blank screen.</p>
+      </div>
+      <div class="problem-item reveal">
+        <div class="problem-title">
+          <div class="problem-bullet"></div>
+          <div>"Everything is already outdated"</div>
+        </div>
+        <p class="problem-description">You followed a Cursor tutorial from three months ago and half the UI changed. The pace of AI tooling means learning content has a half-life measured in weeks, not years.</p>
+      </div>
+      <div class="problem-item reveal">
+        <div class="problem-title">
+          <div class="problem-bullet"></div>
+          <div>"I'm learning alone and can't tell if I'm on track"</div>
+        </div>
+        <p class="problem-description">No feedback. No sense of progress. No one to tell you "you're focusing on the right things" or "skip that, it's hype." The isolation makes the anxiety worse.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Paths -->
+  <section class="paths" id="paths">
+    <div class="paths-header">
+      <h2 class="paths-title">Learning paths that matter</h2>
+      <div class="paths-filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="trending">Trending</button>
+        <button class="filter-btn" data-filter="engineering">Engineering</button>
+        <button class="filter-btn" data-filter="marketing">Marketing</button>
+      </div>
+    </div>
+
+    <div class="paths-grid">
+      <div class="path-card reveal">
+        <div class="path-header">
+          <div>
+            <div class="path-meta">
+              <span class="path-time">45 min</span>
+              <span>3 modules</span>
+            </div>
+            <h3 class="path-title">Ship Your First Feature with Cursor</h3>
+          </div>
+          <div class="path-tools">
+            <div class="session-tool" style="background: #1E3A2C;">Cu</div>
+          </div>
+        </div>
+        <div class="path-skills">
+          <span class="skill-tag">Prompt Engineering</span>
+          <span class="skill-tag">Technical Building</span>
+        </div>
+        <div class="path-footer">
+          <span class="path-activity">2.4k practicing</span>
+          <span class="path-arrow">→</span>
+        </div>
+      </div>
+
+      <div class="path-card reveal">
+        <div class="path-header">
+          <div>
+            <div class="path-meta">
+              <span class="path-time">50 min</span>
+              <span>4 modules</span>
+            </div>
+            <h3 class="path-title">Build AI-Powered Landing Pages</h3>
+          </div>
+          <div class="path-tools">
+            <div class="session-tool" style="background: #333;">v0</div>
+          </div>
+        </div>
+        <div class="path-skills">
+          <span class="skill-tag">Visual Direction</span>
+          <span class="skill-tag">Prompt Engineering</span>
+        </div>
+        <div class="path-footer">
+          <span class="path-activity">1.8k practicing</span>
+          <span class="path-arrow">→</span>
+        </div>
+      </div>
+
+      <div class="path-card reveal">
+        <div class="path-header">
+          <div>
+            <div class="path-meta">
+              <span class="path-time">40 min</span>
+              <span>3 modules</span>
+            </div>
+            <h3 class="path-title">Research Synthesis with AI</h3>
+          </div>
+          <div class="path-tools">
+            <div class="session-tool" style="background: #3D8E8B;">C</div>
+          </div>
+        </div>
+        <div class="path-skills">
+          <span class="skill-tag">Research Synthesis</span>
+          <span class="skill-tag">Strategy Planning</span>
+        </div>
+        <div class="path-footer">
+          <span class="path-activity">3.1k practicing</span>
+          <span class="path-arrow">→</span>
+        </div>
+      </div>
+
+      <div class="path-card reveal">
+        <div class="path-header">
+          <div>
+            <div class="path-meta">
+              <span class="path-time">35 min</span>
+              <span>3 modules</span>
+            </div>
+            <h3 class="path-title">Prompt Engineering for Developers</h3>
+          </div>
+          <div class="path-tools">
+            <div class="session-tool" style="background: #3D8E8B;">C</div>
+          </div>
+        </div>
+        <div class="path-skills">
+          <span class="skill-tag">Prompt Engineering</span>
+          <span class="skill-tag">Technical Building</span>
+        </div>
+        <div class="path-footer">
+          <span class="path-activity">5.2k practicing</span>
+          <span class="path-arrow">→</span>
+        </div>
+      </div>
+
+      <div class="path-card reveal">
+        <div class="path-header">
+          <div>
+            <div class="path-meta">
+              <span class="path-time">55 min</span>
+              <span>4 modules</span>
+            </div>
+            <h3 class="path-title">AI-Assisted Content Strategy</h3>
+          </div>
+          <div class="path-tools">
+            <div class="session-tool" style="background: #525252;">G</div>
+          </div>
+        </div>
+        <div class="path-skills">
+          <span class="skill-tag">Writing & Communication</span>
+          <span class="skill-tag">Content Strategy</span>
+        </div>
+        <div class="path-footer">
+          <span class="path-activity">890 practicing</span>
+          <span class="path-arrow">→</span>
+        </div>
+      </div>
+
+      <div class="path-card reveal">
+        <div class="path-header">
+          <div>
+            <div class="path-meta">
+              <span class="path-time">45 min</span>
+              <span>3 modules</span>
+            </div>
+            <h3 class="path-title">Workflow Automation with APIs</h3>
+          </div>
+          <div class="path-tools">
+            <div class="session-tool" style="background: #3D8E8B;">C</div>
+          </div>
+        </div>
+        <div class="path-skills">
+          <span class="skill-tag">Workflow Automation</span>
+          <span class="skill-tag">Technical Building</span>
+        </div>
+        <div class="path-footer">
+          <span class="path-activity">1.4k practicing</span>
+          <span class="path-arrow">→</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rooms -->
+  <section class="rooms" id="rooms">
+    <div class="rooms-header">
+      <h2 class="rooms-title">Live rooms. Right now.</h2>
+      <p class="rooms-subtitle">Drop into a room, start a sprint, and practice alongside other professionals. No solo learning. No isolation.</p>
+    </div>
+
+    <div class="rooms-schedule">
+      <button class="schedule-chip active" data-schedule="now">Now</button>
+      <button class="schedule-chip" data-schedule="today">Today</button>
+      <button class="schedule-chip" data-schedule="tomorrow">Tomorrow</button>
+      <button class="schedule-chip" data-schedule="all">All</button>
+    </div>
+
+    <div class="rooms-grid">
+      <div class="room-card reveal">
+        <div class="room-header">
+          <h3 class="room-name">AI + Engineering</h3>
+          <span class="room-badge">Heartbeat</span>
+        </div>
+        <p class="room-members">34 practicing now</p>
+        <div class="room-avatars">
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3A7D53 0%, #6BBF87 100%);">S</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3D8E8B 0%, #6BBFAF 100%);">M</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #B89C1E 0%, #F0ECB8 100%); color: #5C4D0E;">J</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #8B5E4F 0%, #C9A887 100%);">P</div>
+        </div>
+        <div class="room-schedule">Ongoing · Sprint starts every 25 min</div>
+      </div>
+
+      <div class="room-card reveal">
+        <div class="room-header">
+          <h3 class="room-name">Prompt Engineering Lab</h3>
+          <span class="room-badge">Pulse</span>
+        </div>
+        <p class="room-members">18 practicing now</p>
+        <div class="room-avatars">
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3A7D53 0%, #6BBF87 100%);">D</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3D8E8B 0%, #6BBFAF 100%);">K</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #8B5E4F 0%, #C9A887 100%);">R</div>
+        </div>
+        <div class="room-schedule">Daily 9am ET · 60 min focus</div>
+      </div>
+
+      <div class="room-card reveal">
+        <div class="room-header">
+          <h3 class="room-name">AI + Marketing</h3>
+          <span class="room-badge">Heartbeat</span>
+        </div>
+        <p class="room-members">26 practicing now</p>
+        <div class="room-avatars">
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3A7D53 0%, #6BBF87 100%);">A</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3D8E8B 0%, #6BBFAF 100%);">L</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #8B5E4F 0%, #C9A887 100%);">T</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #B89C1E 0%, #F0ECB8 100%); color: #5C4D0E;">V</div>
+        </div>
+        <div class="room-schedule">Ongoing · Sprint starts every 25 min</div>
+      </div>
+
+      <div class="room-card reveal">
+        <div class="room-header">
+          <h3 class="room-name">Cursor Workshop</h3>
+          <span class="room-badge">Spike</span>
+        </div>
+        <p class="room-members">42 registered</p>
+        <div class="room-avatars">
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3A7D53 0%, #6BBF87 100%);">C</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3D8E8B 0%, #6BBFAF 100%);">E</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #8B5E4F 0%, #C9A887 100%);">F</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #B89C1E 0%, #F0ECB8 100%); color: #5C4D0E;">G</div>
+        </div>
+        <div class="room-schedule">Wednesday 6pm ET · 90 min live</div>
+      </div>
+
+      <div class="room-card reveal">
+        <div class="room-header">
+          <h3 class="room-name">AI + Product</h3>
+          <span class="room-badge">Heartbeat</span>
+        </div>
+        <p class="room-members">21 practicing now</p>
+        <div class="room-avatars">
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3A7D53 0%, #6BBF87 100%);">H</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3D8E8B 0%, #6BBFAF 100%);">I</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #8B5E4F 0%, #C9A887 100%);">J</div>
+        </div>
+        <div class="room-schedule">Ongoing · Sprint starts every 25 min</div>
+      </div>
+
+      <div class="room-card reveal">
+        <div class="room-header">
+          <h3 class="room-name">Build with v0</h3>
+          <span class="room-badge">Pulse</span>
+        </div>
+        <p class="room-members">15 practicing now</p>
+        <div class="room-avatars">
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3A7D53 0%, #6BBF87 100%);">K</div>
+          <div class="room-avatar" style="background: linear-gradient(135deg, #3D8E8B 0%, #6BBFAF 100%);">L</div>
+        </div>
+        <div class="room-schedule">Tue & Thu 12pm ET · 45 min</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interstitial Light -->
+  <section class="interstitial-light">
+    <p>Every learning path, every mission, every sprint contributes to <strong>your skill graph</strong> — a personal, portable, verified record of what you can actually do.</p>
+  </section>
+
+  <!-- Skill Graph -->
+  <section class="skill-graph" id="skill-graph">
+    <div class="skill-graph-header">
+      <h2 class="skill-graph-title">Your skill graph</h2>
+      <p class="skill-graph-subtitle">Verified fluency levels in skills that matter, built by what you've actually completed. Not endorsements. Not self-assessment. Evidence.</p>
+    </div>
+
+    <div class="skill-graph-picker">
+      <button class="function-btn active" data-function="engineering">Engineering</button>
+      <button class="function-btn" data-function="marketing">Marketing</button>
+      <button class="function-btn" data-function="design">Design</button>
+      <button class="function-btn" data-function="product">Product</button>
+      <button class="function-btn" data-function="data">Data</button>
+    </div>
+
+    <div class="skill-graph-viz">
+      <div class="skill-row reveal">
+        <div class="skill-name">Prompt Engineering</div>
+        <div class="skill-bar-container">
+          <div class="skill-bar-fill" style="width: 72%; background: var(--forest-500);">
+            <div class="skill-bar-benchmark" style="left: 65%;"></div>
+          </div>
+        </div>
+        <div class="skill-level">Proficient</div>
+      </div>
+
+      <div class="skill-row reveal">
+        <div class="skill-name">Technical Building</div>
+        <div class="skill-bar-container">
+          <div class="skill-bar-fill" style="width: 58%; background: var(--forest-500);">
+            <div class="skill-bar-benchmark" style="left: 65%;"></div>
+          </div>
+        </div>
+        <div class="skill-level">Practicing</div>
+      </div>
+
+      <div class="skill-row reveal">
+        <div class="skill-name">Writing & Communication</div>
+        <div class="skill-bar-container">
+          <div class="skill-bar-fill" style="width: 45%; background: var(--forest-400);">
+            <div class="skill-bar-benchmark" style="left: 65%;"></div>
+          </div>
+        </div>
+        <div class="skill-level">Practicing</div>
+      </div>
+
+      <div class="skill-row reveal">
+        <div class="skill-name">Research Synthesis</div>
+        <div class="skill-bar-container">
+          <div class="skill-bar-fill" style="width: 38%; background: var(--forest-400);">
+            <div class="skill-bar-benchmark" style="left: 65%;"></div>
+          </div>
+        </div>
+        <div class="skill-level">Exploring</div>
+      </div>
+
+      <div class="skill-row reveal">
+        <div class="skill-name">Workflow Automation</div>
+        <div class="skill-bar-container">
+          <div class="skill-bar-fill" style="width: 28%; background: var(--forest-400);">
+            <div class="skill-bar-benchmark" style="left: 65%;"></div>
+          </div>
+        </div>
+        <div class="skill-level">Exploring</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Proof -->
+  <section class="proof">
+    <div class="proof-grid">
+      <div class="metric reveal">
+        <div class="metric-number">34k+</div>
+        <div class="metric-label">Professionals Upskilling</div>
+      </div>
+      <div class="metric reveal">
+        <div class="metric-number">127k</div>
+        <div class="metric-label">Paths Completed</div>
+      </div>
+      <div class="metric reveal">
+        <div class="metric-number">2.1M</div>
+        <div class="metric-label">Skill Assessments</div>
+      </div>
+      <div class="metric reveal">
+        <div class="metric-number">89%</div>
+        <div class="metric-label">Come Back Tomorrow</div>
+      </div>
+    </div>
+
+    <div class="testimonials">
+      <div class="testimonial-card reveal">
+        <div class="testimonial-text">"I went from 'I should probably learn Cursor' to actually shipping features with it in 40 minutes. The missions made it real."</div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background: linear-gradient(135deg, #3A7D53 0%, #6BBF87 100%);">S</div>
+          <div class="testimonial-info">
+            <div class="testimonial-name">Sarah Chen</div>
+            <div class="testimonial-role">Senior Engineer</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal">
+        <div class="testimonial-text">"The skill graph showed me exactly what I'm missing. No guessing, no second-guessing myself. Just a clear map of where to focus."</div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background: linear-gradient(135deg, #3D8E8B 0%, #6BBFAF 100%);">M</div>
+          <div class="testimonial-info">
+            <div class="testimonial-name">Marcus Johnson</div>
+            <div class="testimonial-role">Product Manager</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal">
+        <div class="testimonial-text">"Sprinting with 30 other people learning the same thing is way different than watching a tutorial alone. The accountability is real."</div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background: linear-gradient(135deg, #B89C1E 0%, #F0ECB8 100%); color: #5C4D0E;">J</div>
+          <div class="testimonial-info">
+            <div class="testimonial-name">Jasmine Patel</div>
+            <div class="testimonial-role">Marketing Lead</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="pricing" id="pricing">
+    <div class="pricing-header">
+      <h2 class="pricing-title">Simple pricing</h2>
+      <p class="pricing-subtitle">One plan. Everything you need to close the gap. Free to start, paid to go deeper.</p>
+    </div>
+
+    <div class="pricing-card">
+      <div class="pricing-badge">Founding Rate</div>
+      <div class="pricing-label">Professional</div>
+      <div class="pricing-main">
+        <span class="pricing-price">$99</span>
+        <span class="pricing-period">/month (founding: $129 regular)</span>
+      </div>
+
+      <div class="pricing-features">
+        <div class="pricing-feature">
+          <span class="pricing-checkmark">✓</span>
+          <span>Unlimited access to all learning paths</span>
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-checkmark">✓</span>
+          <span>Drop into live rooms, sprint with others</span>
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-checkmark">✓</span>
+          <span>AI evaluation on every mission you complete</span>
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-checkmark">✓</span>
+          <span>Your skill graph: portable, verified credentials</span>
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-checkmark">✓</span>
+          <span>Share skills & progress on LinkedIn</span>
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-checkmark">✓</span>
+          <span>Weekly progress summaries</span>
+        </div>
+      </div>
+
+      <button class="pricing-cta">Start Your Free Week</button>
+      <div class="pricing-note">
+        <span>Free to start</span>
+        <span>·</span>
+        <span>No credit card required</span>
+        <span>·</span>
+        <span>Cancel anytime</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta">
+    <div class="final-cta-content">
+      <h2>Close the gap</h2>
+      <form class="final-cta-form" id="cta-form">
+        <input
+          type="email"
+          class="final-cta-input"
+          placeholder="your.email@company.com"
+          required
+        >
+        <button type="submit" class="final-cta-button">Get Started</button>
+      </form>
+      <div class="final-cta-objections">
+        <div class="final-cta-objection">
+          <span class="final-cta-dot"></span>
+          Free to start
+        </div>
+        <div class="final-cta-objection">
+          <span class="final-cta-dot"></span>
+          No credit card
+        </div>
+        <div class="final-cta-objection">
+          <span class="final-cta-dot"></span>
+          First session under 40 min
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Update live counter randomly
+    function updateLiveCount() {
+      const navCount = document.getElementById('nav-count');
+      const currentCount = parseInt(navCount.textContent);
+      const change = Math.floor(Math.random() * 6) - 2;
+      const newCount = Math.max(45, Math.min(150, currentCount + change));
+      navCount.textContent = newCount;
+    }
+
+    setInterval(updateLiveCount, 3000);
+
+    // Scroll reveal animation
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Schedule chips
+    document.querySelectorAll('.schedule-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.schedule-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Function picker
+    document.querySelectorAll('.function-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.function-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Form submission
+    document.getElementById('cta-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = e.target.querySelector('input[type="email"]').value;
+      alert(`Welcome! Check ${email} for next steps.`);
+      e.target.reset();
+    });
+
+    // Nav CTA
+    document.querySelector('.nav-cta').addEventListener('click', () => {
+      document.getElementById('cta-form').scrollIntoView({ behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>

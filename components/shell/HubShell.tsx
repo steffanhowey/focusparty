@@ -9,7 +9,6 @@ import { CLIENT_NAV_HREFS } from "./navItems";
 import { FunctionMigrationModal } from "@/components/onboarding/FunctionMigrationModal";
 
 const PAGE_TITLE_RULES: Array<{ prefix: string; title: string }> = [
-  { prefix: "/home", title: "Home" },
   { prefix: "/missions", title: "Missions" },
   { prefix: "/learn", title: "Missions" },
   { prefix: "/rooms", title: "Rooms" },
@@ -23,17 +22,13 @@ const PAGE_TITLE_RULES: Array<{ prefix: string; title: string }> = [
 
 function getTitleForPath(pathname: string): string {
   const match = PAGE_TITLE_RULES.find(({ prefix }) => pathname.startsWith(prefix));
-  return match?.title ?? "Home";
+  return match?.title ?? "Missions";
 }
 
 /* ─── Lazy tab components ─── */
 
 const LazyPartyList = lazy(() =>
   import("@/components/party/PartyList").then((m) => ({ default: m.PartyList }))
-);
-
-const LazyHomePage = lazy(() =>
-  import("@/components/home/HomePage").then((m) => ({ default: m.HomePage }))
 );
 
 const LazyProgressPage = lazy(() =>
@@ -54,10 +49,9 @@ const LazyMissionsPage = lazy(() =>
 
 /**
  * Tab definitions — maps route paths to their lazy component(s).
- * Order determines prefetch priority (Home first since it's the app launchpad).
+ * Order determines prefetch priority.
  */
 const TAB_DEFS: Array<{ path: string; render: () => ReactNode }> = [
-  { path: "/home", render: () => <LazyHomePage /> },
   { path: "/missions", render: () => <LazyMissionsPage /> },
   { path: "/rooms", render: () => <LazyPartyList /> },
   { path: "/progress", render: () => <LazyProgressPage /> },
@@ -86,7 +80,6 @@ function usePrefetchTabs(): void {
       () => {
         // Fire-and-forget dynamic imports — populates the module cache
         // so React.lazy resolves instantly when the tab is first visited.
-        import("@/components/home/HomePage").catch(() => {});
         import("@/components/missions/MissionsPage").catch(() => {});
         import("@/components/party/PartyList").catch(() => {});
         import("@/components/progress/ProgressPage").catch(() => {});
@@ -120,9 +113,7 @@ export function HubShell({ children }: { children: ReactNode }) {
   const effectivePath = resolvedClientTab ?? pathname;
   const title = getTitleForPath(effectivePath);
   const hideTopChrome =
-    effectivePath === "/home" ||
-    effectivePath === "/rooms" ||
-    effectivePath === "/missions";
+    effectivePath === "/rooms" || effectivePath === "/missions";
 
   const toggleMobileMenu = useCallback(() => {
     setMobileMenuOpen((prev) => !prev);

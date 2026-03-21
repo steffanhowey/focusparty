@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing — SkillGap.ai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════ RESET & TOKENS ═══════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --forest-900: #0F2318;
+  --forest-800: #162E21;
+  --forest-700: #1E3A2C;
+  --forest-600: #2A5340;
+  --forest-500: #3A7D53;
+  --forest-400: #4A9E6A;
+  --forest-300: #6BBF87;
+  --forest-200: #A3D9B5;
+  --forest-100: #D1ECDA;
+  --forest-50:  #EEF5EC;
+  --sage-50: #F5F9F5;
+  --sage-100: #EDF4EE;
+  --sage-200: #DCE9DD;
+  --sage-300: #C4D9C6;
+  --sage-500: #8BAF8E;
+  --sage-700: #5A7A5E;
+  --teal-600: #3D8E8B;
+  --teal-100: #E8F5F3;
+  --gold-900: #5C4D0E;
+  --gold-600: #B89C1E;
+  --gold-200: #F0ECB8;
+  --gold-100: #F8F6DC;
+  --shell-900: #262626;
+  --shell-800: #3D3D3D;
+  --shell-700: #525252;
+  --shell-600: #6B6B6B;
+  --shell-500: #8A8A8A;
+  --shell-400: #A3A3A3;
+  --shell-300: #D4D4D4;
+  --shell-border: #E8E8E8;
+  --shell-200: #EEEEEE;
+  --shell-100: #F5F5F5;
+  --shell-50: #FAFAFA;
+  --white: #FFFFFF;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--shell-900);
+  background: var(--white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ═══════════════ NAV ═══════════════ */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 0 32px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--shell-border);
+}
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.nav-logo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--forest-700);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.nav-logo span { color: var(--forest-500); }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.nav-links a {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--shell-600);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--shell-900); }
+.nav-links a.active { color: var(--shell-900); font-weight: 600; }
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.nav-login {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--shell-600);
+  text-decoration: none;
+}
+.nav-cta {
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background: var(--forest-500);
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.nav-cta:hover { background: var(--forest-400); }
+
+/* ═══════════════ HERO ═══════════════ */
+.pricing-hero {
+  padding: 120px 32px 64px;
+  text-align: center;
+  background: var(--white);
+}
+.pricing-hero-eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--forest-500);
+  margin-bottom: 16px;
+}
+.pricing-hero h1 {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 600;
+  color: var(--shell-900);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  margin-bottom: 16px;
+}
+.pricing-hero p {
+  font-size: 18px;
+  color: var(--shell-500);
+  line-height: 1.6;
+  max-width: 520px;
+  margin: 0 auto 40px;
+}
+
+/* ═══════════════ BILLING TOGGLE ═══════════════ */
+.billing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px;
+  background: var(--shell-100);
+  border-radius: 999px;
+}
+.billing-option {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--shell-500);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  position: relative;
+}
+.billing-option.active {
+  background: var(--white);
+  color: var(--shell-900);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.billing-save {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--forest-500);
+  background: var(--forest-50);
+  padding: 2px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ═══════════════ PRICING GRID ═══════════════ */
+.pricing-section {
+  padding: 0 32px 80px;
+  background: var(--white);
+}
+.pricing-grid {
+  max-width: 1100px;
+  margin: 48px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+/* ═══════════════ PRICING CARD ═══════════════ */
+.pricing-card {
+  background: var(--white);
+  border: 1px solid var(--shell-border);
+  border-radius: var(--radius-xl);
+  padding: 36px 32px 32px;
+  position: relative;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.pricing-card:hover {
+  border-color: var(--shell-300);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+/* Featured card */
+.pricing-card.featured {
+  border-color: var(--forest-500);
+  box-shadow: 0 4px 32px rgba(58,125,83,0.12);
+}
+.pricing-card.featured:hover {
+  box-shadow: 0 8px 40px rgba(58,125,83,0.16);
+}
+.card-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--forest-500);
+  color: white;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.card-name {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--shell-900);
+  margin-bottom: 8px;
+}
+.card-desc {
+  font-size: 14px;
+  color: var(--shell-500);
+  line-height: 1.6;
+  margin-bottom: 28px;
+  min-height: 44px;
+}
+
+/* Price display */
+.card-price {
+  margin-bottom: 28px;
+}
+.card-price-amount {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--shell-900);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.card-price-amount .currency {
+  font-size: 28px;
+  font-weight: 600;
+  vertical-align: top;
+  margin-right: 2px;
+  color: var(--shell-700);
+}
+.card-price-period {
+  font-size: 14px;
+  color: var(--shell-400);
+  margin-top: 4px;
+}
+.card-price-note {
+  font-size: 13px;
+  color: var(--shell-500);
+  margin-top: 6px;
+}
+
+/* CTA */
+.card-cta {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  border: none;
+  margin-bottom: 28px;
+}
+.card-cta-primary {
+  background: var(--forest-500);
+  color: white;
+}
+.card-cta-primary:hover {
+  background: var(--forest-400);
+}
+.card-cta-outline {
+  background: var(--white);
+  color: var(--shell-900);
+  border: 1px solid var(--shell-border);
+}
+.card-cta-outline:hover {
+  border-color: var(--shell-300);
+  background: var(--shell-50);
+}
+
+/* Divider */
+.card-divider {
+  height: 1px;
+  background: var(--shell-border);
+  margin-bottom: 24px;
+}
+
+/* Features */
+.card-features-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--shell-400);
+  margin-bottom: 16px;
+}
+.card-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.card-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--shell-700);
+  line-height: 1.45;
+}
+.card-features li .check {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+.card-features li .check svg {
+  width: 12px;
+  height: 12px;
+}
+.check-green {
+  background: var(--forest-50);
+}
+.check-green svg { color: var(--forest-500); }
+.check-gray {
+  background: var(--shell-100);
+}
+.check-gray svg { color: var(--shell-400); }
+
+.card-features li .feat-highlight {
+  color: var(--shell-900);
+  font-weight: 500;
+}
+
+/* ═══════════════ ADD-ONS / EXTRAS ═══════════════ */
+.extras-section {
+  padding: 0 32px 80px;
+  background: var(--white);
+}
+.extras-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.extras-card {
+  background: var(--sage-50);
+  border: 1px solid var(--sage-200);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+}
+.extras-card-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--forest-500);
+  margin-bottom: 10px;
+}
+.extras-card h3 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--shell-900);
+  margin-bottom: 8px;
+}
+.extras-card p {
+  font-size: 14px;
+  color: var(--shell-600);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.extras-card-price {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--shell-900);
+}
+.extras-card-price .per {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--shell-500);
+}
+
+/* ═══════════════ COMPARISON TABLE ═══════════════ */
+.compare-section {
+  padding: 80px 32px;
+  background: var(--sage-50);
+}
+.compare-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.compare-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.compare-header h2 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--shell-900);
+  margin-bottom: 8px;
+}
+.compare-header p {
+  font-size: 15px;
+  color: var(--shell-500);
+}
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.compare-table thead th {
+  padding: 16px 20px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--shell-900);
+  border-bottom: 2px solid var(--shell-border);
+  font-family: var(--font-display);
+}
+.compare-table thead th:first-child {
+  text-align: left;
+  color: var(--shell-500);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.compare-table thead th.th-featured {
+  color: var(--forest-700);
+}
+.compare-table tbody td {
+  padding: 14px 20px;
+  font-size: 14px;
+  color: var(--shell-700);
+  border-bottom: 1px solid var(--shell-border);
+  text-align: center;
+}
+.compare-table tbody td:first-child {
+  text-align: left;
+  color: var(--shell-800);
+  font-weight: 500;
+}
+.compare-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.compare-table .section-row td {
+  padding-top: 28px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--shell-400);
+  border-bottom: 1px solid var(--shell-border);
+}
+.table-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+}
+.table-check.yes {
+  background: var(--forest-50);
+  color: var(--forest-500);
+}
+.table-check.no {
+  background: var(--shell-100);
+  color: var(--shell-300);
+}
+.td-featured {
+  background: rgba(58,125,83,0.02);
+}
+
+/* ═══════════════ FAQ ═══════════════ */
+.faq-section {
+  padding: 80px 32px;
+  background: var(--white);
+}
+.faq-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.faq-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.faq-header h2 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--shell-900);
+}
+.faq-item {
+  border-bottom: 1px solid var(--shell-border);
+}
+.faq-question {
+  padding: 20px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--shell-900);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-body);
+}
+.faq-question:hover { color: var(--forest-700); }
+.faq-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--shell-400);
+  transition: transform 0.2s;
+}
+.faq-item.open .faq-icon { transform: rotate(45deg); }
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+.faq-item.open .faq-answer {
+  max-height: 300px;
+  padding-bottom: 20px;
+}
+.faq-answer p {
+  font-size: 15px;
+  color: var(--shell-600);
+  line-height: 1.7;
+}
+
+/* ═══════════════ FINAL CTA ═══════════════ */
+.final-cta {
+  padding: 100px 32px;
+  background: var(--forest-900);
+  text-align: center;
+}
+.final-cta-eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--forest-300);
+  margin-bottom: 16px;
+}
+.final-cta h2 {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 600;
+  color: white;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.final-cta p {
+  font-size: 17px;
+  color: rgba(255,255,255,0.4);
+  max-width: 480px;
+  margin: 0 auto 36px;
+  line-height: 1.6;
+}
+.final-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 32px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: var(--forest-500);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.final-cta-btn:hover { background: var(--forest-400); }
+.final-cta-note {
+  margin-top: 16px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.25);
+}
+
+/* ═══════════════ FOOTER ═══════════════ */
+.footer {
+  padding: 40px 32px;
+  background: var(--forest-900);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-left {
+  font-size: 13px;
+  color: rgba(255,255,255,0.25);
+}
+.footer-left a {
+  color: rgba(255,255,255,0.25);
+  text-decoration: none;
+  font-weight: 700;
+}
+.footer-left a span { color: var(--forest-300); }
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+.footer-links a {
+  font-size: 13px;
+  color: rgba(255,255,255,0.25);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: rgba(255,255,255,0.5); }
+
+/* ═══════════════ RESPONSIVE ═══════════════ */
+@media (max-width: 900px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+  }
+  .pricing-card.featured { order: -1; }
+  .extras-inner { grid-template-columns: 1fr; }
+  .compare-table { font-size: 13px; }
+  .pricing-hero h1 { font-size: 34px; }
+  .final-cta h2 { font-size: 30px; }
+}
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .pricing-hero { padding: 100px 20px 48px; }
+  .pricing-section { padding: 0 20px 60px; }
+  .compare-section { padding: 60px 16px; }
+  .extras-section { padding: 0 20px 60px; }
+  .faq-section { padding: 60px 20px; }
+  .final-cta { padding: 80px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav class="nav">
+  <div class="nav-left">
+    <a href="#" class="nav-logo">SkillGap<span>.ai</span></a>
+    <div class="nav-links">
+      <a href="#">Paths</a>
+      <a href="#">Rooms</a>
+      <a href="#" class="active">Pricing</a>
+    </div>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="nav-login">Log in</a>
+    <a href="#" class="nav-cta">Start free trial</a>
+  </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="pricing-hero">
+  <div class="pricing-hero-eyebrow">Pricing</div>
+  <h1>Invest in your fluency</h1>
+  <p>Start with a 14-day free trial. Cancel anytime. Every plan includes unlimited learning paths, rooms, and your portable skill graph.</p>
+
+  <div class="billing-toggle">
+    <button class="billing-option" onclick="setBilling('monthly')">Monthly</button>
+    <button class="billing-option active" onclick="setBilling('quarterly')">Quarterly
+      <span class="billing-save">Save 16%</span>
+    </button>
+    <button class="billing-option" onclick="setBilling('annual')">Annual
+      <span class="billing-save">Save 27%</span>
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════════ PRICING CARDS ═══════════════ -->
+<section class="pricing-section">
+  <div class="pricing-grid">
+
+    <!-- PRO -->
+    <div class="pricing-card">
+      <div class="card-name">Pro</div>
+      <div class="card-desc">For professionals building AI fluency on their own terms.</div>
+      <div class="card-price">
+        <div class="card-price-amount" data-monthly="99" data-quarterly="83" data-annual="58">
+          <span class="currency">$</span><span class="price-value">83</span>
+        </div>
+        <div class="card-price-period">per month</div>
+        <div class="card-price-note" data-monthly="billed monthly" data-quarterly="$249 billed quarterly" data-annual="$699 billed annually">$249 billed quarterly</div>
+      </div>
+      <a href="#" class="card-cta card-cta-outline">Start free trial</a>
+      <div class="card-divider"></div>
+      <div class="card-features-label">Everything you need</div>
+      <ul class="card-features">
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><span class="feat-highlight">Unlimited curated paths</span> — learn as much as you want</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><span class="feat-highlight">5 custom paths</span> per month, AI-generated for you</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Unlimited room sessions</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Full skill graph with adjacencies</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>AI-powered project feedback</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Shareable credentials</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Weekly progress summaries</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- PRO + COACH (Featured) -->
+    <div class="pricing-card featured">
+      <div class="card-badge">Most Popular</div>
+      <div class="card-name">Pro + Coach</div>
+      <div class="card-desc">For professionals who want expert guidance alongside AI-powered learning.</div>
+      <div class="card-price">
+        <div class="card-price-amount" data-monthly="279" data-quarterly="250" data-annual="200">
+          <span class="currency">$</span><span class="price-value">250</span>
+        </div>
+        <div class="card-price-period">per month</div>
+        <div class="card-price-note" data-monthly="billed monthly" data-quarterly="$749 billed quarterly" data-annual="$2,399 billed annually">$749 billed quarterly</div>
+      </div>
+      <a href="#" class="card-cta card-cta-primary">Start free trial</a>
+      <div class="card-divider"></div>
+      <div class="card-features-label">Everything in Pro, plus</div>
+      <ul class="card-features">
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><span class="feat-highlight">4 expert coach reviews</span> per month on your projects</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><span class="feat-highlight">Monthly skill strategy session</span> — personalized guidance</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Coach-curated 90-day learning sequence</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>"Coach Verified" badge on credentials</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Priority access to live events</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Early access to new paths and features</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- TEAMS -->
+    <div class="pricing-card">
+      <div class="card-name">Teams</div>
+      <div class="card-desc">For managers building AI-fluent teams. Minimum 5 seats.</div>
+      <div class="card-price">
+        <div class="card-price-amount" data-monthly="99" data-quarterly="99" data-annual="99">
+          <span class="currency">$</span><span class="price-value">99</span>
+        </div>
+        <div class="card-price-period">per user / month</div>
+        <div class="card-price-note" data-monthly="billed annually" data-quarterly="billed annually" data-annual="billed annually">billed annually</div>
+      </div>
+      <a href="#" class="card-cta card-cta-outline">Talk to us</a>
+      <div class="card-divider"></div>
+      <div class="card-features-label">Everything in Pro, plus</div>
+      <ul class="card-features">
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><span class="feat-highlight">Team skill dashboard</span> — see gaps across your team</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Manager analytics and reporting</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Private team rooms</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Team-specific path recommendations</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Coach reviews add-on available</span>
+        </li>
+        <li>
+          <span class="check check-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>Invoice billing and SSO</span>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════ EXTRAS ═══════════════ -->
+<section class="extras-section">
+  <div class="extras-inner">
+    <div class="extras-card">
+      <div class="extras-card-eyebrow">Live Events</div>
+      <h3>Spike Sessions</h3>
+      <p>Expert-led, limited-seat workshops co-produced with tool providers. Build something real in 90 minutes. Free for Pro + Coach subscribers.</p>
+      <div class="extras-card-price">$149–249 <span class="per">per event</span></div>
+    </div>
+    <div class="extras-card">
+      <div class="extras-card-eyebrow">Enterprise</div>
+      <h3>Custom plans</h3>
+      <p>Skills intelligence suite, custom taxonomy mapping, SSO/SCIM, dedicated success manager, and API access. For organizations with 50+ seats.</p>
+      <div class="extras-card-price" style="font-size: 20px; color: var(--shell-700);">Let's talk <span class="per">→</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ COMPARISON TABLE ═══════════════ -->
+<section class="compare-section">
+  <div class="compare-inner">
+    <div class="compare-header">
+      <h2>Compare plans</h2>
+      <p>Every plan starts with a 14-day free trial. No credit card required.</p>
+    </div>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Features</th>
+          <th>Pro</th>
+          <th class="th-featured">Pro + Coach</th>
+          <th>Teams</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Learning -->
+        <tr class="section-row"><td colspan="4">Learning</td></tr>
+        <tr>
+          <td>Curated learning paths</td>
+          <td>Unlimited</td>
+          <td class="td-featured">Unlimited</td>
+          <td>Unlimited</td>
+        </tr>
+        <tr>
+          <td>Custom AI-generated paths</td>
+          <td>5 / month</td>
+          <td class="td-featured">10 / month</td>
+          <td>10 / user / month</td>
+        </tr>
+        <tr>
+          <td>AI project feedback</td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+          <td class="td-featured"><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+        </tr>
+        <tr>
+          <td>Expert coach reviews</td>
+          <td><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td class="td-featured">4 / month</td>
+          <td>Add-on</td>
+        </tr>
+        <tr>
+          <td>Coach strategy session</td>
+          <td><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td class="td-featured">Monthly</td>
+          <td>Add-on</td>
+        </tr>
+
+        <!-- Skill Graph -->
+        <tr class="section-row"><td colspan="4">Skill Graph</td></tr>
+        <tr>
+          <td>Skill graph + adjacencies</td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+          <td class="td-featured"><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+        </tr>
+        <tr>
+          <td>Shareable credentials</td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+          <td class="td-featured"><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+        </tr>
+        <tr>
+          <td>Coach Verified badge</td>
+          <td><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td class="td-featured"><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+          <td>Add-on</td>
+        </tr>
+        <tr>
+          <td>Team skill dashboard</td>
+          <td><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td class="td-featured"><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+        </tr>
+
+        <!-- Rooms & Community -->
+        <tr class="section-row"><td colspan="4">Rooms & Community</td></tr>
+        <tr>
+          <td>Room sessions</td>
+          <td>Unlimited</td>
+          <td class="td-featured">Unlimited</td>
+          <td>Unlimited</td>
+        </tr>
+        <tr>
+          <td>Live Spike events</td>
+          <td>Priority access</td>
+          <td class="td-featured">Included free</td>
+          <td>Priority access</td>
+        </tr>
+        <tr>
+          <td>Private team rooms</td>
+          <td><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td class="td-featured"><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+        </tr>
+
+        <!-- Support -->
+        <tr class="section-row"><td colspan="4">Support & Admin</td></tr>
+        <tr>
+          <td>Weekly progress summaries</td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+          <td class="td-featured"><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+        </tr>
+        <tr>
+          <td>Manager analytics</td>
+          <td><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td class="td-featured"><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+        </tr>
+        <tr>
+          <td>SSO & invoice billing</td>
+          <td><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td class="td-featured"><span class="table-check no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span></td>
+          <td><span class="table-check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════ FAQ ═══════════════ -->
+<section class="faq-section">
+  <div class="faq-inner">
+    <div class="faq-header">
+      <h2>Questions</h2>
+    </div>
+
+    <div class="faq-item open">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What happens during the free trial?
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>You get full access to your chosen plan for 14 days. Unlimited paths, rooms, skill graph — everything. No credit card required to start. If you decide it's not for you, just don't subscribe. Your skill graph and progress are saved if you come back.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What's the difference between curated and custom paths?
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Curated paths are pre-built from our content library — the best videos, articles, and missions on a topic, already structured into a 30–60 minute learning experience. Custom paths are generated on demand by our AI for your specific needs — your function, your tools, your fluency level. Both include hands-on missions and AI feedback.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Who are the coaches?
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Practitioners, not career coaches. A senior engineer who ships with Cursor daily. A marketing director who runs AI-powered campaigns. They review your project submissions with the eye of someone who does this work professionally, and help you build a 90-day skill development plan tailored to your career.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Can I switch plans later?
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Yes. Upgrade or downgrade anytime. If you upgrade mid-billing cycle, you'll be prorated. If you downgrade, the change takes effect at the end of your current billing period. Your skill graph and credentials are yours regardless of plan.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What is the skill graph?
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>A personal, portable, verified map of your AI skills. Every path you complete and every mission you submit builds your graph — showing your skills, fluency levels, and adjacencies to new capabilities. Unlike self-assessed skills on LinkedIn, every skill in your graph has evidence. It's yours to keep and share.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        How does team billing work?
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Teams are billed annually with a 5-seat minimum ($99/user/month, billed as $5,940/year for 5 seats). Add seats anytime — prorated for the remainder of your billing period. We offer invoice billing for Teams and Enterprise. For 50+ seats, contact us for custom Enterprise pricing.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════ FINAL CTA ═══════════════ -->
+<section class="final-cta">
+  <div class="final-cta-eyebrow">Start today</div>
+  <h2>The gap is growing.<br>Start closing it.</h2>
+  <p>14-day free trial. No credit card. Cancel anytime. Your skill graph is yours to keep.</p>
+  <a href="#" class="final-cta-btn">
+    Start free trial
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </a>
+  <div class="final-cta-note">Join 2,400+ professionals building AI fluency</div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <a href="#">SkillGap<span>.ai</span></a> &nbsp;· &nbsp; Close the gap.
+    </div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Billing toggle
+const prices = {
+  monthly: { pro: '99', coach: '279', teams: '99' },
+  quarterly: { pro: '83', coach: '250', teams: '99' },
+  annual: { pro: '58', coach: '200', teams: '99' }
+};
+
+function setBilling(period) {
+  // Update toggle buttons
+  document.querySelectorAll('.billing-option').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.textContent.toLowerCase().includes(period)) {
+      btn.classList.add('active');
+    }
+  });
+
+  // Update prices
+  document.querySelectorAll('.card-price-amount').forEach(el => {
+    const val = el.getAttribute('data-' + period);
+    if (val) el.querySelector('.price-value').textContent = val;
+  });
+
+  // Update billing notes
+  document.querySelectorAll('.card-price-note').forEach(el => {
+    const note = el.getAttribute('data-' + period);
+    if (note) el.textContent = note;
+  });
+}
+
+// FAQ accordion
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const wasOpen = item.classList.contains('open');
+
+  // Close all
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+
+  // Toggle clicked
+  if (!wasOpen) item.classList.add('open');
+}
+</script>
+
+</body>
+</html>

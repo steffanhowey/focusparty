@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillGap — Rooms · New Brand Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ═══ BRAND TOKENS (Application Mode) ═══ */
+  :root {
+    --sg-font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --sg-font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --sg-font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+    --sg-forest-900: #0F2318; --sg-forest-800: #162E21; --sg-forest-700: #1E3A2C;
+    --sg-forest-600: #2A5340; --sg-forest-500: #3A7D53; --sg-forest-400: #4A9E6A;
+    --sg-forest-300: #6BBF87; --sg-forest-200: #A3D9B5; --sg-forest-100: #D1ECDA;
+    --sg-forest-50:  #EEF5EC;
+
+    --sg-sage-900: #2C3E2E; --sg-sage-700: #5A7A5E; --sg-sage-500: #8BAF8E;
+    --sg-sage-400: #A8C5AA; --sg-sage-300: #C4D9C6; --sg-sage-200: #DCE9DD;
+    --sg-sage-100: #EDF4EE; --sg-sage-50:  #F5F9F5;
+
+    --sg-shell-900: #262626; --sg-shell-800: #3D3D3D; --sg-shell-700: #525252;
+    --sg-shell-600: #6B6B6B; --sg-shell-500: #8A8A8A; --sg-shell-400: #A3A3A3;
+    --sg-shell-300: #D4D4D4; --sg-shell-border: #E8E8E8; --sg-shell-200: #EEEEEE;
+    --sg-shell-100: #F5F5F5; --sg-shell-50: #FAFAFA; --sg-white: #FFFFFF;
+
+    --sg-teal-900: #1A3D3D; --sg-teal-700: #2D7272; --sg-teal-600: #3D8E8B;
+    --sg-teal-500: #5BA8A0; --sg-teal-400: #7CC0B8; --sg-teal-300: #A3D5CF;
+    --sg-teal-200: #CCEAE6; --sg-teal-100: #E8F5F3;
+
+    --sg-gold-900: #5C4D0E; --sg-gold-700: #9E8518; --sg-gold-600: #B89C1E;
+    --sg-gold-500: #CDBE3D; --sg-gold-400: #D9CF5C; --sg-gold-200: #F0ECB8;
+    --sg-gold-100: #F8F6DC;
+    --sg-coral-700: #C0392B; --sg-coral-600: #D64540; --sg-coral-500: #E96861;
+    --sg-coral-400: #F08C86; --sg-coral-100: #FDECEB;
+    --sg-coral-on-dark: rgba(233,104,97,0.18);
+
+    --sg-radius-xs: 4px; --sg-radius-sm: 6px; --sg-radius-btn: 8px;
+    --sg-radius-md: 12px; --sg-radius-lg: 16px; --sg-radius-xl: 24px;
+    --sg-radius-pill: 9999px;
+
+    --sg-shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --sg-shadow-md:  0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    --sg-shadow-lg:  0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+    --sg-shadow-dark-sm:  0 2px 6px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
+    --sg-shadow-dark-md:  0 4px 16px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.3);
+    --sg-shadow-dark-lg:  0 8px 32px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.3);
+    --sg-shadow-focus: 0 0 0 3px rgba(74,158,106,0.15);
+    --sg-shadow-glow-forest: 0 0 20px rgba(58,125,83,0.25);
+    --sg-shadow-glow-gold:   0 0 20px rgba(205,190,61,0.25);
+    --sg-shadow-glow-teal:   0 0 20px rgba(91,168,160,0.25);
+
+    --sg-duration-fast: 150ms; --sg-duration-normal: 200ms; --sg-duration-slow: 350ms;
+    --sg-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --sg-ease-in: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+    --sg-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    --sg-space-1: 4px; --sg-space-2: 8px; --sg-space-3: 12px; --sg-space-4: 16px;
+    --sg-space-5: 20px; --sg-space-6: 24px; --sg-space-8: 32px; --sg-space-10: 40px;
+
+    /* Room State Semantic Colors */
+    --sg-state-quiet:    var(--sg-shell-500);
+    --sg-state-warming:  var(--sg-gold-600);
+    --sg-state-focused:  var(--sg-forest-400);
+    --sg-state-flowing:  var(--sg-teal-500);
+    --sg-state-cooling:  var(--sg-sage-500);
+  }
+
+  body {
+    font-family: var(--sg-font-body);
+    background: var(--sg-shell-50);
+    color: var(--sg-shell-900);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5; font-size: 14px;
+  }
+
+  /* ═══ REF PAGE CHROME ═══ */
+  .ref-page { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+  .ref-header { text-align: center; padding: 48px 0 32px; border-bottom: 1px solid var(--sg-shell-border); margin-bottom: 48px; }
+  .ref-header h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+  .ref-header p { font-size: 14px; color: var(--sg-shell-500); margin-top: 8px; }
+  .ref-section { margin-bottom: 80px; }
+  .ref-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--sg-forest-500);
+    margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+  }
+  .ref-label::after { content: ''; flex: 1; height: 1px; background: var(--sg-shell-border); }
+  .ref-note {
+    font-size: 11px; color: var(--sg-shell-500); margin-top: 12px;
+    padding: 8px 12px; background: var(--sg-shell-100); border-radius: var(--sg-radius-sm);
+    border-left: 3px solid var(--sg-forest-400);
+  }
+  .screen-divider { margin: 64px 0; border: none; height: 1px; background: var(--sg-shell-border); }
+
+  /* ═══ SHARED ELEMENTS ═══ */
+  .btn-primary-dark {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 24px; border-radius: var(--sg-radius-btn);
+    font-family: var(--sg-font-body); font-size: 14px; font-weight: 600;
+    background: var(--sg-white); color: var(--sg-forest-800);
+    border: none; cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .btn-primary-dark:hover { background: var(--sg-sage-100); }
+  .btn-primary-light {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 24px; border-radius: var(--sg-radius-btn);
+    font-family: var(--sg-font-body); font-size: 14px; font-weight: 600;
+    background: var(--sg-forest-700); color: var(--sg-white);
+    border: none; cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .btn-primary-light:hover { background: var(--sg-forest-600); }
+  .btn-secondary-dark {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 24px; border-radius: var(--sg-radius-btn);
+    font-family: var(--sg-font-body); font-size: 14px; font-weight: 600;
+    background: transparent; color: var(--sg-sage-400);
+    border: 1.5px solid rgba(255,255,255,0.15); cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out),
+                border-color var(--sg-duration-fast) var(--sg-ease-out),
+                color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .btn-secondary-dark:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25); color: var(--sg-white); }
+  .btn-ghost-dark {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--sg-radius-btn);
+    font-family: var(--sg-font-body); font-size: 13px; font-weight: 500;
+    background: transparent; border: none; color: var(--sg-sage-500); cursor: pointer;
+    transition: color var(--sg-duration-fast) var(--sg-ease-out), background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .btn-ghost-dark:hover { color: var(--sg-white); background: rgba(255,255,255,0.06); }
+
+  /* ═══ Avatars ═══ */
+  .avatar-stack { display: flex; }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid; font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: -8px; position: relative;
+  }
+  .avatar:first-child { margin-left: 0; }
+  .avatar-overflow {
+    width: 28px; height: 28px; border-radius: 50%;
+    margin-left: -8px; font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  /* Light surface avatars */
+  .avatar.on-light { border-color: var(--sg-white); background: var(--sg-sage-100); color: var(--sg-forest-700); }
+  .avatar-overflow.on-light { background: var(--sg-shell-200); color: var(--sg-shell-600); }
+  /* Dark surface avatars */
+  .avatar.on-dark { border-color: var(--sg-forest-800); background: var(--sg-forest-600); color: var(--sg-forest-100); }
+  .avatar-overflow.on-dark { background: var(--sg-forest-700); color: var(--sg-sage-400); }
+
+  /* Status dot */
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    position: absolute; bottom: -1px; right: -1px;
+    border: 2px solid;
+  }
+  .status-dot.on-light { border-color: var(--sg-white); }
+  .status-dot.on-dark { border-color: var(--sg-forest-800); }
+  .status-dot.active { background: var(--sg-forest-400); }
+  .status-dot.idle { background: var(--sg-shell-500); }
+
+  /* ═══════════════════════════════════════════
+     SCREEN 1: ROOM DISCOVERY (Practice Page)
+     ═══════════════════════════════════════════ */
+
+  /* — Top Bar — */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; height: 56px;
+    background: var(--sg-white);
+    border-bottom: 1px solid var(--sg-shell-border);
+  }
+  .topbar-logo { font-size: 18px; font-weight: 700; color: var(--sg-forest-700); }
+  .topbar-logo .accent { color: var(--sg-forest-500); }
+  .topbar-nav { display: flex; gap: 24px; }
+  .topbar-nav a {
+    font-size: 13px; font-weight: 500; color: var(--sg-shell-600); text-decoration: none;
+    transition: color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .topbar-nav a:hover { color: var(--sg-shell-900); }
+  .topbar-nav a.active { color: var(--sg-forest-700); font-weight: 600; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .topbar-live {
+    font-size: 12px; font-weight: 500; color: var(--sg-teal-600);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .topbar-live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--sg-teal-600);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* — Page Header — */
+  .page-header {
+    padding: 32px 0 24px;
+  }
+  .page-title {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+    color: var(--sg-shell-900); margin-bottom: 4px;
+  }
+  .page-subtitle { font-size: 15px; color: var(--sg-shell-600); }
+
+  /* — Filter Row — */
+  .filter-row {
+    display: flex; gap: 8px; margin-bottom: 24px;
+  }
+  .filter-chip {
+    padding: 6px 14px; border-radius: var(--sg-radius-pill);
+    font-size: 12px; font-weight: 500;
+    background: var(--sg-white); color: var(--sg-shell-600);
+    border: 1px solid var(--sg-shell-border);
+    cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out),
+                color var(--sg-duration-fast) var(--sg-ease-out),
+                border-color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .filter-chip:hover { border-color: var(--sg-shell-500); color: var(--sg-shell-900); }
+  .filter-chip.active {
+    background: var(--sg-forest-50); color: var(--sg-forest-700);
+    border-color: var(--sg-forest-200);
+  }
+
+  /* — Featured Room Card — */
+  .featured-room {
+    background: linear-gradient(135deg, var(--sg-forest-900), var(--sg-forest-700));
+    border-radius: var(--sg-radius-xl);
+    padding: 32px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    min-height: 200px;
+  }
+  .featured-room::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 80% 20%, rgba(91,168,160,0.12) 0%, transparent 50%);
+  }
+  .featured-content { position: relative; z-index: 1; max-width: 480px; }
+  .featured-eyebrow {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--sg-forest-300);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .featured-name {
+    font-size: 24px; font-weight: 700; letter-spacing: -0.02em;
+    color: var(--sg-white); margin-bottom: 6px;
+  }
+  .featured-desc {
+    font-size: 14px; color: var(--sg-sage-400); line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .featured-meta {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .featured-right {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
+  }
+
+  /* Room state indicator */
+  .room-state {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500;
+  }
+  .room-state-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .room-state.quiet .room-state-dot { background: var(--sg-state-quiet); }
+  .room-state.quiet { color: var(--sg-shell-500); }
+  .room-state.warming .room-state-dot { background: var(--sg-state-warming); }
+  .room-state.warming { color: var(--sg-gold-500); }
+  .room-state.focused .room-state-dot { background: var(--sg-state-focused); }
+  .room-state.focused { color: var(--sg-forest-300); }
+  .room-state.flowing .room-state-dot { background: var(--sg-state-flowing); }
+  .room-state.flowing { color: var(--sg-teal-400); }
+  .room-state.cooling .room-state-dot { background: var(--sg-state-cooling); }
+  .room-state.cooling { color: var(--sg-sage-400); }
+
+  /* — Room Cards Grid — */
+  .room-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  .room-card {
+    background: var(--sg-white);
+    border: 1px solid var(--sg-shell-border);
+    border-radius: var(--sg-radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform var(--sg-duration-fast) var(--sg-ease-out),
+                box-shadow var(--sg-duration-fast) var(--sg-ease-out);
+    will-change: transform, box-shadow;
+  }
+  .room-card:hover { transform: translateY(-2px); box-shadow: var(--sg-shadow-md); }
+  .room-card-cover {
+    height: 120px; position: relative;
+    background: linear-gradient(135deg, var(--sg-forest-800), var(--sg-forest-600));
+  }
+  .room-card-status {
+    position: absolute; top: 10px; right: 10px;
+    display: flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: var(--sg-radius-pill);
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+    font-size: 11px; font-weight: 600;
+  }
+  .room-card-status.active { color: var(--sg-forest-300); }
+  .room-card-status.waiting { color: var(--sg-gold-500); }
+  .room-card-status.full { color: var(--sg-shell-400); }
+  .room-card-status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .room-card-status.active .room-card-status-dot { background: var(--sg-forest-400); }
+  .room-card-status.waiting .room-card-status-dot { background: var(--sg-gold-600); }
+  .room-card-status.full .room-card-status-dot { background: var(--sg-shell-500); }
+
+  .room-card-body { padding: 14px 16px; }
+  .room-card-name { font-size: 15px; font-weight: 600; color: var(--sg-shell-900); margin-bottom: 4px; }
+  .room-card-host { font-size: 12px; color: var(--sg-shell-500); margin-bottom: 10px; }
+  .room-card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .room-card-count {
+    font-size: 12px; color: var(--sg-shell-500);
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  /* ═══════════════════════════════════════════
+     SCREEN 2: ROOM LOBBY
+     ═══════════════════════════════════════════ */
+  .lobby-shell {
+    background: var(--sg-forest-900);
+    border-radius: var(--sg-radius-xl);
+    overflow: hidden; padding: 32px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .lobby-back {
+    font-size: 13px; font-weight: 500; color: var(--sg-sage-500);
+    margin-bottom: 24px; cursor: pointer;
+    transition: color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .lobby-back:hover { color: var(--sg-white); }
+  .lobby-header { margin-bottom: 28px; }
+  .lobby-name {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+    color: var(--sg-white); margin-bottom: 6px;
+  }
+  .lobby-desc {
+    font-size: 14px; color: var(--sg-sage-400); margin-bottom: 12px;
+  }
+  .lobby-meta {
+    display: flex; align-items: center; gap: 16px;
+    font-size: 12px;
+  }
+  .lobby-participant-count { color: var(--sg-sage-400); }
+
+  /* Lobby Grid */
+  .lobby-grid {
+    display: grid; grid-template-columns: 1fr 320px; gap: 20px;
+  }
+
+  /* Resume Session Card */
+  .resume-card {
+    background: rgba(74,158,106,0.08);
+    border: 1px solid rgba(74,158,106,0.2);
+    border-radius: var(--sg-radius-lg);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .resume-card-title {
+    font-size: 14px; font-weight: 600; color: var(--sg-white);
+    margin-bottom: 6px;
+  }
+  .resume-card-desc {
+    font-size: 13px; color: var(--sg-sage-400); margin-bottom: 12px;
+  }
+
+  /* Room Pulse Card */
+  .pulse-card {
+    background: var(--sg-forest-800);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--sg-radius-lg);
+    padding: 20px;
+  }
+  .pulse-title {
+    font-size: 14px; font-weight: 600; color: var(--sg-white);
+    margin-bottom: 4px;
+  }
+  .pulse-count {
+    font-size: 13px; color: var(--sg-sage-400); margin-bottom: 16px;
+  }
+
+  /* Activity Feed */
+  .activity-feed {
+    max-height: 180px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .activity-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 12px; color: var(--sg-sage-400);
+  }
+  .activity-icon {
+    width: 24px; height: 24px; border-radius: var(--sg-radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 11px;
+  }
+  .activity-icon.sprint { background: rgba(74,158,106,0.15); color: var(--sg-forest-300); }
+  .activity-icon.join { background: rgba(91,168,160,0.15); color: var(--sg-teal-400); }
+  .activity-icon.complete { background: rgba(205,190,61,0.15); color: var(--sg-gold-400); }
+  .activity-time { color: var(--sg-sage-500); font-size: 11px; margin-left: auto; white-space: nowrap; }
+
+  /* Lobby Actions */
+  .lobby-actions {
+    display: flex; gap: 10px; margin-top: 20px;
+  }
+
+  /* ═══════════════════════════════════════════
+     SCREEN 3: JOIN ROOM MODAL
+     ═══════════════════════════════════════════ */
+  .modal-overlay {
+    background: rgba(15,35,24,0.6);
+    backdrop-filter: blur(8px);
+    border-radius: var(--sg-radius-xl);
+    padding: 40px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-card {
+    background: var(--sg-forest-800);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--sg-radius-lg);
+    padding: 28px;
+    max-width: 440px; width: 100%;
+    box-shadow: var(--sg-shadow-dark-lg);
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 14px; right: 14px;
+    background: none; border: none; color: var(--sg-sage-500);
+    cursor: pointer; font-size: 18px;
+    transition: color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .modal-close:hover { color: var(--sg-white); }
+  .modal-title {
+    font-size: 18px; font-weight: 700; color: var(--sg-white);
+    margin-bottom: 4px;
+  }
+  .modal-subtitle {
+    font-size: 13px; color: var(--sg-sage-400); margin-bottom: 24px;
+  }
+
+  /* Form Fields */
+  .form-label {
+    font-size: 12px; font-weight: 600; color: var(--sg-sage-400);
+    margin-bottom: 6px; display: block;
+  }
+  .form-select {
+    width: 100%; height: 44px; padding: 0 14px;
+    font-family: var(--sg-font-body); font-size: 14px;
+    color: var(--sg-white);
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: var(--sg-radius-md);
+    margin-bottom: 16px;
+    appearance: none; outline: none;
+    transition: border-color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .form-select:focus { border-color: var(--sg-forest-400); }
+
+  /* Duration Pills */
+  .duration-pills {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .duration-pill {
+    flex: 1; padding: 10px 0; text-align: center;
+    border-radius: var(--sg-radius-btn);
+    font-size: 13px; font-weight: 600;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    color: var(--sg-sage-400);
+    cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out),
+                border-color var(--sg-duration-fast) var(--sg-ease-out),
+                color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .duration-pill:hover {
+    border-color: rgba(255,255,255,0.15);
+    color: var(--sg-white);
+  }
+  .duration-pill.selected {
+    background: rgba(74,158,106,0.12);
+    border-color: var(--sg-forest-400);
+    color: var(--sg-white);
+  }
+
+  /* Commitment Type */
+  .commitment-pills {
+    display: flex; gap: 8px; margin-bottom: 20px;
+  }
+  .commitment-pill {
+    flex: 1; padding: 10px 12px;
+    border-radius: var(--sg-radius-md);
+    font-size: 12px; font-weight: 500; text-align: center;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    color: var(--sg-sage-400);
+    cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out),
+                border-color var(--sg-duration-fast) var(--sg-ease-out),
+                color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .commitment-pill.selected {
+    background: rgba(74,158,106,0.1);
+    border-color: var(--sg-forest-400);
+    color: var(--sg-white);
+  }
+
+  /* ═══════════════════════════════════════════
+     SCREEN 4: ACTIVE SPRINT SESSION
+     ═══════════════════════════════════════════ */
+  .sprint-shell {
+    background: var(--sg-forest-900);
+    border-radius: var(--sg-radius-xl);
+    overflow: hidden;
+    min-height: 500px;
+    display: flex; flex-direction: column;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .sprint-body { display: flex; flex: 1; }
+
+  /* Left — Main Area (AI Partner) */
+  .sprint-main {
+    flex: 1; position: relative;
+    background: linear-gradient(180deg, var(--sg-forest-800), var(--sg-forest-900));
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ai-partner-placeholder {
+    text-align: center; color: var(--sg-sage-500);
+  }
+  .ai-glow {
+    width: 120px; height: 120px; border-radius: 50%;
+    margin: 0 auto 16px;
+    background: radial-gradient(circle, rgba(74,158,106,0.2) 0%, transparent 70%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+  }
+  .ai-name { font-size: 14px; font-weight: 600; color: var(--sg-sage-400); }
+  .ai-status { font-size: 12px; color: var(--sg-sage-500); }
+
+  /* Camera PiP */
+  .camera-pip {
+    position: absolute; bottom: 16px; left: 16px;
+    width: 140px; height: 105px;
+    border-radius: var(--sg-radius-md);
+    background: var(--sg-forest-800);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--sg-sage-500);
+  }
+
+  /* Right — Chat Panel */
+  .chat-panel {
+    width: 340px; flex-shrink: 0;
+    background: rgba(15,35,24,0.65);
+    backdrop-filter: blur(24px);
+    border-left: 1px solid rgba(255,255,255,0.06);
+    display: flex; flex-direction: column;
+  }
+  .chat-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 13px; font-weight: 600; color: var(--sg-sage-400);
+  }
+  .chat-messages {
+    flex: 1; padding: 16px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .chat-msg {
+    max-width: 85%; padding: 10px 14px;
+    font-size: 13px; line-height: 1.5;
+  }
+  .chat-msg.ai {
+    align-self: flex-start;
+    background: rgba(255,255,255,0.06);
+    border-radius: var(--sg-radius-md) var(--sg-radius-md) var(--sg-radius-md) var(--sg-radius-xs);
+    color: var(--sg-sage-300);
+  }
+  .chat-msg.user {
+    align-self: flex-end;
+    background: var(--sg-forest-600);
+    border-radius: var(--sg-radius-md) var(--sg-radius-md) var(--sg-radius-xs) var(--sg-radius-md);
+    color: var(--sg-white);
+  }
+  .chat-input-area {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; gap: 8px;
+  }
+  .chat-input {
+    flex: 1; height: 40px; padding: 0 14px;
+    font-family: var(--sg-font-body); font-size: 13px;
+    color: var(--sg-white);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--sg-radius-pill);
+    outline: none;
+    transition: border-color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .chat-input::placeholder { color: var(--sg-sage-500); }
+  .chat-input:focus { border-color: var(--sg-forest-400); }
+  .chat-send {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--sg-forest-600); color: var(--sg-white);
+    border: none; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .chat-send:hover { background: var(--sg-forest-500); }
+
+  /* — Action Bar — */
+  .action-bar {
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px; padding: 10px 16px;
+    background: rgba(255,255,255,0.03);
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .action-btn {
+    width: 40px; height: 40px;
+    border-radius: var(--sg-radius-btn);
+    background: transparent;
+    border: none; cursor: pointer;
+    color: var(--sg-sage-400);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out),
+                color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .action-btn:hover { background: rgba(255,255,255,0.06); color: var(--sg-white); }
+  .action-btn.active { color: var(--sg-forest-300); background: rgba(74,158,106,0.12); }
+  .action-btn.danger { color: var(--sg-coral-500); }
+  .action-btn.danger:hover { background: rgba(233,104,97,0.12); }
+  .action-divider {
+    width: 1px; height: 24px;
+    background: rgba(255,255,255,0.08);
+    margin: 0 6px;
+  }
+  .timer-display {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    border-radius: var(--sg-radius-btn);
+    background: rgba(255,255,255,0.06);
+    font-family: var(--sg-font-mono);
+    font-size: 14px; font-weight: 600;
+    color: var(--sg-white);
+  }
+  .timer-label {
+    font-size: 11px; font-weight: 500; color: var(--sg-sage-500);
+    font-family: var(--sg-font-body);
+  }
+
+  /* ═══════════════════════════════════════════
+     SCREEN 5: SESSION REVIEW MODAL
+     ═══════════════════════════════════════════ */
+  .review-modal {
+    background: var(--sg-forest-800);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--sg-radius-lg);
+    padding: 32px;
+    max-width: 400px; width: 100%;
+    text-align: center;
+    box-shadow: var(--sg-shadow-dark-lg);
+  }
+  .review-celebration {
+    font-size: 40px; margin-bottom: 12px;
+  }
+  .review-title {
+    font-size: 22px; font-weight: 700; color: var(--sg-white);
+    margin-bottom: 8px;
+  }
+  .review-subtitle {
+    font-size: 14px; color: var(--sg-sage-400);
+    margin-bottom: 24px;
+  }
+  .review-stats {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .review-stat {
+    padding: 14px; border-radius: var(--sg-radius-md);
+    background: rgba(255,255,255,0.04);
+  }
+  .review-stat-value {
+    font-size: 24px; font-weight: 700; color: var(--sg-white);
+  }
+  .review-stat-label {
+    font-size: 11px; color: var(--sg-sage-500); margin-top: 2px;
+  }
+  .review-actions {
+    display: flex; gap: 10px;
+  }
+  .review-actions > * { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="ref-page">
+
+<div class="ref-header">
+  <h1>Rooms — New Brand Reference</h1>
+  <p>Application mode · Inter everywhere · All --sg-* tokens · No UX changes, style only</p>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 1: ROOM DISCOVERY
+     ═══════════════════════════════════════════ -->
+<div class="ref-section">
+  <div class="ref-label">Screen 1 · Room Discovery (Practice Page)</div>
+
+  <div class="topbar">
+    <div class="topbar-logo">Skill<span class="accent">Gap</span></div>
+    <div class="topbar-nav">
+      <a href="#">Learn</a>
+      <a href="#" class="active">Practice</a>
+      <a href="#">Progress</a>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-live"><div class="topbar-live-dot"></div> 89 practicing</div>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <div class="page-title">Practice Rooms</div>
+    <div class="page-subtitle">Sprint alongside professionals building AI fluency</div>
+  </div>
+
+  <div class="filter-row">
+    <div class="filter-chip active">All Sessions</div>
+    <div class="filter-chip">Most Active</div>
+    <div class="filter-chip">Coding & Building</div>
+    <div class="filter-chip">Writing & Focus</div>
+    <div class="filter-chip">Calm & Gentle</div>
+  </div>
+
+  <!-- Featured Room -->
+  <div class="featured-room">
+    <div class="featured-content">
+      <div class="featured-eyebrow">
+        <span class="room-state focused"><span class="room-state-dot"></span> Focused</span>
+        · Heartbeat Room
+      </div>
+      <div class="featured-name">AI + Engineering</div>
+      <div class="featured-desc">Sprint together on technical AI projects. Ship real code in focused 25-minute sessions.</div>
+      <div class="featured-meta">
+        <div class="avatar-stack">
+          <div class="avatar on-dark">SH<span class="status-dot on-dark active"></span></div>
+          <div class="avatar on-dark">JK<span class="status-dot on-dark active"></span></div>
+          <div class="avatar on-dark">MR<span class="status-dot on-dark idle"></span></div>
+          <div class="avatar-overflow on-dark">+9</div>
+        </div>
+        <span style="font-size: 12px; color: var(--sg-sage-400);">12 focusing now</span>
+      </div>
+    </div>
+    <div class="featured-right">
+      <button class="btn-primary-dark">Join Sprint</button>
+      <button class="btn-ghost-dark" style="font-size: 12px;">🎵 Vibe Check</button>
+    </div>
+  </div>
+
+  <!-- Room Grid -->
+  <div class="room-grid">
+    <div class="room-card">
+      <div class="room-card-cover" style="background: linear-gradient(135deg, var(--sg-teal-700), var(--sg-teal-600));">
+        <div class="room-card-status active"><span class="room-card-status-dot"></span> Active</div>
+      </div>
+      <div class="room-card-body">
+        <div class="room-card-name">AI + Marketing</div>
+        <div class="room-card-host">25m sprint · Hosted by Moss</div>
+        <div class="room-card-footer">
+          <div class="avatar-stack">
+            <div class="avatar on-light">AL</div>
+            <div class="avatar on-light">CB</div>
+            <div class="avatar-overflow on-light">+4</div>
+          </div>
+          <div class="room-card-count">6/15</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="room-card">
+      <div class="room-card-cover" style="background: linear-gradient(135deg, var(--sg-forest-800), var(--sg-forest-600));">
+        <div class="room-card-status waiting"><span class="room-card-status-dot"></span> Waiting</div>
+      </div>
+      <div class="room-card-body">
+        <div class="room-card-name">AI + Design</div>
+        <div class="room-card-host">25m sprint · Hosted by Ember</div>
+        <div class="room-card-footer">
+          <div class="avatar-stack">
+            <div class="avatar on-light">NP</div>
+            <div class="avatar-overflow on-light">+1</div>
+          </div>
+          <div class="room-card-count">2/12</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="room-card">
+      <div class="room-card-cover" style="background: linear-gradient(135deg, var(--sg-gold-900), var(--sg-gold-700));">
+        <div class="room-card-status full"><span class="room-card-status-dot"></span> Full</div>
+      </div>
+      <div class="room-card-body">
+        <div class="room-card-name">Cursor Practice Hour</div>
+        <div class="room-card-host">Scheduled · Tue 12pm ET</div>
+        <div class="room-card-footer">
+          <div class="avatar-stack">
+            <div class="avatar on-light">KR</div>
+            <div class="avatar on-light">TS</div>
+            <div class="avatar on-light">EM</div>
+            <div class="avatar-overflow on-light">+12</div>
+          </div>
+          <div class="room-card-count">15/15</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ref-note">
+    <strong>Token coverage:</strong> Light surface: white bg + shell-border cards. Featured room uses forest-900/700 gradient. Room state colors mapped to semantic aliases (quiet=shell-500, warming=gold-600, focused=forest-400, flowing=teal-500, cooling=sage-500). Status badges: active=forest-300, waiting=gold-500, full=shell-400. Avatar stacks have on-light and on-dark variants.
+  </div>
+</div>
+
+<hr class="screen-divider">
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 2: ROOM LOBBY
+     ═══════════════════════════════════════════ -->
+<div class="ref-section">
+  <div class="ref-label">Screen 2 · Room Lobby</div>
+
+  <div class="lobby-shell">
+    <div class="lobby-back">← Back to Practice</div>
+
+    <div class="lobby-header">
+      <div class="lobby-name">AI + Engineering</div>
+      <div class="lobby-desc">Sprint together on technical AI projects. Build, ship, and learn alongside 12 focused professionals.</div>
+      <div class="lobby-meta">
+        <span class="room-state focused"><span class="room-state-dot"></span> Focused</span>
+        <span class="lobby-participant-count">12 focusing · 3 sessions today</span>
+      </div>
+    </div>
+
+    <div class="lobby-grid">
+      <div>
+        <!-- Resume Card -->
+        <div class="resume-card">
+          <div class="resume-card-title">You have an active session</div>
+          <div class="resume-card-desc">Started 14 minutes ago · "Implement RAG pipeline" · 11 min remaining</div>
+          <button class="btn-primary-dark">Enter Session</button>
+        </div>
+      </div>
+
+      <!-- Pulse Card -->
+      <div class="pulse-card">
+        <div class="pulse-title">Room Pulse</div>
+        <div class="pulse-count">12/15 focus friends ready</div>
+
+        <div style="margin-bottom: 16px;">
+          <div class="avatar-stack">
+            <div class="avatar on-dark">SH<span class="status-dot on-dark active"></span></div>
+            <div class="avatar on-dark">JK<span class="status-dot on-dark active"></span></div>
+            <div class="avatar on-dark">MR<span class="status-dot on-dark idle"></span></div>
+            <div class="avatar on-dark">AL<span class="status-dot on-dark active"></span></div>
+            <div class="avatar-overflow on-dark">+8</div>
+          </div>
+        </div>
+
+        <div class="activity-feed">
+          <div class="activity-item">
+            <div class="activity-icon sprint">⚡</div>
+            <span>@marcus started a 25m sprint</span>
+            <span class="activity-time">2m ago</span>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon complete">✦</div>
+            <span>@sarah completed "Build RAG pipeline"</span>
+            <span class="activity-time">5m ago</span>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon join">→</div>
+            <span>@alex joined the room</span>
+            <span class="activity-time">8m ago</span>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon sprint">⚡</div>
+            <span>@chen started a 45m sprint</span>
+            <span class="activity-time">12m ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lobby-actions">
+      <button class="btn-primary-dark">Join Session</button>
+      <button class="btn-secondary-dark">Invite</button>
+      <button class="btn-ghost-dark">Leave</button>
+    </div>
+  </div>
+
+  <div class="ref-note">
+    <strong>Token coverage:</strong> Lobby uses forest-900 bg. Resume card uses forest-green tint border/bg. Pulse card is forest-800. Activity feed icons use the 3-color system: forest (sprint), teal (join), gold (complete). All interactive elements use on-dark button variants.
+  </div>
+</div>
+
+<hr class="screen-divider">
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 3: JOIN ROOM MODAL
+     ═══════════════════════════════════════════ -->
+<div class="ref-section">
+  <div class="ref-label">Screen 3 · Join Room Modal</div>
+
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close">×</button>
+      <div class="modal-title">AI + Engineering</div>
+      <div class="modal-subtitle">Choose your focus for this sprint</div>
+
+      <div class="form-label">What are you working on?</div>
+      <select class="form-select">
+        <option>Implement RAG pipeline</option>
+      </select>
+
+      <div class="form-label">Sprint duration</div>
+      <div class="duration-pills">
+        <div class="duration-pill">15m</div>
+        <div class="duration-pill selected">25m</div>
+        <div class="duration-pill">45m</div>
+        <div class="duration-pill">60m</div>
+      </div>
+
+      <div class="form-label">Commitment</div>
+      <div class="commitment-pills">
+        <div class="commitment-pill selected">Personal</div>
+        <div class="commitment-pill">Public</div>
+        <div class="commitment-pill">Mentorship</div>
+      </div>
+
+      <button class="btn-primary-dark" style="width: 100%; justify-content: center;">Join Sprint</button>
+    </div>
+  </div>
+
+  <div class="ref-note">
+    <strong>Token coverage:</strong> Modal uses forest-800 bg with dark-lg shadow. Form inputs use rgba white overlays on dark. Duration pills and commitment pills both use the selected state pattern: forest-400 border + forest tint bg. All interactive states are forest-green coded.
+  </div>
+</div>
+
+<hr class="screen-divider">
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 4: ACTIVE SPRINT SESSION
+     ═══════════════════════════════════════════ -->
+<div class="ref-section">
+  <div class="ref-label">Screen 4 · Active Sprint Session</div>
+
+  <div class="sprint-shell">
+    <div class="sprint-body">
+      <!-- Main Area -->
+      <div class="sprint-main">
+        <div class="ai-partner-placeholder">
+          <div class="ai-glow">🌿</div>
+          <div class="ai-name">Moss</div>
+          <div class="ai-status">Your focus partner · Listening</div>
+        </div>
+        <div class="camera-pip">Camera off</div>
+      </div>
+
+      <!-- Chat Panel -->
+      <div class="chat-panel">
+        <div class="chat-header">Chat</div>
+        <div class="chat-messages">
+          <div class="chat-msg ai">
+            Welcome back! You're working on "Implement RAG pipeline" — great choice. I'll keep you company for the next 25 minutes. Ready when you are. 🌿
+          </div>
+          <div class="chat-msg user">
+            Starting with the chunking strategy. Going to try semantic splitting instead of fixed-size.
+          </div>
+          <div class="chat-msg ai">
+            Smart approach — semantic chunking preserves meaning boundaries. Want me to check in at the 12-minute mark to see how it's going?
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input class="chat-input" type="text" placeholder="Send a message...">
+          <button class="chat-send">↑</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button class="action-btn" title="Mic">🎙</button>
+      <button class="action-btn" title="Camera">📷</button>
+      <div class="action-divider"></div>
+      <button class="action-btn active" title="Chat">💬</button>
+      <button class="action-btn" title="Settings">⚙</button>
+      <div class="action-divider"></div>
+      <div class="timer-display">
+        <span class="timer-label">Sprint</span>
+        18:42
+      </div>
+      <div class="action-divider"></div>
+      <button class="action-btn" title="Music">🎵</button>
+      <button class="action-btn" title="Break">☕</button>
+      <button class="action-btn" title="Notes">📝</button>
+      <div class="action-divider"></div>
+      <button class="action-btn danger" title="End">⏹</button>
+    </div>
+  </div>
+
+  <div class="ref-note">
+    <strong>Token coverage:</strong> Sprint shell uses forest-900. AI partner area uses forest-800/900 gradient. Chat panel uses glass surface (rgba forest tint + blur). User messages use forest-600 bg. AI messages use rgba white overlay. Action bar buttons use ghost-on-dark pattern. Active state (chat) uses forest-300 + forest tint. Danger (end) uses coral-500 — now covered by the --sg-coral-* scale. Timer uses mono font on subtle dark surface.
+  </div>
+</div>
+
+<hr class="screen-divider">
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 5: SESSION REVIEW
+     ═══════════════════════════════════════════ -->
+<div class="ref-section">
+  <div class="ref-label">Screen 5 · Session Review Modal</div>
+
+  <div class="modal-overlay">
+    <div class="review-modal">
+      <div class="review-celebration">🎉</div>
+      <div class="review-title">Great session!</div>
+      <div class="review-subtitle">You stayed focused for 25 minutes</div>
+
+      <div class="review-stats">
+        <div class="review-stat">
+          <div class="review-stat-value">25m</div>
+          <div class="review-stat-label">Focus time</div>
+        </div>
+        <div class="review-stat">
+          <div class="review-stat-value">1</div>
+          <div class="review-stat-label">Task completed</div>
+        </div>
+      </div>
+
+      <div class="review-actions">
+        <button class="btn-primary-dark">Another round</button>
+        <button class="btn-secondary-dark">Done for now</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ref-note">
+    <strong>Token coverage:</strong> Review modal uses forest-800 bg with dark-lg shadow. Stats use rgba white overlay boxes. Primary action is white-on-dark (on-dark primary pattern). Secondary is outline-on-dark pattern. All within the token system.
+  </div>
+</div>
+
+</div><!-- /.ref-page -->
+
+</body>
+</html>

@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillGap — Learn Paths · New Brand Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ═══ BRAND TOKENS (Application Mode = Inter everywhere) ═══ */
+  :root {
+    --sg-font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --sg-font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --sg-font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+    /* Forest */
+    --sg-forest-900: #0F2318;
+    --sg-forest-800: #162E21;
+    --sg-forest-700: #1E3A2C;
+    --sg-forest-600: #2A5340;
+    --sg-forest-500: #3A7D53;
+    --sg-forest-400: #4A9E6A;
+    --sg-forest-300: #6BBF87;
+    --sg-forest-200: #A3D9B5;
+    --sg-forest-100: #D1ECDA;
+    --sg-forest-50:  #EEF5EC;
+
+    /* Sage */
+    --sg-sage-900: #2C3E2E;
+    --sg-sage-700: #5A7A5E;
+    --sg-sage-500: #8BAF8E;
+    --sg-sage-400: #A8C5AA;
+    --sg-sage-300: #C4D9C6;
+    --sg-sage-200: #DCE9DD;
+    --sg-sage-100: #EDF4EE;
+    --sg-sage-50:  #F5F9F5;
+
+    /* Shell */
+    --sg-shell-900: #262626;
+    --sg-shell-800: #3D3D3D;
+    --sg-shell-700: #525252;
+    --sg-shell-600: #6B6B6B;
+    --sg-shell-500: #8A8A8A;
+    --sg-shell-400: #A3A3A3;
+    --sg-shell-300: #D4D4D4;
+    --sg-shell-border: #E8E8E8;
+    --sg-shell-200: #EEEEEE;
+    --sg-shell-100: #F5F5F5;
+    --sg-shell-50: #FAFAFA;
+    --sg-white: #FFFFFF;
+
+    /* Teal */
+    --sg-teal-900: #1A3D3D;
+    --sg-teal-700: #2D7272;
+    --sg-teal-600: #3D8E8B;
+    --sg-teal-500: #5BA8A0;
+    --sg-teal-400: #7CC0B8;
+    --sg-teal-300: #A3D5CF;
+    --sg-teal-200: #CCEAE6;
+    --sg-teal-100: #E8F5F3;
+
+    /* Gold */
+    --sg-gold-900: #5C4D0E;
+    --sg-gold-700: #9E8518;
+    --sg-gold-600: #B89C1E;
+    --sg-gold-500: #CDBE3D;
+    --sg-gold-400: #D9CF5C;
+    --sg-gold-300: #E5DF8A;
+    --sg-gold-200: #F0ECB8;
+    --sg-gold-100: #F8F6DC;
+    --sg-coral-700: #C0392B; --sg-coral-600: #D64540; --sg-coral-500: #E96861;
+    --sg-coral-400: #F08C86; --sg-coral-100: #FDECEB;
+    --sg-coral-on-dark: rgba(233,104,97,0.18);
+
+    /* Radius */
+    --sg-radius-xs:   4px;
+    --sg-radius-sm:   6px;
+    --sg-radius-btn:  8px;
+    --sg-radius-md:  12px;
+    --sg-radius-lg:  16px;
+    --sg-radius-xl:  24px;
+    --sg-radius-pill: 9999px;
+
+    /* Shadows */
+    --sg-shadow-xs:  0 1px 2px rgba(0,0,0,0.05);
+    --sg-shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --sg-shadow-md:  0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    --sg-shadow-lg:  0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+    --sg-shadow-dark-sm:  0 2px 6px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
+    --sg-shadow-dark-md:  0 4px 16px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.3);
+    --sg-shadow-dark-lg:  0 8px 32px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.3);
+    --sg-shadow-focus: 0 0 0 3px rgba(74,158,106,0.15);
+    --sg-shadow-glow-forest: 0 0 20px rgba(58,125,83,0.25);
+    --sg-shadow-glow-gold:   0 0 20px rgba(205,190,61,0.25);
+    --sg-shadow-glow-teal:   0 0 20px rgba(91,168,160,0.25);
+
+    /* Motion */
+    --sg-duration-fast:    150ms;
+    --sg-duration-normal:  200ms;
+    --sg-duration-slow:    350ms;
+    --sg-ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+    --sg-ease-in:     cubic-bezier(0.55, 0.06, 0.68, 0.19);
+    --sg-ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+    --sg-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Spacing */
+    --sg-space-1: 4px;  --sg-space-2: 8px;  --sg-space-3: 12px;
+    --sg-space-4: 16px; --sg-space-5: 20px; --sg-space-6: 24px;
+    --sg-space-8: 32px; --sg-space-10: 40px; --sg-space-12: 48px;
+    --sg-space-16: 64px; --sg-space-20: 80px;
+
+    /* Z-Index */
+    --sg-z-base: 0; --sg-z-card: 10; --sg-z-dropdown: 20;
+    --sg-z-sticky: 25; --sg-z-modal: 40; --sg-z-tooltip: 50;
+
+    /* Semantic */
+    --sg-cta-bg: var(--sg-forest-700);
+    --sg-cta-hover: var(--sg-forest-600);
+  }
+
+  body {
+    font-family: var(--sg-font-body);
+    background: var(--sg-shell-50);
+    color: var(--sg-shell-900);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  /* ═══ REFERENCE PAGE CHROME ═══ */
+  .ref-page { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+  .ref-header {
+    text-align: center; padding: 48px 0 32px;
+    border-bottom: 1px solid var(--sg-shell-border); margin-bottom: 48px;
+  }
+  .ref-header h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; color: var(--sg-shell-900); }
+  .ref-header p { font-size: 14px; color: var(--sg-shell-500); margin-top: 8px; }
+  .ref-section { margin-bottom: 80px; }
+  .ref-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--sg-forest-500);
+    margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+  }
+  .ref-label::after { content: ''; flex: 1; height: 1px; background: var(--sg-shell-border); }
+  .ref-note {
+    font-size: 11px; color: var(--sg-shell-500); margin-top: 12px;
+    padding: 8px 12px; background: var(--sg-shell-100); border-radius: var(--sg-radius-sm);
+    border-left: 3px solid var(--sg-forest-400);
+  }
+
+  /* ═══════════════════════════════════════════
+     SCREEN 1: LEARN HUB — Discovery Page
+     ═══════════════════════════════════════════ */
+
+  /* — Top Bar — */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; height: 56px;
+    background: var(--sg-white);
+    border-bottom: 1px solid var(--sg-shell-border);
+    position: sticky; top: 0; z-index: var(--sg-z-sticky);
+  }
+  .topbar-logo {
+    font-size: 18px; font-weight: 700; color: var(--sg-forest-700);
+  }
+  .topbar-logo .accent { color: var(--sg-forest-500); }
+  .topbar-nav { display: flex; gap: 24px; }
+  .topbar-nav a {
+    font-size: 13px; font-weight: 500; color: var(--sg-shell-600);
+    text-decoration: none;
+    transition: color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .topbar-nav a:hover { color: var(--sg-shell-900); }
+  .topbar-nav a.active { color: var(--sg-forest-700); font-weight: 600; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .topbar-live {
+    font-size: 12px; font-weight: 500; color: var(--sg-teal-600);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .topbar-live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--sg-teal-600);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+  }
+  .topbar-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--sg-forest-100); border: 1.5px solid var(--sg-shell-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: var(--sg-forest-700);
+  }
+
+  /* — Hero — */
+  .hero {
+    background: var(--sg-forest-900);
+    padding: 64px 40px;
+    border-radius: var(--sg-radius-xl);
+    text-align: center;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(58,125,83,0.15) 0%, transparent 60%);
+  }
+  .hero-content { position: relative; z-index: 1; }
+  .hero h2 {
+    font-size: 36px; font-weight: 700; letter-spacing: -0.025em;
+    color: var(--sg-white); margin-bottom: 8px; line-height: 1.1;
+  }
+  .hero p {
+    font-size: 15px; color: var(--sg-sage-400); margin-bottom: 28px;
+  }
+
+  /* — Search — */
+  .search-bar {
+    max-width: 520px; margin: 0 auto 24px;
+    position: relative;
+  }
+  .search-bar input {
+    width: 100%; height: 48px;
+    padding: 0 16px 0 44px;
+    font-family: var(--sg-font-body); font-size: 15px;
+    color: var(--sg-white);
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: var(--sg-radius-md);
+    outline: none;
+    transition: border-color var(--sg-duration-fast) var(--sg-ease-out),
+                box-shadow var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .search-bar input::placeholder { color: var(--sg-sage-500); }
+  .search-bar input:focus {
+    border-color: var(--sg-forest-400);
+    box-shadow: var(--sg-shadow-focus);
+  }
+  .search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--sg-sage-500); width: 18px; height: 18px;
+  }
+
+  /* — Topic Pills — */
+  .topic-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .topic-pill {
+    padding: 6px 14px;
+    border-radius: var(--sg-radius-pill);
+    font-size: 12px; font-weight: 500;
+    background: rgba(255,255,255,0.06);
+    color: var(--sg-sage-300);
+    border: 1px solid rgba(255,255,255,0.08);
+    cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out),
+                color var(--sg-duration-fast) var(--sg-ease-out),
+                border-color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .topic-pill:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--sg-white);
+    border-color: rgba(255,255,255,0.15);
+  }
+  .topic-pill.active {
+    background: rgba(74,158,106,0.15);
+    color: var(--sg-forest-300);
+    border-color: rgba(74,158,106,0.3);
+  }
+
+  /* — Discovery Grid — */
+  .filters-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .filters-left { display: flex; gap: 8px; }
+  .filter-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    font-family: var(--sg-font-body); font-size: 13px; font-weight: 500;
+    color: var(--sg-shell-600);
+    background: var(--sg-white);
+    border: 1px solid var(--sg-shell-border);
+    border-radius: var(--sg-radius-btn);
+    cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out),
+                border-color var(--sg-duration-fast) var(--sg-ease-out),
+                color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .filter-btn:hover { border-color: var(--sg-shell-500); color: var(--sg-shell-900); }
+  .filter-btn .chevron { width: 12px; height: 12px; opacity: 0.5; }
+
+  .path-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  /* — Path Card — */
+  .path-card {
+    background: var(--sg-white);
+    border: 1px solid var(--sg-shell-border);
+    border-radius: var(--sg-radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform var(--sg-duration-fast) var(--sg-ease-out),
+                box-shadow var(--sg-duration-fast) var(--sg-ease-out);
+    will-change: transform, box-shadow;
+  }
+  .path-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sg-shadow-md);
+  }
+  .path-card-cover {
+    height: 160px; position: relative;
+    background: linear-gradient(135deg, var(--sg-forest-700), var(--sg-teal-700));
+    overflow: hidden;
+  }
+  .path-card-cover img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .difficulty-badge {
+    position: absolute; top: 10px; left: 10px;
+    padding: 3px 10px;
+    border-radius: var(--sg-radius-pill);
+    font-size: 11px; font-weight: 600;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+  }
+  .difficulty-badge.beginner { color: var(--sg-forest-300); }
+  .difficulty-badge.intermediate { color: var(--sg-teal-400); }
+  .difficulty-badge.advanced { color: var(--sg-coral-500); }
+
+  .progress-bar-track {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; background: rgba(0,0,0,0.3);
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--sg-forest-400);
+    border-radius: 0 2px 2px 0;
+    transition: width 300ms var(--sg-ease-out);
+  }
+
+  .path-card-body { padding: 14px 16px; }
+  .path-card-title {
+    font-size: 15px; font-weight: 600; line-height: 1.3;
+    color: var(--sg-shell-900);
+    margin-bottom: 6px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .path-card-meta {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12px; color: var(--sg-shell-500); margin-bottom: 10px;
+  }
+  .path-card-meta span { display: flex; align-items: center; gap: 4px; }
+  .path-card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .skill-tag {
+    padding: 3px 10px;
+    border-radius: var(--sg-radius-pill);
+    font-size: 11px; font-weight: 500;
+    background: var(--sg-sage-100);
+    color: var(--sg-sage-700);
+    transition: background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .skill-tag:hover { background: var(--sg-sage-200); }
+
+  /* — In-Progress Path Card Variant — */
+  .path-card.in-progress .progress-bar-fill {
+    background: linear-gradient(90deg, var(--sg-forest-400), var(--sg-teal-500));
+  }
+  .path-card.in-progress {
+    border-color: var(--sg-forest-100);
+  }
+  .path-card-progress-text {
+    font-size: 11px; font-weight: 600;
+    color: var(--sg-forest-500);
+    margin-bottom: 6px;
+  }
+
+  /* ═══════════════════════════════════════════
+     SCREEN 2: IMMERSIVE PATH EXPERIENCE
+     ═══════════════════════════════════════════ */
+
+  .immersive-shell {
+    background: var(--sg-forest-900);
+    border-radius: var(--sg-radius-xl);
+    overflow: hidden;
+    min-height: 600px;
+    display: flex; flex-direction: column;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* — Immersive Top Bar — */
+  .immersive-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .immersive-back {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 500; color: var(--sg-sage-400);
+    background: none; border: none; cursor: pointer;
+    padding: 6px 12px; border-radius: var(--sg-radius-btn);
+    transition: color var(--sg-duration-fast) var(--sg-ease-out),
+                background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .immersive-back:hover { color: var(--sg-white); background: rgba(255,255,255,0.06); }
+  .immersive-title {
+    font-size: 14px; font-weight: 600; color: var(--sg-white);
+    max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .immersive-toggle {
+    padding: 6px 14px; border-radius: var(--sg-radius-btn);
+    font-size: 12px; font-weight: 600;
+    color: var(--sg-sage-400);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    cursor: pointer;
+    transition: color var(--sg-duration-fast) var(--sg-ease-out),
+                background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .immersive-toggle:hover { color: var(--sg-white); background: rgba(255,255,255,0.1); }
+
+  /* — Main Content + Sidebar Layout — */
+  .immersive-body {
+    display: flex; flex: 1; min-height: 0;
+  }
+  .immersive-content {
+    flex: 1; padding: 32px 40px; overflow-y: auto;
+    color: var(--sg-sage-300);
+  }
+
+  /* — Video Player Area — */
+  .video-player {
+    width: 100%; aspect-ratio: 16/9;
+    background: var(--sg-forest-800);
+    border-radius: var(--sg-radius-lg);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .video-player-placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--sg-forest-800), var(--sg-forest-700));
+  }
+  .play-btn {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--sg-forest-500);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform var(--sg-duration-fast) var(--sg-ease-out),
+                background var(--sg-duration-fast) var(--sg-ease-out);
+    cursor: pointer;
+  }
+  .play-btn:hover { transform: scale(1.08); background: var(--sg-forest-400); }
+  .play-btn svg { color: white; width: 24px; height: 24px; margin-left: 2px; }
+  .clip-badge {
+    position: absolute; bottom: 12px; right: 12px;
+    padding: 4px 10px; border-radius: var(--sg-radius-sm);
+    background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+    font-size: 11px; font-weight: 500; color: var(--sg-sage-300);
+    font-family: var(--sg-font-mono);
+  }
+
+  .video-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .video-title { font-size: 16px; font-weight: 600; color: var(--sg-white); }
+  .mark-complete-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px; border-radius: var(--sg-radius-btn);
+    font-family: var(--sg-font-body); font-size: 13px; font-weight: 600;
+    background: var(--sg-forest-700); color: var(--sg-white);
+    border: none; cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .mark-complete-btn:hover { background: var(--sg-forest-600); }
+
+  /* — Mission Viewer — */
+  .mission-card {
+    background: var(--sg-forest-800);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--sg-radius-lg);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .mission-eyebrow {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--sg-forest-300);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .guidance-badge {
+    padding: 2px 8px; border-radius: var(--sg-radius-pill);
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: rgba(91,168,160,0.15);
+    color: var(--sg-teal-400);
+  }
+  .mission-title {
+    font-size: 20px; font-weight: 700; color: var(--sg-white);
+    letter-spacing: -0.01em; margin-bottom: 12px;
+  }
+  .mission-body {
+    font-size: 14px; line-height: 1.65; color: var(--sg-sage-300);
+    margin-bottom: 20px;
+  }
+  .mission-steps {
+    list-style: none; counter-reset: step;
+    margin-bottom: 20px;
+  }
+  .mission-steps li {
+    counter-increment: step;
+    padding: 8px 0 8px 32px;
+    position: relative;
+    font-size: 14px; color: var(--sg-sage-300); line-height: 1.5;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .mission-steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 8px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(74,158,106,0.15);
+    color: var(--sg-forest-300);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .prompt-block {
+    background: var(--sg-forest-900);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--sg-radius-md);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .prompt-block pre {
+    font-family: var(--sg-font-mono); font-size: 13px;
+    color: var(--sg-sage-300); white-space: pre-wrap; line-height: 1.5;
+  }
+  .prompt-copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    padding: 4px 10px; border-radius: var(--sg-radius-sm);
+    font-size: 11px; font-weight: 500;
+    background: rgba(255,255,255,0.08); color: var(--sg-sage-400);
+    border: none; cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .prompt-copy-btn:hover { background: rgba(255,255,255,0.14); color: var(--sg-white); }
+  .success-criteria {
+    background: rgba(74,158,106,0.08);
+    border: 1px solid rgba(74,158,106,0.15);
+    border-radius: var(--sg-radius-md);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+  .success-criteria-title {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--sg-forest-300);
+    margin-bottom: 8px;
+  }
+  .success-criteria li {
+    font-size: 13px; color: var(--sg-sage-300); line-height: 1.6;
+    padding-left: 16px; position: relative;
+  }
+  .success-criteria li::before {
+    content: '✓'; position: absolute; left: 0;
+    color: var(--sg-forest-400); font-weight: 700;
+  }
+
+  /* — Feedback Card — */
+  .feedback-card {
+    border-radius: var(--sg-radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .feedback-card.strong {
+    background: rgba(74,158,106,0.1);
+    border: 1px solid rgba(74,158,106,0.2);
+  }
+  .feedback-card.good {
+    background: rgba(91,168,160,0.1);
+    border: 1px solid rgba(91,168,160,0.2);
+  }
+  .feedback-card.needs-work {
+    background: rgba(184,156,30,0.08);
+    border: 1px solid rgba(184,156,30,0.15);
+  }
+  .feedback-quality {
+    font-size: 14px; font-weight: 700; margin-bottom: 8px;
+  }
+  .feedback-card.strong .feedback-quality { color: var(--sg-forest-300); }
+  .feedback-card.good .feedback-quality { color: var(--sg-teal-400); }
+  .feedback-card.needs-work .feedback-quality { color: var(--sg-gold-500); }
+  .feedback-text {
+    font-size: 13px; line-height: 1.6; color: var(--sg-sage-300);
+  }
+
+  /* — Quick Check — */
+  .quick-check { margin-bottom: 20px; }
+  .quick-check-question {
+    font-size: 16px; font-weight: 600; color: var(--sg-white);
+    margin-bottom: 16px; line-height: 1.4;
+  }
+  .choice-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .choice-item {
+    padding: 12px 16px; border-radius: var(--sg-radius-md);
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    font-size: 14px; color: var(--sg-sage-300);
+    cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out),
+                border-color var(--sg-duration-fast) var(--sg-ease-out),
+                color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .choice-item:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.15);
+    color: var(--sg-white);
+  }
+  .choice-item.selected {
+    background: rgba(74,158,106,0.12);
+    border-color: var(--sg-forest-400);
+    color: var(--sg-white);
+  }
+  .choice-item.correct {
+    background: rgba(74,158,106,0.15);
+    border-color: var(--sg-forest-400);
+    color: var(--sg-white);
+  }
+  .choice-item.incorrect {
+    background: rgba(214,69,69,0.08);
+    border-color: rgba(214,69,69,0.25);
+    color: var(--sg-coral-500);
+  }
+
+  /* — Reflection — */
+  .reflection-prompt {
+    padding: 16px 20px;
+    border-radius: var(--sg-radius-md);
+    border-left: 3px solid var(--sg-forest-400);
+    background: rgba(74,158,106,0.06);
+    font-size: 15px; font-style: italic;
+    color: var(--sg-sage-300); line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .reflection-textarea {
+    width: 100%; min-height: 120px; padding: 14px 16px;
+    font-family: var(--sg-font-body); font-size: 14px;
+    color: var(--sg-white);
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: var(--sg-radius-md);
+    outline: none; resize: vertical;
+    transition: border-color var(--sg-duration-fast) var(--sg-ease-out),
+                box-shadow var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .reflection-textarea:focus {
+    border-color: var(--sg-forest-400);
+    box-shadow: var(--sg-shadow-focus);
+  }
+  .reflection-textarea::placeholder { color: var(--sg-sage-500); }
+  .char-count {
+    font-size: 11px; color: var(--sg-sage-500); text-align: right; margin-top: 4px;
+  }
+
+  /* — Path Sidebar — */
+  .path-sidebar {
+    width: 340px; flex-shrink: 0;
+    background: rgba(15,35,24,0.65);
+    backdrop-filter: blur(24px);
+    border-left: 1px solid rgba(255,255,255,0.06);
+    padding: 20px; overflow-y: auto;
+  }
+  .sidebar-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .sidebar-label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--sg-sage-500);
+  }
+  .sidebar-progress-text {
+    font-size: 12px; font-weight: 600; color: var(--sg-forest-300);
+  }
+  .sidebar-progress-bar {
+    height: 4px; background: rgba(255,255,255,0.08);
+    border-radius: 2px; margin-bottom: 20px; overflow: hidden;
+  }
+  .sidebar-progress-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--sg-forest-400), var(--sg-teal-500));
+  }
+
+  /* Skills in sidebar */
+  .sidebar-skills {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .fluency-badge {
+    display: inline-flex; align-items: center;
+    padding: 4px 10px; border-radius: var(--sg-radius-pill);
+    font-size: 11px; font-weight: 600;
+  }
+  .fluency-badge.exploring {
+    background: var(--sg-sage-200); color: var(--sg-sage-900);
+  }
+  .fluency-badge.practicing {
+    background: var(--sg-teal-200); color: var(--sg-teal-900);
+  }
+  .fluency-badge.proficient {
+    background: var(--sg-forest-200); color: var(--sg-forest-800);
+  }
+  .fluency-badge.advanced {
+    background: var(--sg-gold-200); color: var(--sg-gold-900);
+  }
+  /* On-dark variants for sidebar */
+  .fluency-badge.on-dark.exploring {
+    background: rgba(139,175,142,0.15); color: var(--sg-sage-400);
+  }
+  .fluency-badge.on-dark.practicing {
+    background: rgba(91,168,160,0.15); color: var(--sg-teal-400);
+  }
+  .fluency-badge.on-dark.proficient {
+    background: rgba(74,158,106,0.15); color: var(--sg-forest-300);
+  }
+  .fluency-badge.on-dark.advanced {
+    background: rgba(205,190,61,0.15); color: var(--sg-gold-400);
+  }
+
+  /* Module list */
+  .module-group { margin-bottom: 16px; }
+  .module-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--sg-sage-500);
+    margin-bottom: 8px; padding-left: 4px;
+  }
+  .module-items { display: flex; flex-direction: column; gap: 2px; }
+  .module-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: var(--sg-radius-btn);
+    font-size: 13px; color: var(--sg-sage-400);
+    cursor: pointer; border-left: 2px solid transparent;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out),
+                color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .module-item:hover { background: rgba(255,255,255,0.04); color: var(--sg-sage-300); }
+  .module-item.current {
+    background: rgba(74,158,106,0.1);
+    border-left-color: var(--sg-forest-400);
+    color: var(--sg-white);
+  }
+  .module-item.completed { color: var(--sg-sage-500); }
+  .module-item-icon {
+    width: 18px; height: 18px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+  .module-item.completed .module-item-icon { color: var(--sg-forest-400); }
+  .module-item.current .module-item-icon { color: var(--sg-forest-300); }
+
+  /* ═══════════════════════════════════════════
+     SCREEN 3: PATH COMPLETION
+     ═══════════════════════════════════════════ */
+  .completion-screen {
+    text-align: center;
+    padding: 48px 40px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .completion-eyebrow {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--sg-forest-300);
+    margin-bottom: 8px;
+  }
+  .completion-heading {
+    font-size: 28px; font-weight: 700; color: var(--sg-white);
+    letter-spacing: -0.02em; margin-bottom: 32px;
+  }
+
+  /* Achievement Card */
+  .achievement-card {
+    background: var(--sg-forest-800);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--sg-radius-lg);
+    overflow: hidden; text-align: left;
+    margin-bottom: 24px;
+  }
+  .achievement-accent {
+    height: 4px;
+    background: linear-gradient(90deg, var(--sg-forest-400), var(--sg-teal-500));
+  }
+  .achievement-body { padding: 24px; }
+  .achievement-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--sg-forest-300);
+    margin-bottom: 8px;
+  }
+  .achievement-title {
+    font-size: 18px; font-weight: 700; color: var(--sg-white);
+    margin-bottom: 16px;
+  }
+  .achievement-stats {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-box {
+    padding: 12px; border-radius: var(--sg-radius-md);
+    background: rgba(255,255,255,0.04);
+  }
+  .stat-value {
+    font-size: 20px; font-weight: 700; color: var(--sg-white);
+  }
+  .stat-label {
+    font-size: 11px; color: var(--sg-sage-500); margin-top: 2px;
+  }
+  .achievement-topics {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 16px;
+  }
+  .achievement-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 11px; color: var(--sg-sage-500);
+  }
+
+  /* Skill Receipt */
+  .skill-receipt {
+    background: var(--sg-forest-800);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--sg-radius-lg);
+    padding: 24px; text-align: left;
+    margin-bottom: 24px;
+  }
+  .skill-receipt-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .skill-receipt-title {
+    font-size: 14px; font-weight: 600; color: var(--sg-white);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .level-up-badge {
+    padding: 2px 8px; border-radius: var(--sg-radius-pill);
+    font-size: 10px; font-weight: 700;
+    background: rgba(205,190,61,0.15); color: var(--sg-gold-400);
+  }
+  .skill-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .skill-row:last-child { border-bottom: none; }
+  .skill-name { font-size: 13px; font-weight: 500; color: var(--sg-sage-300); }
+  .skill-domain { font-size: 11px; color: var(--sg-sage-500); }
+  .skill-progression {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .skill-arrow { color: var(--sg-sage-500); font-size: 12px; }
+
+  /* Action Buttons */
+  .btn-primary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 24px; border-radius: var(--sg-radius-btn);
+    font-family: var(--sg-font-body); font-size: 14px; font-weight: 600;
+    border: none; cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .btn-primary.on-dark {
+    background: var(--sg-white); color: var(--sg-forest-800);
+  }
+  .btn-primary.on-dark:hover { background: var(--sg-sage-100); }
+  .btn-primary.on-light {
+    background: var(--sg-forest-700); color: var(--sg-white);
+  }
+  .btn-primary.on-light:hover { background: var(--sg-forest-600); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 24px; border-radius: var(--sg-radius-btn);
+    font-family: var(--sg-font-body); font-size: 14px; font-weight: 600;
+    background: transparent; cursor: pointer;
+    transition: background var(--sg-duration-fast) var(--sg-ease-out),
+                color var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .btn-secondary.on-dark {
+    color: var(--sg-sage-400);
+    border: 1.5px solid rgba(255,255,255,0.15);
+  }
+  .btn-secondary.on-dark:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.25);
+    color: var(--sg-white);
+  }
+  .btn-ghost {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--sg-radius-btn);
+    font-family: var(--sg-font-body); font-size: 13px; font-weight: 500;
+    background: transparent; border: none; cursor: pointer;
+    color: var(--sg-sage-500);
+    transition: color var(--sg-duration-fast) var(--sg-ease-out),
+                background var(--sg-duration-fast) var(--sg-ease-out);
+  }
+  .btn-ghost:hover { color: var(--sg-white); background: rgba(255,255,255,0.06); }
+
+  .completion-actions {
+    display: flex; gap: 12px; justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  /* — Transition Card — */
+  .transition-card {
+    background: var(--sg-forest-800);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--sg-radius-lg);
+    padding: 32px;
+    max-width: 400px;
+    margin: 40px auto;
+    text-align: center;
+  }
+  .transition-eyebrow {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--sg-sage-500);
+    margin-bottom: 16px;
+  }
+  .transition-icon {
+    width: 40px; height: 40px; border-radius: var(--sg-radius-md);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    background: rgba(74,158,106,0.15);
+    color: var(--sg-forest-300);
+    font-size: 18px;
+  }
+  .transition-title {
+    font-size: 16px; font-weight: 600; color: var(--sg-white);
+    margin-bottom: 8px;
+  }
+  .transition-connective {
+    font-size: 13px; font-style: italic; color: var(--sg-sage-500);
+    margin-bottom: 20px;
+  }
+  .transition-actions {
+    display: flex; gap: 10px; justify-content: center;
+  }
+
+  /* — Section Toast — */
+  .section-toast {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--sg-radius-md);
+    background: var(--sg-forest-700);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: var(--sg-shadow-dark-md);
+    font-size: 13px; color: var(--sg-sage-300);
+    margin: 20px auto;
+  }
+  .section-toast-check { color: var(--sg-forest-300); }
+
+  /* — Generation Overlay — */
+  .generation-overlay {
+    background: rgba(15,35,24,0.85);
+    backdrop-filter: blur(20px);
+    border-radius: var(--sg-radius-xl);
+    padding: 48px;
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .gen-title {
+    font-size: 20px; font-weight: 700; color: var(--sg-white);
+    margin-bottom: 8px;
+  }
+  .gen-subtitle {
+    font-size: 14px; color: var(--sg-sage-400);
+    margin-bottom: 32px;
+  }
+  .gen-steps { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+  .gen-step {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 14px;
+  }
+  .gen-step-icon {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 12px;
+  }
+  .gen-step.done .gen-step-icon {
+    background: rgba(74,158,106,0.2); color: var(--sg-forest-300);
+  }
+  .gen-step.done { color: var(--sg-sage-300); }
+  .gen-step.active .gen-step-icon {
+    background: rgba(91,168,160,0.2); color: var(--sg-teal-400);
+  }
+  .gen-step.active { color: var(--sg-white); }
+  .gen-step.pending .gen-step-icon {
+    background: rgba(255,255,255,0.06); color: var(--sg-sage-500);
+  }
+  .gen-step.pending { color: var(--sg-sage-500); }
+
+  /* ═══ SCREEN DIVIDER ═══ */
+  .screen-divider {
+    margin: 64px 0; padding: 0;
+    border: none; height: 1px;
+    background: var(--sg-shell-border);
+  }
+</style>
+</head>
+<body>
+
+<div class="ref-page">
+
+<div class="ref-header">
+  <h1>Learn Paths — New Brand Reference</h1>
+  <p>Application mode · Inter everywhere · All --sg-* tokens · No UX changes, style only</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 1: LEARN HUB (Discovery Page)
+     ═══════════════════════════════════════════════════ -->
+<div class="ref-section">
+  <div class="ref-label">Screen 1 · Learn Hub — Discovery Page</div>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-logo">Skill<span class="accent">Gap</span></div>
+    <div class="topbar-nav">
+      <a href="#" class="active">Learn</a>
+      <a href="#">Practice</a>
+      <a href="#">Progress</a>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-live"><div class="topbar-live-dot"></div> 89 practicing</div>
+      <div class="topbar-avatar">SH</div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero" style="margin-top: 16px;">
+    <div class="hero-content">
+      <h2>What do you want to learn?</h2>
+      <p>AI-curated learning paths you can finish in 40 minutes</p>
+      <div class="search-bar">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Search topics, tools, or skills...">
+      </div>
+      <div class="topic-pills">
+        <div class="topic-pill active">All</div>
+        <div class="topic-pill">Prompt Engineering</div>
+        <div class="topic-pill">Cursor</div>
+        <div class="topic-pill">AI Agents</div>
+        <div class="topic-pill">Claude</div>
+        <div class="topic-pill">Content Strategy</div>
+        <div class="topic-pill">Automation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters + Grid -->
+  <div class="filters-row">
+    <div class="filters-left">
+      <button class="filter-btn">All Categories <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="filter-btn">Recommended <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+  </div>
+
+  <div class="path-grid">
+    <!-- In-progress card -->
+    <div class="path-card in-progress">
+      <div class="path-card-cover" style="background: linear-gradient(135deg, var(--sg-forest-800), var(--sg-teal-700));">
+        <div class="difficulty-badge beginner">Beginner</div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width: 65%;"></div></div>
+      </div>
+      <div class="path-card-body">
+        <div class="path-card-progress-text">65% complete</div>
+        <div class="path-card-title">Prompt Engineering Fundamentals</div>
+        <div class="path-card-meta">
+          <span>⏱ 35 min</span>
+          <span>4 modules</span>
+        </div>
+        <div class="path-card-tags">
+          <span class="skill-tag">Prompt Engineering</span>
+          <span class="skill-tag">Writing</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Standard card -->
+    <div class="path-card">
+      <div class="path-card-cover" style="background: linear-gradient(135deg, var(--sg-forest-700), var(--sg-forest-500));">
+        <div class="difficulty-badge intermediate">Intermediate</div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+      </div>
+      <div class="path-card-body">
+        <div class="path-card-title">Ship Your First Feature with Cursor</div>
+        <div class="path-card-meta">
+          <span>⏱ 42 min</span>
+          <span>5 modules</span>
+        </div>
+        <div class="path-card-tags">
+          <span class="skill-tag">Technical Building</span>
+          <span class="skill-tag">AI Coding</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Standard card -->
+    <div class="path-card">
+      <div class="path-card-cover" style="background: linear-gradient(135deg, var(--sg-teal-700), var(--sg-teal-600));">
+        <div class="difficulty-badge beginner">Beginner</div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+      </div>
+      <div class="path-card-body">
+        <div class="path-card-title">AI-Powered Content Strategy</div>
+        <div class="path-card-meta">
+          <span>⏱ 38 min</span>
+          <span>4 modules</span>
+        </div>
+        <div class="path-card-tags">
+          <span class="skill-tag">Writing & Comms</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced card -->
+    <div class="path-card">
+      <div class="path-card-cover" style="background: linear-gradient(135deg, #2A1A1A, #4A2020);">
+        <div class="difficulty-badge advanced">Advanced</div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+      </div>
+      <div class="path-card-body">
+        <div class="path-card-title">Build RAG Pipelines with LangChain</div>
+        <div class="path-card-meta">
+          <span>⏱ 55 min</span>
+          <span>5 modules</span>
+        </div>
+        <div class="path-card-tags">
+          <span class="skill-tag">Technical Building</span>
+          <span class="skill-tag">Data</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trending card -->
+    <div class="path-card">
+      <div class="path-card-cover" style="background: linear-gradient(135deg, var(--sg-forest-900), var(--sg-forest-700));">
+        <div class="difficulty-badge beginner">Beginner</div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+      </div>
+      <div class="path-card-body">
+        <div class="path-card-title">Claude Code Just Launched — What You Need</div>
+        <div class="path-card-meta">
+          <span>⏱ 30 min</span>
+          <span>3 modules</span>
+          <span style="color: var(--sg-gold-600);">🔥 Trending</span>
+        </div>
+        <div class="path-card-tags">
+          <span class="skill-tag">Prompt Engineering</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Another card -->
+    <div class="path-card">
+      <div class="path-card-cover" style="background: linear-gradient(135deg, var(--sg-gold-900), var(--sg-gold-700));">
+        <div class="difficulty-badge intermediate">Intermediate</div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+      </div>
+      <div class="path-card-body">
+        <div class="path-card-title">Workflow Automation with Zapier + AI</div>
+        <div class="path-card-meta">
+          <span>⏱ 45 min</span>
+          <span>4 modules</span>
+        </div>
+        <div class="path-card-tags">
+          <span class="skill-tag">Automation</span>
+          <span class="skill-tag">Operations</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ref-note">
+    <strong>Token coverage:</strong> Hero uses forest-900 bg with radial forest gradient. Search input is glass on dark (rgba + blur). Topic pills use on-dark chip pattern. Path cards use white bg + shell-border on light surface. Difficulty badges map to forest-300 (beginner), teal-400 (intermediate), and coral-500 (advanced). Progress bars use forest-400 → teal-500 gradient. Skill tags use sage-100/sage-700 on light.
+  </div>
+</div>
+
+<hr class="screen-divider">
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 2: IMMERSIVE PATH EXPERIENCE
+     ═══════════════════════════════════════════════════ -->
+<div class="ref-section">
+  <div class="ref-label">Screen 2 · Immersive Path Experience</div>
+
+  <div class="immersive-shell">
+    <div class="immersive-topbar">
+      <button class="immersive-back">← Back</button>
+      <div class="immersive-title">Prompt Engineering Fundamentals</div>
+      <button class="immersive-toggle">Path ▾</button>
+    </div>
+
+    <div class="immersive-body">
+      <!-- Main Content Area -->
+      <div class="immersive-content">
+
+        <!-- Video Player -->
+        <div class="video-player">
+          <div class="video-player-placeholder">
+            <div class="play-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+          </div>
+          <div class="clip-badge">0:15 – 6:42</div>
+        </div>
+        <div class="video-meta">
+          <div class="video-title">Understanding Chain-of-Thought Prompting</div>
+          <button class="mark-complete-btn">✓ Mark Complete</button>
+        </div>
+
+        <!-- Mission Card -->
+        <div class="mission-card">
+          <div class="mission-eyebrow">
+            Mission
+            <span class="guidance-badge">Guided</span>
+          </div>
+          <div class="mission-title">Build a Research Assistant Prompt</div>
+          <div class="mission-body">
+            Create a chain-of-thought prompt that turns ChatGPT into a research assistant. Your prompt should guide the AI to break down complex questions into sub-questions, research each systematically, and synthesize findings.
+          </div>
+          <div class="mission-steps">
+            <li>Open ChatGPT or Claude in a new tab</li>
+            <li>Paste the starter prompt below and run it with a research question of your choice</li>
+            <li>Iterate on the prompt at least twice to improve the quality of the output</li>
+          </div>
+          <div class="prompt-block">
+            <button class="prompt-copy-btn">Copy</button>
+            <pre>You are a research assistant. When I give you a question:
+
+1. Break it into 3-5 sub-questions
+2. Answer each sub-question with evidence
+3. Synthesize into a final answer
+4. Rate your confidence (low/medium/high)
+
+Question: [your question here]</pre>
+          </div>
+          <div class="success-criteria">
+            <div class="success-criteria-title">Success Criteria</div>
+            <ul style="list-style: none;">
+              <li>Prompt produces structured, multi-step output</li>
+              <li>At least 2 iterations show measurable improvement</li>
+              <li>Final output is usable without heavy editing</li>
+            </ul>
+          </div>
+          <button class="btn-primary on-dark">I'm Done — Submit Work</button>
+        </div>
+
+        <!-- Feedback Card (shown after submission) -->
+        <div class="feedback-card strong">
+          <div class="feedback-quality">✓ Nailed it</div>
+          <div class="feedback-text">
+            Your prompt demonstrates strong chain-of-thought structure. The breakdown into sub-questions is clear, and the confidence rating adds genuine value. The iterations show meaningful improvement in specificity.
+          </div>
+        </div>
+
+        <!-- Quick Check -->
+        <div class="quick-check">
+          <div class="quick-check-question">What's the primary benefit of chain-of-thought prompting over direct prompting?</div>
+          <ul class="choice-list">
+            <li class="choice-item">It produces shorter responses</li>
+            <li class="choice-item selected correct">It makes the AI's reasoning process visible and debuggable</li>
+            <li class="choice-item">It uses fewer tokens</li>
+            <li class="choice-item">It works only with GPT-4</li>
+          </ul>
+        </div>
+
+        <!-- Reflection -->
+        <div style="margin-top: 24px;">
+          <div class="reflection-prompt">
+            How might you adapt this chain-of-thought technique for your specific work? Think about a real task you do weekly that involves research or analysis.
+          </div>
+          <textarea class="reflection-textarea" placeholder="Write your reflection..."></textarea>
+          <div class="char-count">0 / 150 min</div>
+          <div style="margin-top: 12px;">
+            <button class="btn-primary on-dark">Submit Reflection</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="path-sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-label">Path</span>
+          <span class="sidebar-progress-text">65%</span>
+        </div>
+        <div class="sidebar-progress-bar">
+          <div class="sidebar-progress-fill" style="width: 65%;"></div>
+        </div>
+
+        <div class="sidebar-skills">
+          <span class="fluency-badge on-dark practicing">Prompt Engineering · Practicing</span>
+          <span class="fluency-badge on-dark exploring">Writing · Exploring</span>
+        </div>
+
+        <!-- Module 1 -->
+        <div class="module-group">
+          <div class="module-label">Module 1 · Foundations</div>
+          <div class="module-items">
+            <div class="module-item completed">
+              <span class="module-item-icon">✓</span>
+              <span>What is Prompt Engineering?</span>
+            </div>
+            <div class="module-item completed">
+              <span class="module-item-icon">✓</span>
+              <span>Zero-Shot vs Few-Shot</span>
+            </div>
+            <div class="module-item completed">
+              <span class="module-item-icon">✓</span>
+              <span>Quick Check</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Module 2 -->
+        <div class="module-group">
+          <div class="module-label">Module 2 · Chain of Thought</div>
+          <div class="module-items">
+            <div class="module-item completed">
+              <span class="module-item-icon">✓</span>
+              <span>Understanding CoT</span>
+            </div>
+            <div class="module-item current">
+              <span class="module-item-icon">▶</span>
+              <span>Build a Research Prompt</span>
+            </div>
+            <div class="module-item">
+              <span class="module-item-icon">?</span>
+              <span>Quick Check</span>
+            </div>
+            <div class="module-item">
+              <span class="module-item-icon">💬</span>
+              <span>Reflection</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Module 3 -->
+        <div class="module-group">
+          <div class="module-label">Module 3 · Solo Challenge</div>
+          <div class="module-items">
+            <div class="module-item">
+              <span class="module-item-icon">▶</span>
+              <span>Advanced Techniques</span>
+            </div>
+            <div class="module-item">
+              <span class="module-item-icon">✏</span>
+              <span>Solo Mission</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ref-note">
+    <strong>Token coverage:</strong> Immersive shell uses forest-900 bg. Glass sidebar uses rgba(15,35,24,0.65) + blur(24px) — forest-tinted translucency. Video player area is forest-800. Mission cards use forest-800 with forest-300 eyebrow text. Prompt blocks are forest-900. Success criteria use forest green tints. Feedback cards have three tiers: forest (strong), teal (good), gold (needs work). Fluency badges have on-dark variants using rgba tints. Module items use forest-400 for current indicator.
+  </div>
+</div>
+
+<hr class="screen-divider">
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 3: TRANSITION + COMPLETION
+     ═══════════════════════════════════════════════════ -->
+<div class="ref-section">
+  <div class="ref-label">Screen 3 · Transition Card + Section Toast</div>
+
+  <div style="background: var(--sg-forest-900); border-radius: var(--sg-radius-xl); padding: 40px;">
+    <!-- Section Toast -->
+    <div style="text-align: center;">
+      <div class="section-toast">
+        <span class="section-toast-check">✓</span>
+        Module 1 complete — moving to Chain of Thought
+      </div>
+    </div>
+
+    <!-- Transition Card -->
+    <div class="transition-card">
+      <div class="transition-eyebrow">Up Next</div>
+      <div class="transition-icon">✏</div>
+      <div class="transition-title">Build a Research Prompt</div>
+      <div class="transition-connective">Put chain-of-thought into practice with a real tool</div>
+      <div class="transition-actions">
+        <button class="btn-ghost">Back to path</button>
+        <button class="btn-primary on-dark">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="screen-divider">
+
+<div class="ref-section">
+  <div class="ref-label">Screen 4 · Path Completion</div>
+
+  <div style="background: var(--sg-forest-900); border-radius: var(--sg-radius-xl); padding: 40px;">
+    <div class="completion-screen">
+      <div class="completion-eyebrow">Path Complete</div>
+      <div class="completion-heading">Congratulations!</div>
+
+      <!-- Achievement Card -->
+      <div class="achievement-card">
+        <div class="achievement-accent"></div>
+        <div class="achievement-body">
+          <div class="achievement-label">Path Complete</div>
+          <div class="achievement-title">Prompt Engineering Fundamentals</div>
+          <div class="achievement-stats">
+            <div class="stat-box">
+              <div class="stat-value">8</div>
+              <div class="stat-label">Resources completed</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value">35m</div>
+              <div class="stat-label">Time invested</div>
+            </div>
+          </div>
+          <div class="achievement-topics">
+            <span class="skill-tag" style="background: rgba(74,158,106,0.15); color: var(--sg-forest-300); border: 1px solid rgba(74,158,106,0.25);">Prompt Engineering</span>
+            <span class="skill-tag" style="background: rgba(91,168,160,0.15); color: var(--sg-teal-400); border: 1px solid rgba(91,168,160,0.25);">Chain of Thought</span>
+            <span class="skill-tag" style="background: rgba(91,168,160,0.15); color: var(--sg-teal-400); border: 1px solid rgba(91,168,160,0.25);">Research Synthesis</span>
+          </div>
+          <div class="achievement-footer">
+            <span>March 17, 2026</span>
+            <span>SkillGap.ai</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skill Receipt -->
+      <div class="skill-receipt">
+        <div class="skill-receipt-header">
+          <div class="skill-receipt-title">📈 Skills Developed</div>
+          <span class="level-up-badge">✦ Level Up</span>
+        </div>
+        <div class="skill-row">
+          <div>
+            <div class="skill-name">Prompt Engineering</div>
+            <div class="skill-domain">Writing & Communication</div>
+          </div>
+          <div class="skill-progression">
+            <span class="fluency-badge on-dark exploring">Exploring</span>
+            <span class="skill-arrow">→</span>
+            <span class="fluency-badge on-dark practicing">Practicing</span>
+          </div>
+        </div>
+        <div class="skill-row">
+          <div>
+            <div class="skill-name">Research Synthesis</div>
+            <div class="skill-domain">Strategy & Planning</div>
+          </div>
+          <div class="skill-progression">
+            <span class="fluency-badge on-dark exploring">Exploring</span>
+            <span class="skill-arrow">→</span>
+            <span class="fluency-badge on-dark exploring">Exploring</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="completion-actions">
+        <button class="btn-secondary on-dark">Share Achievement</button>
+        <button class="btn-primary on-dark">Continue Learning</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="screen-divider">
+
+<div class="ref-section">
+  <div class="ref-label">Screen 5 · Path Generation Overlay</div>
+
+  <div style="background: var(--sg-forest-900); border-radius: var(--sg-radius-xl); padding: 40px;">
+    <div class="generation-overlay">
+      <div class="gen-title">Building your path...</div>
+      <div class="gen-subtitle">AI-curated just for you</div>
+      <div class="gen-steps">
+        <div class="gen-step done">
+          <div class="gen-step-icon">✓</div>
+          <span>Finding the best content on this topic</span>
+        </div>
+        <div class="gen-step done">
+          <div class="gen-step-icon">✓</div>
+          <span>Selecting videos from trusted creators</span>
+        </div>
+        <div class="gen-step active">
+          <div class="gen-step-icon">●</div>
+          <span>Building practice missions for your level</span>
+        </div>
+        <div class="gen-step pending">
+          <div class="gen-step-icon">○</div>
+          <span>Mapping skills and success criteria</span>
+        </div>
+        <div class="gen-step pending">
+          <div class="gen-step-icon">○</div>
+          <span>Finalizing your learning path</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.ref-page -->
+
+</body>
+</html>

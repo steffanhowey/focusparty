@@ -270,7 +270,7 @@ function OnboardContent() {
         // Generate path from the pick topic, then navigate
         router.push(`/missions?q=${encodeURIComponent(selectedPick.path_topic)}`);
       } else {
-        router.push("/home");
+        router.push("/missions");
       }
     },
     [

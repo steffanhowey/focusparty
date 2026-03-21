@@ -30,7 +30,7 @@ import { usePartySummaryStats } from "@/lib/usePartySummaryStats";
 import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
 import {
   getPartyLaunchDisplayName,
-  getPartyLaunchShortDescription,
+  getPartyLaunchLobbyFraming,
 } from "@/lib/launchRooms";
 import type { RoomState, SessionRow } from "@/lib/types";
 
@@ -46,6 +46,68 @@ interface PartyLobbyProps {
   partyId: string;
 }
 
+function PartyLobbyLoadingState() {
+  return (
+    <div className="animate-pulse" aria-hidden="true">
+      <div className="mb-5 h-4 w-20 rounded-full bg-shell-100" />
+
+      <div className="mb-4 flex items-start gap-3">
+        <div className="h-12 w-12 shrink-0 rounded-full bg-shell-100" />
+
+        <div className="min-w-0 flex-1">
+          <div className="h-6 w-48 rounded bg-shell-100" />
+          <div className="mt-2 h-3 w-full max-w-[28rem] rounded bg-shell-50" />
+          <div className="mt-2 h-3 w-full max-w-[22rem] rounded bg-shell-50" />
+
+          <div className="mt-3 flex items-center gap-2">
+            <div className="h-3 w-14 rounded bg-shell-50" />
+            <div className="h-3 w-16 rounded bg-shell-50" />
+            <div className="h-3 w-20 rounded bg-shell-50" />
+          </div>
+        </div>
+      </div>
+
+      <Card variant="default" className="mb-4 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="h-4 w-40 rounded bg-shell-100" />
+          <div className="flex items-center gap-2">
+            {Array.from({ length: 3 }, (_, index) => (
+              <div key={index} className="h-7 w-7 rounded-full bg-shell-100" />
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-3 border-t border-shell-border" />
+
+        <div className="space-y-3">
+          {Array.from({ length: 4 }, (_, index) => (
+            <div key={index} className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-shell-100" />
+              <div className="h-3 flex-1 rounded bg-shell-50" />
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <div className="flex items-center gap-3">
+        <div className="h-12 flex-1 rounded-[var(--sg-radius-btn)] bg-shell-100" />
+        <div className="h-9 w-24 rounded-[var(--sg-radius-btn)] bg-shell-50" />
+        <div className="h-9 w-20 rounded-[var(--sg-radius-btn)] bg-shell-50" />
+      </div>
+    </div>
+  );
+}
+
+function PersistentMetaSkeleton() {
+  return (
+    <div className="mt-1 flex items-center gap-2" aria-hidden="true">
+      <div className="h-3 w-14 animate-pulse rounded bg-shell-50" />
+      <div className="h-3 w-16 animate-pulse rounded bg-shell-50" />
+      <div className="h-3 w-20 animate-pulse rounded bg-shell-50" />
+    </div>
+  );
+}
+
 export function PartyLobby({ partyId }: PartyLobbyProps) {
   const router = useRouter();
   const { showToast } = useNotification();
@@ -59,6 +121,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   const [starting, setStarting] = useState(false);
   const [joiningRoom, setJoiningRoom] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [contentRevealed, setContentRevealed] = useState(false);
 
   const isCreator = party?.creator_id === userId;
   const isParticipant = participants.some((p) => p.user_id === userId);
@@ -169,6 +232,23 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
     }
     init();
   }, [partyId, refreshParticipants]);
+
+  useEffect(() => {
+    if (loading || notFound || !party) {
+      setContentRevealed(false);
+      return;
+    }
+
+    let frameId: number | null = window.requestAnimationFrame(() => {
+      setContentRevealed(true);
+    });
+
+    return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
+  }, [loading, notFound, partyId, party?.id]);
 
   // Auto-join once loaded (if authenticated and not already in)
   useEffect(() => {
@@ -290,11 +370,7 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-shell-500 border-t-transparent" />
-      </div>
-    );
+    return <PartyLobbyLoadingState />;
   }
 
   if (notFound || !party) {
@@ -333,10 +409,23 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
 
   const c = CHARACTERS[party.character];
   const roomName = getPartyLaunchDisplayName(party);
-  const roomDescription = getPartyLaunchShortDescription(party);
+  const roomFraming = getPartyLaunchLobbyFraming(party);
+  const showPersistentMeta =
+    presence.count > 0 ||
+    !feedLoading ||
+    (!partySummary.loading && partySummary.sessionsToday > 0);
+  const showPersistentMetaSkeleton =
+    party.persistent &&
+    !showPersistentMeta &&
+    (feedLoading || partySummary.loading);
+  const lobbyMotionClass = contentRevealed
+    ? "opacity-100 translate-y-0"
+    : "pointer-events-none opacity-0 translate-y-2";
 
   return (
-    <div className={ROOM_STATE_CLASS[roomState]}>
+    <div
+      className={`${ROOM_STATE_CLASS[roomState]} transition-[opacity,transform] duration-200 ease-out ${lobbyMotionClass}`}
+    >
       {/* Back link */}
       <Link
         href="/rooms"
@@ -360,30 +449,62 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
           >
             {roomName}
           </h2>
-          <p className="text-sm text-shell-600">
-            {party.persistent
-              ? roomDescription
-              : <>{party.planned_duration_min}m sprint &middot;{" "}
-                <span style={{ color: c.primary }}>{c.name}</span> hosting</>}
-            {presence.count > 0 && (
-              <span className="ml-1">
-                &middot; {presence.count} here
-              </span>
-            )}
-            {!feedLoading && (
-              <span
-                className="ml-1"
-                style={{ color: roomStateDisplay.color }}
-              >
-                &middot; {roomStateDisplay.icon} {roomStateDisplay.label}
-              </span>
-            )}
-            {!partySummary.loading && partySummary.sessionsToday > 0 && (
-              <span className="ml-1 text-shell-500">
-                &middot; {partySummary.sessionsToday} session{partySummary.sessionsToday !== 1 ? "s" : ""} today
-              </span>
-            )}
-          </p>
+          {party.persistent ? (
+            <>
+              <p className="text-sm text-shell-600">
+                {roomFraming}
+              </p>
+              {showPersistentMeta ? (
+                <div className="mt-1 flex flex-wrap items-center gap-1 text-xs text-shell-500">
+                  {presence.count > 0 ? (
+                    <span>{presence.count} here</span>
+                  ) : null}
+                  {presence.count > 0 && (!feedLoading || (!partySummary.loading && partySummary.sessionsToday > 0)) ? (
+                    <span>&middot;</span>
+                  ) : null}
+                  {!feedLoading ? (
+                    <span style={{ color: roomStateDisplay.color }}>
+                      {roomStateDisplay.icon} {roomStateDisplay.label}
+                    </span>
+                  ) : null}
+                  {!feedLoading && !partySummary.loading && partySummary.sessionsToday > 0 ? (
+                    <span className="text-shell-500">&middot;</span>
+                  ) : null}
+                  {!partySummary.loading && partySummary.sessionsToday > 0 ? (
+                    <span>
+                      {partySummary.sessionsToday} session
+                      {partySummary.sessionsToday !== 1 ? "s" : ""} today
+                    </span>
+                  ) : null}
+                </div>
+              ) : showPersistentMetaSkeleton ? (
+                <PersistentMetaSkeleton />
+              ) : null}
+            </>
+          ) : (
+            <p className="text-sm text-shell-600">
+              {party.planned_duration_min}m sprint &middot;{" "}
+              <span style={{ color: c.primary }}>{c.name}</span> hosting
+              {presence.count > 0 && (
+                <span className="ml-1">
+                  &middot; {presence.count} here
+                </span>
+              )}
+              {!feedLoading && (
+                <span
+                  className="ml-1"
+                  style={{ color: roomStateDisplay.color }}
+                >
+                  &middot; {roomStateDisplay.icon} {roomStateDisplay.label}
+                </span>
+              )}
+              {!partySummary.loading && partySummary.sessionsToday > 0 && (
+                <span className="ml-1 text-shell-500">
+                  &middot; {partySummary.sessionsToday} session{partySummary.sessionsToday !== 1 ? "s" : ""} today
+                </span>
+              )}
+            </p>
+          )}
         </div>
       </div>
 

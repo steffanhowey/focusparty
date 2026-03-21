@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillGap — Hero Concept</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --text-primary: #ffffff;
+    --text-secondary: #888888;
+    --text-tertiary: #555555;
+    --accent: #535aee;
+    --accent-glow: rgba(83, 90, 238, 0.15);
+    --border: rgba(255, 255, 255, 0.08);
+    --divider: #535aee;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── Nav ─── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px;
+    border-bottom: 1px solid var(--border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(20px);
+  }
+
+  .nav-logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .nav-logo .divider {
+    width: 1px;
+    height: 18px;
+    background: var(--divider);
+    margin: 0 10px;
+    opacity: 0.8;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text-primary); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* ─── Live indicator ─── */
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    background: #5bc682;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 48px 80px;
+    text-align: center;
+    position: relative;
+  }
+
+  /* Subtle grid background */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse 60% 50% at 50% 40%, black 20%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 40%, black 20%, transparent 70%);
+  }
+
+  /* Accent glow behind logo */
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 300px;
+    background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+  }
+
+  /* ─── Logo in hero ─── */
+  .hero-logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 86px;
+    letter-spacing: -0.03em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    line-height: 1;
+  }
+
+  .hero-logo .divider {
+    width: 2px;
+    height: 64px;
+    background: var(--divider);
+    margin: 0 18px;
+    position: relative;
+  }
+
+  .hero-logo .divider::after {
+    content: '';
+    position: absolute;
+    inset: -8px -6px;
+    background: var(--accent-glow);
+    border-radius: 4px;
+    filter: blur(8px);
+  }
+
+  /* ─── Tagline ─── */
+  .tagline {
+    font-size: 20px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    line-height: 1.6;
+    margin-bottom: 48px;
+    max-width: 540px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .tagline strong {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  /* ─── CTA Group ─── */
+  .cta-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 64px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: rgba(255,255,255,0.2);
+    color: var(--text-primary);
+  }
+
+  /* ─── Social proof strip ─── */
+  .proof-strip {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    justify-content: center;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+  }
+
+  .proof-stat {
+    text-align: center;
+  }
+
+  .proof-stat .number {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .proof-stat .label {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+
+  .proof-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--border);
+  }
+
+  /* ─── Skill ticker ─── */
+  .skill-ticker {
+    margin-top: 80px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 600px;
+  }
+
+  .skill-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    color: var(--text-tertiary);
+    background: var(--surface);
+    transition: all 0.3s;
+  }
+
+  .skill-tag.active {
+    border-color: rgba(83, 90, 238, 0.3);
+    color: var(--accent);
+    background: rgba(83, 90, 238, 0.08);
+  }
+
+  /* ─── Fluency bar (micro-detail) ─── */
+  .fluency-bar {
+    display: flex;
+    gap: 3px;
+    margin-top: 10px;
+    justify-content: center;
+  }
+
+  .fluency-bar .segment {
+    width: 32px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .fluency-bar .segment.filled {
+    background: var(--accent);
+    opacity: 0.6;
+  }
+
+  /* ─── Subtle bottom fade ─── */
+  .hero-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: linear-gradient(transparent, var(--bg));
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">
+    Skill<span class="divider"></span>Gap
+  </div>
+  <ul class="nav-links">
+    <li><a href="#">Paths</a></li>
+    <li><a href="#">Rooms</a></li>
+    <li><a href="#">Skills Index</a></li>
+    <li class="live-indicator">
+      <span class="live-dot"></span>
+      142 practicing now
+    </li>
+    <li><button class="nav-cta">Start learning</button></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+
+    <div class="hero-logo">
+      Skill<span class="divider"></span>Gap
+    </div>
+
+    <p class="tagline">
+      AI fluency for working professionals.<br>
+      <strong>30 minutes. Real tools. Verified skills.</strong>
+    </p>
+
+    <div class="cta-group">
+      <button class="btn-primary">Close the gap</button>
+      <button class="btn-secondary">See what's trending</button>
+    </div>
+
+    <div class="proof-strip">
+      <div class="proof-stat">
+        <div class="number">12,400+</div>
+        <div class="label">skills verified</div>
+      </div>
+      <div class="proof-divider"></div>
+      <div class="proof-stat">
+        <div class="number">38 min</div>
+        <div class="label">avg. path time</div>
+      </div>
+      <div class="proof-divider"></div>
+      <div class="proof-stat">
+        <div class="number">8</div>
+        <div class="label">skill domains</div>
+      </div>
+    </div>
+
+    <div class="skill-ticker">
+      <span class="skill-tag active">Prompt Engineering</span>
+      <span class="skill-tag">AI Code Generation</span>
+      <span class="skill-tag active">Research Synthesis</span>
+      <span class="skill-tag">Image Direction</span>
+      <span class="skill-tag">Workflow Automation</span>
+      <span class="skill-tag active">Data Storytelling</span>
+      <span class="skill-tag">API Integration</span>
+    </div>
+
+    <div class="fluency-bar">
+      <div class="segment filled"></div>
+      <div class="segment filled"></div>
+      <div class="segment filled"></div>
+      <div class="segment"></div>
+    </div>
+
+  </div>
+  <div class="hero-fade"></div>
+</section>
+
+</body>
+</html>

@@ -27,6 +27,9 @@ interface MissionCardProps {
   featured?: boolean;
   compact?: boolean;
   cleanFrame?: boolean;
+  badgeLabelOverride?: string;
+  supportLineOverride?: string | null;
+  metaLineOverride?: string | null;
   onToggleSave?: (path: LearningPath) => void;
   className?: string;
 }
@@ -42,6 +45,9 @@ export function MissionCard({
   featured = false,
   compact = false,
   cleanFrame = false,
+  badgeLabelOverride,
+  supportLineOverride,
+  metaLineOverride,
   onToggleSave,
   className = "",
 }: MissionCardProps) {
@@ -52,13 +58,25 @@ export function MissionCard({
   const framing = getMissionFraming(path, progress);
   const progressSummary = getMissionProgressSummary(progress);
   const effortSummary = getMissionRepSummary(path);
-  const contextSignal = area.detail ?? area.label;
+  const contextSignal = badgeLabelOverride ?? area.detail ?? area.label;
+  const launchDomainLabel = area.detail;
   const isActiveCard = state === "active";
   const supportLine =
-    state === "completed"
-      ? "Outcome captured and ready to review."
-      : framing;
-  const metaLine = isActiveCard ? null : effortSummary;
+    supportLineOverride !== undefined
+      ? supportLineOverride
+      : state === "completed"
+        ? launchDomainLabel
+          ? `${launchDomainLabel} · Outcome captured and ready to review.`
+          : "Outcome captured and ready to review."
+        : isActiveCard && launchDomainLabel
+          ? `${launchDomainLabel} · ${framing}`
+          : framing;
+  const metaLine =
+    metaLineOverride !== undefined
+      ? metaLineOverride
+      : isActiveCard
+        ? null
+        : effortSummary;
   const primaryLabel = state === "completed" ? "Open" : "Start";
   const percentComplete =
     progress && progress.items_total > 0

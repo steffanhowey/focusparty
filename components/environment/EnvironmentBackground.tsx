@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 interface EnvironmentBackgroundProps {
@@ -14,11 +15,27 @@ export function EnvironmentBackground({
   overlay,
   placeholderGradient,
 }: EnvironmentBackgroundProps) {
+  const [imageReady, setImageReady] = useState(false);
+
+  useEffect(() => {
+    setImageReady(false);
+  }, [imageUrl]);
+
   return (
     <div className="absolute inset-0 z-0">
+      {/* Base gradient always renders first so the room never flashes empty. */}
+      <div
+        className="absolute inset-0"
+        style={{ background: placeholderGradient ?? "var(--sg-forest-900)" }}
+      />
+
       {imageUrl ? (
-        /* Ken Burns animated image */
-        <div className="absolute inset-0 animate-env-drift">
+        /* Fade the AI background in over the base gradient instead of swapping abruptly. */
+        <div
+          className={`absolute inset-0 animate-env-drift transition-opacity duration-700 ease-out ${
+            imageReady ? "opacity-100" : "opacity-0"
+          }`}
+        >
           <Image
             src={imageUrl}
             alt=""
@@ -26,15 +43,10 @@ export function EnvironmentBackground({
             priority
             sizes="100vw"
             className="object-cover"
+            onLoad={() => setImageReady(true)}
           />
         </div>
-      ) : (
-        /* Gradient placeholder when no AI background is available */
-        <div
-          className="absolute inset-0"
-          style={{ background: placeholderGradient ?? "var(--sg-forest-900)" }}
-        />
-      )}
+      ) : null}
 
       {/* Readability overlay */}
       <div className="absolute inset-0" style={{ background: overlay }} />
