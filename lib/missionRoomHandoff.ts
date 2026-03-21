@@ -2,6 +2,8 @@ export interface MissionRoomHandoff {
   missionId: string | null;
   missionTitle: string | null;
   missionDomain: string | null;
+  missionStepIndex: number | null;
+  missionStepTitle: string | null;
 }
 
 const MISSION_ROOM_HANDOFF_KEY = "fp_room_entry_mission";
@@ -18,13 +20,24 @@ export function readMissionRoomHandoff(): MissionRoomHandoff | null {
     if (!raw) return null;
 
     const parsed = JSON.parse(raw) as Partial<MissionRoomHandoff> | null;
+    const missionStepIndex =
+      typeof parsed?.missionStepIndex === "number" &&
+      Number.isInteger(parsed.missionStepIndex)
+        ? parsed.missionStepIndex
+        : null;
     const handoff: MissionRoomHandoff = {
       missionId: parsed?.missionId ?? null,
       missionTitle: parsed?.missionTitle ?? null,
       missionDomain: parsed?.missionDomain ?? null,
+      missionStepIndex,
+      missionStepTitle: parsed?.missionStepTitle ?? null,
     };
 
-    if (!handoff.missionId && !handoff.missionTitle && !handoff.missionDomain) {
+    if (
+      !handoff.missionId &&
+      !handoff.missionTitle &&
+      !handoff.missionDomain
+    ) {
       return null;
     }
 

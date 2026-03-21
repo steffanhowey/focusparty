@@ -11,10 +11,9 @@ import { useLearnSearch } from "@/lib/useLearnSearch";
 import { useSkillProfile } from "@/lib/useSkillProfile";
 import {
   MISSIONS_ROUTE,
-  getMissionRoute,
 } from "@/lib/appRoutes";
 import { MissionCard } from "@/components/missions/MissionCard";
-import { MissionRoomPickerModal } from "@/components/missions/MissionRoomPickerModal";
+import { MissionBriefModal } from "@/components/missions/MissionBriefModal";
 import { buildHomePrimaryAction } from "@/lib/homeLaunchpad";
 import { buildMissionRecommendations } from "@/lib/missionRecommendations";
 import {
@@ -27,6 +26,11 @@ import type { LearningPath, LearningProgress } from "@/lib/types";
 interface CategoryDef {
   value: string;
   label: string;
+}
+
+interface MissionBriefSelection {
+  path: LearningPath;
+  progress: LearningProgress | null;
 }
 
 const CATEGORIES: CategoryDef[] = [
@@ -98,7 +102,8 @@ export function MissionsPage() {
 
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState<SortOption>("recommended");
-  const [showHeroRoomPicker, setShowHeroRoomPicker] = useState(false);
+  const [selectedMissionBrief, setSelectedMissionBrief] =
+    useState<MissionBriefSelection | null>(null);
 
   useEffect(() => {
     const initialQuery = searchParams.get("q")?.trim();
@@ -166,7 +171,6 @@ export function MissionsPage() {
     );
   }, [
     activeMission?.path,
-    activeMission?.path.id,
     activePathIds,
     completedPathIds,
     discoveryPaths,
@@ -273,20 +277,22 @@ export function MissionsPage() {
     }
   }, [filteredDiscoveryPaths, sort]);
   const visibleDiscoveryPaths = sortedDiscoveryPaths;
+  const openMissionBrief = useCallback(
+    (path: LearningPath, progress: LearningProgress | null = null) => {
+      setSelectedMissionBrief({ path, progress });
+    },
+    [],
+  );
   const handleOpenPrimaryAction = useCallback(() => {
     const heroMission = primaryAction.mission;
 
     if (heroMission) {
-      router.push(getMissionRoute(heroMission.id));
+      openMissionBrief(heroMission, primaryAction.progress ?? null);
       return;
     }
 
     router.push(MISSIONS_ROUTE);
-  }, [primaryAction.mission, router]);
-  const handleOpenHeroRoomPicker = useCallback(() => {
-    if (!primaryAction.mission) return;
-    setShowHeroRoomPicker(true);
-  }, [primaryAction.mission]);
+  }, [openMissionBrief, primaryAction.mission, primaryAction.progress, router]);
 
   return (
     <div className="space-y-6">
@@ -294,7 +300,6 @@ export function MissionsPage() {
         primaryAction={primaryAction}
         isLoading={heroIsLoading}
         onPrimaryAction={handleOpenPrimaryAction}
-        onRoomAction={primaryAction.mission ? handleOpenHeroRoomPicker : undefined}
         previewDetailsVisible={false}
       />
 
@@ -310,6 +315,7 @@ export function MissionsPage() {
                   key={path.id}
                   path={path}
                   progress={progress}
+                  onOpenMission={openMissionBrief}
                   compact
                   cleanFrame
                 />
@@ -390,6 +396,7 @@ export function MissionsPage() {
                       key={path.id}
                       path={path}
                       progress={progressMap.get(path.id) ?? null}
+                      onOpenMission={openMissionBrief}
                       compact
                       cleanFrame
                     />
@@ -413,7 +420,14 @@ export function MissionsPage() {
           ) : visibleDiscoveryPaths.length > 0 ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {visibleDiscoveryPaths.map((path) => (
-                <MissionCard key={path.id} path={path} compact cleanFrame />
+                <MissionCard
+                  key={path.id}
+                  path={path}
+                  progress={progressMap.get(path.id) ?? null}
+                  onOpenMission={openMissionBrief}
+                  compact
+                  cleanFrame
+                />
               ))}
             </div>
           ) : category === "in-progress" ? (
@@ -437,12 +451,13 @@ export function MissionsPage() {
         </section>
       </div>
 
-      {primaryAction.mission && showHeroRoomPicker ? (
-        <MissionRoomPickerModal
-          isOpen={showHeroRoomPicker}
-          onClose={() => setShowHeroRoomPicker(false)}
-          path={primaryAction.mission}
-          progress={primaryAction.progress ?? null}
+      {selectedMissionBrief ? (
+        <MissionBriefModal
+          key={selectedMissionBrief.path.id}
+          isOpen
+          onClose={() => setSelectedMissionBrief(null)}
+          path={selectedMissionBrief.path}
+          progress={selectedMissionBrief.progress}
         />
       ) : null}
     </div>

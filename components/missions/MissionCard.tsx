@@ -31,6 +31,7 @@ interface MissionCardProps {
   supportLineOverride?: string | null;
   metaLineOverride?: string | null;
   onToggleSave?: (path: LearningPath) => void;
+  onOpenMission?: (path: LearningPath, progress: LearningProgress | null) => void;
   className?: string;
 }
 
@@ -49,6 +50,7 @@ export function MissionCard({
   supportLineOverride,
   metaLineOverride,
   onToggleSave,
+  onOpenMission,
   className = "",
 }: MissionCardProps) {
   const router = useRouter();
@@ -85,6 +87,11 @@ export function MissionCard({
   const showProgress = percentComplete > 0 || state === "completed";
 
   const handleOpenMission = () => {
+    if (onOpenMission) {
+      onOpenMission(path, progress);
+      return;
+    }
+
     router.push(getMissionRoute(path.id));
   };
 

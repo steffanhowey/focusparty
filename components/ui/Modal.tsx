@@ -14,6 +14,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  ariaLabel?: string;
   children: ReactNode;
   panelClassName?: string;
   variant?: "default" | "immersive";
@@ -23,6 +24,7 @@ export function Modal({
   isOpen,
   onClose,
   title,
+  ariaLabel,
   children,
   panelClassName = "",
   variant = "default",
@@ -92,6 +94,7 @@ export function Modal({
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? "modal-title" : undefined}
+      aria-label={title ? undefined : ariaLabel}
       className="fixed inset-0 flex items-center justify-center p-4"
       style={{ zIndex: 40 }}
       onKeyDown={handleKeyDown}

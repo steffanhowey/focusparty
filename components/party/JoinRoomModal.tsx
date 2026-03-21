@@ -99,6 +99,8 @@ export interface JoinConfig {
   missionId: string | null;
   missionTitle: string | null;
   missionDomain: string | null;
+  missionStepIndex: number | null;
+  missionStepTitle: string | null;
   durationSec: number;
   autoStart: boolean;
   commitmentType: CommitmentType;
@@ -117,6 +119,12 @@ function readMissionRoomHandoffFromSearchParams(
   const missionId = searchParams.get("missionId");
   const missionTitle = searchParams.get("missionTitle");
   const missionDomain = searchParams.get("missionDomain");
+  const missionStepTitle = searchParams.get("missionStepTitle");
+  const rawMissionStepIndex = searchParams.get("missionStepIndex");
+  const missionStepIndex =
+    rawMissionStepIndex !== null && /^-?\d+$/.test(rawMissionStepIndex)
+      ? Number.parseInt(rawMissionStepIndex, 10)
+      : null;
 
   if (!missionId && !missionTitle && !missionDomain) {
     return null;
@@ -126,6 +134,8 @@ function readMissionRoomHandoffFromSearchParams(
     missionId,
     missionTitle,
     missionDomain,
+    missionStepIndex,
+    missionStepTitle,
   };
 }
 
@@ -244,6 +254,8 @@ export function JoinRoomModal({
       nextParams.delete("missionId");
       nextParams.delete("missionTitle");
       nextParams.delete("missionDomain");
+      nextParams.delete("missionStepIndex");
+      nextParams.delete("missionStepTitle");
       const nextQuery = nextParams.toString();
       router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
         scroll: false,
@@ -256,7 +268,7 @@ export function JoinRoomModal({
     setFreshDuration(25);
     setIsJoining(false);
     setShowMissionPicker(false);
-    setFormStep(1);
+    setFormStep(missionHandoff ? 2 : 1);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [isOpen, pathname, router, searchMissionHandoff, searchParams]);
 
@@ -276,6 +288,9 @@ export function JoinRoomModal({
     selectedMission?.path.title ?? prefilledMission?.missionTitle ?? null;
   const resolvedMissionDomain =
     selectedMissionDomain ?? prefilledMission?.missionDomain ?? null;
+  const resolvedMissionStepIndex = prefilledMission?.missionStepIndex ?? null;
+  const resolvedMissionStepTitle = prefilledMission?.missionStepTitle ?? null;
+  const missionSelectionLocked = prefilledMission !== null;
 
   // ─── Computed sprint info ─────────────────────────────────
   const durationSec = freshDuration * 60;
@@ -306,6 +321,8 @@ export function JoinRoomModal({
         missionId: resolvedMissionId,
         missionTitle: resolvedMissionTitle,
         missionDomain: resolvedMissionDomain,
+        missionStepIndex: resolvedMissionStepIndex,
+        missionStepTitle: resolvedMissionStepTitle,
         durationSec,
         autoStart: true,
         commitmentType,
@@ -330,6 +347,8 @@ export function JoinRoomModal({
     displayName,
     resolvedMissionDomain,
     resolvedMissionId,
+    resolvedMissionStepIndex,
+    resolvedMissionStepTitle,
     resolvedMissionTitle,
     durationSec,
     commitmentType,
@@ -506,6 +525,38 @@ export function JoinRoomModal({
                 }}
               >
                 <div className="px-5 pt-4">
+                  {resolvedMissionTitle ? (
+                    <div
+                      className="mb-4 space-y-1 rounded-[var(--sg-radius-lg)] px-3 py-3"
+                      style={{
+                        background:
+                          "color-mix(in srgb, var(--sg-white) 4%, transparent)",
+                        border:
+                          "1px solid color-mix(in srgb, var(--sg-white) 8%, transparent)",
+                      }}
+                    >
+                      <p className="text-2xs font-semibold uppercase tracking-[0.16em] text-white/35">
+                        Mission
+                      </p>
+                      <p className="text-sm font-semibold text-white">
+                        {resolvedMissionTitle}
+                      </p>
+                      {(resolvedMissionDomain || selectedMissionSummary) ? (
+                        <p className="text-2xs text-white/40">
+                          {resolvedMissionDomain}
+                          {resolvedMissionDomain && selectedMissionSummary ? " · " : null}
+                          {selectedMissionSummary}
+                        </p>
+                      ) : null}
+                      {resolvedMissionStepTitle ? (
+                        <p className="text-2xs text-white/40">
+                          {selectedMission ? "Continuing at " : "Starting from "}
+                          {resolvedMissionStepTitle}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+
                   <label className="mb-2 block text-sm font-semibold text-white">
                     Sprint duration
                   </label>
@@ -517,14 +568,20 @@ export function JoinRoomModal({
                 </div>
 
                 {/* Footer */}
-                <div className="mt-auto flex items-center justify-between px-5 pb-5">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setFormStep(1)}
-                  >
-                    Back
-                  </Button>
+                <div
+                  className={`mt-auto flex items-center px-5 pb-5 ${
+                    missionSelectionLocked ? "justify-end" : "justify-between"
+                  }`}
+                >
+                  {!missionSelectionLocked ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setFormStep(1)}
+                    >
+                      Back
+                    </Button>
+                  ) : null}
                   <Button
                     variant="cta"
                     size="sm"

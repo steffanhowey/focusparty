@@ -2,29 +2,37 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { RoomCard } from "@/components/party/RoomCard";
 import { useActiveBackgrounds } from "@/lib/useActiveBackgrounds";
-import { getCanonicalRoomEntryRoute, ROOMS_ROUTE } from "@/lib/appRoutes";
+import { ROOMS_ROUTE } from "@/lib/appRoutes";
 import {
   getLaunchRoomCatalogEntries,
   getLaunchRoomMissionFitHint,
   getPartyLaunchPickerDescription,
   isPartyLaunchVisible,
 } from "@/lib/launchRooms";
-import { writeMissionRoomHandoff } from "@/lib/missionRoomHandoff";
+import {
+  prepareMissionRoomEntry,
+  prepareMissionRoomHandoff,
+} from "@/lib/missionRoomEntry";
 import { getMissionRoomRecommendations } from "@/lib/missionRoomRecommendations";
 import { useDiscoverableParties } from "@/lib/useDiscoverableParties";
 import type { PartyWithCount } from "@/lib/parties";
-import type { LearningPath, LearningProgress } from "@/lib/types";
+import type { LearningPath } from "@/lib/types";
 
 interface MissionRoomPickerModalProps {
   isOpen: boolean;
   onClose: () => void;
   path: LearningPath;
-  progress?: LearningProgress | null;
+  title?: string;
+  onBack?: () => void;
+  backLabel?: string;
+  missionStepIndex?: number | null;
+  missionStepTitle?: string | null;
 }
 
 const ROOM_PICKER_GRID_CLASS_NAME = "grid gap-5 sm:grid-cols-2 lg:grid-cols-3";
@@ -34,6 +42,11 @@ export function MissionRoomPickerModal({
   isOpen,
   onClose,
   path,
+  title = "Bring this mission into a room",
+  onBack,
+  backLabel = "Back to mission",
+  missionStepIndex = null,
+  missionStepTitle = null,
 }: MissionRoomPickerModalProps) {
   const router = useRouter();
   const backgrounds = useActiveBackgrounds();
@@ -57,22 +70,23 @@ export function MissionRoomPickerModal({
 
   const handleSelectRoom = (party: PartyWithCount) => {
     setJoiningRoomId(party.id);
-    writeMissionRoomHandoff({
-      missionId: path.id,
-      missionTitle: path.title,
-      missionDomain: missionDomainLabel,
+    const href = prepareMissionRoomEntry({
+      party,
+      path,
+      missionDomainLabel,
+      missionStepIndex,
+      missionStepTitle,
     });
-    const entryRoute = getCanonicalRoomEntryRoute(party);
-    const params = new URLSearchParams();
-    params.set("missionId", path.id);
-    params.set("missionTitle", path.title);
-    if (missionDomainLabel) {
-      params.set("missionDomain", missionDomainLabel);
-    }
-    router.push(`${entryRoute}?${params.toString()}`);
+    router.push(href);
   };
 
   const handleSeeAllRooms = () => {
+    prepareMissionRoomHandoff({
+      path,
+      missionDomainLabel,
+      missionStepIndex,
+      missionStepTitle,
+    });
     onClose();
     router.push(ROOMS_ROUTE);
   };
@@ -81,11 +95,25 @@ export function MissionRoomPickerModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Bring this mission into a room"
+      title={title}
       variant="immersive"
       panelClassName="max-w-[1120px] p-6 sm:p-8"
     >
       <div className={`space-y-6 ${loading ? "min-h-[560px] sm:min-h-[620px]" : ""}`}>
+        {onBack ? (
+          <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<ArrowLeft size={14} />}
+              className="text-white/60 hover:bg-white/10 hover:text-white"
+              onClick={onBack}
+            >
+              {backLabel}
+            </Button>
+          </div>
+        ) : null}
+
         {loading ? (
           <>
             <div

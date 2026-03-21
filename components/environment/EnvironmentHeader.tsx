@@ -167,6 +167,8 @@ export function EnvironmentHeader({
           missionId: null,
           missionTitle: null,
           missionDomain: null,
+          missionStepIndex: null,
+          missionStepTitle: null,
           durationSec: 25 * 60,
           autoStart: false,
           commitmentType: "personal",

@@ -77,6 +77,8 @@ interface MissionSelectionState {
   missionId: string | null;
   missionTitle: string | null;
   missionDomain: string | null;
+  missionStepIndex?: number | null;
+  missionStepTitle?: string | null;
 }
 
 function normalizeMissionSelection(
@@ -87,7 +89,21 @@ function normalizeMissionSelection(
     return null;
   }
 
-  return selection;
+  return {
+    missionId: selection.missionId,
+    missionTitle: selection.missionTitle,
+    missionDomain: selection.missionDomain,
+    missionStepIndex:
+      typeof selection.missionStepIndex === "number" &&
+      Number.isInteger(selection.missionStepIndex)
+        ? selection.missionStepIndex
+        : null,
+    missionStepTitle: selection.missionStepTitle ?? null,
+  };
+}
+
+function getPathItemKey(item: { item_id?: string | null; content_id?: string | null }, index: number): string {
+  return item.item_id ?? item.content_id ?? `idx-${index}`;
 }
 
 function getMissionSelectionMetadata(
@@ -115,6 +131,8 @@ function getMissionSelectionFromJoinConfig(
     missionId: config.missionId,
     missionTitle: config.missionTitle,
     missionDomain: config.missionDomain,
+    missionStepIndex: config.missionStepIndex,
+    missionStepTitle: config.missionStepTitle,
   });
 }
 
@@ -152,6 +170,12 @@ function normalizeJoinConfig(rawConfig: unknown): JoinConfig {
     missionId: config.missionId ?? null,
     missionTitle: config.missionTitle ?? config.goalText ?? null,
     missionDomain: config.missionDomain ?? null,
+    missionStepIndex:
+      typeof config.missionStepIndex === "number" &&
+      Number.isInteger(config.missionStepIndex)
+        ? config.missionStepIndex
+        : null,
+    missionStepTitle: config.missionStepTitle ?? null,
     durationSec: config.durationSec ?? DEFAULT_DURATION_SEC,
     autoStart: config.autoStart ?? false,
     commitmentType: config.commitmentType ?? "personal",
@@ -381,6 +405,7 @@ export default function EnvironmentPage() {
   const [celebrations, setCelebrations] = useState<Map<string, CelebrationInfo>>(new Map());
   const lastFeedLengthRef = useRef(0);
   const feedInitializedRef = useRef(false);
+  const missionStepSyncKeyRef = useRef<string | null>(null);
 
   // ─── Break session state ────────────────────────────────
   const [breakContent, setBreakContent] = useState<BreakContentItem | null>(null);
@@ -464,6 +489,68 @@ export default function EnvironmentPage() {
     currentPathId: selectedMissionContext?.missionId ?? null,
     enabled: missionWorkspaceOpen && phase === "sprint" && roomMissionCompleted,
   });
+
+  useEffect(() => {
+    const missionId = selectedMissionContext?.missionId ?? null;
+    const targetIndex = selectedMissionContext?.missionStepIndex ?? null;
+
+    if (!missionId || targetIndex === null) {
+      missionStepSyncKeyRef.current = null;
+      return;
+    }
+
+    if (phase !== "sprint" || !missionWorkspaceOpen || roomMissionLoading || !roomMissionPath) {
+      return;
+    }
+
+    const syncKey = `${missionId}:${targetIndex}`;
+    if (missionStepSyncKeyRef.current === syncKey) {
+      return;
+    }
+    missionStepSyncKeyRef.current = syncKey;
+
+    const clearMissionStepTarget = () => {
+      setSelectedMissionContext((prev) => {
+        if (!prev || prev.missionId !== missionId) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          missionStepIndex: null,
+          missionStepTitle: null,
+        };
+      });
+      missionStepSyncKeyRef.current = null;
+    };
+
+    if (targetIndex < 0 || targetIndex >= roomMissionPath.items.length) {
+      clearMissionStepTarget();
+      return;
+    }
+
+    const targetItem = roomMissionPath.items[targetIndex];
+    const targetItemKey = getPathItemKey(targetItem, targetIndex);
+    const targetCompleted =
+      roomMissionProgress?.item_states?.[targetItemKey]?.completed ?? false;
+
+    if (targetCompleted || roomMissionCurrentItemIndex === targetIndex) {
+      clearMissionStepTarget();
+      return;
+    }
+
+    void advanceMissionItem(targetIndex).finally(clearMissionStepTarget);
+  }, [
+    advanceMissionItem,
+    missionWorkspaceOpen,
+    phase,
+    roomMissionCurrentItemIndex,
+    roomMissionLoading,
+    roomMissionPath,
+    roomMissionProgress?.item_states,
+    selectedMissionContext?.missionId,
+    selectedMissionContext?.missionStepIndex,
+  ]);
 
   // ─── Host triggers ref (break circular dep) ──────────
   const hostTriggersRef = useRef<{

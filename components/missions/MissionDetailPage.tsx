@@ -1,607 +1,735 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  FileText,
-  PanelsTopLeft,
-  Pencil,
-  Play,
-} from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { ContentViewer } from "@/components/learn/ContentViewer";
-import { PathSidebar } from "@/components/learn/PathSidebar";
-import {
-  RoomStagePanel,
-  RoomStageScaffold,
-  RoomStageSecondaryButton,
-} from "@/components/learn/RoomStageScaffold";
-import { MissionCompletionSummary } from "@/components/missions/MissionCompletionSummary";
+import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { MissionRoomPickerModal } from "@/components/missions/MissionRoomPickerModal";
-import { useLearnProgress } from "@/lib/useLearnProgress";
-import { usePostCompletionRecommendations } from "@/lib/usePostCompletionRecommendations";
-import { useProfile } from "@/lib/useProfile";
-import { useAuth } from "@/components/providers/AuthProvider";
+import { Button } from "@/components/ui/Button";
 import {
-  AdjustAnytimeBanner,
-  FirstPathTooltip,
-  MissionCelebration,
-  RoomBridge,
-} from "@/components/onboarding/GuidedFirstSession";
+  MISSIONS_ROUTE,
+  PROGRESS_ROUTE,
+  ROOMS_ROUTE,
+  getProgressEvidenceRoute,
+} from "@/lib/appRoutes";
 import {
+  getLaunchRoomMissionFitHint,
+  getPartyLaunchDisplayName,
+  getPartyLaunchPickerDescription,
+} from "@/lib/launchRooms";
+import { getMissionLaunchDomain } from "@/lib/launchTaxonomy";
+import { prepareMissionRoomEntry } from "@/lib/missionRoomEntry";
+import {
+  formatMissionDuration,
+  getMissionBriefing,
+  getMissionCurrentItem,
   getMissionExpectedOutput,
+  getMissionFraming,
+  getMissionProgressSummary,
+  getMissionSuccessPreview,
 } from "@/lib/missionPresentation";
-import {
-  getMissionLaunchDomain,
-  getMissionLaunchDomainShortLabel,
-} from "@/lib/launchTaxonomy";
-import { createClient } from "@/lib/supabase/client";
-import { trackFirstMissionCompleted } from "@/lib/onboarding/tracking";
-import { PanelHeader } from "@/components/session/PanelHeader";
-import type { ItemState, LearningPath, PathItem } from "@/lib/types";
-import { getWorldConfig, type WorldKey } from "@/lib/worlds";
-const DESKTOP_LAYOUT_QUERY = "(min-width: 1280px)";
+import { useMissionLandingPageData } from "@/lib/useMissionLandingPageData";
+import type { CurriculumModule, LearningPath, LearningProgress, PathItem } from "@/lib/types";
 
-function getStepLabel(item: PathItem | null): string {
-  if (!item) return "Mission";
-  if (item.task_type === "do") return "Build";
-  if (item.task_type === "check") return "Check";
-  if (item.task_type === "reflect") return "Reflect";
-  return item.content_type === "video" ? "Watch" : "Read";
+type MissionLandingState = "ready" | "active" | "completed";
+
+interface MissionUseItem {
+  label: string;
+  value: string;
 }
 
-function getStepIcon(item: PathItem | null) {
-  if (!item) return <FileText size={14} />;
-  if (item.task_type === "do") return <Pencil size={14} />;
-  if (item.task_type === "check") return <CheckCircle2 size={14} />;
-  if (item.task_type === "reflect") return <FileText size={14} />;
-  return item.content_type === "video" ? <Play size={14} /> : <FileText size={14} />;
+interface MissionMapRow {
+  key: string;
+  title: string;
+  meta: string | null;
+  currentStepTitle: string | null;
+  isCurrent: boolean;
+  isCompleted: boolean;
 }
 
-function MissionPageStage({
+function getMissionItemKey(item: PathItem, index: number): string {
+  return item.item_id ?? item.content_id ?? `idx-${index}`;
+}
+
+function isMissionItemCompleted(
+  progress: LearningProgress | null,
+  item: PathItem,
+  index: number,
+): boolean {
+  return progress?.item_states?.[getMissionItemKey(item, index)]?.completed ?? false;
+}
+
+function getMissionLandingState(
+  progress: LearningProgress | null,
+): MissionLandingState {
+  if (progress?.status === "completed") return "completed";
+  if (progress?.status === "in_progress" || (progress?.items_completed ?? 0) > 0) {
+    return "active";
+  }
+
+  return "ready";
+}
+
+function formatMissionMetaLine(
+  path: LearningPath,
+  progress: LearningProgress | null,
+): string {
+  const effort = formatMissionDuration(path.estimated_duration_seconds);
+  const progressSummary = getMissionProgressSummary(progress);
+  const stepCount = path.items.length;
+  const stepLabel = `${stepCount} ${stepCount === 1 ? "step" : "steps"}`;
+  const state = getMissionLandingState(progress);
+
+  if (state === "completed") {
+    return `Completed · ${progressSummary} · ${effort}`;
+  }
+
+  if (state === "active") {
+    return `In progress · ${progressSummary} · ${effort}`;
+  }
+
+  return `${effort} · ${stepLabel}`;
+}
+
+function normalizeText(value: string | null | undefined): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function getMissionWhyItMatters(
+  path: LearningPath,
+  progress: LearningProgress | null,
+): string {
+  const framing = getMissionFraming(path, progress);
+  const framingKey = normalizeText(framing);
+  const mission = getMissionBriefing(path, progress);
+  const candidates = [mission?.context, path.description, path.goal];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    if (normalizeText(candidate) === framingKey) continue;
+    return candidate;
+  }
+
+  return "A practical rep designed to turn AI understanding into finished work.";
+}
+
+function buildMissionUseItems(
+  path: LearningPath,
+  progress: LearningProgress | null,
+): MissionUseItem[] {
+  const mission = getMissionBriefing(path, progress);
+  const items: MissionUseItem[] = [];
+  const toolName = mission?.tool?.name ?? path.primary_tools?.[0] ?? null;
+
+  if (toolName) {
+    items.push({ label: "Tool", value: toolName });
+  }
+
+  if (mission?.tool_prompt?.trim()) {
+    items.push({
+      label: "Prompt",
+      value: toolName ? `Prepared prompt for ${toolName}` : "Prepared prompt included",
+    });
+  }
+
+  if (mission?.starter_code?.trim()) {
+    items.push({
+      label: "Starter template",
+      value: "Included and ready in room",
+    });
+  }
+
+  const sourceMaterial = path.items
+    .filter((item) => item.task_type === "watch" && item.title.trim())
+    .slice(0, 2)
+    .map((item) => item.title.trim());
+
+  if (sourceMaterial.length > 0) {
+    items.push({
+      label: "Source material",
+      value: sourceMaterial.join(" · "),
+    });
+  }
+
+  return items;
+}
+
+function buildMissionMapRows(
+  path: LearningPath,
+  progress: LearningProgress | null,
+): MissionMapRow[] {
+  const itemsByModule = new Map<number, Array<PathItem & { globalIndex: number }>>();
+
+  path.items.forEach((item, index) => {
+    const moduleIndex = item.module_index ?? 0;
+    const existing = itemsByModule.get(moduleIndex) ?? [];
+    existing.push({ ...item, globalIndex: index });
+    itemsByModule.set(moduleIndex, existing);
+  });
+
+  const fallbackModules: CurriculumModule[] = [...itemsByModule.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([moduleIndex, items], index) => ({
+      index: moduleIndex,
+      title: itemsByModule.size === 1 ? "Mission" : `Part ${index + 1}`,
+      description: "",
+      task_count: items.length,
+      duration_seconds: items.reduce((sum, item) => sum + item.duration_seconds, 0),
+    }));
+
+  const modules = path.modules?.length ? path.modules : fallbackModules;
+  const currentItem = getMissionCurrentItem(path, progress);
+  const currentModuleIndex = currentItem?.module_index ?? modules[0]?.index ?? 0;
+  const isCompleted = getMissionLandingState(progress) === "completed";
+
+  return modules
+    .map((module) => {
+      const items = itemsByModule.get(module.index) ?? [];
+      const stepCount = items.length || module.task_count || 0;
+      const stepLabel = stepCount > 0 ? `${stepCount} ${stepCount === 1 ? "step" : "steps"}` : null;
+      const durationLabel =
+        module.duration_seconds > 0 ? formatMissionDuration(module.duration_seconds) : null;
+      const meta = [stepLabel, durationLabel].filter(Boolean).join(" · ") || null;
+      const currentStepTitle =
+        !isCompleted && module.index === currentModuleIndex ? currentItem?.title ?? null : null;
+
+      return {
+        key: `module-${module.index}`,
+        title: module.title,
+        meta,
+        currentStepTitle,
+        isCurrent: !isCompleted && module.index === currentModuleIndex,
+        isCompleted:
+          items.length > 0 &&
+          items.every((item) => isMissionItemCompleted(progress, item, item.globalIndex)),
+      };
+    })
+    .filter((row) => row.title || row.meta || row.currentStepTitle);
+}
+
+function MissionSection({
+  title,
   children,
 }: {
+  title: string;
   children: ReactNode;
-}) {
-  return <div className="mx-auto flex h-full min-h-0 w-full max-w-[1100px]">{children}</div>;
-}
-
-function getMissionPageWorldKey(path: LearningPath | null): WorldKey {
-  if (!path) return "default";
-
-  const launchDomain = getMissionLaunchDomain(path);
-
-  if (launchDomain.key === "workflow-design-operations") {
-    return "vibe-coding";
-  }
-
-  if (
-    launchDomain.key === "positioning-messaging" ||
-    launchDomain.key === "content-systems"
-  ) {
-    return "writer-room";
-  }
-
-  if (launchDomain.key === "campaigns-experiments") {
-    return "yc-build";
-  }
-
-  return "default";
-}
-
-function MissionPageUtilityButton({
-  children,
-  leftIcon,
-  onClick,
-  active = false,
-  ariaExpanded,
-  ariaControls,
-}: {
-  children: ReactNode;
-  leftIcon?: ReactNode;
-  onClick: () => void;
-  active?: boolean;
-  ariaExpanded?: boolean;
-  ariaControls?: string;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-expanded={ariaExpanded}
-      aria-controls={ariaControls}
-      className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors duration-150 hover:bg-white/15 hover:text-white ${
-        active ? "text-white" : "text-white/80"
-      }`}
+    <section className="border-t border-[var(--sg-shell-border)] pt-6 first:border-t-0 first:pt-0">
+      <div className="space-y-3">
+        <h2 className="text-base font-semibold text-[var(--sg-shell-900)]">{title}</h2>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function MissionMapPreview({ rows }: { rows: MissionMapRow[] }) {
+  if (rows.length === 0) {
+    return (
+      <div
+        className="rounded-[var(--sg-radius-lg)] border border-[var(--sg-shell-border)] px-4 py-4 text-sm leading-6 text-[var(--sg-shell-500)]"
+        style={{
+          background: "color-mix(in srgb, var(--sg-white) 78%, var(--sg-shell-50) 22%)",
+        }}
+      >
+        Steps are still being prepared for this mission.
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="overflow-hidden rounded-[var(--sg-radius-lg)] border border-[var(--sg-shell-border)]"
       style={{
-        border: "1px solid color-mix(in srgb, var(--sg-white) 12%, transparent)",
-        background: active
-          ? "color-mix(in srgb, var(--sg-white) 12%, transparent)"
-          : "color-mix(in srgb, var(--sg-white) 8%, transparent)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
+        background: "color-mix(in srgb, var(--sg-white) 76%, var(--sg-shell-50) 24%)",
       }}
     >
-      {leftIcon}
-      {children}
-    </button>
+      {rows.map((row, index) => (
+        <div
+          key={row.key}
+          className={`px-4 py-4 sm:px-5 ${index > 0 ? "border-t border-[var(--sg-shell-border)]" : ""}`}
+          style={{
+            background: row.isCurrent
+              ? "color-mix(in srgb, var(--sg-sage-100) 42%, var(--sg-white) 58%)"
+              : "transparent",
+          }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1">
+              <p className="text-sm font-medium text-[var(--sg-shell-900)]">{row.title}</p>
+              {row.meta ? (
+                <p className="text-xs leading-5 text-[var(--sg-shell-500)]">{row.meta}</p>
+              ) : null}
+              {row.currentStepTitle ? (
+                <p className="text-xs leading-5 text-[var(--sg-forest-500)]">
+                  Current step: {row.currentStepTitle}
+                </p>
+              ) : null}
+            </div>
+
+            {row.isCompleted ? (
+              <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--sg-forest-500)]" />
+            ) : null}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MissionLandingSkeleton() {
+  return (
+    <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <aside
+        className="order-1 border-b border-[var(--sg-shell-border)] px-5 py-5 sm:px-6 xl:order-2 xl:border-b-0 xl:border-l"
+        style={{
+          background: "color-mix(in srgb, var(--sg-shell-50) 72%, var(--sg-white) 28%)",
+        }}
+      >
+        <div className="space-y-4">
+          <div className="h-4 w-24 animate-pulse rounded-full bg-[var(--sg-shell-100)]" />
+          <div className="h-8 w-3/4 animate-pulse rounded-full bg-[var(--sg-shell-100)]" />
+          <div className="space-y-2">
+            <div className="h-10 w-full animate-pulse rounded-[var(--sg-radius-btn)] bg-[var(--sg-shell-100)]" />
+            <div className="h-9 w-full animate-pulse rounded-[var(--sg-radius-btn)] bg-[var(--sg-shell-100)]" />
+          </div>
+        </div>
+      </aside>
+
+      <div className="order-2 px-5 py-6 sm:px-8 sm:py-7 xl:order-1">
+        <div className="mx-auto max-w-[760px] space-y-6">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="space-y-3">
+              <div className="h-5 w-36 animate-pulse rounded-full bg-[var(--sg-shell-100)]" />
+              <div className="h-5 w-full animate-pulse rounded-full bg-[var(--sg-shell-100)]" />
+              <div className="h-5 w-4/5 animate-pulse rounded-full bg-[var(--sg-shell-100)]" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MissionEmptyState({
+  title,
+  description,
+  onBack,
+}: {
+  title: string;
+  description: string;
+  onBack: () => void;
+}) {
+  return (
+    <div className="px-5 py-8 sm:px-8 sm:py-10">
+      <div className="mx-auto max-w-[640px] space-y-5">
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold text-[var(--sg-shell-900)]">{title}</h2>
+          <p className="text-sm leading-7 text-[var(--sg-shell-500)]">{description}</p>
+        </div>
+
+        <Button variant="cta" size="sm" onClick={onBack}>
+          Back to Missions
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function LaunchRail({
+  state,
+  primaryLabel,
+  onPrimaryAction,
+  onSecondaryAction,
+  recommendedRoomName,
+  recommendedRoomSupport,
+  fallbackRoomName,
+  isLoading,
+  isCompleted,
+  workHref,
+}: {
+  state: MissionLandingState;
+  primaryLabel: string;
+  onPrimaryAction: () => void;
+  onSecondaryAction: (() => void) | null;
+  recommendedRoomName: string | null;
+  recommendedRoomSupport: string;
+  fallbackRoomName: string | null;
+  isLoading: boolean;
+  isCompleted: boolean;
+  workHref: string | null;
+}) {
+  const stateLabel =
+    state === "completed"
+      ? "Completed"
+      : state === "active"
+        ? "In progress"
+        : "Ready";
+
+  return (
+    <aside
+      className="order-1 border-b border-[var(--sg-shell-border)] px-5 py-5 sm:px-6 xl:order-2 xl:border-b-0 xl:border-l"
+      style={{
+        background: "color-mix(in srgb, var(--sg-shell-50) 74%, var(--sg-white) 26%)",
+      }}
+    >
+      <div className="space-y-6 xl:sticky xl:top-6">
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sg-shell-500)]">
+            {stateLabel}
+          </p>
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold text-[var(--sg-shell-900)]">
+              Best room fit
+            </h2>
+            <p className="text-sm leading-6 text-[var(--sg-shell-500)]">
+              {recommendedRoomSupport}
+            </p>
+          </div>
+        </div>
+
+        {recommendedRoomName ? (
+          <div className="space-y-2">
+            <p className="text-base font-semibold text-[var(--sg-shell-900)]">
+              {recommendedRoomName}
+            </p>
+            {fallbackRoomName && fallbackRoomName !== recommendedRoomName ? (
+              <p className="text-sm leading-6 text-[var(--sg-shell-500)]">
+                Also works well in {fallbackRoomName}.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className="space-y-3">
+          <Button
+            variant="cta"
+            size="sm"
+            fullWidth
+            rightIcon={<ArrowRight size={14} />}
+            onClick={onPrimaryAction}
+            loading={isLoading}
+          >
+            {primaryLabel}
+          </Button>
+
+          {onSecondaryAction ? (
+            <Button
+              variant="outline"
+              size="sm"
+              fullWidth
+              onClick={onSecondaryAction}
+            >
+              Choose another room
+            </Button>
+          ) : null}
+        </div>
+
+        {isCompleted ? (
+          <div className="space-y-2 border-t border-[var(--sg-shell-border)] pt-5">
+            {workHref ? (
+              <Link
+                href={workHref}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--sg-forest-500)] transition-colors hover:text-[var(--sg-shell-900)]"
+              >
+                View work
+                <ArrowRight size={14} />
+              </Link>
+            ) : null}
+
+            <Link
+              href={PROGRESS_ROUTE}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--sg-shell-600)] transition-colors hover:text-[var(--sg-shell-900)]"
+            >
+              Open Profile
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        ) : null}
+      </div>
+    </aside>
   );
 }
 
 export function MissionDetailPage({ pathId }: { pathId: string }) {
   const router = useRouter();
+  const [showRoomPicker, setShowRoomPicker] = useState(false);
+  const [isLaunchingRoom, setIsLaunchingRoom] = useState(false);
   const {
     path,
     progress,
     achievement,
-    currentItemIndex,
     isLoading,
     error,
-    completeItem,
-    advanceToItem,
-    isCompleted,
-    skillReceipt,
-  } = useLearnProgress(pathId);
+    availableRooms,
+    roomsLoading,
+    roomsError,
+    recommendedRoom,
+    fallbackRoom,
+    missionDomainLabel,
+  } = useMissionLandingPageData(pathId);
 
-  const { user } = useAuth();
-  const { profile } = useProfile();
-
-  const [showTransition, setShowTransition] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [showMissionCelebration, setShowMissionCelebration] = useState(false);
-  const [showRoomPicker, setShowRoomPicker] = useState(false);
-  const [isWideLayout, setIsWideLayout] = useState(
-    () => typeof window !== "undefined" && window.matchMedia(DESKTOP_LAYOUT_QUERY).matches,
+  const landingState = useMemo(
+    () => getMissionLandingState(progress),
+    [progress],
   );
-  const togglePlayRef = useRef<(() => void) | null>(null);
-
-  const currentItem = path?.items[currentItemIndex] ?? null;
-  const nextItem = path?.items[currentItemIndex + 1] ?? null;
-  const currentItemKey = currentItem
-    ? currentItem.item_id ?? currentItem.content_id ?? `idx-${currentItemIndex}`
+  const launchDomain = useMemo(
+    () => (path ? getMissionLaunchDomain(path) : null),
+    [path],
+  );
+  const framing = useMemo(
+    () => (path ? getMissionFraming(path, progress) : null),
+    [path, progress],
+  );
+  const whyItMatters = useMemo(
+    () => (path ? getMissionWhyItMatters(path, progress) : null),
+    [path, progress],
+  );
+  const outputTitle =
+    landingState === "completed" ? "What you made" : "What you'll make";
+  const outputLine = useMemo(
+    () => (path ? getMissionExpectedOutput(path, progress) : null),
+    [path, progress],
+  );
+  const useItems = useMemo(
+    () => (path ? buildMissionUseItems(path, progress) : []),
+    [path, progress],
+  );
+  const mapRows = useMemo(
+    () => (path ? buildMissionMapRows(path, progress) : []),
+    [path, progress],
+  );
+  const successCriteria = useMemo(
+    () => (path ? getMissionSuccessPreview(path, progress) : []),
+    [path, progress],
+  );
+  const headerMeta = useMemo(
+    () => (path ? formatMissionMetaLine(path, progress) : null),
+    [path, progress],
+  );
+  const primaryLabel =
+    landingState === "active" ? "Continue in Room" : "Start in Room";
+  const workHref =
+    achievement?.share_slug ? getProgressEvidenceRoute(achievement.share_slug) : null;
+  const recommendedRoomName = recommendedRoom
+    ? getPartyLaunchDisplayName(recommendedRoom)
     : null;
-  const isItemCompleted = currentItemKey
-    ? progress?.item_states?.[currentItemKey]?.completed ?? false
-    : false;
-  const artifactExpectation = path
-    ? getMissionExpectedOutput(path, progress)
-    : "A finished step you can carry into your next rep.";
-  const missionWorld = getWorldConfig(getMissionPageWorldKey(path ?? null));
-  const launchDomainLabel = path ? getMissionLaunchDomain(path).label : null;
-  const {
-    paths: recommendedPaths,
-    isLoading: recommendedPathsLoading,
-  } = usePostCompletionRecommendations({
-    path,
-    currentPathId: pathId,
-    enabled: isCompleted,
-  });
+  const recommendedRoomSupport =
+    recommendedRoom && !roomsLoading
+      ? getLaunchRoomMissionFitHint(recommendedRoom) ??
+        getPartyLaunchPickerDescription(recommendedRoom)
+      : roomsLoading
+        ? "Finding the best room for this mission."
+        : availableRooms.length > 0 && !roomsError
+          ? "Pick the room that feels right for this mission."
+          : "Browse rooms to find the right place to do this mission.";
+  const fallbackRoomName = fallbackRoom
+    ? getPartyLaunchDisplayName(fallbackRoom)
+    : null;
+  const showSecondaryAction = Boolean(
+    recommendedRoom && !roomsLoading && !roomsError && availableRooms.length > 0,
+  );
+  const primaryActionLoading = Boolean(path) && (roomsLoading || isLaunchingRoom);
+  const currentStep = path ? getMissionCurrentItem(path, progress) : null;
 
-  useEffect(() => {
-    const mql = window.matchMedia(DESKTOP_LAYOUT_QUERY);
+  const handlePrimaryAction = () => {
+    if (!path) return;
 
-    const handleChange = (event: MediaQueryListEvent) => {
-      setIsWideLayout(event.matches);
-    };
-
-    mql.addEventListener("change", handleChange);
-    return () => mql.removeEventListener("change", handleChange);
-  }, []);
-
-  const maybeRecordFirstMission = useCallback(() => {
-    if (!user || !profile) return;
-    if (profile.first_mission_completed_at) return;
-    if (!currentItem || currentItem.task_type !== "do") return;
-
-    setShowMissionCelebration(true);
-
-    const onboardedAt = profile.first_mission_completed_at
-      ? 0
-      : Math.floor((Date.now() - new Date(progress?.started_at ?? Date.now()).getTime()) / 60000);
-    trackFirstMissionCompleted(pathId, onboardedAt);
-
-    const supabase = createClient();
-    void supabase
-      .from("fp_profiles")
-      .update({ first_mission_completed_at: new Date().toISOString() })
-      .eq("id", user.id);
-  }, [currentItem, pathId, profile, progress?.started_at, user]);
-
-  const handleComplete = useCallback(async () => {
-    if (!currentItem || !currentItemKey) return;
-    await completeItem(currentItemKey);
-    maybeRecordFirstMission();
-
-    if (nextItem) {
-      setShowTransition(true);
-    }
-  }, [completeItem, currentItem, currentItemKey, maybeRecordFirstMission, nextItem]);
-
-  const handleCompleteWithState = useCallback(async (stateData: Partial<ItemState>) => {
-    if (!currentItem || !currentItemKey) return;
-    await completeItem(currentItemKey, stateData);
-    maybeRecordFirstMission();
-
-    if (nextItem) {
-      setShowTransition(true);
-    }
-  }, [completeItem, currentItem, currentItemKey, maybeRecordFirstMission, nextItem]);
-
-  const handleContinue = useCallback(() => {
-    setShowTransition(false);
-    if (nextItem) {
-      void advanceToItem(currentItemIndex + 1);
-    }
-  }, [advanceToItem, currentItemIndex, nextItem]);
-
-  const handleSelectItem = useCallback((index: number) => {
-    setShowTransition(false);
-    if (!isWideLayout) {
-      setSidebarOpen(false);
-    }
-    void advanceToItem(index);
-  }, [advanceToItem, isWideLayout]);
-
-  const renderStage = () => {
-    if (isLoading && !path) {
-      return (
-        <MissionPageStage>
-          <RoomStageScaffold
-            variant="missionPage"
-            eyebrow="Mission"
-            title="Loading mission"
-            description="Preparing the current step and mission map."
-            footerMeta="Mission · Loading"
-            contentClassName="max-w-[680px] space-y-4"
-          >
-            <RoomStagePanel className="flex items-center justify-center py-12">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-transparent" />
-            </RoomStagePanel>
-          </RoomStageScaffold>
-        </MissionPageStage>
-      );
+    if (recommendedRoom) {
+      setIsLaunchingRoom(true);
+      const href = prepareMissionRoomEntry({
+        party: recommendedRoom,
+        path,
+        missionDomainLabel,
+      });
+      router.push(href);
+      return;
     }
 
-    if (error || !path) {
-      return (
-        <MissionPageStage>
-          <RoomStageScaffold
-            variant="missionPage"
-            eyebrow="Mission"
-            title="Couldn’t load this mission"
-            description={error ?? "Try opening it again from Missions."}
-            footerMeta="Mission · Unavailable"
-            primaryAction={
-              <Button variant="cta" size="sm" onClick={() => router.push("/missions")}>
-                Back to Missions
-              </Button>
-            }
-            contentClassName="max-w-[680px] space-y-4"
-          >
-            <RoomStagePanel className="space-y-2 text-center">
-              <p className="text-sm leading-6 text-white/55">
-                The mission content couldn&apos;t be prepared right now.
-              </p>
-            </RoomStagePanel>
-          </RoomStageScaffold>
-        </MissionPageStage>
-      );
+    if (!roomsLoading && !roomsError && availableRooms.length > 0) {
+      setShowRoomPicker(true);
+      return;
     }
 
-    if (isCompleted) {
-      return (
-        <MissionPageStage>
-          <RoomStageScaffold
-            variant="missionPage"
-            eyebrow="Mission complete"
-            title="Mission complete"
-            description="Your completed work, evidence, and capability snapshot are ready."
-            footerMeta="Mission · Completed"
-            primaryAction={
-              <Button variant="cta" size="sm" onClick={() => router.push("/progress")}>
-                View Progress
-              </Button>
-            }
-            secondaryAction={
-              <RoomStageSecondaryButton onClick={() => router.push("/missions")}>
-                More Missions
-              </RoomStageSecondaryButton>
-            }
-            contentClassName="max-w-[980px] space-y-5"
-          >
-            <MissionCompletionSummary
-              path={path}
-              progress={progress}
-              achievement={achievement}
-              skillReceipt={skillReceipt}
-              artifactExpectation={artifactExpectation}
-              recommendedPaths={recommendedPaths}
-              recommendationsLoading={recommendedPathsLoading}
-              variant="standalone"
-            />
-
-            <div className="flex justify-start">
-              <Button variant="link" size="sm" onClick={() => router.push("/rooms")}>
-                Browse Rooms
-              </Button>
-            </div>
-          </RoomStageScaffold>
-        </MissionPageStage>
-      );
-    }
-
-    if (showTransition && nextItem) {
-      return (
-        <MissionPageStage>
-          <RoomStageScaffold
-            variant="missionPage"
-            eyebrow="Up next"
-            title={nextItem.title}
-            description={nextItem.connective_text ?? "This is the next step waiting in the mission."}
-            footerMeta={`${getStepLabel(nextItem)} · Ready when you are`}
-            primaryAction={
-              <Button
-                variant="cta"
-                size="sm"
-                rightIcon={<ArrowRight size={14} />}
-                onClick={handleContinue}
-              >
-                Continue
-              </Button>
-            }
-            secondaryAction={
-              <RoomStageSecondaryButton onClick={() => setShowTransition(false)}>
-                Back to mission
-              </RoomStageSecondaryButton>
-            }
-            contentClassName="max-w-[760px] space-y-4"
-          >
-            <RoomStagePanel className="space-y-3 text-center">
-              <div className="flex items-center justify-center">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-xs text-white/50">
-                  {getStepIcon(nextItem)}
-                  {getStepLabel(nextItem)}
-                </div>
-              </div>
-              <p className="text-sm leading-6 text-white/55">
-                Keep moving straight into the next step from here.
-              </p>
-            </RoomStagePanel>
-          </RoomStageScaffold>
-        </MissionPageStage>
-      );
-    }
-
-    if (currentItem) {
-      return (
-        <MissionPageStage>
-          <ContentViewer
-            item={currentItem}
-            isCompleted={isItemCompleted}
-            onComplete={handleComplete}
-            onCompleteWithState={handleCompleteWithState}
-            variant="missionPage"
-            onPlayStateChange={setIsPlaying}
-            togglePlayRef={togglePlayRef}
-          />
-        </MissionPageStage>
-      );
-    }
-
-    return (
-      <MissionPageStage>
-        <RoomStageScaffold
-          variant="missionPage"
-          eyebrow="Mission"
-          title={path.title}
-          description="This mission doesn’t have any steps yet."
-          footerMeta="Mission · Empty"
-          primaryAction={
-            <Button variant="cta" size="sm" onClick={() => router.push("/missions")}>
-              Back to Missions
-            </Button>
-          }
-          contentClassName="max-w-[680px] space-y-4"
-        >
-          <RoomStagePanel className="space-y-2 text-center">
-            <p className="text-sm leading-6 text-white/55">
-              Try another mission while this one is being prepared.
-            </p>
-          </RoomStagePanel>
-        </RoomStageScaffold>
-      </MissionPageStage>
-    );
+    router.push(ROOMS_ROUTE);
   };
 
-  const pageTitle = path?.title ?? "Mission";
-
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-[var(--sg-forest-900)]">
-      <div className="absolute inset-0">
+    <div className="relative min-h-screen overflow-hidden bg-[var(--sg-shell-50)]">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-[280px]"
+        style={{
+          background:
+            "linear-gradient(180deg, color-mix(in srgb, var(--sg-sage-100) 52%, var(--sg-white) 48%) 0%, color-mix(in srgb, var(--sg-shell-50) 82%, var(--sg-white) 18%) 72%, transparent 100%)",
+        }}
+      />
+
+      <div className="relative mx-auto max-w-[1180px] px-4 py-6 sm:px-6 sm:py-8">
         <div
-          className="absolute inset-0"
-          style={{ background: missionWorld.placeholderGradient }}
-        />
-        {missionWorld.placeholderPattern ? (
-          <div
-            className="absolute inset-0 opacity-75"
-            style={{
-              backgroundImage: missionWorld.placeholderPattern,
-              backgroundSize: "20px 20px",
-            }}
-          />
-        ) : null}
-        <div
-          className="absolute inset-0"
-          style={{ background: missionWorld.environmentOverlay }}
-        />
-      </div>
-
-      <div className="relative z-10 flex h-full flex-col">
-      <header className="relative z-10 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4 md:px-6 md:pt-6">
-        <div className="justify-self-start">
-          <MissionPageUtilityButton
-            leftIcon={<ArrowLeft size={15} strokeWidth={2} />}
-            onClick={() => router.push("/missions")}
-          >
-            Missions
-          </MissionPageUtilityButton>
-        </div>
-
-        <div className="min-w-0 px-2">
-          <div className="space-y-1 text-center">
-            <h1 className="truncate text-sm font-medium text-white/90">
-              {pageTitle}
-            </h1>
-            {launchDomainLabel ? (
-              <p className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">
-                {launchDomainLabel}
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="justify-self-end">
-          {path ? (
-            <MissionPageUtilityButton onClick={() => setShowRoomPicker(true)}>
-              Enter room
-            </MissionPageUtilityButton>
-          ) : null}
-        </div>
-      </header>
-
-      <div className="relative flex-1 min-h-0 overflow-hidden px-4 pb-4 md:px-6 md:pb-6">
-        {!isWideLayout && sidebarOpen ? (
-          <button
-            type="button"
-            aria-label="Close mission map"
-            onClick={() => setSidebarOpen(false)}
-            className="absolute inset-0 z-10 bg-black/30"
-          />
-        ) : null}
-
-        <div className="flex h-full gap-4">
-          <div className="relative min-w-0 flex-1">
-            {path ? (
-              <div className="absolute right-4 top-4 z-20">
-              <MissionPageUtilityButton
-                onClick={() => setSidebarOpen((open) => !open)}
-                leftIcon={<PanelsTopLeft size={14} />}
-                active={sidebarOpen}
-                aria-expanded={sidebarOpen}
-                aria-controls="standalone-mission-map"
-              >
-                Map
-              </MissionPageUtilityButton>
+          className="overflow-hidden rounded-[var(--sg-radius-xl)] border border-[var(--sg-shell-border)]"
+          style={{
+            background:
+              "color-mix(in srgb, var(--sg-white) 94%, var(--sg-cream-50) 6%)",
+            boxShadow: "var(--shadow-float)",
+          }}
+        >
+          <header className="border-b border-[var(--sg-shell-border)] px-5 py-5 sm:px-8 sm:py-7">
+            <div className="space-y-6">
+              <div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<ArrowLeft size={14} />}
+                  onClick={() => router.push(MISSIONS_ROUTE)}
+                >
+                  Missions
+                </Button>
               </div>
-            ) : null}
 
-            <div className="h-full overflow-y-auto">
-              {renderStage()}
+              <div className="max-w-[760px] space-y-2">
+                {launchDomain ? (
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sg-shell-500)]">
+                    {launchDomain.label}
+                  </p>
+                ) : null}
+
+                <h1
+                  className="text-[2rem] leading-[1.04] text-[var(--sg-shell-900)] sm:text-[2.6rem]"
+                  style={{
+                    fontFamily: "var(--font-display), 'Fraunces', Georgia, serif",
+                  }}
+                >
+                  {path?.title ?? "Mission"}
+                </h1>
+
+                {headerMeta ? (
+                  <p className="text-sm leading-6 text-[var(--sg-shell-500)]">
+                    {headerMeta}
+                  </p>
+                ) : null}
+              </div>
             </div>
-          </div>
+          </header>
 
-          {isWideLayout && sidebarOpen ? (
-            <aside
-              id="standalone-mission-map"
-              className="flex h-full w-[380px] shrink-0 flex-col rounded-[var(--sg-radius-xl)] border border-white/[0.08]"
-              style={{
-                background: "color-mix(in srgb, var(--sg-forest-900) 78%, transparent)",
-                backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)",
-                boxShadow: "var(--sg-shadow-dark-md)",
-              }}
-              role="complementary"
-              aria-label="Mission map"
-            >
-              <PanelHeader
-                title="Mission Map"
-                onClose={() => setSidebarOpen(false)}
+          {isLoading ? (
+            <MissionLandingSkeleton />
+          ) : error || !path ? (
+            <MissionEmptyState
+              title="Couldn’t load this mission"
+              description={error ?? "Try opening it again from Missions."}
+              onBack={() => router.push(MISSIONS_ROUTE)}
+            />
+          ) : (
+            <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_20rem]">
+              <LaunchRail
+                state={landingState}
+                primaryLabel={primaryLabel}
+                onPrimaryAction={handlePrimaryAction}
+                onSecondaryAction={
+                  showSecondaryAction ? () => setShowRoomPicker(true) : null
+                }
+                recommendedRoomName={recommendedRoomName}
+                recommendedRoomSupport={recommendedRoomSupport}
+                fallbackRoomName={fallbackRoomName}
+                isLoading={primaryActionLoading}
+                isCompleted={landingState === "completed"}
+                workHref={workHref}
               />
 
-              <div className="min-h-0 flex-1">
-                {path ? (
-                  <PathSidebar
-                    path={path}
-                    progress={progress}
-                    currentItemIndex={currentItemIndex}
-                    onSelectItem={handleSelectItem}
-                    isPlaying={isPlaying}
-                    onTogglePlay={() => togglePlayRef.current?.()}
-                    title={null}
-                    showSkills={false}
-                  />
-                ) : null}
+              <div className="order-2 px-5 py-6 sm:px-8 sm:py-7 xl:order-1">
+                <div className="mx-auto max-w-[760px] space-y-6">
+                  <MissionSection title="Mission framing">
+                    <div className="space-y-3">
+                      {framing ? (
+                        <p className="text-lg leading-8 text-[var(--sg-shell-900)]">
+                          {framing}
+                        </p>
+                      ) : null}
+
+                      {whyItMatters ? (
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--sg-shell-500)]">
+                            Why it matters
+                          </p>
+                          <p className="text-sm leading-7 text-[var(--sg-shell-600)]">
+                            {whyItMatters}
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
+                  </MissionSection>
+
+                  <MissionSection title={outputTitle}>
+                    <p className="text-lg leading-8 text-[var(--sg-shell-900)]">
+                      {outputLine}
+                    </p>
+                  </MissionSection>
+
+                  {useItems.length > 0 ? (
+                    <MissionSection title="What you'll use">
+                      <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                        {useItems.map((item) => (
+                          <div key={item.label} className="space-y-1">
+                            <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--sg-shell-500)]">
+                              {item.label}
+                            </dt>
+                            <dd className="text-sm leading-6 text-[var(--sg-shell-700)]">
+                              {item.value}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </MissionSection>
+                  ) : null}
+
+                  <MissionSection title="Mission map">
+                    <div className="space-y-3">
+                      <p className="text-sm leading-6 text-[var(--sg-shell-500)]">
+                        A quiet outline of what&apos;s ahead.
+                      </p>
+                      <MissionMapPreview rows={mapRows} />
+                    </div>
+                  </MissionSection>
+
+                  <MissionSection title="What good looks like">
+                    <div className="space-y-3">
+                      <ul className="space-y-3">
+                        {successCriteria.map((criterion) => (
+                          <li
+                            key={criterion}
+                            className="flex items-start gap-3 text-sm leading-6 text-[var(--sg-shell-700)]"
+                          >
+                            <CheckCircle2
+                              size={16}
+                              className="mt-1 shrink-0 text-[var(--sg-forest-500)]"
+                            />
+                            <span>{criterion}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {landingState === "active" && currentStep ? (
+                        <p className="text-sm leading-6 text-[var(--sg-shell-500)]">
+                          Current step in room: {currentStep.title}
+                        </p>
+                      ) : null}
+                    </div>
+                  </MissionSection>
+                </div>
               </div>
-            </aside>
-          ) : null}
+            </div>
+          )}
         </div>
-
-        {!isWideLayout ? (
-          <div
-            className="absolute right-0 top-0 z-20 h-full transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-            style={{
-              width: sidebarOpen ? "min(380px, calc(100vw - 24px))" : 0,
-              overflow: "hidden",
-            }}
-          >
-            <aside
-              id="standalone-mission-map"
-              className="mr-4 flex h-full flex-col rounded-[var(--sg-radius-xl)] border border-white/[0.08]"
-              style={{
-                width: "min(380px, calc(100vw - 24px))",
-                background: "color-mix(in srgb, var(--sg-forest-900) 78%, transparent)",
-                backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)",
-                boxShadow: "var(--sg-shadow-dark-md)",
-              }}
-              role="complementary"
-              aria-label="Mission map"
-            >
-              <PanelHeader
-                title="Mission Map"
-                onClose={() => setSidebarOpen(false)}
-              />
-
-              <div className="min-h-0 flex-1">
-                {path ? (
-                  <PathSidebar
-                    path={path}
-                    progress={progress}
-                    currentItemIndex={currentItemIndex}
-                    onSelectItem={handleSelectItem}
-                    isPlaying={isPlaying}
-                    onTogglePlay={() => togglePlayRef.current?.()}
-                    title={null}
-                    showSkills={false}
-                  />
-                ) : null}
-              </div>
-            </aside>
-          </div>
-        ) : null}
-      </div>
       </div>
 
-      <AdjustAnytimeBanner />
-      <FirstPathTooltip />
       {path && showRoomPicker ? (
         <MissionRoomPickerModal
           isOpen={showRoomPicker}
           onClose={() => setShowRoomPicker(false)}
           path={path}
-          progress={progress}
         />
-      ) : null}
-      {showMissionCelebration ? (
-        <MissionCelebration onDismiss={() => setShowMissionCelebration(false)} />
-      ) : null}
-      {isCompleted && path ? (
-        <RoomBridge topicName={getMissionLaunchDomainShortLabel(path)} />
       ) : null}
     </div>
   );
