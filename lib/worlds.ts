@@ -137,12 +137,27 @@ export function getWorldConfig(worldKey: string): WorldConfig {
 }
 
 /**
+ * Resolve the compatibility world/runtime profile for a party.
+ * Phase A launch rooms can expose a different user-facing identity while
+ * still pointing breaks, synthetics, hosts, and visuals at a legacy profile.
+ */
+export function getPartyRuntimeWorldKey(party: {
+  runtime_profile_key?: string | null;
+  world_key?: string | null;
+} | null | undefined): string {
+  if (party?.runtime_profile_key) return party.runtime_profile_key;
+  if (party?.world_key) return party.world_key;
+  return "default";
+}
+
+/**
  * Resolve the effective host personality for a party.
  * Uses the party's explicit host_personality if set and non-default,
  * otherwise falls back to the world's default host personality.
  */
 export function getPartyHostPersonality(party: {
   host_personality?: string | null;
+  runtime_profile_key?: string | null;
   world_key?: string | null;
 }): string {
   // If party has an explicit personality set, use it
@@ -150,6 +165,6 @@ export function getPartyHostPersonality(party: {
     return party.host_personality;
   }
   // Otherwise inherit from the world config
-  const world = getWorldConfig(party.world_key ?? "default");
+  const world = getWorldConfig(getPartyRuntimeWorldKey(party));
   return world.hostPersonality;
 }

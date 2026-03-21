@@ -1,9 +1,9 @@
 "use client";
 
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { SearchDropdown } from "@/components/learn/SearchDropdown";
 import { PathCardSkeleton } from "@/components/learn/PathCardSkeleton";
@@ -13,7 +13,7 @@ import { useSkillProfile } from "@/lib/useSkillProfile";
 import { getMissionRoute } from "@/lib/appRoutes";
 import { MissionCard } from "@/components/missions/MissionCard";
 import { getWorldConfig } from "@/lib/worlds";
-import type { LearningProgress } from "@/lib/types";
+import type { LearningPath, LearningProgress } from "@/lib/types";
 
 const POPULAR_TOPICS = [
   "prompt engineering",
@@ -23,6 +23,181 @@ const POPULAR_TOPICS = [
   "sql",
   "automation",
 ] as const;
+
+interface CategoryDef {
+  value: string;
+  label: string;
+  topics: string[];
+}
+
+const CATEGORIES: CategoryDef[] = [
+  { value: "all", label: "All Categories", topics: [] },
+  { value: "in-progress", label: "In Progress", topics: [] },
+  {
+    value: "ai-fundamentals",
+    label: "AI Fundamentals",
+    topics: [
+      "prompt-engineering",
+      "ai-models",
+      "llm",
+      "machine-learning",
+      "deep-learning",
+      "neural-networks",
+      "transformers",
+      "embeddings",
+      "fine-tuning",
+      "ai-safety",
+      "ai-ethics",
+    ],
+  },
+  {
+    value: "engineering",
+    label: "Engineering",
+    topics: [
+      "ai-coding",
+      "cursor",
+      "copilot",
+      "github-copilot",
+      "nextjs",
+      "react",
+      "typescript",
+      "python",
+      "javascript",
+      "system-design",
+      "web-development",
+      "full-stack",
+      "backend",
+      "frontend",
+      "devops",
+      "testing",
+      "apis",
+    ],
+  },
+  {
+    value: "data",
+    label: "Data & Analytics",
+    topics: [
+      "rag",
+      "vector-databases",
+      "supabase",
+      "postgresql",
+      "sql",
+      "data-science",
+      "data-engineering",
+      "analytics",
+      "visualization",
+      "pandas",
+      "jupyter",
+    ],
+  },
+  {
+    value: "agents-automation",
+    label: "Agents & Automation",
+    topics: [
+      "ai-agents",
+      "langchain",
+      "langgraph",
+      "crewai",
+      "autogen",
+      "n8n",
+      "zapier",
+      "make",
+      "automation",
+      "workflows",
+      "mcp",
+      "function-calling",
+      "tool-use",
+    ],
+  },
+  {
+    value: "tools",
+    label: "Tools & Platforms",
+    topics: [
+      "openai-api",
+      "claude",
+      "anthropic",
+      "chatgpt",
+      "midjourney",
+      "v0",
+      "bolt",
+      "replit",
+      "vercel",
+      "figma",
+      "notion",
+      "perplexity",
+    ],
+  },
+  {
+    value: "product-design",
+    label: "Product & Design",
+    topics: [
+      "product-management",
+      "ux-design",
+      "ui-design",
+      "prototyping",
+      "design-systems",
+      "user-research",
+      "ai-design",
+    ],
+  },
+  {
+    value: "marketing",
+    label: "Marketing & Content",
+    topics: [
+      "content-strategy",
+      "seo",
+      "copywriting",
+      "social-media",
+      "email-marketing",
+      "ai-writing",
+      "content-creation",
+      "branding",
+    ],
+  },
+];
+
+const TOPIC_TO_CATEGORIES = new Map<string, Set<string>>();
+for (const category of CATEGORIES) {
+  for (const topic of category.topics) {
+    if (!TOPIC_TO_CATEGORIES.has(topic)) {
+      TOPIC_TO_CATEGORIES.set(topic, new Set());
+    }
+    TOPIC_TO_CATEGORIES.get(topic)?.add(category.value);
+  }
+}
+
+function pathMatchesCategory(path: LearningPath, categoryValue: string): boolean {
+  if (categoryValue === "all") return true;
+  return path.topics.some((topic) => TOPIC_TO_CATEGORIES.get(topic)?.has(categoryValue));
+}
+
+type SortOption =
+  | "recommended"
+  | "newest"
+  | "popular"
+  | "shortest"
+  | "longest"
+  | "beginner-first"
+  | "advanced-first";
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "recommended", label: "Recommended" },
+  { value: "newest", label: "Newest" },
+  { value: "popular", label: "Popular" },
+  { value: "shortest", label: "Shortest" },
+  { value: "longest", label: "Longest" },
+  { value: "beginner-first", label: "Beginner First" },
+  { value: "advanced-first", label: "Advanced First" },
+];
+
+const DISCOVERY_SELECT_CLASS_NAME =
+  "cursor-pointer appearance-none rounded-full border border-shell-border bg-shell-50 px-4 py-2 pr-8 text-sm text-shell-600 transition-colors hover:border-forest-400 focus:border-forest-400 focus:outline-none";
+
+const DIFFICULTY_ORDER: Record<string, number> = {
+  beginner: 0,
+  intermediate: 1,
+  advanced: 2,
+};
 
 export function MissionsPage() {
   const router = useRouter();
@@ -43,6 +218,8 @@ export function MissionsPage() {
   const generation = usePathGeneration();
   const { achievements } = useSkillProfile();
 
+  const [category, setCategory] = useState("all");
+  const [sort, setSort] = useState<SortOption>("recommended");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -81,17 +258,12 @@ export function MissionsPage() {
     [achievements],
   );
 
-  const activePathIds = useMemo(
-    () => new Set(inProgressPaths.map((mission) => mission.path.id)),
-    [inProgressPaths],
-  );
-
-  const recommendedPaths = useMemo(() => {
-    const eligiblePaths = discoveryPaths.filter(
-      (path) => !activePathIds.has(path.id) && !completedPathIds.has(path.id),
-    );
-    return eligiblePaths.slice(0, 4);
-  }, [activePathIds, completedPathIds, discoveryPaths]);
+  const allPaths = useMemo(() => {
+    const inProgressIds = new Set(inProgressPaths.map(({ path }) => path.id));
+    const activePaths = inProgressPaths.map(({ path }) => path);
+    const otherPaths = discoveryPaths.filter((path) => !inProgressIds.has(path.id));
+    return [...activePaths, ...otherPaths];
+  }, [discoveryPaths, inProgressPaths]);
 
   const activeMission = inProgressPaths[0] ?? null;
   const searchMode = query.trim().length > 0;
@@ -108,6 +280,61 @@ export function MissionsPage() {
     filteredSearchResults.length - visibleSearchResults.length,
     0,
   );
+  const visibleCategories = useMemo(
+    () => CATEGORIES.filter((option) => option.value !== "in-progress" || inProgressPaths.length > 0),
+    [inProgressPaths.length],
+  );
+  const filteredDiscoveryPaths = useMemo(() => {
+    let paths = allPaths.filter((path) => !completedPathIds.has(path.id));
+
+    if (category === "in-progress") {
+      paths = paths.filter((path) => progressMap.has(path.id));
+    } else if (category !== "all") {
+      paths = paths.filter((path) => pathMatchesCategory(path, category));
+    }
+
+    if (inProgressPaths.length > 0 && category !== "in-progress") {
+      const inProgressIds = new Set(inProgressPaths.map(({ path }) => path.id));
+      paths = paths.filter((path) => !inProgressIds.has(path.id));
+    }
+
+    return paths;
+  }, [allPaths, category, completedPathIds, inProgressPaths, progressMap]);
+  const sortedDiscoveryPaths = useMemo(() => {
+    const paths = [...filteredDiscoveryPaths];
+
+    switch (sort) {
+      case "newest":
+        return paths.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+      case "popular":
+        return paths.sort((a, b) => (b.start_count ?? 0) - (a.start_count ?? 0));
+      case "shortest":
+        return paths.sort(
+          (a, b) => a.estimated_duration_seconds - b.estimated_duration_seconds,
+        );
+      case "longest":
+        return paths.sort(
+          (a, b) => b.estimated_duration_seconds - a.estimated_duration_seconds,
+        );
+      case "beginner-first":
+        return paths.sort(
+          (a, b) =>
+            (DIFFICULTY_ORDER[a.difficulty_level] ?? 1) -
+            (DIFFICULTY_ORDER[b.difficulty_level] ?? 1),
+        );
+      case "advanced-first":
+        return paths.sort(
+          (a, b) =>
+            (DIFFICULTY_ORDER[b.difficulty_level] ?? 1) -
+            (DIFFICULTY_ORDER[a.difficulty_level] ?? 1),
+        );
+      case "recommended":
+      default:
+        return paths;
+    }
+  }, [filteredDiscoveryPaths, sort]);
 
   const handleSelectPath = useCallback(
     (pathId: string) => {
@@ -275,28 +502,73 @@ export function MissionsPage() {
       )}
 
       <div className="space-y-6">
-        {activeMission && (
-          <section className="space-y-3">
+        {inProgressPaths.length > 0 && (
+          <section>
             <SectionHeader
-              title="Active Mission"
-              description="The work already in motion stays at the top of the page."
+              title="My Missions"
             />
-            <MissionCard
-              path={activeMission.path}
-              progress={activeMission.progress}
-              featured
-            />
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {inProgressPaths.map(({ path, progress }) => (
+                <MissionCard
+                  key={path.id}
+                  path={path}
+                  progress={progress}
+                  compact
+                  cleanFrame
+                />
+              ))}
+            </div>
           </section>
         )}
 
-        <section className="space-y-3">
+        <section>
           <SectionHeader
-            title={searchMode ? "Mission Matches" : activeMission ? "Recommended Next" : "Start A Mission"}
-            description={
-              searchMode
-                ? "A short set of relevant matches, without turning search into a long list."
-                : "Clear starts you can pick up quickly and carry into a room when you want momentum."
-            }
+            title={searchMode ? "Mission Matches" : activeMission ? "Discovery What's Next" : "Start A Mission"}
+            description={searchMode
+              ? "A short set of relevant matches, without turning search into a long list."
+              : activeMission
+                ? undefined
+                : "Clear starts you can pick up quickly and carry into a room when you want momentum."}
+            actions={!searchMode ? (
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <select
+                    value={category}
+                    onChange={(event) => setCategory(event.target.value)}
+                    className={DISCOVERY_SELECT_CLASS_NAME}
+                  >
+                    {visibleCategories.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={14}
+                    strokeWidth={1.5}
+                    className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-shell-500"
+                  />
+                </div>
+                <div className="relative">
+                  <select
+                    value={sort}
+                    onChange={(event) => setSort(event.target.value as SortOption)}
+                    className={DISCOVERY_SELECT_CLASS_NAME}
+                  >
+                    {SORT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={14}
+                    strokeWidth={1.5}
+                    className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-shell-500"
+                  />
+                </div>
+              </div>
+            ) : undefined}
           />
 
           {searchMode ? (
@@ -304,13 +576,14 @@ export function MissionsPage() {
               <MissionCardSkeletonGrid count={2} />
             ) : visibleSearchResults.length > 0 ? (
               <>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {visibleSearchResults.map((path) => (
                     <MissionCard
                       key={path.id}
                       path={path}
                       progress={progressMap.get(path.id) ?? null}
                       compact
+                      cleanFrame
                     />
                   ))}
                 </div>
@@ -328,16 +601,27 @@ export function MissionsPage() {
             )
           ) : isLoading ? (
             <MissionCardSkeletonGrid count={activeMission ? 2 : 3} />
-          ) : recommendedPaths.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {recommendedPaths.map((path) => (
+          ) : sortedDiscoveryPaths.length > 0 ? (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {sortedDiscoveryPaths.map((path) => (
                 <MissionCard
                   key={path.id}
                   path={path}
                   compact
+                  cleanFrame
                 />
               ))}
             </div>
+          ) : category === "in-progress" ? (
+            <EmptySectionState
+              title="No missions in progress yet"
+              description="Start a mission to track visible progress."
+            />
+          ) : category !== "all" ? (
+            <EmptySectionState
+              title="No missions found in this category yet"
+              description="Try another category or search for a specific workflow."
+            />
           ) : (
             <EmptySectionState
               title="No new missions surfaced yet"
@@ -354,18 +638,46 @@ export function MissionsPage() {
 function SectionHeader({
   title,
   description,
+  actions,
 }: {
   title: string;
-  description: string;
+  description?: string;
+  actions?: ReactNode;
 }) {
+  if (!description) {
+    return (
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <h2 className="text-xl font-bold text-shell-900">
+          {title}
+        </h2>
+        {actions ? (
+          <div className="shrink-0">
+            {actions}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-1">
-      <h2 className="text-lg font-semibold text-shell-900">
-        {title}
-      </h2>
-      <p className="text-sm text-shell-500">
-        {description}
-      </p>
+    <div className="mb-6">
+      <div className={`flex justify-between gap-4 ${description ? "items-start" : "items-center"}`}>
+        <div className="space-y-1">
+          <h2 className="text-xl font-bold text-shell-900">
+            {title}
+          </h2>
+          {description ? (
+            <p className="text-sm text-shell-500">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        {actions ? (
+          <div className="shrink-0">
+            {actions}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -393,7 +705,7 @@ function EmptySectionState({
 
 function MissionCardSkeletonGrid({ count }: { count: number }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: count }).map((_, index) => (
         <PathCardSkeleton key={index} />
       ))}

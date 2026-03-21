@@ -1,18 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Bookmark,
   BookmarkCheck,
-  PanelsTopLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getMissionRoute } from "@/lib/appRoutes";
 import {
   getMissionFraming,
-  getMissionNextAction,
   getMissionPrimaryArea,
   getMissionProgressSummary,
   getMissionRepSummary,
@@ -22,7 +19,6 @@ import {
 } from "@/lib/missionPresentation";
 import type { LearningPath, LearningProgress } from "@/lib/types";
 import { PathCardFrame } from "@/components/learn/PathCardFrame";
-import { MissionRoomPickerModal } from "@/components/missions/MissionRoomPickerModal";
 
 interface MissionCardProps {
   path: LearningPath;
@@ -30,35 +26,10 @@ interface MissionCardProps {
   isSaved?: boolean;
   featured?: boolean;
   compact?: boolean;
+  cleanFrame?: boolean;
   onToggleSave?: (path: LearningPath) => void;
   className?: string;
 }
-
-const STATE_STYLES: Record<
-  MissionUiState,
-  { background: string; border: string; color: string }
-> = {
-  ready: {
-    background: "var(--sg-shell-100)",
-    border: "var(--sg-shell-border)",
-    color: "var(--sg-shell-700)",
-  },
-  saved: {
-    background: "var(--sg-shell-100)",
-    border: "var(--sg-shell-border)",
-    color: "var(--sg-shell-700)",
-  },
-  active: {
-    background: "var(--sg-forest-50)",
-    border: "var(--sg-forest-200)",
-    color: "var(--sg-forest-600)",
-  },
-  completed: {
-    background: "var(--sg-gold-100)",
-    border: "var(--sg-gold-200)",
-    color: "var(--sg-gold-900)",
-  },
-};
 
 /**
  * Mission-first card used on missions surfaces to emphasize work, output, and
@@ -70,28 +41,25 @@ export function MissionCard({
   isSaved = false,
   featured = false,
   compact = false,
+  cleanFrame = false,
   onToggleSave,
   className = "",
 }: MissionCardProps) {
   const router = useRouter();
-  const [showRoomPicker, setShowRoomPicker] = useState(false);
   const area = getMissionPrimaryArea(path);
   const state = getMissionUiState(progress, isSaved);
   const stateLabel = getMissionStateLabel(progress, isSaved);
   const framing = getMissionFraming(path, progress);
-  const nextAction = getMissionNextAction(path, progress);
   const progressSummary = getMissionProgressSummary(progress);
   const effortSummary = getMissionRepSummary(path);
   const contextSignal = area.detail ?? area.label;
+  const isActiveCard = state === "active";
   const supportLine =
-    state === "active"
-      ? nextAction
-      : state === "completed"
-        ? "Outcome captured and ready to review."
-        : framing;
-  const metaLine = state === "active" ? progressSummary : effortSummary;
-  const primaryLabel =
-    state === "active" ? "Resume" : state === "completed" ? "Open" : "Start";
+    state === "completed"
+      ? "Outcome captured and ready to review."
+      : framing;
+  const metaLine = isActiveCard ? null : effortSummary;
+  const primaryLabel = state === "completed" ? "Open" : "Start";
   const percentComplete =
     progress && progress.items_total > 0
       ? Math.round((progress.items_completed / progress.items_total) * 100)
@@ -122,6 +90,7 @@ export function MissionCard({
           path={path}
           coverHeight={featured ? "h-[224px]" : "h-[200px]"}
           coverSizes={featured ? "(max-width: 1024px) 100vw, 720px" : "(max-width: 640px) 100vw, 400px"}
+          className={cleanFrame ? "border-transparent shadow-none hover:shadow-none" : ""}
           badge={(
             <OverlayPill
               tone={state !== "ready" ? state : "context"}
@@ -190,7 +159,7 @@ export function MissionCard({
             ) : null
           }
           style={
-            featured
+            featured && !cleanFrame
               ? {
                   borderColor: "var(--sg-forest-200)",
                 }
@@ -198,62 +167,35 @@ export function MissionCard({
           }
         />
 
-        <div className="space-y-1.5 px-1 pt-2">
-          <h3
-            className={`font-semibold leading-snug text-shell-900 ${
-              featured ? "text-lg sm:text-xl" : compact ? "text-sm" : "text-base"
-            } ${featured ? "line-clamp-2" : "line-clamp-2"}`}
-          >
-            {path.title}
-          </h3>
+        <div className="px-1 pt-2">
+          <div className="space-y-0.5">
+            <h3 className={`${compact ? "line-clamp-1" : "line-clamp-2"} text-sm font-semibold leading-snug text-shell-900`}>
+              {path.title}
+            </h3>
 
-          {supportLine ? (
-            <p
-              className={`text-sm leading-6 text-shell-600 ${
-                compact ? "line-clamp-1" : "line-clamp-2"
-              }`}
-            >
-              {supportLine}
-            </p>
-          ) : null}
-
-          <div className="flex items-center justify-between gap-3">
-            <p className="min-w-0 truncate text-xs text-shell-500">
-              {metaLine}
-            </p>
-
-            <div className="flex shrink-0 items-center gap-3">
-              {state === "active" ? (
-                <button
-                  type="button"
-                  className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-shell-500 transition-colors hover:text-shell-900"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setShowRoomPicker(true);
-                  }}
-                >
-                  <PanelsTopLeft size={12} />
-                  Enter room
-                </button>
-              ) : null}
-
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-shell-700 transition-transform duration-150 group-hover/mission:translate-x-0.5">
-                {primaryLabel}
-                <ArrowRight size={14} strokeWidth={1.9} />
-              </span>
-            </div>
+            {supportLine ? (
+              <p className="mt-0.5 line-clamp-1 text-xs text-shell-500">
+                {supportLine}
+              </p>
+            ) : null}
           </div>
+
+          {!cleanFrame && !isActiveCard && metaLine ? (
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <p className="min-w-0 truncate text-xs text-shell-500">
+                {metaLine}
+              </p>
+
+              <div className="flex shrink-0 items-center gap-3">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-shell-700 transition-transform duration-150 group-hover/mission:translate-x-0.5">
+                  {primaryLabel}
+                  <ArrowRight size={14} strokeWidth={1.9} />
+                </span>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
-
-      {showRoomPicker ? (
-        <MissionRoomPickerModal
-          isOpen={showRoomPicker}
-          onClose={() => setShowRoomPicker(false)}
-          path={path}
-          progress={progress}
-        />
-      ) : null}
     </>
   );
 }
@@ -265,18 +207,21 @@ function OverlayPill({
   children: string;
   tone: MissionUiState | "context";
 }) {
-  const color =
-    tone === "context"
-      ? "var(--sg-white)"
-      : STATE_STYLES[tone].color;
+  const colorByTone: Record<MissionUiState | "context", string> = {
+    context: "var(--sg-white)",
+    ready: "var(--sg-white)",
+    saved: "var(--sg-white)",
+    active: "var(--sg-forest-300)",
+    completed: "var(--sg-gold-500)",
+  };
 
   return (
     <span
-      className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold backdrop-blur-md"
+      className="inline-flex items-center rounded-full px-2.5 py-1 text-2xs font-semibold backdrop-blur-md"
       style={{
         background:
-          "color-mix(in srgb, var(--sg-forest-900) 58%, transparent)",
-        color,
+          "color-mix(in srgb, var(--sg-shell-900) 52%, transparent)",
+        color: colorByTone[tone],
       }}
     >
       {children}

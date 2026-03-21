@@ -1,15 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, CheckCircle2, Clock3, Sparkles } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Clock3 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import type { ProfileAchievement } from "@/lib/useSkillProfile";
+import type { AchievementSummary } from "@/lib/types";
+import type { SkillReceipt } from "@/lib/types/skills";
 import { getProgressEvidenceRoute } from "@/lib/appRoutes";
 
 interface MissionOutcomeCardProps {
-  achievement: ProfileAchievement;
+  achievement: AchievementSummary;
+  skillReceipt?: SkillReceipt | null;
   compact?: boolean;
   showViewLink?: boolean;
+  label?: string;
+  summary?: string | null;
+  emphasis?: "default" | "featured";
+  className?: string;
 }
 
 function formatTime(seconds: number): string {
@@ -27,8 +33,8 @@ function formatDate(iso: string): string {
   });
 }
 
-function getPrimarySkills(achievement: ProfileAchievement): string[] {
-  const skills = achievement.skill_receipt?.skills ?? [];
+function getPrimarySkills(skillReceipt: SkillReceipt | null | undefined): string[] {
+  const skills = skillReceipt?.skills ?? [];
   const primary = skills
     .filter((entry) => entry.relevance === "primary")
     .map((entry) => entry.skill.name);
@@ -38,34 +44,46 @@ function getPrimarySkills(achievement: ProfileAchievement): string[] {
   return skills.slice(0, 2).map((entry) => entry.skill.name);
 }
 
-function getLevelUpCount(achievement: ProfileAchievement): number {
-  return (
-    achievement.skill_receipt?.skills.filter((entry) => entry.leveled_up).length ??
-    0
-  );
-}
-
 export function MissionOutcomeCard({
   achievement,
+  skillReceipt = null,
   compact = false,
   showViewLink = true,
+  label = "Completed work",
+  summary = null,
+  emphasis = "default",
+  className = "",
 }: MissionOutcomeCardProps) {
-  const demonstratedSkills = getPrimarySkills(achievement);
-  const levelUpCount = getLevelUpCount(achievement);
+  const resolvedSkillReceipt =
+    skillReceipt ??
+    ((achievement as AchievementSummary & { skill_receipt?: SkillReceipt | null }).skill_receipt ?? null);
+  const demonstratedSkills = getPrimarySkills(resolvedSkillReceipt);
   const viewHref = achievement.share_slug
     ? getProgressEvidenceRoute(achievement.share_slug)
     : null;
+  const resolvedSummary = summary ??
+    (demonstratedSkills.length > 0
+      ? `Demonstrated in practice: ${demonstratedSkills.slice(0, 2).join(", ")}.`
+      : "Completed work captured in practice.");
+  const rootClassName = emphasis === "featured"
+    ? "border-forest-200 bg-shell-50 p-5"
+    : compact
+      ? "p-3"
+      : "p-4";
+  const titleClassName = emphasis === "featured" && !compact
+    ? "text-base"
+    : "text-sm";
 
   return (
-    <Card className={compact ? "p-3" : "p-4"}>
+    <Card className={`${rootClassName} ${className}`.trim()}>
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-forest-500">
               <CheckCircle2 size={12} />
-              Mission Outcome
+              {label}
             </div>
-            <h3 className="text-sm font-semibold leading-snug text-shell-900">
+            <h3 className={`${titleClassName} font-semibold leading-snug text-shell-900`}>
               {achievement.path_title}
             </h3>
           </div>
@@ -74,19 +92,9 @@ export function MissionOutcomeCard({
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-shell-500">
-          <span className="inline-flex items-center gap-1">
-            <Clock3 size={11} />
-            {formatTime(achievement.time_invested_seconds)}
-          </span>
-          <span>{achievement.items_completed} completed</span>
-          {levelUpCount > 0 && (
-            <span className="inline-flex items-center gap-1 text-[var(--sg-gold-600)]">
-              <Sparkles size={11} />
-              {levelUpCount} level-up{levelUpCount > 1 ? "s" : ""}
-            </span>
-          )}
-        </div>
+        <p className="text-sm leading-6 text-shell-600">
+          {resolvedSummary}
+        </p>
 
         {demonstratedSkills.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
@@ -100,6 +108,16 @@ export function MissionOutcomeCard({
             ))}
           </div>
         )}
+
+        <div className="flex flex-wrap items-center gap-2 text-xs text-shell-500">
+          <span>{achievement.items_completed} step{achievement.items_completed === 1 ? "" : "s"}</span>
+          {achievement.time_invested_seconds > 0 ? (
+            <span className="inline-flex items-center gap-1">
+              <Clock3 size={11} />
+              {formatTime(achievement.time_invested_seconds)}
+            </span>
+          ) : null}
+        </div>
 
         {showViewLink && viewHref && (
           <div className="pt-1">

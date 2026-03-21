@@ -18,7 +18,7 @@ export function ProgressPage() {
     <div className="space-y-8">
       <div className="max-w-2xl">
         <p className="text-sm leading-6 text-shell-600">
-          Capability, recent outcomes, and the next reps that will move you forward.
+          A capability record grounded in completed mission work, visible evidence, and what to strengthen next.
         </p>
       </div>
 
@@ -28,7 +28,7 @@ export function ProgressPage() {
             Capability Summary
           </h2>
           <p className="text-sm text-shell-500">
-            Where you stand right now, based on the missions you have already completed.
+            Where your capability stands right now, based on the mission work you have already finished.
           </p>
         </div>
         <SkillProfilePage
@@ -45,7 +45,7 @@ export function ProgressPage() {
             Recent Evidence
           </h2>
           <p className="text-sm text-shell-500">
-            Completed missions that now count as visible proof of progress.
+            Completed mission work captured in practice.
           </p>
         </div>
 
@@ -74,7 +74,8 @@ export function ProgressPage() {
       {recommendations.length > 0 && (
         <SkillRecommendations
           recommendations={recommendations.slice(0, 3)}
-          title="Recommended Next Reps"
+          title="Recommended Next Rep"
+          featuredFirst
         />
       )}
 

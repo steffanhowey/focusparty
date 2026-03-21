@@ -11,7 +11,12 @@ import { useTasks } from "@/lib/useTasks";
 import { useMusic } from "@/lib/useMusic";
 import { useActiveParty } from "@/lib/useActiveParty";
 import { updatePartyStatus, leaveParty } from "@/lib/parties";
-import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
+import { getPartyLaunchDisplayName } from "@/lib/launchRooms";
+import {
+  getPartyHostPersonality,
+  getPartyRuntimeWorldKey,
+  getWorldConfig,
+} from "@/lib/worlds";
 import { getHostConfig } from "@/lib/hosts";
 import { TopBar } from "@/components/session/TopBar";
 import { SplitScreen } from "@/components/session/SplitScreen";
@@ -56,27 +61,26 @@ export default function SessionPage() {
   const [focusPopoverOpen, setFocusPopoverOpen] = useState(false);
   const [floatingFocusOpen, setFloatingFocusOpen] = useState(false);
   const focusButtonRef = useRef<HTMLButtonElement>(null);
-  const prevPanelRef = useRef<SidePanel>(activePanel);
+  const [wasPanelOpen, setWasPanelOpen] = useState(activePanel !== "none");
   const [sprintGoalCardOpen, setSprintGoalCardOpen] = useState(false);
   const [micActive, setMicActive] = useState(false);
   const [selectedVibe, setSelectedVibe] = useState<VibeId | null>(null);
   const [sprintEntering, setSprintEntering] = useState(false);
-  const reviewElapsedRef = useRef(0);
+  const [reviewElapsedSec, setReviewElapsedSec] = useState(0);
 
   // Only animate width when opening/closing, not when swapping panels
   const panelOpen = activePanel !== "none";
-  const wasOpen = prevPanelRef.current !== "none";
-  const shouldAnimatePanel = panelOpen !== wasOpen;
+  const shouldAnimatePanel = panelOpen !== wasPanelOpen;
   useEffect(() => {
-    prevPanelRef.current = activePanel;
-  }, [activePanel]);
+    setWasPanelOpen(panelOpen);
+  }, [panelOpen]);
   const [pendingSwitchTaskId, setPendingSwitchTaskId] = useState<string | null>(null);
 
   // Ref for host trigger to break circular dep: handleTimerComplete → hostTriggers → timer → handleTimerComplete
   const hostTriggersRef = useRef<{ triggerReviewEntered: () => void }>({ triggerReviewEntered: () => {} });
 
   const handleTimerComplete = useCallback(() => {
-    reviewElapsedRef.current = durationSec;
+    setReviewElapsedSec(durationSec);
     setPhase("review");
 
     // fire-and-forget: non-critical persistence
@@ -131,7 +135,9 @@ export default function SessionPage() {
     timer,
     phase,
   });
-  hostTriggersRef.current = hostTriggers;
+  useEffect(() => {
+    hostTriggersRef.current = hostTriggers;
+  }, [hostTriggers]);
 
   const chat = useChat();
   const { settings, updateSetting } = useSettings();
@@ -395,7 +401,7 @@ export default function SessionPage() {
   }, [durationSec, timer.reset, timer.start]);
 
   const handleEndSession = useCallback(() => {
-    reviewElapsedRef.current = Math.max(0, durationSec - timer.getSnapshot().seconds);
+    setReviewElapsedSec(Math.max(0, durationSec - timer.getSnapshot().seconds));
     timer.pause();
     camera.stop();
     screenShare.stop();
@@ -604,7 +610,7 @@ export default function SessionPage() {
           onAddTask={addTask}
           onDeleteTask={deleteTask}
           onStartSprint={handleStartSprint}
-          roomName={party?.name ?? null}
+          roomName={party ? getPartyLaunchDisplayName(party) : null}
           roomSubtitle={
             party
               ? `${getHostConfig(getPartyHostPersonality(party)).hostName} hosting`
@@ -615,7 +621,11 @@ export default function SessionPage() {
               ? getHostConfig(getPartyHostPersonality(party)).avatarUrl
               : null
           }
-          defaultDuration={party ? getWorldConfig(party.world_key).defaultSprintLength : undefined}
+          defaultDuration={
+            party
+              ? getWorldConfig(getPartyRuntimeWorldKey(party)).defaultSprintLength
+              : undefined
+          }
           presenceParticipants={presence.participants}
           focusingCount={presence.participants.filter(p => p.phase === "sprint").length}
           roomStateIcon={roomStateDisplay.icon}
@@ -780,7 +790,7 @@ export default function SessionPage() {
       <SessionReviewModal
         isOpen={phase === "review"}
         sessionDurationSec={durationSec}
-        elapsedSec={reviewElapsedRef.current}
+        elapsedSec={reviewElapsedSec}
         onAnotherRound={handleAnotherRound}
         onDone={handleDone}
         onReflectionComplete={handleReflectionComplete}

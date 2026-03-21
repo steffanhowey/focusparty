@@ -1,7 +1,12 @@
 import { getMissionPrimaryArea } from "@/lib/missionPresentation";
 import type { PartyWithCount } from "@/lib/parties";
 import type { LearningPath } from "@/lib/types";
-import { getWorldConfig } from "@/lib/worlds";
+import {
+  getPartyLaunchRoomEntry,
+  getPartyLaunchSupportedMissionDomains,
+  isPartyLaunchVisible,
+} from "@/lib/launchRooms";
+import { getPartyRuntimeWorldKey } from "@/lib/worlds";
 
 interface MissionRoomRecommendations {
   recommendedRoom: PartyWithCount | null;
@@ -34,7 +39,9 @@ export function getMissionRoomRecommendations(
   path: LearningPath,
   parties: PartyWithCount[],
 ): MissionRoomRecommendations {
-  const persistentRooms = parties.filter((party) => party.persistent);
+  const persistentRooms = parties.filter(
+    (party) => party.persistent && isPartyLaunchVisible(party),
+  );
   if (persistentRooms.length === 0) {
     return {
       recommendedRoom: null,
@@ -52,17 +59,19 @@ export function getMissionRoomRecommendations(
 
   const scoredRooms = persistentRooms
     .map((party, index) => {
-      const world = getWorldConfig(party.world_key);
+      const launchRoom = getPartyLaunchRoomEntry(party);
+      const runtimeWorldKey = getPartyRuntimeWorldKey(party);
+      const supportedDomains = getPartyLaunchSupportedMissionDomains(party);
       const matchesDomain =
-        !!missionDomainSlug && world.skillDomains.includes(missionDomainSlug);
+        !!missionDomainSlug && supportedDomains.includes(missionDomainSlug);
 
       let score = 0;
 
       if (matchesDomain) {
         score += 100;
-      } else if (world.worldKey === "default") {
+      } else if (launchRoom?.key === "research-room" || runtimeWorldKey === "default") {
         score += 24;
-      } else if (world.worldKey === "gentle-start") {
+      } else if (launchRoom?.key === "open-studio" || runtimeWorldKey === "gentle-start") {
         score += 18;
       } else if (!missionDomainSlug) {
         score += 8;

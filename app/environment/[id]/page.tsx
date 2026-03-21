@@ -24,9 +24,10 @@ import {
   TEAL_500,
   GOLD_500,
   GOLD_600,
-  TEAL_600,
+	TEAL_600,
 } from "@/lib/palette";
-import { joinParty, updatePartyStatus, leaveParty, type Party } from "@/lib/parties";
+import { joinParty, updatePartyStatus, leaveParty } from "@/lib/parties";
+import { getPartyLaunchDisplayName } from "@/lib/launchRooms";
 import { useEnvironmentParty } from "@/lib/useEnvironmentParty";
 import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
 import { EnvironmentBackground } from "@/components/environment/EnvironmentBackground";
@@ -52,7 +53,7 @@ import { computeRemainingSeconds } from "@/lib/sprintTime";
 import { SYNTHETIC_POOL } from "@/lib/synthetics/pool";
 import { getSyntheticsForRoom } from "@/lib/synthetics/assignment";
 import { JoinRoomModal, type JoinConfig } from "@/components/party/JoinRoomModal";
-import type { SessionPhase, SessionReflection, SprintResolution, BreakContentItem, BreakDuration, BreakSegment, BreakCategory, ItemState } from "@/lib/types";
+import type { SessionPhase, SessionReflection, SprintResolution, BreakContentItem, BreakDuration, BreakCategory, ItemState } from "@/lib/types";
 import { checkGoalCompletion } from "@/lib/goalCascade";
 import { BreaksFlyout } from "@/components/environment/BreaksFlyout";
 import { BreakVideoOverlay } from "@/components/environment/BreakVideoOverlay";
@@ -63,6 +64,7 @@ import { PathSidebar } from "@/components/learn/PathSidebar";
 import { useBreakContent, type BreakClip } from "@/lib/useBreakContent";
 import { useCurriculum } from "@/lib/useCurriculum";
 import { useLearnProgress } from "@/lib/useLearnProgress";
+import { usePostCompletionRecommendations } from "@/lib/usePostCompletionRecommendations";
 import { extractYouTubeId } from "@/lib/youtube";
 
 type SidePanel = "none" | "momentum" | "chat" | "settings" | "breaks" | "mission";
@@ -343,6 +345,7 @@ export default function EnvironmentPage() {
     backgroundImageUrl,
     modalBackgrounds,
   } = useEnvironmentParty(partyId);
+  const roomDisplayName = getPartyLaunchDisplayName(party);
 
   // ─── Session state machine ────────────────────────────
   const persistence = useSessionPersistence(userId);
@@ -438,16 +441,26 @@ export default function EnvironmentPage() {
   const {
     path: roomMissionPath,
     progress: roomMissionProgress,
+    achievement: roomMissionAchievement,
     currentItemIndex: roomMissionCurrentItemIndex,
     isLoading: roomMissionLoading,
     error: roomMissionError,
     completeItem: completeMissionItem,
     advanceToItem: advanceMissionItem,
     isCompleted: roomMissionCompleted,
+    skillReceipt: roomMissionSkillReceipt,
   } = useLearnProgress(
     selectedMissionContext?.missionId ?? null,
     missionWorkspaceOpen && phase === "sprint",
   );
+  const {
+    paths: roomMissionRecommendedPaths,
+    isLoading: roomMissionRecommendationsLoading,
+  } = usePostCompletionRecommendations({
+    path: roomMissionPath,
+    currentPathId: selectedMissionContext?.missionId ?? null,
+    enabled: missionWorkspaceOpen && phase === "sprint" && roomMissionCompleted,
+  });
 
   // ─── Host triggers ref (break circular dep) ──────────
   const hostTriggersRef = useRef<{
@@ -2208,7 +2221,7 @@ export default function EnvironmentPage() {
       <div className="flex w-full flex-col pl-24">
             {/* Room header */}
             <EnvironmentHeader
-              roomName={party?.name ?? world.label}
+              roomName={roomDisplayName}
               inviteCode={party?.invite_code ?? null}
               currentPartyId={partyId}
               userId={userId}
@@ -2422,7 +2435,7 @@ export default function EnvironmentPage() {
               ) : (
                 <BreaksFlyout
                   roomWorldKey={world.worldKey}
-                  worldLabel={world.label}
+                  worldLabel={roomDisplayName}
                   category={breakCategory}
                   onClose={closePanel}
                   onSelectContent={handleSelectBreakContent}
@@ -2515,6 +2528,10 @@ export default function EnvironmentPage() {
           key={selectedMissionContext?.missionId ?? "room-mission"}
           path={roomMissionPath}
           progress={roomMissionProgress}
+          achievement={roomMissionAchievement}
+          skillReceipt={roomMissionSkillReceipt}
+          recommendedPaths={roomMissionRecommendedPaths}
+          recommendationsLoading={roomMissionRecommendationsLoading}
           currentItemIndex={roomMissionCurrentItemIndex}
           isLoading={roomMissionLoading}
           error={roomMissionError}

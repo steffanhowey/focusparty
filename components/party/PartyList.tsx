@@ -12,7 +12,12 @@ import { CreatePartyModal } from "./CreatePartyModal";
 import { useActiveBackgrounds } from "@/lib/useActiveBackgrounds";
 import { ChevronDown } from "lucide-react";
 import { getCanonicalRoomEntryRoute } from "@/lib/appRoutes";
+import {
+  getPartyLaunchDiscoveryTags,
+  isPartyLaunchVisible,
+} from "@/lib/launchRooms";
 import type { PartyWithCount } from "@/lib/parties";
+import { getPartyRuntimeWorldKey } from "@/lib/worlds";
 
 type RoomFilter = "all" | "most-active" | "coding" | "writing" | "calm";
 
@@ -23,12 +28,6 @@ const FILTER_OPTIONS: { value: RoomFilter; label: string }[] = [
   { value: "writing", label: "Writing & Deep Work" },
   { value: "calm", label: "Calm & Gentle" },
 ];
-
-const FILTER_WORLD_KEYS: Record<string, string[]> = {
-  coding: ["vibe-coding", "yc-build"],
-  writing: ["writer-room", "default"],
-  calm: ["gentle-start"],
-};
 
 export function PartyList() {
   const router = useRouter();
@@ -60,7 +59,9 @@ export function PartyList() {
   };
 
   // Pick the featured room: most participants among persistent rooms
-  const persistentRooms = parties.filter((p) => p.persistent);
+  const persistentRooms = parties.filter(
+    (p) => p.persistent && isPartyLaunchVisible(p),
+  );
   const featuredRoom = persistentRooms.length > 0
     ? persistentRooms.reduce((a, b) => (b.participant_count > a.participant_count ? b : a))
     : null;
@@ -73,8 +74,9 @@ export function PartyList() {
   const filteredRooms = (() => {
     if (filter === "all") return allListedRooms;
     if (filter === "most-active") return [...allListedRooms].sort((a, b) => b.participant_count - a.participant_count);
-    const keys = FILTER_WORLD_KEYS[filter];
-    return keys ? allListedRooms.filter((p) => keys.includes(p.world_key)) : allListedRooms;
+    return allListedRooms.filter((party) =>
+      getPartyLaunchDiscoveryTags(party).includes(filter),
+    );
   })();
 
   return (
@@ -106,9 +108,17 @@ export function PartyList() {
                   party={featuredRoom}
                   backgrounds={backgrounds}
                   onClick={() => handleOpenRoom(featuredRoom)}
-                  isPreviewPlaying={preview.previewingWorldKey === featuredRoom.world_key && (preview.status === "playing" || preview.status === "loading")}
+                  isPreviewPlaying={
+                    preview.previewingKey === featuredRoom.id &&
+                    (preview.status === "playing" || preview.status === "loading")
+                  }
                   previewStatus={preview.status}
-                  onTogglePreview={() => preview.togglePreview(featuredRoom.world_key)}
+                  onTogglePreview={() =>
+                    preview.togglePreview(
+                      getPartyRuntimeWorldKey(featuredRoom),
+                      featuredRoom.id,
+                    )
+                  }
                 />
               </section>
             )}
@@ -148,13 +158,17 @@ export function PartyList() {
                       onClick={() => handleOpenRoom(party)}
                       isPreviewPlaying={
                         party.persistent &&
-                        preview.previewingWorldKey === party.world_key &&
+                        preview.previewingKey === party.id &&
                         (preview.status === "playing" || preview.status === "loading")
                       }
                       previewStatus={preview.status}
                       onTogglePreview={
                         party.persistent
-                          ? () => preview.togglePreview(party.world_key)
+                          ? () =>
+                              preview.togglePreview(
+                                getPartyRuntimeWorldKey(party),
+                                party.id,
+                              )
                           : undefined
                       }
                     />

@@ -1,17 +1,12 @@
 import {
   formatAchievementDate,
-  formatAchievementDuration,
   getAchievementHighlightedSkills,
-  getAchievementLevelUpCount,
 } from "@/lib/achievements/achievementModel";
 import type { AchievementPageData } from "@/lib/types";
 import {
   FOREST_900,
   FOREST_700,
   FOREST_500,
-  GOLD_600,
-  GOLD_500,
-  GOLD_100,
   SHELL_900,
   SHELL_700,
   SHELL_600,
@@ -20,7 +15,7 @@ import {
   TEAL_600,
 } from "@/lib/palette";
 
-export const ACHIEVEMENT_OG_ALT = "SkillGap Credential";
+export const ACHIEVEMENT_OG_ALT = "Mission evidence";
 export const ACHIEVEMENT_OG_SIZE = { width: 1200, height: 630 };
 export const ACHIEVEMENT_OG_CONTENT_TYPE = "image/png";
 
@@ -45,7 +40,7 @@ export function AchievementOgImage({ data }: AchievementOgImageProps) {
           fontWeight: 700,
         }}
       >
-        SkillGap Credential Not Found
+        Mission Evidence Not Found
       </div>
     );
   }
@@ -54,7 +49,9 @@ export function AchievementOgImage({ data }: AchievementOgImageProps) {
   const highlightedSkills = getAchievementHighlightedSkills(
     achievement.skill_receipt,
   );
-  const levelUpCount = getAchievementLevelUpCount(achievement.skill_receipt);
+  const subtitle = highlightedSkills.length > 0
+    ? `${user_name} completed this mission. Completed work captured in practice. Demonstrated capability: ${highlightedSkills.slice(0, 2).join(", ")}.`
+    : `${user_name} completed this mission. Completed work captured in practice from ${achievement.items_completed} finished steps.`;
 
   return (
     <div
@@ -103,7 +100,7 @@ export function AchievementOgImage({ data }: AchievementOgImageProps) {
                 color: FOREST_500,
               }}
             >
-              SkillGap Credential
+              Mission Evidence
             </div>
             <div
               style={{
@@ -131,34 +128,10 @@ export function AchievementOgImage({ data }: AchievementOgImageProps) {
                   color: SHELL_700,
                 }}
               >
-                {`${user_name} completed this SkillGap mission in ${formatAchievementDuration(
-                  achievement.time_invested_seconds,
-                )}.`}
+                {subtitle}
               </div>
             </div>
           </div>
-
-          {levelUpCount > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 9999,
-                border: `1px solid ${GOLD_500}`,
-                background: GOLD_100,
-                color: GOLD_600,
-                padding: "10px 16px",
-                fontSize: 16,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: 2,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {`${levelUpCount} level up${levelUpCount > 1 ? "s" : ""}`}
-            </div>
-          )}
         </div>
 
         <div
@@ -185,7 +158,7 @@ export function AchievementOgImage({ data }: AchievementOgImageProps) {
                   color: SHELL_600,
                 }}
               >
-                Skills Demonstrated
+                What This Strengthened
               </div>
               <div
                 style={{
@@ -244,7 +217,7 @@ export function AchievementOgImage({ data }: AchievementOgImageProps) {
                     color: SHELL_600,
                   }}
                 >
-                  Resources
+                  Steps
                 </div>
                 <div
                   style={{

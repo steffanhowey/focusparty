@@ -6,9 +6,7 @@ import { SkillReceipt } from "@/components/learn/SkillReceipt";
 import { getAchievementPageData } from "@/lib/achievements/getAchievementPageData";
 import {
   formatAchievementDate,
-  formatAchievementDuration,
   getAchievementHighlightedSkills,
-  getAchievementLevelUpCount,
   getSiteUrl,
 } from "@/lib/achievements/achievementModel";
 import {
@@ -39,8 +37,8 @@ export async function generateMetadata({
     achievement.skill_receipt,
   );
   const description = highlightedSkills.length
-    ? `${user_name} completed the mission ${achievement.path_title} on SkillGap. Skills demonstrated: ${highlightedSkills.join(", ")}. ${formatAchievementDuration(achievement.time_invested_seconds)} invested.`
-    : `${user_name} completed the mission ${achievement.path_title} on SkillGap. ${achievement.items_completed} steps completed in ${formatAchievementDuration(achievement.time_invested_seconds)}.`;
+    ? `${user_name} completed the mission ${achievement.path_title} on SkillGap. Mission evidence captured in practice. Demonstrated capabilities: ${highlightedSkills.join(", ")}.`
+    : `${user_name} completed the mission ${achievement.path_title} on SkillGap. Mission evidence captured in practice from ${achievement.items_completed} completed steps.`;
 
   return {
     title: `${achievement.path_title} — Mission Evidence`,
@@ -49,7 +47,7 @@ export async function generateMetadata({
       canonical: pageUrl,
     },
     openGraph: {
-      title: `${user_name} completed the mission ${achievement.path_title} on SkillGap`,
+      title: `${achievement.path_title} — Mission Evidence`,
       description,
       type: "article",
       url: pageUrl,
@@ -64,7 +62,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${user_name} completed the mission ${achievement.path_title} on SkillGap`,
+      title: `${achievement.path_title} — Mission Evidence`,
       description,
       images: [imageUrl],
     },
@@ -114,13 +112,10 @@ export default async function ProgressEvidencePage({
     achievement.skill_receipt,
     2,
   );
-  const levelUpCount = getAchievementLevelUpCount(achievement.skill_receipt);
-  const headline = highlightedSkills.length
-    ? `${highlightedSkills[0]} demonstrated in practice`
-    : "Mission evidence, captured in practice";
-  const subtitle = levelUpCount
-    ? `${user_name} completed the mission ${achievement.path_title} on ${formatAchievementDate(achievement.completed_at)} and advanced ${levelUpCount} skill${levelUpCount > 1 ? "s" : ""}.`
-    : `${user_name} completed the mission ${achievement.path_title} on ${formatAchievementDate(achievement.completed_at)}. The skills below were captured at completion.`;
+  const headline = achievement.path_title;
+  const subtitle = highlightedSkills.length
+    ? `${user_name} completed this mission on ${formatAchievementDate(achievement.completed_at)}. The completed work and demonstrated capability below were captured in practice.`
+    : `${user_name} completed this mission on ${formatAchievementDate(achievement.completed_at)}. The completed work below was captured in practice.`;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[var(--sg-cream-50)]">
@@ -152,7 +147,7 @@ export default async function ProgressEvidencePage({
         <div className="w-full max-w-3xl space-y-10">
           <div className="space-y-4 text-center">
             <div className="inline-flex items-center rounded-full border border-[var(--sg-shell-border)] bg-[var(--sg-white)] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--sg-forest-500)] shadow-sm">
-              Public Evidence
+              Mission Evidence
             </div>
             <div className="space-y-3">
               <h1
@@ -170,34 +165,59 @@ export default async function ProgressEvidencePage({
           </div>
 
           <div className="flex justify-center">
-            <MissionOutcomeCard
-              achievement={{
-                id: achievement.id,
-                path_id: achievement.path_id,
-                path_title: achievement.path_title,
-                path_topics: achievement.path_topics,
-                items_completed: achievement.items_completed,
-                time_invested_seconds: achievement.time_invested_seconds,
-                difficulty_level: achievement.difficulty_level ?? "intermediate",
-                share_slug: achievement.share_slug,
-                skill_receipt: achievement.skill_receipt,
-                completed_at: achievement.completed_at,
-              }}
-              showViewLink={false}
-            />
-          </div>
+            <div className="w-full max-w-3xl space-y-8">
+              <section className="space-y-3">
+                <div className="space-y-1 text-center">
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--sg-forest-500)]">
+                    Evidence
+                  </h2>
+                  <p className="text-sm leading-6 text-[var(--sg-shell-600)]">
+                    Completed work captured in practice from this mission.
+                  </p>
+                </div>
+                <MissionOutcomeCard
+                  achievement={{
+                    id: achievement.id,
+                    path_id: achievement.path_id,
+                    path_title: achievement.path_title,
+                    path_topics: achievement.path_topics,
+                    items_completed: achievement.items_completed,
+                    time_invested_seconds: achievement.time_invested_seconds,
+                    difficulty_level: achievement.difficulty_level ?? "intermediate",
+                    share_slug: achievement.share_slug,
+                    completed_at: achievement.completed_at,
+                  }}
+                  skillReceipt={achievement.skill_receipt}
+                  label="Completed work"
+                  summary="Completed work captured in practice from this mission."
+                  emphasis="featured"
+                  showViewLink={false}
+                />
+              </section>
 
-          {achievement.skill_receipt && (
-            <div className="flex justify-center">
-              <SkillReceipt
-                receipt={achievement.skill_receipt}
-                title={levelUpCount > 0 ? "Skills Advanced" : "Skills Demonstrated"}
-                subtitle={`${user_name}'s fluency snapshot at completion.`}
-                showFirstReceiptNote={false}
-                className="max-w-xl"
-              />
+              {achievement.skill_receipt && (
+                <section className="space-y-3">
+                  <div className="space-y-1 text-center">
+                    <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--sg-forest-500)]">
+                      What This Strengthened
+                    </h2>
+                    <p className="text-sm leading-6 text-[var(--sg-shell-600)]">
+                      {user_name}&apos;s capability snapshot at completion.
+                    </p>
+                  </div>
+                  <div className="flex justify-center">
+                    <SkillReceipt
+                      receipt={achievement.skill_receipt}
+                      title="What This Strengthened"
+                      subtitle={`${user_name}'s capability snapshot at completion.`}
+                      showFirstReceiptNote={false}
+                      className="max-w-xl"
+                    />
+                  </div>
+                </section>
+              )}
             </div>
-          )}
+          </div>
 
           <div className="flex flex-col items-center gap-3 text-center">
             <Link

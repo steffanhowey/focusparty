@@ -1,8 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { Play, Pause } from "lucide-react";
-import { getWorldConfig } from "@/lib/worlds";
+import { Play } from "lucide-react";
+import {
+  getPartyLaunchDisplayName,
+  getPartyLaunchShortDescription,
+} from "@/lib/launchRooms";
+import { getPartyRuntimeWorldKey, getWorldConfig } from "@/lib/worlds";
 import type { PartyWithCount, SyntheticPresenceInfo } from "@/lib/parties";
 import type { ActiveBackground } from "@/lib/roomBackgrounds";
 import type { MusicStatus } from "@/lib/musicConstants";
@@ -89,9 +93,12 @@ export function FeaturedRoom({
   previewStatus,
   onTogglePreview,
 }: FeaturedRoomProps) {
-  const world = getWorldConfig(party.world_key);
-  const aiBg = backgrounds?.get(party.world_key);
+  const runtimeWorldKey = getPartyRuntimeWorldKey(party);
+  const world = getWorldConfig(runtimeWorldKey);
+  const aiBg = backgrounds?.get(runtimeWorldKey);
   const coverSrc = aiBg?.publicUrl ?? null;
+  const roomName = getPartyLaunchDisplayName(party);
+  const roomDescription = getPartyLaunchShortDescription(party);
   const isPreviewLoading = previewStatus === "loading" && isPreviewPlaying;
 
   return (
@@ -105,7 +112,7 @@ export function FeaturedRoom({
       {coverSrc ? (
         <Image
           src={coverSrc}
-          alt={world.label}
+          alt={roomName}
           fill
           sizes="100vw"
           className="object-cover"
@@ -151,10 +158,10 @@ export function FeaturedRoom({
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6 md:p-8">
         <div className="min-w-0 flex-1">
           <h2 className="text-3xl font-bold text-white md:text-4xl">
-            {party.name}
+            {roomName}
           </h2>
           <p className="mt-2 line-clamp-2 text-base text-white/70 md:text-lg">
-            {world.description}
+            {roomDescription}
           </p>
           <div className="mt-4 flex items-center gap-3">
             <span className="inline-flex items-center rounded-full bg-[var(--sg-forest-500)] px-5 py-2 text-sm font-bold uppercase tracking-wide text-white transition-all duration-150 group-hover/featured:brightness-110 active:scale-95">

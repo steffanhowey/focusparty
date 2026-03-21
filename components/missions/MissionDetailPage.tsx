@@ -12,7 +12,6 @@ import {
   Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { AchievementShareMenu } from "@/components/achievements/AchievementShareMenu";
 import { ContentViewer } from "@/components/learn/ContentViewer";
 import { PathSidebar } from "@/components/learn/PathSidebar";
 import {
@@ -20,10 +19,10 @@ import {
   RoomStageScaffold,
   RoomStageSecondaryButton,
 } from "@/components/learn/RoomStageScaffold";
-import { SkillReceipt } from "@/components/learn/SkillReceipt";
-import { MissionCard } from "@/components/missions/MissionCard";
+import { MissionCompletionSummary } from "@/components/missions/MissionCompletionSummary";
 import { MissionRoomPickerModal } from "@/components/missions/MissionRoomPickerModal";
 import { useLearnProgress } from "@/lib/useLearnProgress";
+import { usePostCompletionRecommendations } from "@/lib/usePostCompletionRecommendations";
 import { useProfile } from "@/lib/useProfile";
 import { useAuth } from "@/components/providers/AuthProvider";
 import {
@@ -166,7 +165,6 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
   const [showTransition, setShowTransition] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [recommendedPaths, setRecommendedPaths] = useState<LearningPath[]>([]);
   const [showMissionCelebration, setShowMissionCelebration] = useState(false);
   const [showRoomPicker, setShowRoomPicker] = useState(false);
   const [isWideLayout, setIsWideLayout] = useState(
@@ -182,16 +180,18 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
   const isItemCompleted = currentItemKey
     ? progress?.item_states?.[currentItemKey]?.completed ?? false
     : false;
-  const leveledUpSkills =
-    skillReceipt?.skills.filter((entry) => entry.leveled_up) ?? [];
   const artifactExpectation = path
     ? getMissionExpectedOutput(path, progress)
     : "A finished step you can carry into your next rep.";
-  const completionHeadline = `You finished ${path?.title ?? "this mission"}`;
-  const completionSubheadline = achievement
-    ? `Outcome captured: ${artifactExpectation}`
-    : "Real work completed. We’re preparing your mission evidence now.";
   const missionWorld = getWorldConfig(getMissionPageWorldKey(path ?? null));
+  const {
+    paths: recommendedPaths,
+    isLoading: recommendedPathsLoading,
+  } = usePostCompletionRecommendations({
+    path,
+    currentPathId: pathId,
+    enabled: isCompleted,
+  });
 
   useEffect(() => {
     const mql = window.matchMedia(DESKTOP_LAYOUT_QUERY);
@@ -203,37 +203,6 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
     mql.addEventListener("change", handleChange);
     return () => mql.removeEventListener("change", handleChange);
   }, []);
-
-  useEffect(() => {
-    if (!isCompleted || !path) return;
-
-    fetch("/api/learn/recommendations?limit=4")
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (data?.recommendations?.length) {
-          const recPaths = (data.recommendations as Array<{ paths: LearningPath[] }>)
-            .flatMap((recommendation) => recommendation.paths)
-            .filter((candidate) => candidate.id !== pathId)
-            .slice(0, 2);
-          if (recPaths.length > 0) {
-            setRecommendedPaths(recPaths);
-            return;
-          }
-        }
-
-        return fetch(
-          `/api/learn/search?q=${encodeURIComponent(path.topics[0] ?? path.query)}&limit=4`,
-        )
-          .then((response) => response.json())
-          .then((fallback) => {
-            const recs = (fallback.discovery ?? []).filter(
-              (candidate: LearningPath) => candidate.id !== pathId,
-            );
-            setRecommendedPaths(recs.slice(0, 2));
-          });
-      })
-      .catch(() => {});
-  }, [isCompleted, path, pathId]);
 
   const maybeRecordFirstMission = useCallback(() => {
     if (!user || !profile) return;
@@ -341,94 +310,37 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
           <RoomStageScaffold
             variant="missionPage"
             eyebrow="Mission complete"
-            title={completionHeadline}
-            description={completionSubheadline}
-            footerMeta={`Mission · ${path.items.length} steps complete`}
+            title="Mission complete"
+            description="Your completed work, evidence, and capability snapshot are ready."
+            footerMeta="Mission · Completed"
             primaryAction={
-              <Button variant="cta" size="sm" onClick={() => router.push("/missions")}>
-                More Missions
+              <Button variant="cta" size="sm" onClick={() => router.push("/progress")}>
+                View Progress
               </Button>
             }
             secondaryAction={
-              <RoomStageSecondaryButton onClick={() => router.push("/rooms")}>
-                Browse Rooms
+              <RoomStageSecondaryButton onClick={() => router.push("/missions")}>
+                More Missions
               </RoomStageSecondaryButton>
             }
             contentClassName="max-w-[980px] space-y-5"
           >
-            <RoomStagePanel className="space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--sg-forest-300)]">
-                    Evidence captured
-                  </p>
-                  <h3 className="mt-1 text-lg font-semibold text-white">
-                    {path.title}
-                  </h3>
-                </div>
-                <span className="text-xs text-white/40">
-                  {new Date(progress?.completed_at ?? new Date().toISOString()).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </span>
-              </div>
+            <MissionCompletionSummary
+              path={path}
+              progress={progress}
+              achievement={achievement}
+              skillReceipt={skillReceipt}
+              artifactExpectation={artifactExpectation}
+              recommendedPaths={recommendedPaths}
+              recommendationsLoading={recommendedPathsLoading}
+              variant="standalone"
+            />
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[var(--sg-radius-lg)] border border-white/[0.08] bg-white/[0.03] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
-                    Mission output
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-white/75">
-                    {artifactExpectation}
-                  </p>
-                </div>
-                <div className="rounded-[var(--sg-radius-lg)] border border-white/[0.08] bg-white/[0.03] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
-                    Work completed
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-white/75">
-                    {(progress?.items_completed ?? path.items.length)}/{path.items.length} steps finished
-                  </p>
-                </div>
-              </div>
-            </RoomStagePanel>
-
-            {skillReceipt ? (
-              <SkillReceipt
-                receipt={skillReceipt}
-                title={leveledUpSkills.length > 0 ? "What moved" : "What this strengthened"}
-                subtitle="Capability captured from this mission."
-                className="max-w-none"
-              />
-            ) : null}
-
-            <div className="flex flex-wrap items-center gap-3">
-              <AchievementShareMenu
-                shareSlug={achievement?.share_slug}
-                pathTitle={path.title}
-                pathTopics={path.topics}
-              />
+            <div className="flex justify-start">
+              <Button variant="link" size="sm" onClick={() => router.push("/rooms")}>
+                Browse Rooms
+              </Button>
             </div>
-
-            {recommendedPaths.length > 0 ? (
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-white">
-                    Build on this momentum
-                  </p>
-                  <p className="text-sm text-white/45">
-                    Recommended next missions based on what you just finished.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {recommendedPaths.map((recommendedPath) => (
-                    <MissionCard key={recommendedPath.id} path={recommendedPath} />
-                  ))}
-                </div>
-              </div>
-            ) : null}
           </RoomStageScaffold>
         </MissionPageStage>
       );

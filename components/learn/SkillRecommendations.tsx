@@ -39,12 +39,12 @@ const REASON_CONFIG: Record<
   },
   level_up: {
     icon: TrendingUp,
-    label: "Level up",
+    label: "Strengthen",
     color: "var(--sg-forest-300)",
   },
   function_gap: {
     icon: Target,
-    label: "Key skill",
+    label: "Key area",
     color: "var(--sg-teal-600)",
   },
   domain_expansion: {
@@ -64,9 +64,11 @@ const REASON_CONFIG: Record<
 function RecommendationCard({
   rec,
   index,
+  featured = false,
 }: {
   rec: SkillRecommendation;
   index: number;
+  featured?: boolean;
 }) {
   const router = useRouter();
   const config = REASON_CONFIG[rec.reason] ?? REASON_CONFIG.function_gap;
@@ -87,7 +89,9 @@ function RecommendationCard({
 
   return (
     <Card
-      className="p-4 space-y-3 animate-fade-in cursor-pointer transition-colors hover:bg-shell-50"
+      className={`space-y-3 animate-fade-in cursor-pointer transition-colors hover:bg-shell-50 ${
+        featured ? "border-forest-200 bg-shell-50 p-5 sm:p-6" : "p-4"
+      }`}
       style={{
         animationDelay: `${index * 100}ms`,
         animationFillMode: "backwards",
@@ -107,7 +111,7 @@ function RecommendationCard({
 
       {/* Mission-first heading */}
       <div className="space-y-0.5">
-        <h4 className="text-sm font-medium text-shell-900 leading-snug">
+        <h4 className={`${featured ? "text-base sm:text-lg" : "text-sm"} font-medium leading-snug text-shell-900`}>
           {topPath.title}
         </h4>
         <p className="text-xs text-shell-600 line-clamp-2">
@@ -161,24 +165,50 @@ function RecommendationCard({
 interface SkillRecommendationsProps {
   recommendations: SkillRecommendation[];
   title?: string;
+  featuredFirst?: boolean;
 }
 
 export function SkillRecommendations({
   recommendations,
-  title = "Next Best Reps",
+  title = "Recommended Missions",
+  featuredFirst = false,
 }: SkillRecommendationsProps) {
   if (recommendations.length === 0) return null;
+
+  const [featuredRecommendation, ...remainingRecommendations] = recommendations.slice(0, 6);
 
   return (
     <div className="space-y-3 mb-6">
       <h3 className="text-sm font-medium text-shell-600">
         {title}
       </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {recommendations.slice(0, 6).map((rec, i) => (
-          <RecommendationCard key={rec.skill.slug} rec={rec} index={i} />
-        ))}
-      </div>
+      {featuredFirst && featuredRecommendation ? (
+        <div className="space-y-4">
+          <RecommendationCard
+            key={featuredRecommendation.skill.slug}
+            rec={featuredRecommendation}
+            index={0}
+            featured
+          />
+          {remainingRecommendations.length > 0 ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {remainingRecommendations.slice(0, 2).map((rec, index) => (
+                <RecommendationCard
+                  key={rec.skill.slug}
+                  rec={rec}
+                  index={index + 1}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {recommendations.slice(0, 6).map((rec, i) => (
+            <RecommendationCard key={rec.skill.slug} rec={rec} index={i} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

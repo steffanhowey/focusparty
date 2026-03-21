@@ -7,7 +7,11 @@ import {
   type Party,
   type SyntheticPresenceInfo,
 } from "@/lib/parties";
-import { getWorldConfig, getPartyHostPersonality } from "@/lib/worlds";
+import {
+  getPartyHostPersonality,
+  getPartyRuntimeWorldKey,
+  getWorldConfig,
+} from "@/lib/worlds";
 import { getHostConfig } from "@/lib/hosts";
 import {
   getActiveBackground,
@@ -101,8 +105,9 @@ export function useEnvironmentParty(partyId: string) {
   }, [partyId, loadSynthetics]);
 
   // ─── Derived config ────────────────────────────────────
+  const runtimeWorldKey = getPartyRuntimeWorldKey(party);
   const world = party
-    ? getWorldConfig(party.world_key)
+    ? getWorldConfig(runtimeWorldKey)
     : getWorldConfig("default");
   const hostConfig = party
     ? getHostConfig(getPartyHostPersonality(party))
@@ -115,18 +120,17 @@ export function useEnvironmentParty(partyId: string) {
     null
   );
   useEffect(() => {
-    const wk = party?.world_key;
-    if (!wk) return;
-    getActiveBackground(wk, lockedTimeStateRef.current)
+    if (!runtimeWorldKey) return;
+    getActiveBackground(runtimeWorldKey, lockedTimeStateRef.current)
       .then(setAiBackground)
       .catch((err) => console.error("Failed to load background:", err));
-  }, [party?.world_key]);
+  }, [runtimeWorldKey]);
 
   const backgroundImageUrl = aiBackground?.publicUrl ?? null;
   const modalBackgrounds = useMemo(() => {
-    if (!aiBackground || !party?.world_key) return undefined;
-    return new Map([[party.world_key, aiBackground]]);
-  }, [aiBackground, party?.world_key]);
+    if (!aiBackground) return undefined;
+    return new Map([[runtimeWorldKey, aiBackground]]);
+  }, [aiBackground, runtimeWorldKey]);
 
   return {
     party,

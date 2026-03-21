@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/Modal";
 import { RoomCard } from "@/components/party/RoomCard";
 import { useActiveBackgrounds } from "@/lib/useActiveBackgrounds";
 import { getCanonicalRoomEntryRoute, ROOMS_ROUTE } from "@/lib/appRoutes";
+import { isPartyLaunchVisible } from "@/lib/launchRooms";
 import { writeMissionRoomHandoff } from "@/lib/missionRoomHandoff";
 import { getMissionRoomRecommendations } from "@/lib/missionRoomRecommendations";
 import { useDiscoverableParties } from "@/lib/useDiscoverableParties";
@@ -33,7 +34,7 @@ export function MissionRoomPickerModal({
   const [joiningRoomId, setJoiningRoomId] = useState<string | null>(null);
 
   const availableRooms = useMemo(
-    () => parties.filter((party) => party.persistent),
+    () => parties.filter((party) => party.persistent && isPartyLaunchVisible(party)),
     [parties],
   );
   const { recommendedRoom, otherRooms, missionDomainLabel } =

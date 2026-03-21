@@ -1,6 +1,6 @@
-/// <reference path="./youtube.d.ts" />
 "use client";
 
+import type {} from "./youtube";
 import { useState, useCallback, useEffect, useRef } from "react";
 import {
   type VibeId,
@@ -10,7 +10,7 @@ import {
   getPersistedVolume,
   setPersistedVolume,
 } from "@/lib/musicConstants";
-import { getWorldConfig, type WorldKey } from "@/lib/worlds";
+import { getWorldConfig } from "@/lib/worlds";
 import { loadYouTubeAPI } from "@/lib/youtubeApi";
 
 /* ------------------------------------------------------------------ */
@@ -21,16 +21,18 @@ import { loadYouTubeAPI } from "@/lib/youtubeApi";
 export interface UseVibePreview {
   /** Currently previewing vibe (null if stopped) */
   previewingVibeId: VibeId | null;
+  /** Stable UI key for the room card currently previewing */
+  previewingKey: string | null;
   /** World key of the room being previewed */
   previewingWorldKey: string | null;
   /** Player status */
   status: MusicStatus;
   /** Start previewing a specific room's vibe (by world key) */
-  startPreview: (worldKey: string) => void;
+  startPreview: (worldKey: string, previewKey?: string) => void;
   /** Stop any active preview */
   stopPreview: () => void;
   /** Toggle preview for a room (start if stopped, stop if already playing) */
-  togglePreview: (worldKey: string) => void;
+  togglePreview: (worldKey: string, previewKey?: string) => void;
   /** Volume (shared with session via localStorage) */
   volume: number;
   setVolume: (vol: number) => void;
@@ -41,6 +43,7 @@ export interface UseVibePreview {
 export function useVibePreview(): UseVibePreview {
   const [status, setStatus] = useState<MusicStatus>("idle");
   const [previewingVibeId, setPreviewingVibeId] = useState<VibeId | null>(null);
+  const [previewingKey, setPreviewingKey] = useState<string | null>(null);
   const [previewingWorldKey, setPreviewingWorldKey] = useState<string | null>(null);
   const [volume, setVolumeState] = useState(() => getPersistedVolume());
 
@@ -159,7 +162,9 @@ export function useVibePreview(): UseVibePreview {
     [],
   );
 
-  createPlayerRef.current = createPlayer;
+  useEffect(() => {
+    createPlayerRef.current = createPlayer;
+  }, [createPlayer]);
 
   /* ---------- Async fallback ---------- */
 
@@ -206,11 +211,12 @@ export function useVibePreview(): UseVibePreview {
   /* ---------- Public methods ---------- */
 
   const startPreview = useCallback(
-    (worldKey: string) => {
+    (worldKey: string, previewKey?: string) => {
       const world = getWorldConfig(worldKey);
       const vibeId = world.vibeKey;
 
       setPreviewingVibeId(vibeId);
+      setPreviewingKey(previewKey ?? worldKey);
       setPreviewingWorldKey(worldKey);
 
       const config = VIBES_MAP[vibeId];
@@ -235,19 +241,21 @@ export function useVibePreview(): UseVibePreview {
       // ignore
     }
     setPreviewingVibeId(null);
+    setPreviewingKey(null);
     setPreviewingWorldKey(null);
     setStatus("idle");
   }, []);
 
   const togglePreview = useCallback(
-    (worldKey: string) => {
-      if (previewingWorldKey === worldKey && (status === "playing" || status === "loading")) {
+    (worldKey: string, previewKey?: string) => {
+      const resolvedPreviewKey = previewKey ?? worldKey;
+      if (previewingKey === resolvedPreviewKey && (status === "playing" || status === "loading")) {
         stopPreview();
       } else {
-        startPreview(worldKey);
+        startPreview(worldKey, resolvedPreviewKey);
       }
     },
-    [previewingWorldKey, status, startPreview, stopPreview],
+    [previewingKey, status, startPreview, stopPreview],
   );
 
   const setVolume = useCallback((vol: number) => {
@@ -259,6 +267,7 @@ export function useVibePreview(): UseVibePreview {
 
   return {
     previewingVibeId,
+    previewingKey,
     previewingWorldKey,
     status,
     startPreview,

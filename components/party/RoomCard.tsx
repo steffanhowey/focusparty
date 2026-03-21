@@ -4,7 +4,11 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { Users, Play } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { getWorldConfig } from "@/lib/worlds";
+import {
+  getPartyLaunchDisplayName,
+  getPartyLaunchShortDescription,
+} from "@/lib/launchRooms";
+import { getPartyRuntimeWorldKey, getWorldConfig } from "@/lib/worlds";
 import type { PartyWithCount, SyntheticPresenceInfo } from "@/lib/parties";
 import type { ActiveBackground } from "@/lib/roomBackgrounds";
 import type { MusicStatus } from "@/lib/musicConstants";
@@ -100,9 +104,12 @@ export function RoomCard({
   previewStatus,
   onTogglePreview,
 }: RoomCardProps) {
-  const world = getWorldConfig(party.world_key);
-  const aiBg = backgrounds?.get(party.world_key);
+  const runtimeWorldKey = getPartyRuntimeWorldKey(party);
+  const world = getWorldConfig(runtimeWorldKey);
+  const aiBg = backgrounds?.get(runtimeWorldKey);
   const coverSrc = aiBg?.thumbUrl ?? null;
+  const roomName = getPartyLaunchDisplayName(party);
+  const roomDescription = getPartyLaunchShortDescription(party);
   const isFull = !party.persistent && party.participant_count >= party.max_participants;
 
   // Persistent rooms always show "Open"; others: active > waiting > full
@@ -169,7 +176,7 @@ export function RoomCard({
         {coverSrc ? (
           <Image
             src={coverSrc}
-            alt={world.label}
+            alt={roomName}
             fill
             sizes="(max-width: 640px) 100vw, 400px"
             className="object-cover"
@@ -241,10 +248,10 @@ export function RoomCard({
       <div className="flex items-center gap-2 px-1 pt-2">
         <div className="min-w-0 flex-1">
           <h3 className={`truncate text-sm font-semibold ${titleTextClassName}`}>
-            {party.name}
+            {roomName}
           </h3>
           <p className={`mt-0.5 line-clamp-1 text-xs ${bodyTextClassName}`}>
-            {world.description}
+            {roomDescription}
           </p>
         </div>
         <AvatarCluster
@@ -286,11 +293,11 @@ export function RoomCard({
         </div>
 
         <h3 className={`truncate text-sm font-semibold ${titleTextClassName}`}>
-          {party.name}
+          {roomName}
         </h3>
 
         <p className={`mt-0.5 line-clamp-1 text-xs ${bodyTextClassName}`}>
-          {world.description}
+          {roomDescription}
         </p>
 
         <div className={`mt-3 flex items-center gap-3 text-xs ${metaTextClassName}`}>

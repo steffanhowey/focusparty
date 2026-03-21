@@ -28,7 +28,10 @@ import { usePartyActivityFeed } from "@/lib/usePartyActivityFeed";
 import { useNotification } from "@/components/providers/NotificationProvider";
 import { usePartySummaryStats } from "@/lib/usePartySummaryStats";
 import { computeRoomState, ROOM_STATE_CONFIG } from "@/lib/roomState";
-import { getWorldConfig } from "@/lib/worlds";
+import {
+  getPartyLaunchDisplayName,
+  getPartyLaunchShortDescription,
+} from "@/lib/launchRooms";
 import type { RoomState, SessionRow } from "@/lib/types";
 
 const ROOM_STATE_CLASS: Record<RoomState, string> = {
@@ -329,6 +332,8 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
   }
 
   const c = CHARACTERS[party.character];
+  const roomName = getPartyLaunchDisplayName(party);
+  const roomDescription = getPartyLaunchShortDescription(party);
 
   return (
     <div className={ROOM_STATE_CLASS[roomState]}>
@@ -353,11 +358,11 @@ export function PartyLobby({ partyId }: PartyLobbyProps) {
           <h2
             className="text-xl font-semibold text-white"
           >
-            {party.name}
+            {roomName}
           </h2>
           <p className="text-sm text-shell-600">
             {party.persistent
-              ? getWorldConfig(party.world_key).description
+              ? roomDescription
               : <>{party.planned_duration_min}m sprint &middot;{" "}
                 <span style={{ color: c.primary }}>{c.name}</span> hosting</>}
             {presence.count > 0 && (

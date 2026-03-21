@@ -44,7 +44,7 @@ export function ProgressMovementSummary({
           What&apos;s Moving
         </h2>
         <p className="text-sm text-shell-500">
-          The capabilities gaining momentum right now, based on your completed mission work.
+          The capabilities getting stronger through your recent completed mission work.
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export function ProgressMovementSummary({
               <div className="flex items-center gap-2">
                 <TrendingUp size={14} className="text-forest-500" />
                 <h3 className="text-sm font-semibold text-shell-900">
-                  Closing now
+                  Strengthening now
                 </h3>
               </div>
               <div className="space-y-2">
@@ -69,7 +69,7 @@ export function ProgressMovementSummary({
                         {progression.skill_name}
                       </p>
                       <p className="text-xs text-shell-500">
-                        {progression.paths_to_next} to {progression.next_level}
+                        {formatMissionUnit(progression.paths_to_next)} to {progression.next_level}
                       </p>
                     </div>
                     <FluencyBadge level={progression.fluency_level} size="sm" />
@@ -86,7 +86,7 @@ export function ProgressMovementSummary({
               <div className="flex items-center gap-2">
                 <Sparkles size={14} style={{ color: "var(--sg-gold-600)" }} />
                 <h3 className="text-sm font-semibold text-shell-900">
-                  Just advanced
+                  Recently strengthened
                 </h3>
               </div>
               <div className="space-y-2">
@@ -100,7 +100,7 @@ export function ProgressMovementSummary({
                         {entry.skill.name}
                       </p>
                       <p className="text-xs text-shell-500">
-                        Now at {entry.after.fluency_level}
+                        Now showing at {entry.after.fluency_level}
                       </p>
                     </div>
                     <FluencyBadge level={entry.after.fluency_level} size="sm" />
@@ -115,7 +115,7 @@ export function ProgressMovementSummary({
               <div className="flex items-center gap-2">
                 <Sparkles size={14} className="text-shell-500" />
                 <h3 className="text-sm font-semibold text-shell-900">
-                  Strongest right now
+                  Most established
                 </h3>
               </div>
               <div className="space-y-2">

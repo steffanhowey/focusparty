@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { CHARACTERS } from "@/lib/constants";
+import { getPartyLaunchDisplayName } from "@/lib/launchRooms";
 import type { CharacterId } from "@/lib/types";
 import { JoinCard } from "./JoinCard";
 
@@ -19,7 +20,7 @@ export async function generateMetadata({
 
   const { data: party } = await supabase
     .from("fp_parties")
-    .select("name, character")
+    .select("name, character, world_key, launch_room_key, launch_visible, runtime_profile_key, persistent, blueprint_id")
     .eq("invite_code", code)
     .single();
 
@@ -38,10 +39,11 @@ export async function generateMetadata({
   }
 
   const character = CHARACTERS[party.character as CharacterId];
+  const roomName = getPartyLaunchDisplayName(party);
   const title = inviterName
-    ? `${inviterName} invited you to "${party.name}"`
-    : `Join "${party.name}" on SkillGap`;
-  const description = `${party.name} — a focus sprint with ${character.name}. Join now on SkillGap.`;
+    ? `${inviterName} invited you to "${roomName}"`
+    : `Join "${roomName}" on SkillGap`;
+  const description = `${roomName} — a focus sprint with ${character.name}. Join now on SkillGap.`;
 
   return {
     title,

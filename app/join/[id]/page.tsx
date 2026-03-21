@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { FlameIcon } from "@/components/ui/FlameIcon";
 import { Button } from "@/components/ui/Button";
 import { CHARACTERS } from "@/lib/constants";
+import { getPartyLaunchDisplayName } from "@/lib/launchRooms";
 import {
   getParty,
   getPartyParticipants,
@@ -32,6 +33,7 @@ export default function JoinPartyPage({
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [joining, setJoining] = useState(false);
+  const roomName = getPartyLaunchDisplayName(party);
 
   const loadParty = useCallback(async () => {
     try {
@@ -134,7 +136,7 @@ export default function JoinPartyPage({
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-white">
-                    {party.name}
+                    {roomName}
                   </h2>
                   <p className="text-sm text-[var(--sg-shell-600)]">
                     {party.planned_duration_min}m sprint &middot;{" "}

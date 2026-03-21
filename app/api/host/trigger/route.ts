@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/admin";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { getHostConfig } from "@/lib/hosts";
+import { getPartyLaunchDisplayName } from "@/lib/launchRooms";
 import { getPartyHostPersonality } from "@/lib/worlds";
 import { buildHostContext, isCooldownActive } from "@/lib/hostTrigger";
 import { generateHostPrompt } from "@/lib/hostPrompt";
@@ -68,7 +69,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const supabase = createClient();
     const { data: party, error: partyErr } = await supabase
       .from("fp_parties")
-      .select("name, host_personality, world_key")
+      .select("name, host_personality, world_key, runtime_profile_key, launch_room_key, launch_visible, persistent, blueprint_id")
       .eq("id", partyId)
       .single();
 
@@ -95,7 +96,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Build context and generate prompt
     const hostContext = await buildHostContext(
       { triggerType: triggerType as HostTriggerType, partyId, sessionId, sprintId, userId, context },
-      party.name,
+      getPartyLaunchDisplayName(party),
       effectivePersonality
     );
 

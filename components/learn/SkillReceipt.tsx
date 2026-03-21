@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * SkillReceipt — displays skills developed after path completion.
+ * SkillReceipt — displays the capability movement captured after mission completion.
  *
  * Design principles:
  * - Grayscale base, color only for level-ups and fluency indicators
- * - Professional tone — this is a credential, not a game achievement
+ * - Professional tone — present strengthening and movement, not badges
  * - Staggered animations for each skill row
  * - Responsive: stacks cleanly on mobile
  */
@@ -89,7 +89,7 @@ interface SkillReceiptProps {
 
 export function SkillReceipt({
   receipt,
-  title = "Skills Developed",
+  title = "What This Strengthened",
   subtitle = null,
   showFirstReceiptNote = true,
   className = "",
@@ -140,7 +140,7 @@ export function SkillReceipt({
                   animationDelay: "800ms",
                 }}
               >
-                Level Up
+                Strengthened
               </span>
             )}
           </div>
@@ -164,7 +164,7 @@ export function SkillReceipt({
                 animationFillMode: "backwards",
               }}
             >
-              Your skill profile is starting to take shape.
+              Your capability record is starting to take shape.
             </p>
           ) : null}
 

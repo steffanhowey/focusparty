@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { Party, SyntheticPresenceInfo } from "@/lib/parties";
+import type { SyntheticPresenceInfo } from "@/lib/parties";
 import type { WorldConfig } from "@/lib/worlds";
 
 function formatMinutes(seconds: number): string {
@@ -10,8 +10,9 @@ function formatMinutes(seconds: number): string {
 }
 
 interface JoinRoomHeaderProps {
-  party: Party | null;
   world: WorldConfig;
+  roomName: string;
+  roomDescription: string;
   coverSrc: string | null;
   focusingCount: number;
   hasActiveSprint: boolean;
@@ -67,8 +68,9 @@ function AvatarCluster({
 }
 
 export function JoinRoomHeader({
-  party,
   world,
+  roomName,
+  roomDescription,
   coverSrc,
   focusingCount,
   hasActiveSprint,
@@ -82,7 +84,7 @@ export function JoinRoomHeader({
         {coverSrc ? (
           <Image
             src={coverSrc}
-            alt={world.label}
+            alt={roomName}
             fill
             sizes="150px"
             className="object-cover"
@@ -111,11 +113,11 @@ export function JoinRoomHeader({
         <h2
           className="truncate text-lg font-bold text-white"
         >
-          {party?.name ?? world.label}
+          {roomName}
         </h2>
 
         <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-white/40">
-          {world.description}
+          {roomDescription}
         </p>
 
         {/* Meta line */}

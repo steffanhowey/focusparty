@@ -41,7 +41,6 @@ interface ProposedEvent {
 
 // ─── Constants ───────────────────────────────────────────────
 
-const MAX_EVENTS_PER_ROOM = 2;
 const MAX_EVENTS_GLOBAL = 3; // lowered from 4 — real users remain primary
 const SYNTHETIC_RATIO_CAP = 0.35; // lowered from 0.4
 const RECENT_WINDOW_MS = 50 * 60 * 1000; // 50 min (was 2 hours — prevents ghost presences)
@@ -72,7 +71,7 @@ export async function getActiveRooms(): Promise<RoomContext[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("fp_parties")
-    .select("id, max_participants, status, world_key")
+    .select("id, max_participants, status, world_key, runtime_profile_key")
     .in("status", ["waiting", "active"]);
 
   if (error) {
@@ -81,7 +80,10 @@ export async function getActiveRooms(): Promise<RoomContext[]> {
   }
   return (data ?? []).map((row) => ({
     ...row,
-    world_key: (row as Record<string, unknown>).world_key as string || "default",
+    world_key:
+      (row as Record<string, unknown>).runtime_profile_key as string ||
+      (row as Record<string, unknown>).world_key as string ||
+      "default",
   })) as RoomContext[];
 }
 

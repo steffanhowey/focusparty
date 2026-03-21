@@ -8,7 +8,12 @@ import { InvitePopover } from "@/components/session/InvitePopover";
 import { useNotification } from "@/components/providers/NotificationProvider";
 import { listDiscoverableParties, joinParty, type PartyWithCount } from "@/lib/parties";
 import type { JoinConfig } from "@/components/party/JoinRoomModal";
-import { getWorldConfig } from "@/lib/worlds";
+import {
+  getPartyLaunchDisplayName,
+  getPartyLaunchPickerDescription,
+  isPartyLaunchVisible,
+} from "@/lib/launchRooms";
+import { getPartyRuntimeWorldKey, getWorldConfig } from "@/lib/worlds";
 import {
   getAllActiveBackgrounds,
   type ActiveBackground,
@@ -94,11 +99,11 @@ export function EnvironmentHeader({
   // Prefetch routes + background images once parties are loaded
   useEffect(() => {
     if (parties.length === 0) return;
-    for (const p of parties) {
+    for (const p of parties.filter((party) => !party.persistent || isPartyLaunchVisible(party) || party.id === currentPartyId)) {
       if (p.id === currentPartyId) continue;
       router.prefetch(`/environment/${p.id}`);
       // Warm the browser image cache for AI backgrounds
-      const aiBg = backgrounds.get(p.world_key);
+      const aiBg = backgrounds.get(getPartyRuntimeWorldKey(p));
       if (aiBg?.publicUrl) {
         const img = new window.Image();
         img.src = aiBg.publicUrl;
@@ -178,6 +183,9 @@ export function EnvironmentHeader({
   );
 
   const showLoading = initialLoading && parties.length === 0;
+  const switcherParties = parties.filter(
+    (party) => !party.persistent || isPartyLaunchVisible(party) || party.id === currentPartyId,
+  );
 
   return (
     <header className="relative z-10 -ml-24 flex items-center gap-3 py-4 pl-4 pr-4">
@@ -242,7 +250,7 @@ export function EnvironmentHeader({
             )}
 
             {/* Empty */}
-            {!showLoading && parties.length === 0 && (
+            {!showLoading && switcherParties.length === 0 && (
               <p className="px-4 py-5 text-center text-xs text-[rgba(255,255,255,0.4)]">
                 No other active rooms
               </p>
@@ -250,10 +258,13 @@ export function EnvironmentHeader({
 
             {/* Party list */}
             {!showLoading &&
-              parties.map((p, i) => {
+              switcherParties.map((p, i) => {
                 const isCurrent = p.id === currentPartyId;
-                const world = getWorldConfig(p.world_key);
-                const switcherThumb = backgrounds.get(p.world_key)?.thumbUrl ?? null;
+                const runtimeWorldKey = getPartyRuntimeWorldKey(p);
+                const world = getWorldConfig(runtimeWorldKey);
+                const switcherThumb = backgrounds.get(runtimeWorldKey)?.thumbUrl ?? null;
+                const roomName = getPartyLaunchDisplayName(p);
+                const roomDescription = getPartyLaunchPickerDescription(p);
                 return (
                   <div key={p.id}>
                     {i > 0 && (
@@ -278,7 +289,7 @@ export function EnvironmentHeader({
                         {switcherThumb && (
                           <Image
                             src={switcherThumb}
-                            alt={p.name}
+                            alt={roomName}
                             width={44}
                             height={44}
                             className="h-full w-full object-cover"
@@ -288,10 +299,10 @@ export function EnvironmentHeader({
                       {/* Text */}
                       <div className="min-w-0 flex-1 text-left">
                         <p className={`truncate text-sm font-medium ${isCurrent ? "text-white" : "text-[rgba(255,255,255,0.6)]"}`}>
-                          {p.name}
+                          {roomName}
                         </p>
                         <p className="truncate text-2xs text-[rgba(255,255,255,0.4)]">
-                          {world.description}
+                          {roomDescription}
                         </p>
                       </div>
                       {/* Check for current */}

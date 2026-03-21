@@ -1,19 +1,32 @@
 "use client";
 
 import { useCallback, useEffect, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
-import { ArrowRight, CheckCircle2, PanelsTopLeft } from "lucide-react";
+import { ArrowRight, PanelsTopLeft } from "lucide-react";
 import { ContentViewer } from "@/components/learn/ContentViewer";
 import {
   RoomStagePanel,
   RoomStageScaffold,
   RoomStageSecondaryButton,
 } from "@/components/learn/RoomStageScaffold";
+import { MissionCompletionSummary } from "@/components/missions/MissionCompletionSummary";
+import { getMissionExpectedOutput } from "@/lib/missionPresentation";
 import { usePointerDrag } from "@/lib/usePointerDrag";
-import type { ItemState, LearningPath, LearningProgress, PathItem } from "@/lib/types";
+import type {
+  AchievementSummary,
+  ItemState,
+  LearningPath,
+  LearningProgress,
+  PathItem,
+  SkillReceipt,
+} from "@/lib/types";
 
 interface RoomMissionOverlayProps {
   path: LearningPath | null;
   progress: LearningProgress | null;
+  achievement: AchievementSummary | null;
+  skillReceipt: SkillReceipt | null;
+  recommendedPaths: LearningPath[];
+  recommendationsLoading?: boolean;
   currentItemIndex: number;
   isLoading: boolean;
   error: string | null;
@@ -43,6 +56,10 @@ function getStepLabel(item: PathItem | null): string {
 export function RoomMissionOverlay({
   path,
   progress,
+  achievement,
+  skillReceipt,
+  recommendedPaths,
+  recommendationsLoading = false,
   currentItemIndex,
   isLoading,
   error,
@@ -82,6 +99,9 @@ export function RoomMissionOverlay({
   const overlayInfoVisible = Boolean(path || currentItem || isCompleted);
   const overlayWidth = `min(1120px, calc(100vw - ${leftInset}px - ${rightInset}px))`;
   const overlayLeft = `calc(${leftInset}px + ((100vw - ${leftInset}px - ${rightInset}px) / 2))`;
+  const artifactExpectation = path
+    ? getMissionExpectedOutput(path, progress)
+    : "A finished step you can carry into your next round of work.";
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
@@ -252,9 +272,9 @@ export function RoomMissionOverlay({
         ) : isCompleted ? (
           renderLandscapeShell(
             <RoomStageScaffold
-              eyebrow="Mission"
-              title={path.title}
-              description="Your work is saved, and your mission evidence is ready to review whenever you want to jump into Progress."
+              eyebrow="Mission complete"
+              title="Mission complete"
+              description="Your completed work, evidence, and capability snapshot are ready."
               footerMeta="Mission · Completed"
               primaryAction={
                 <button
@@ -270,17 +290,18 @@ export function RoomMissionOverlay({
                   Keep Working In Room
                 </RoomStageSecondaryButton>
               }
-              contentClassName="max-w-[700px] space-y-4"
+              contentClassName="max-w-[860px] space-y-5"
             >
-              <RoomStagePanel className="space-y-2 text-center">
-                <div className="flex items-center justify-center gap-2 text-sm font-semibold text-[var(--sg-forest-300)]">
-                  <CheckCircle2 size={14} />
-                  Mission complete
-                </div>
-                <p className="text-sm leading-6 text-white/55">
-                  Everything for this mission has been saved from inside the room.
-                </p>
-              </RoomStagePanel>
+              <MissionCompletionSummary
+                path={path}
+                progress={progress}
+                achievement={achievement}
+                skillReceipt={skillReceipt}
+                artifactExpectation={artifactExpectation}
+                recommendedPaths={recommendedPaths}
+                recommendationsLoading={recommendationsLoading}
+                variant="overlay"
+              />
             </RoomStageScaffold>,
             { fillHeight: true, maxWidthClassName: "max-w-[860px]" },
           )

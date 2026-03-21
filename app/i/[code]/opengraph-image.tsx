@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { createClient } from "@/lib/supabase/server";
 import { CHARACTERS } from "@/lib/constants";
+import { getPartyLaunchDisplayName } from "@/lib/launchRooms";
 import type { CharacterId } from "@/lib/types";
 
 export const alt = "SkillGap Invite";
@@ -17,7 +18,7 @@ export default async function Image({
 
   const { data: party } = await supabase
     .from("fp_parties")
-    .select("name, character, creator_id")
+    .select("name, character, creator_id, world_key, launch_room_key, launch_visible, runtime_profile_key, persistent, blueprint_id")
     .eq("invite_code", code)
     .single();
 
@@ -47,6 +48,7 @@ export default async function Image({
   }
 
   const character = CHARACTERS[party.character as CharacterId];
+  const roomName = getPartyLaunchDisplayName(party);
 
   // Fetch creator name for the OG image
   let creatorName: string | null = null;
@@ -88,7 +90,7 @@ export default async function Image({
             lineHeight: 1.2,
           }}
         >
-          {party.name}
+          {roomName}
         </div>
 
         {/* Character tag */}

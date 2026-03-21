@@ -3,6 +3,7 @@
 // fp_room_performance for analytics and calibration.
 
 import { createClient } from "@/lib/supabase/admin";
+import { getPartyRuntimeWorldKey } from "@/lib/worlds";
 import type { RoomPerformance } from "@/lib/types";
 
 // ─── Aggregation ────────────────────────────────────────────
@@ -208,17 +209,18 @@ async function computeBreakCompletionForRoom(
   // Get world_key for this room
   const { data: room } = await supabase
     .from("fp_parties")
-    .select("world_key")
+    .select("world_key, runtime_profile_key")
     .eq("id", roomId)
     .single();
 
-  if (!room?.world_key) return 0;
+  if (!room) return 0;
+  const runtimeWorldKey = getPartyRuntimeWorldKey(room);
 
   // Get content item IDs for this world
   const { data: items } = await supabase
     .from("fp_break_content_items")
     .select("id")
-    .eq("room_world_key", room.world_key)
+    .eq("room_world_key", runtimeWorldKey)
     .eq("status", "active");
 
   if (!items || items.length === 0) return 0;

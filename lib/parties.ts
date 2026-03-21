@@ -3,6 +3,8 @@ import { generateInviteCode } from "./inviteCode";
 import { logEvent } from "./sessions";
 import { SYNTHETIC_POOL } from "./synthetics/pool";
 import { getSyntheticsForRoom } from "./synthetics/assignment";
+import { getPartyLaunchSortOrder } from "./launchRooms";
+import { getPartyRuntimeWorldKey } from "./worlds";
 import type { CharacterId } from "./types";
 
 // ---------- Types ----------
@@ -21,6 +23,9 @@ export interface Party {
   invite_code: string;
   world_key: string;
   host_personality: string;
+  launch_room_key: string | null;
+  launch_visible: boolean | null;
+  runtime_profile_key: string | null;
   persistent: boolean;
   blueprint_id: string | null;
 }
@@ -54,7 +59,7 @@ export interface PartyWithCount extends Party {
 // ---------- Column constants ----------
 
 const PARTY_COLS =
-  "id, creator_id, name, character, planned_duration_min, max_participants, status, created_at, invite_code, world_key, host_personality, persistent, blueprint_id";
+  "id, creator_id, name, character, planned_duration_min, max_participants, status, created_at, invite_code, world_key, host_personality, launch_room_key, launch_visible, runtime_profile_key, persistent, blueprint_id";
 
 const PARTICIPANT_COLS =
   "id, party_id, user_id, display_name, joined_at, left_at";
@@ -93,7 +98,6 @@ export async function listDiscoverableParties(): Promise<PartyWithCount[]> {
   const syntheticCounts = await getActiveSyntheticPresence(supabase, partyIds);
 
   // Sort: persistent rooms first (in stable world order), then user-created by newest
-  const WORLD_ORDER = ["default", "vibe-coding", "writer-room", "yc-build", "gentle-start"];
   return parties
     .map((p: Party) => {
       const realCount = countMap.get(p.id) ?? 0;
@@ -104,7 +108,7 @@ export async function listDiscoverableParties(): Promise<PartyWithCount[]> {
       let synParticipants: SyntheticPresenceInfo[];
       if (p.persistent) {
         const roomSeed = p.id.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-        const baseline = getSyntheticsForRoom(p.world_key, roomSeed);
+        const baseline = getSyntheticsForRoom(getPartyRuntimeWorldKey(p), roomSeed);
         const eventMap = new Map(eventSynParticipants.map((s) => [s.id, s.lastSprintEventAt]));
         synParticipants = baseline.map((sp) => ({
           id: sp.id,
@@ -127,13 +131,13 @@ export async function listDiscoverableParties(): Promise<PartyWithCount[]> {
       if (a.persistent && !b.persistent) return -1;
       if (!a.persistent && b.persistent) return 1;
       if (a.persistent && b.persistent) {
-        const aIdx = WORLD_ORDER.indexOf(a.world_key);
-        const bIdx = WORLD_ORDER.indexOf(b.world_key);
-        // Hardcoded worlds come first (in WORLD_ORDER order),
-        // factory rooms (not in WORLD_ORDER) come after, sorted by created_at
-        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-        if (aIdx !== -1) return -1;
-        if (bIdx !== -1) return 1;
+        const aLaunchOrder = getPartyLaunchSortOrder(a);
+        const bLaunchOrder = getPartyLaunchSortOrder(b);
+        if (aLaunchOrder !== null && bLaunchOrder !== null) {
+          return aLaunchOrder - bLaunchOrder;
+        }
+        if (aLaunchOrder !== null) return -1;
+        if (bLaunchOrder !== null) return 1;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -337,6 +341,9 @@ export interface CreatePartyInput {
   status?: PartyStatus;
   world_key?: string;
   host_personality?: string;
+  launch_room_key?: string | null;
+  launch_visible?: boolean | null;
+  runtime_profile_key?: string | null;
 }
 
 /** Create a new party and auto-join the creator. */

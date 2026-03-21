@@ -26,7 +26,12 @@ import {
 } from "@/lib/skills/taxonomy";
 import { mapPathRow } from "@/lib/learn/pathGenerator";
 import { getAllMarketStates } from "@/lib/intelligence/marketState";
-import { WORLD_CONFIGS, type WorldKey } from "@/lib/worlds";
+import {
+  getLaunchRoomCatalogEntries,
+  getPartyLaunchDisplayName,
+  getPartyLaunchRoomEntry,
+  isPartyLaunchVisible,
+} from "@/lib/launchRooms";
 import type { SkillFluency, UserSkill } from "@/lib/types/skills";
 import type { LearningPath } from "@/lib/types";
 import { getMissionRoute } from "@/lib/appRoutes";
@@ -449,29 +454,34 @@ export async function getSkillRecommendations(
   }
 
   // ── Resolve actions: best next step for each recommendation ──
-  // Build domain → world mapping from WORLD_CONFIGS
-  const domainToWorlds = new Map<string, WorldKey[]>();
-  for (const [key, config] of Object.entries(WORLD_CONFIGS)) {
-    for (const domain of config.skillDomains) {
-      const existing = domainToWorlds.get(domain) ?? [];
-      existing.push(key as WorldKey);
-      domainToWorlds.set(domain, existing);
+  // Build domain → launch-room mapping from the launch catalog
+  const domainToLaunchRooms = new Map<string, string[]>();
+  for (const room of getLaunchRoomCatalogEntries()) {
+    for (const domain of room.supportedMissionDomains) {
+      const existing = domainToLaunchRooms.get(domain) ?? [];
+      existing.push(room.key);
+      domainToLaunchRooms.set(domain, existing);
     }
   }
 
   // Load active persistent rooms with participant counts
   const { data: activeRooms } = await admin
     .from("fp_parties")
-    .select("id, name, world_key")
+    .select("id, name, world_key, launch_room_key, launch_visible, runtime_profile_key, persistent, blueprint_id")
     .eq("persistent", true)
     .in("status", ["waiting", "active"]);
 
-  const roomsByWorld = new Map<string, Array<{ id: string; name: string }>>();
+  const roomsByLaunchKey = new Map<string, Array<{ id: string; name: string }>>();
   for (const room of activeRooms ?? []) {
-    const wk = room.world_key as string;
-    const existing = roomsByWorld.get(wk) ?? [];
-    existing.push({ id: room.id as string, name: room.name as string });
-    roomsByWorld.set(wk, existing);
+    if (!isPartyLaunchVisible(room)) continue;
+    const launchRoom = getPartyLaunchRoomEntry(room);
+    if (!launchRoom) continue;
+    const existing = roomsByLaunchKey.get(launchRoom.key) ?? [];
+    existing.push({
+      id: room.id as string,
+      name: getPartyLaunchDisplayName(room),
+    });
+    roomsByLaunchKey.set(launchRoom.key, existing);
   }
 
   // ── Resolve actions: deterministic CTA per recommendation ──
@@ -481,15 +491,17 @@ export async function getSkillRecommendations(
   function findRoomForDomain(
     domainSlug: string,
   ): { id: string; name: string } | null {
-    const matchingWorlds = domainToWorlds.get(domainSlug) ?? [];
-    for (const worldKey of matchingWorlds) {
-      const rooms = roomsByWorld.get(worldKey);
+    const matchingLaunchRooms = domainToLaunchRooms.get(domainSlug) ?? [];
+    for (const launchRoomKey of matchingLaunchRooms) {
+      const rooms = roomsByLaunchKey.get(launchRoomKey);
       if (rooms && rooms.length > 0) return rooms[0];
     }
-    // Fallback: default or gentle-start room
-    const fallback =
-      roomsByWorld.get("default") ?? roomsByWorld.get("gentle-start");
-    return fallback?.[0] ?? null;
+    // Fallback: Research Room or Open Studio
+    return (
+      roomsByLaunchKey.get("research-room")?.[0] ??
+      roomsByLaunchKey.get("open-studio")?.[0] ??
+      null
+    );
   }
 
   for (const rec of sorted) {

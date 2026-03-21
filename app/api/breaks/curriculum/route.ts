@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getPartyRuntimeWorldKey } from "@/lib/worlds";
 import { extractYouTubeId } from "@/lib/youtube";
 
 interface CurriculumItem {
@@ -47,7 +48,7 @@ export async function GET(request: Request) {
   // Get the party's blueprint_id
   const { data: party } = await supabase
     .from("fp_parties")
-    .select("blueprint_id, world_key")
+    .select("blueprint_id, world_key, runtime_profile_key")
     .eq("id", partyId)
     .single();
 
@@ -87,7 +88,7 @@ export async function GET(request: Request) {
   const { data: shelfItems } = await supabase
     .from("fp_break_content_items")
     .select("id, video_url, title, source_name, duration_seconds, scaffolding, scaffolding_status, taste_score")
-    .eq("room_world_key", party.world_key)
+    .eq("room_world_key", getPartyRuntimeWorldKey(party))
     .eq("status", "active");
 
   // Build shelf video ID map

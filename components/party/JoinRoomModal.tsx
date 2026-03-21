@@ -21,7 +21,11 @@ import { usePartyPresence } from "@/lib/usePartyPresence";
 import { usePartyActivityFeed } from "@/lib/usePartyActivityFeed";
 import { useRoomSprint } from "@/lib/useRoomSprint";
 import { getParty, joinParty, getSyntheticParticipants, type Party, type SyntheticPresenceInfo } from "@/lib/parties";
-import { getWorldConfig } from "@/lib/worlds";
+import {
+  getPartyLaunchDisplayName,
+  getPartyLaunchShortDescription,
+} from "@/lib/launchRooms";
+import { getPartyRuntimeWorldKey, getWorldConfig } from "@/lib/worlds";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 import type { ActiveBackground } from "@/lib/roomBackgrounds";
 import { getMissionPrimaryArea, getMissionProgressSummary } from "@/lib/missionPresentation";
@@ -131,9 +135,12 @@ export function JoinRoomModal({
   const syntheticParticipants =
     initialSyntheticParticipants ?? fetchedSyntheticParticipants;
 
-  const world = party ? getWorldConfig(party.world_key) : getWorldConfig("default");
-  const aiBg = backgrounds?.get(party?.world_key ?? "default");
+  const runtimeWorldKey = getPartyRuntimeWorldKey(party);
+  const world = getWorldConfig(runtimeWorldKey);
+  const aiBg = backgrounds?.get(runtimeWorldKey);
   const coverSrc = aiBg?.thumbUrl ?? null;
+  const roomName = getPartyLaunchDisplayName(party);
+  const roomDescription = getPartyLaunchShortDescription(party);
 
   // ─── Presence + activity ─────────────────────────────────
   // Use parent's presence when available to avoid a duplicate channel
@@ -332,8 +339,9 @@ export function JoinRoomModal({
         ) : (
           <>
             <JoinRoomHeader
-              party={party}
               world={world}
+              roomName={roomName}
+              roomDescription={roomDescription}
               coverSrc={coverSrc}
               focusingCount={roomSprint.focusingCount}
               hasActiveSprint={roomSprint.hasActiveSprint}
