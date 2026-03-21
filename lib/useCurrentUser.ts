@@ -26,6 +26,7 @@ export function useCurrentUser() {
 
   return {
     userId: user?.id ?? null,
+    profile,
     displayName:
       profile?.display_name ??
       user?.user_metadata?.display_name ??
@@ -33,6 +34,8 @@ export function useCurrentUser() {
       "Guest",
     username: profile?.username ?? null,
     avatarUrl: profile?.avatar_url ?? null,
+    primaryFunction: profile?.primary_function ?? null,
+    fluencyLevel: profile?.fluency_level ?? null,
     email: user?.email ?? null,
     isAuthenticated: authState === "authenticated",
     isLoading: authState === "loading" || profileLoading,

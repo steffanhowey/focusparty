@@ -3,7 +3,7 @@
 /**
  * Shared nav config for Hub sidebar and session menu drawer.
  * Mission-first hub shell:
- * Missions → Progress → Rooms.
+ * Missions → Profile → Rooms.
  */
 
 import {
@@ -22,7 +22,7 @@ export const NAV_ITEMS: Array<{
   icon: LucideIcon;
 }> = [
   { id: "missions", href: "/missions", label: "Missions", icon: Target },
-  { id: "progress", href: "/progress", label: "Progress", icon: TrendingUp },
+  { id: "progress", href: "/progress", label: "Profile", icon: TrendingUp },
   { id: "rooms", href: "/rooms", label: "Rooms", icon: PanelsTopLeft },
 ];
 

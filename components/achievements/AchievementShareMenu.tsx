@@ -20,6 +20,10 @@ interface AchievementShareMenuProps {
   shareSlug?: string | null;
   pathTitle: string;
   pathTopics: string[];
+  buttonLabel?: string;
+  buttonVariant?: "secondary" | "outline" | "ghost";
+  buttonSize?: "xs" | "sm" | "default";
+  menuAlign?: "center" | "right";
 }
 
 function toFileSlug(value: string): string {
@@ -34,6 +38,10 @@ export function AchievementShareMenu({
   shareSlug,
   pathTitle,
   pathTopics,
+  buttonLabel = "Share Evidence",
+  buttonVariant = "secondary",
+  buttonSize = "default",
+  menuAlign = "center",
 }: AchievementShareMenuProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -69,8 +77,8 @@ export function AchievementShareMenu({
 
   if (!shareSlug) {
     return (
-      <Button variant="secondary" loading>
-        Preparing evidence
+      <Button variant={buttonVariant} size={buttonSize} loading>
+        Preparing
       </Button>
     );
   }
@@ -132,16 +140,19 @@ export function AchievementShareMenu({
   return (
     <div ref={rootRef} className="relative">
       <Button
-        variant="secondary"
+        variant={buttonVariant}
+        size={buttonSize}
         leftIcon={isCopied ? <CheckCircle2 size={14} /> : <Share2 size={14} />}
         onClick={() => setIsOpen((current) => !current)}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
       >
-        {isCopied ? "Link copied" : "Share Evidence"}
+        {isCopied ? "Link copied" : buttonLabel}
       </Button>
 
       {isOpen && (
         <Card
-          className="absolute left-1/2 top-full z-[var(--z-dropdown)] mt-3 min-w-[220px] -translate-x-1/2 p-1"
+          className={`absolute top-full z-[var(--z-dropdown)] mt-3 min-w-[220px] p-1 ${menuAlign === "right" ? "right-0" : "left-1/2 -translate-x-1/2"}`}
           style={{
             background: "var(--sg-white)",
             boxShadow: "var(--shadow-float)",

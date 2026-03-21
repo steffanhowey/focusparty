@@ -13,9 +13,9 @@ const PAGE_TITLE_RULES: Array<{ prefix: string; title: string }> = [
   { prefix: "/learn", title: "Missions" },
   { prefix: "/rooms", title: "Rooms" },
   { prefix: "/practice", title: "Rooms" },
-  { prefix: "/progress", title: "Progress" },
-  { prefix: "/skills", title: "Progress" },
-  { prefix: "/stats", title: "Progress" },
+  { prefix: "/progress", title: "Profile" },
+  { prefix: "/skills", title: "Profile" },
+  { prefix: "/stats", title: "Profile" },
   { prefix: "/goals", title: "Missions" },
   { prefix: "/settings", title: "Settings" },
 ];
