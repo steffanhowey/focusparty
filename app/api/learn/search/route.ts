@@ -124,7 +124,8 @@ export async function GET(request: Request): Promise<NextResponse> {
     let discoveryQuery = admin
       .from("fp_learning_paths")
       .select("*")
-      .eq("is_cached", true);
+      .eq("is_cached", true)
+      .eq("is_discoverable", true);
 
     if (fn) {
       discoveryQuery = discoveryQuery.eq("adapted_for_function", fn);
@@ -145,6 +146,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         .from("fp_learning_paths")
         .select("*")
         .eq("is_cached", true)
+        .eq("is_discoverable", true)
         .order("view_count", { ascending: false })
         .limit(limit);
 

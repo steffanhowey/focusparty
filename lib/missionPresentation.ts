@@ -5,6 +5,7 @@ import type {
   MissionBriefing,
   PathItem,
 } from "@/lib/types";
+import { getLaunchMissionContent } from "@/lib/launchMissionContent";
 import { getMissionLaunchDomain } from "@/lib/launchTaxonomy";
 
 export type MissionUiState = "ready" | "saved" | "active" | "completed";
@@ -170,16 +171,49 @@ export function getMissionFraming(
   path: LearningPath,
   progress?: LearningProgress | null,
 ): string {
+  const launchContent = getLaunchMissionContent(path);
   const mission = getMissionBriefing(path, progress);
   const currentItem = getMissionCurrentItem(path, progress);
 
   return (
+    launchContent?.missionPromise ??
     mission?.objective ??
     path.goal ??
     currentItem?.title ??
     path.description ??
     "A structured mission built around practical work."
   );
+}
+
+/**
+ * Returns a launch-style why-now line for approved launch missions, falling
+ * back to the best available mission context.
+ */
+export function getMissionWhyNow(
+  path: LearningPath,
+  progress?: LearningProgress | null,
+): string {
+  const launchContent = getLaunchMissionContent(path);
+  if (launchContent?.whyNow) return launchContent.whyNow;
+
+  const framing = getMissionFraming(path, progress).trim().toLowerCase();
+  const mission = getMissionBriefing(path, progress);
+  const candidates = [mission?.context, path.description, path.goal];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    if (candidate.trim().toLowerCase() === framing) continue;
+    return candidate;
+  }
+
+  return "A practical rep designed to turn AI understanding into finished work.";
+}
+
+/**
+ * Returns launch-specific scope guardrails when available.
+ */
+export function getMissionScopeGuardrails(path: LearningPath): string | null {
+  return getLaunchMissionContent(path)?.scopeGuardrails ?? null;
 }
 
 /**
@@ -206,8 +240,10 @@ export function getMissionExpectedOutput(
   path: LearningPath,
   progress?: LearningProgress | null,
 ): string {
+  const launchContent = getLaunchMissionContent(path);
   const mission = getMissionBriefing(path, progress);
 
+  if (launchContent?.artifactSummary) return launchContent.artifactSummary;
   if (!mission) return "A finished step you can carry into your next rep.";
   if (mission.success_criteria[0]) return mission.success_criteria[0];
 
@@ -220,6 +256,13 @@ export function getMissionExpectedOutput(
   }
 
   return "A written output that shows what you made.";
+}
+
+/**
+ * Returns the artifact label when launch content is available.
+ */
+export function getMissionArtifactLabel(path: LearningPath): string | null {
+  return getLaunchMissionContent(path)?.artifactLabel ?? null;
 }
 
 /**
@@ -280,13 +323,51 @@ export function getMissionSuccessPreview(
   path: LearningPath,
   progress?: LearningProgress | null,
 ): string[] {
+  const launchContent = getLaunchMissionContent(path);
   const mission = getMissionBriefing(path, progress);
+
+  if (launchContent?.artifactChecklist.length) {
+    return launchContent.artifactChecklist;
+  }
 
   if (mission?.success_criteria.length) {
     return mission.success_criteria;
   }
 
   return [getMissionExpectedOutput(path, progress)];
+}
+
+/**
+ * Returns launch-specific completion language when available.
+ */
+export function getMissionCompletionStandard(path: LearningPath): string | null {
+  return getLaunchMissionContent(path)?.completionStandard ?? null;
+}
+
+/**
+ * Returns launch-specific post-mission reuse guidance when available.
+ */
+export function getMissionUseItNext(path: LearningPath): string | null {
+  return getLaunchMissionContent(path)?.useItNext ?? null;
+}
+
+/**
+ * Returns launch-specific transition copy when available.
+ */
+export function getMissionNextBridge(path: LearningPath): string | null {
+  return getLaunchMissionContent(path)?.nextMissionBridge ?? null;
+}
+
+/**
+ * Returns a concise launch-aware support line for cards.
+ */
+export function getMissionCardSupportLine(
+  path: LearningPath,
+  progress?: LearningProgress | null,
+): string {
+  const launchContent = getLaunchMissionContent(path);
+  if (launchContent?.cardSupportLine) return launchContent.cardSupportLine;
+  return getMissionFraming(path, progress);
 }
 
 /**

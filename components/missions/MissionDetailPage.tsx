@@ -22,12 +22,18 @@ import { getMissionLaunchDomain } from "@/lib/launchTaxonomy";
 import { prepareMissionRoomEntry } from "@/lib/missionRoomEntry";
 import {
   formatMissionDuration,
+  getMissionArtifactLabel,
   getMissionBriefing,
+  getMissionCompletionStandard,
   getMissionCurrentItem,
   getMissionExpectedOutput,
   getMissionFraming,
+  getMissionNextBridge,
   getMissionProgressSummary,
   getMissionSuccessPreview,
+  getMissionUseItNext,
+  getMissionWhyNow,
+  getMissionScopeGuardrails,
 } from "@/lib/missionPresentation";
 import { useMissionLandingPageData } from "@/lib/useMissionLandingPageData";
 import type { CurriculumModule, LearningPath, LearningProgress, PathItem } from "@/lib/types";
@@ -90,28 +96,6 @@ function formatMissionMetaLine(
   }
 
   return `${effort} · ${stepLabel}`;
-}
-
-function normalizeText(value: string | null | undefined): string {
-  return (value ?? "").trim().toLowerCase();
-}
-
-function getMissionWhyItMatters(
-  path: LearningPath,
-  progress: LearningProgress | null,
-): string {
-  const framing = getMissionFraming(path, progress);
-  const framingKey = normalizeText(framing);
-  const mission = getMissionBriefing(path, progress);
-  const candidates = [mission?.context, path.description, path.goal];
-
-  for (const candidate of candidates) {
-    if (!candidate) continue;
-    if (normalizeText(candidate) === framingKey) continue;
-    return candidate;
-  }
-
-  return "A practical rep designed to turn AI understanding into finished work.";
 }
 
 function buildMissionUseItems(
@@ -484,14 +468,26 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
     [path, progress],
   );
   const whyItMatters = useMemo(
-    () => (path ? getMissionWhyItMatters(path, progress) : null),
+    () => (path ? getMissionWhyNow(path, progress) : null),
     [path, progress],
+  );
+  const scopeGuardrails = useMemo(
+    () => (path ? getMissionScopeGuardrails(path) : null),
+    [path],
   );
   const outputTitle =
     landingState === "completed" ? "What you made" : "What you'll make";
+  const artifactLabel = useMemo(
+    () => (path ? getMissionArtifactLabel(path) : null),
+    [path],
+  );
   const outputLine = useMemo(
     () => (path ? getMissionExpectedOutput(path, progress) : null),
     [path, progress],
+  );
+  const completionStandard = useMemo(
+    () => (path ? getMissionCompletionStandard(path) : null),
+    [path],
   );
   const useItems = useMemo(
     () => (path ? buildMissionUseItems(path, progress) : []),
@@ -504,6 +500,14 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
   const successCriteria = useMemo(
     () => (path ? getMissionSuccessPreview(path, progress) : []),
     [path, progress],
+  );
+  const useItNext = useMemo(
+    () => (path ? getMissionUseItNext(path) : null),
+    [path],
+  );
+  const nextBridge = useMemo(
+    () => (path ? getMissionNextBridge(path) : null),
+    [path],
   );
   const headerMeta = useMemo(
     () => (path ? formatMissionMetaLine(path, progress) : null),
@@ -651,10 +655,21 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
                       {whyItMatters ? (
                         <div className="space-y-1">
                           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--sg-shell-500)]">
-                            Why it matters
+                            Why this matters now
                           </p>
                           <p className="text-sm leading-7 text-[var(--sg-shell-600)]">
                             {whyItMatters}
+                          </p>
+                        </div>
+                      ) : null}
+
+                      {scopeGuardrails ? (
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--sg-shell-500)]">
+                            Keep it focused
+                          </p>
+                          <p className="text-sm leading-7 text-[var(--sg-shell-600)]">
+                            {scopeGuardrails}
                           </p>
                         </div>
                       ) : null}
@@ -662,9 +677,28 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
                   </MissionSection>
 
                   <MissionSection title={outputTitle}>
-                    <p className="text-lg leading-8 text-[var(--sg-shell-900)]">
-                      {outputLine}
-                    </p>
+                    <div className="space-y-3">
+                      {artifactLabel ? (
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--sg-shell-500)]">
+                          {artifactLabel}
+                        </p>
+                      ) : null}
+
+                      <p className="text-lg leading-8 text-[var(--sg-shell-900)]">
+                        {outputLine}
+                      </p>
+
+                      {completionStandard ? (
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--sg-shell-500)]">
+                            Done looks like
+                          </p>
+                          <p className="text-sm leading-7 text-[var(--sg-shell-600)]">
+                            {completionStandard}
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
                   </MissionSection>
 
                   {useItems.length > 0 ? (
@@ -695,6 +729,12 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
 
                   <MissionSection title="What good looks like">
                     <div className="space-y-3">
+                      {successCriteria.length > 0 ? (
+                        <p className="text-sm leading-6 text-[var(--sg-shell-500)]">
+                          Keep the artifact tight enough that another marketer could reuse it without extra explanation.
+                        </p>
+                      ) : null}
+
                       <ul className="space-y-3">
                         {successCriteria.map((criterion) => (
                           <li
@@ -717,6 +757,34 @@ export function MissionDetailPage({ pathId }: { pathId: string }) {
                       ) : null}
                     </div>
                   </MissionSection>
+
+                  {useItNext || nextBridge ? (
+                    <MissionSection title="After this mission">
+                      <div className="space-y-3">
+                        {useItNext ? (
+                          <div className="space-y-1">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--sg-shell-500)]">
+                              Use it next
+                            </p>
+                            <p className="text-sm leading-7 text-[var(--sg-shell-600)]">
+                              {useItNext}
+                            </p>
+                          </div>
+                        ) : null}
+
+                        {nextBridge ? (
+                          <div className="space-y-1">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--sg-shell-500)]">
+                              What this unlocks next
+                            </p>
+                            <p className="text-sm leading-7 text-[var(--sg-shell-600)]">
+                              {nextBridge}
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
+                    </MissionSection>
+                  ) : null}
                 </div>
               </div>
             </div>

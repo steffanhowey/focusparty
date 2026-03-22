@@ -15,6 +15,10 @@ import {
 import { MissionCard } from "@/components/missions/MissionCard";
 import { MissionBriefModal } from "@/components/missions/MissionBriefModal";
 import { buildHomePrimaryAction } from "@/lib/homeLaunchpad";
+import {
+  buildLaunchFrontDoorBuckets,
+  CORE_LAUNCH_FRONT_DOOR_STEPS,
+} from "@/lib/launchFrontDoor";
 import { buildMissionRecommendations } from "@/lib/missionRecommendations";
 import {
   getMissionLaunchDomain,
@@ -22,6 +26,7 @@ import {
 } from "@/lib/launchTaxonomy";
 import { useMissionRecommendations } from "@/lib/useMissionRecommendations";
 import type { LearningPath, LearningProgress } from "@/lib/types";
+import { getLaunchMissionLaneKey } from "@/lib/launchMissionContent";
 
 interface CategoryDef {
   value: string;
@@ -238,8 +243,20 @@ export function MissionsPage() {
 
     return paths;
   }, [allPaths, category, completedPathIds, inProgressPaths, progressMap]);
+  const launchFrontDoor = useMemo(
+    () => buildLaunchFrontDoorBuckets(allPaths.filter((path) => !completedPathIds.has(path.id))),
+    [allPaths, completedPathIds],
+  );
   const sortedDiscoveryPaths = useMemo(() => {
-    const paths = [...filteredDiscoveryPaths];
+    const curatedIds = new Set(
+      !query.trim()
+        ? [
+            ...launchFrontDoor.corePaths.map((path) => path.id),
+            ...launchFrontDoor.extendedPaths.map((path) => path.id),
+          ]
+        : [],
+    );
+    const paths = [...filteredDiscoveryPaths].filter((path) => !curatedIds.has(path.id));
 
     switch (sort) {
       case "newest":
@@ -275,7 +292,7 @@ export function MissionsPage() {
       default:
         return paths;
     }
-  }, [filteredDiscoveryPaths, sort]);
+  }, [filteredDiscoveryPaths, launchFrontDoor.corePaths, launchFrontDoor.extendedPaths, query, sort]);
   const visibleDiscoveryPaths = sortedDiscoveryPaths;
   const openMissionBrief = useCallback(
     (path: LearningPath, progress: LearningProgress | null = null) => {
@@ -306,6 +323,15 @@ export function MissionsPage() {
       {error && <p className="text-sm text-sg-coral-500">{error}</p>}
 
       <div className="space-y-6">
+        {!searchMode && launchFrontDoor.corePaths.length > 0 ? (
+          <LaunchFrontDoorSection
+            corePaths={launchFrontDoor.corePaths}
+            extendedPaths={launchFrontDoor.extendedPaths}
+            progressByPathId={progressMap}
+            onOpenMission={openMissionBrief}
+          />
+        ) : null}
+
         {inProgressPaths.length > 0 && (
           <section>
             <SectionHeader title="My Missions" />
@@ -324,6 +350,12 @@ export function MissionsPage() {
           </section>
         )}
 
+        {(searchMode ||
+          isInitialMissionLoad ||
+          isLoading ||
+          visibleDiscoveryPaths.length > 0 ||
+          category === "in-progress" ||
+          category !== "all") && (
         <section>
           {isInitialMissionLoad ? (
             <>
@@ -449,6 +481,7 @@ export function MissionsPage() {
             </>
           )}
         </section>
+        )}
       </div>
 
       {selectedMissionBrief ? (
@@ -461,6 +494,116 @@ export function MissionsPage() {
         />
       ) : null}
     </div>
+  );
+}
+
+function LaunchFrontDoorSection({
+  corePaths,
+  extendedPaths,
+  progressByPathId,
+  onOpenMission,
+}: {
+  corePaths: LearningPath[];
+  extendedPaths: LearningPath[];
+  progressByPathId: Map<string, LearningProgress>;
+  onOpenMission: (path: LearningPath, progress: LearningProgress | null) => void;
+}) {
+  return (
+    <section className="space-y-5">
+      <Card className="p-5 sm:p-6">
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-shell-500">
+              Launch Path
+            </p>
+            <h2 className="text-2xl font-semibold leading-tight text-shell-900">
+              Go from better AI thinking to better marketing output to better workflow design.
+            </h2>
+            <p className="max-w-[50rem] text-sm leading-7 text-shell-500">
+              Start with these three missions in order. Each one is built to finish in one session and end in a real artifact you can use next.
+            </p>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-3">
+            {CORE_LAUNCH_FRONT_DOOR_STEPS.map((step) => (
+              <div
+                key={step.laneKey}
+                className="rounded-[var(--sg-radius-lg)] border border-[var(--sg-shell-border)] px-4 py-4"
+                style={{
+                  background:
+                    "color-mix(in srgb, var(--sg-white) 80%, var(--sg-shell-50) 20%)",
+                }}
+              >
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-shell-500">
+                    {step.stepLabel}
+                  </p>
+                  <p className="text-base font-semibold text-shell-900">{step.title}</p>
+                  <p className="text-sm leading-6 text-shell-500">{step.supportLine}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <section>
+        <SectionHeader
+          title="Core launch path"
+          description="Start here. These three missions are intentionally sequenced to sharpen how marketers think, write, and design workflows with AI."
+        />
+        <div className="grid gap-5 lg:grid-cols-3">
+          {corePaths.map((path) => {
+            const laneKey = getLaunchMissionLaneKey(path);
+            const step = CORE_LAUNCH_FRONT_DOOR_STEPS.find(
+              (candidate) => candidate.laneKey === laneKey,
+            );
+
+            return (
+              <div key={path.id} className="space-y-2">
+                {step ? (
+                  <div className="space-y-0.5 px-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-shell-500">
+                      {step.stepLabel}
+                    </p>
+                    <p className="text-sm text-shell-500">{step.title}</p>
+                  </div>
+                ) : null}
+
+                <MissionCard
+                  path={path}
+                  progress={progressByPathId.get(path.id) ?? null}
+                  onOpenMission={onOpenMission}
+                  compact
+                  cleanFrame
+                />
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {extendedPaths.length > 0 ? (
+        <section>
+          <SectionHeader
+            title="Optional depth"
+            description="Go deeper when you want narrower or more technical reps. These strengthen the launch story, but they are not the front-door path."
+          />
+          <div className="grid gap-5 sm:grid-cols-2">
+            {extendedPaths.map((path) => (
+              <MissionCard
+                key={path.id}
+                path={path}
+                progress={progressByPathId.get(path.id) ?? null}
+                onOpenMission={onOpenMission}
+                compact
+                cleanFrame
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </section>
   );
 }
 

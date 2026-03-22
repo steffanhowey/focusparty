@@ -161,6 +161,53 @@ describe("buildMissionRecommendations", () => {
     );
   });
 
+  it("prefers explicit launch-lane transition copy when available", () => {
+    const activePath = createPath({
+      id: "prompt-messaging",
+      topics: ["prompt-engineering"],
+      skill_tags: [
+        {
+          skill_slug: "tone-calibration",
+          skill_name: "Tone Calibration",
+          domain_name: "Writing & Communication",
+          relevance: "primary",
+        },
+      ],
+    });
+    const nextPath = createPath({
+      id: "claude-research",
+      topics: ["claude-code"],
+      skill_tags: [
+        {
+          skill_slug: "research-synthesis",
+          skill_name: "Research Synthesis",
+          domain_name: "Strategy & Planning",
+          relevance: "primary",
+        },
+      ],
+    });
+
+    const recommendations = buildMissionRecommendations(
+      [
+        {
+          reason: "market_demand",
+          priority: 80,
+          paths: [nextPath],
+          action: null,
+        },
+      ],
+      {
+        surface: "home",
+        activePathId: activePath.id,
+        activePath,
+      },
+    );
+
+    expect(recommendations[0]?.explanation).toBe(
+      "You improved the output. Next, see where AI changes the workflow itself.",
+    );
+  });
+
   it("filters the active mission and deduplicates by mission path", () => {
     const sharedPath = createPath({
       id: "shared",

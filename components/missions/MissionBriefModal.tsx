@@ -19,7 +19,13 @@ import {
 } from "@/lib/missionRoomEntry";
 import {
   formatMissionDuration,
+  getMissionArtifactLabel,
+  getMissionCompletionStandard,
   getMissionFraming,
+  getMissionExpectedOutput,
+  getMissionScopeGuardrails,
+  getMissionSuccessPreview,
+  getMissionWhyNow,
 } from "@/lib/missionPresentation";
 import { useMissionLandingPageData } from "@/lib/useMissionLandingPageData";
 import type {
@@ -345,6 +351,30 @@ export function MissionBriefModal({
     () => getMissionFraming(effectivePath, effectiveProgress),
     [effectivePath, effectiveProgress],
   );
+  const whyNow = useMemo(
+    () => getMissionWhyNow(effectivePath, effectiveProgress),
+    [effectivePath, effectiveProgress],
+  );
+  const scopeGuardrails = useMemo(
+    () => getMissionScopeGuardrails(effectivePath),
+    [effectivePath],
+  );
+  const artifactLabel = useMemo(
+    () => getMissionArtifactLabel(effectivePath),
+    [effectivePath],
+  );
+  const expectedOutput = useMemo(
+    () => getMissionExpectedOutput(effectivePath, effectiveProgress),
+    [effectivePath, effectiveProgress],
+  );
+  const completionStandard = useMemo(
+    () => getMissionCompletionStandard(effectivePath),
+    [effectivePath],
+  );
+  const successPreview = useMemo(
+    () => getMissionSuccessPreview(effectivePath, effectiveProgress).slice(0, 3),
+    [effectivePath, effectiveProgress],
+  );
   const stepPreview = useMemo(
     () => buildMissionStepPreview(effectivePath, effectiveProgress),
     [effectivePath, effectiveProgress],
@@ -498,6 +528,54 @@ export function MissionBriefModal({
                 <p className="text-sm leading-7 text-[var(--sg-shell-700)]">{framing}</p>
               </div>
             </div>
+
+            <BriefSection title="Mission focus">
+              <div className="space-y-3">
+                <p className="text-sm leading-7 text-[var(--sg-shell-700)]">{whyNow}</p>
+                {scopeGuardrails ? (
+                  <p className="text-sm leading-7 text-[var(--sg-shell-500)]">
+                    {scopeGuardrails}
+                  </p>
+                ) : null}
+              </div>
+            </BriefSection>
+
+            <BriefSection title="What you'll make">
+              <div className="space-y-3">
+                {artifactLabel ? (
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--sg-shell-500)]">
+                    {artifactLabel}
+                  </p>
+                ) : null}
+
+                <p className="text-sm leading-7 text-[var(--sg-shell-700)]">
+                  {expectedOutput}
+                </p>
+
+                {successPreview.length > 0 ? (
+                  <ul className="space-y-2">
+                    {successPreview.map((criterion) => (
+                      <li
+                        key={criterion}
+                        className="flex items-start gap-2 text-sm leading-6 text-[var(--sg-shell-600)]"
+                      >
+                        <CheckCircle2
+                          size={14}
+                          className="mt-1 shrink-0 text-[var(--sg-forest-500)]"
+                        />
+                        <span>{criterion}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                {completionStandard ? (
+                  <p className="text-sm leading-7 text-[var(--sg-shell-500)]">
+                    {completionStandard}
+                  </p>
+                ) : null}
+              </div>
+            </BriefSection>
 
             <BriefSection title="Mission steps">
               <MissionStepPreview

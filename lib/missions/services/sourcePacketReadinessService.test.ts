@@ -1,0 +1,246 @@
+import { describe, expect, it } from "vitest";
+import { evaluateSourcePacketReadiness } from "./sourcePacketReadinessService";
+import type { SourcePacket } from "@/lib/missions/types/sourcePacket";
+
+function buildPacket(): SourcePacket {
+  return {
+    packetId: "33333333-3333-4333-8333-333333333333",
+    schemaVersion: "source_packet_v1",
+    packetHash: "packet-hash-12345678",
+    status: "assembled",
+    readiness: {
+      state: "tracking_only",
+      rationale: "Pending readiness evaluation.",
+      blockers: [],
+      nextReviewAt: null,
+    },
+    topic: {
+      topicId: "44444444-4444-4444-8444-444444444444",
+      topicSlug: "prompt-engineering",
+      topicName: "Prompt Engineering",
+      topicCategory: "technique",
+      clusterId: null,
+      heatScoreSnapshot: null,
+      signalCount7d: 0,
+      sourceDiversity7d: 0,
+    },
+    lineage: {
+      inputSignalIds: [],
+      inputContentIds: ["src-1"],
+      generationRunId: "run-1",
+    },
+    sourceWindow: {
+      startAt: new Date().toISOString(),
+      endAt: new Date().toISOString(),
+      lookbackDays: 21,
+      timelinessClass: "emerging-practice",
+      recommendedTtlHours: 24,
+    },
+    freshness: {
+      recencyScore: 20,
+      velocityScore: 0,
+      noveltyScore: 35,
+      trendStatus: "cooling",
+      staleAfter: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    },
+    credibility: {
+      overallScore: 52,
+      highestEvidenceTier: "secondary",
+      highCredibilitySourceCount: 0,
+      lowCredibilitySourceCount: 3,
+      vendorOnly: false,
+    },
+    whyNow: {
+      summary: "Prompt engineering is useful.",
+      changeType: "workflow-adoption",
+      whatChanged: ["Prompt engineering is useful."],
+      whatIsReadyNow: ["Try a first rep."],
+      whatIsNoiseOrNotYetProven: ["Long-term advantage unclear."],
+      expiryReason: "Re-evaluate later.",
+    },
+    keyClaims: [
+      {
+        claimId: "claim-1",
+        statement: "Claim one",
+        claimType: "workflow-shift",
+        confidence: 0.6,
+        importance: "high",
+        sourceItemIds: ["src-1"],
+        excerptIds: ["excerpt-1"],
+      },
+      {
+        claimId: "claim-2",
+        statement: "Claim two",
+        claimType: "capability",
+        confidence: 0.6,
+        importance: "medium",
+        sourceItemIds: ["src-2"],
+        excerptIds: ["excerpt-2"],
+      },
+    ],
+    contradictions: [],
+    uncertainties: [],
+    marketerRelevanceHints: [
+      {
+        hintId: "hint-1",
+        launchDomain: "positioning-messaging",
+        workflowSlug: "positioning-messaging",
+        impactType: "quality",
+        whyMarketersShouldCare: "Better outputs.",
+        exampleUseCase: "Improve a prompt system.",
+        missionable: true,
+        suggestedArtifact: "message-matrix",
+      },
+    ],
+    sourceItems: [
+      {
+        sourceItemId: "src-1",
+        sourceKind: "youtube_video",
+        evidenceTier: "secondary",
+        stance: "supports",
+        url: "https://youtube.com/watch?v=1",
+        externalId: "1",
+        title: "Prompt engineering tutorial",
+        creatorOrPublication: "Community Creator",
+        domain: "youtube.com",
+        publishedAt: new Date().toISOString(),
+        discoveredAt: new Date().toISOString(),
+        indexedAt: new Date().toISOString(),
+        contentFormat: "video",
+        durationSeconds: 600,
+        wordCount: null,
+        summary: "Prompt engineering tutorial.",
+        topics: ["prompt-engineering"],
+        freshness: {
+          ageDays: 2,
+          withinWindow: true,
+          freshnessScore: 80,
+        },
+        credibility: {
+          tier: "low",
+          score: 52,
+          authorityRationale: "High-quality indexed source.",
+          selfPromoRisk: "low",
+          authoritySourceType: "community",
+          matchedAuthorityKey: null,
+          baseScore: 52,
+          baseTier: "low",
+          floorApplied: false,
+        },
+        excerpts: [],
+        claims: [],
+      },
+      {
+        sourceItemId: "src-2",
+        sourceKind: "youtube_video",
+        evidenceTier: "secondary",
+        stance: "supports",
+        url: "https://youtube.com/watch?v=2",
+        externalId: "2",
+        title: "Prompt engineering full guide",
+        creatorOrPublication: "Community Creator",
+        domain: "youtube.com",
+        publishedAt: new Date().toISOString(),
+        discoveredAt: new Date().toISOString(),
+        indexedAt: new Date().toISOString(),
+        contentFormat: "video",
+        durationSeconds: 600,
+        wordCount: null,
+        summary: "Prompt engineering guide.",
+        topics: ["prompt-engineering"],
+        freshness: {
+          ageDays: 3,
+          withinWindow: true,
+          freshnessScore: 76,
+        },
+        credibility: {
+          tier: "low",
+          score: 50,
+          authorityRationale: "High-quality indexed source.",
+          selfPromoRisk: "low",
+          authoritySourceType: "community",
+          matchedAuthorityKey: null,
+          baseScore: 50,
+          baseTier: "low",
+          floorApplied: false,
+        },
+        excerpts: [],
+        claims: [],
+      },
+      {
+        sourceItemId: "src-3",
+        sourceKind: "youtube_video",
+        evidenceTier: "secondary",
+        stance: "supports",
+        url: "https://youtube.com/watch?v=3",
+        externalId: "3",
+        title: "Prompt engineering hacks",
+        creatorOrPublication: "Community Creator",
+        domain: "youtube.com",
+        publishedAt: new Date().toISOString(),
+        discoveredAt: new Date().toISOString(),
+        indexedAt: new Date().toISOString(),
+        contentFormat: "video",
+        durationSeconds: 600,
+        wordCount: null,
+        summary: "Prompt engineering hacks.",
+        topics: ["prompt-engineering"],
+        freshness: {
+          ageDays: 1,
+          withinWindow: true,
+          freshnessScore: 90,
+        },
+        credibility: {
+          tier: "low",
+          score: 54,
+          authorityRationale: "High-quality indexed source.",
+          selfPromoRisk: "low",
+          authoritySourceType: "community",
+          matchedAuthorityKey: null,
+          baseScore: 54,
+          baseTier: "low",
+          floorApplied: false,
+        },
+        excerpts: [],
+        claims: [],
+      },
+    ],
+    exclusions: [],
+    quality: {
+      completenessScore: 70,
+      usableForGeneration: false,
+      rejectReasons: [],
+      reviewerNotes: [],
+      diagnostics: {
+        authoritativeSourceCount: 0,
+        officialDomainCount: 0,
+        officialCreatorCount: 0,
+        secondarySourceCount: 3,
+        genericTutorialCount: 3,
+        uniqueCreatorCount: 1,
+        coherenceScore: 0.4,
+        workflowSurfaceCount: 2,
+        analysisMode: "fallback",
+        authorityScoringAudit: [],
+      },
+    },
+    assembledAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  };
+}
+
+describe("source packet readiness diagnostics", () => {
+  it("adds explicit blockers for weak authoritative and homogeneous packets", () => {
+    const packet = buildPacket();
+    const evaluated = evaluateSourcePacketReadiness(packet);
+    const blockerCodes = evaluated.readiness.blockers.map((blocker) => blocker.code);
+
+    expect(evaluated.readiness.state).toBe("watchlist_only");
+    expect(blockerCodes).toContain("missing_high_credibility_source");
+    expect(blockerCodes).toContain("missing_authoritative_source");
+    expect(blockerCodes).toContain("topic_too_broad_for_packet");
+    expect(blockerCodes).toContain("source_mix_too_homogeneous");
+    expect(blockerCodes).toContain("missing_signal_support_for_timely_topic");
+    expect(blockerCodes).toContain("weak_why_now_evidence");
+  });
+});

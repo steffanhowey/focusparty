@@ -3,6 +3,7 @@ import {
   getMissionLaunchDomainPriority,
   type MissionLaunchDomain,
 } from "@/lib/launchTaxonomy";
+import { getLaunchMissionTransitionLine } from "@/lib/launchMissionContent";
 import { getLaunchRoomMissionFitHint } from "@/lib/launchRooms";
 import type { LearningPath } from "@/lib/types";
 
@@ -88,9 +89,13 @@ function getLogicalFollowLine(domain: MissionLaunchDomain): string {
 
 function getHomeTransitionLine(
   activePath: LearningPath | null | undefined,
+  nextPath: LearningPath,
   domain: MissionLaunchDomain,
 ): string | null {
   if (!activePath) return null;
+
+  const explicitLaunchTransition = getLaunchMissionTransitionLine(activePath, nextPath);
+  if (explicitLaunchTransition) return explicitLaunchTransition;
 
   const activeDomain = getMissionLaunchDomain(activePath);
   const transitionKey = `${activeDomain.key}->${domain.key}`;
@@ -99,11 +104,16 @@ function getHomeTransitionLine(
 
 function getExplanation(
   recommendation: SkillRecommendationLike,
+  path: LearningPath,
   domain: MissionLaunchDomain,
   options: BuildMissionRecommendationsOptions,
 ): string {
   if (options.surface === "home") {
-    const transitionLine = getHomeTransitionLine(options.activePath, domain);
+    const transitionLine = getHomeTransitionLine(
+      options.activePath,
+      path,
+      domain,
+    );
     if (transitionLine) return transitionLine;
   }
 
@@ -185,6 +195,7 @@ export function buildMissionRecommendations(
       reason: entry.recommendation.reason,
       explanation: getExplanation(
         entry.recommendation,
+        entry.path,
         entry.launchDomain,
         options,
       ),

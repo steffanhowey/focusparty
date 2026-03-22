@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { getMissionRoute } from "@/lib/appRoutes";
 import {
-  getMissionFraming,
+  getMissionCardSupportLine,
   getMissionPrimaryArea,
   getMissionProgressSummary,
   getMissionRepSummary,
@@ -57,7 +57,7 @@ export function MissionCard({
   const area = getMissionPrimaryArea(path);
   const state = getMissionUiState(progress, isSaved);
   const stateLabel = getMissionStateLabel(progress, isSaved);
-  const framing = getMissionFraming(path, progress);
+  const launchSupportLine = getMissionCardSupportLine(path, progress);
   const progressSummary = getMissionProgressSummary(progress);
   const effortSummary = getMissionRepSummary(path);
   const contextSignal = badgeLabelOverride ?? area.detail ?? area.label;
@@ -71,8 +71,8 @@ export function MissionCard({
           ? `${launchDomainLabel} · Outcome captured and ready to review.`
           : "Outcome captured and ready to review."
         : isActiveCard && launchDomainLabel
-          ? `${launchDomainLabel} · ${framing}`
-          : framing;
+          ? `${launchDomainLabel} · ${launchSupportLine}`
+          : launchSupportLine;
   const metaLine =
     metaLineOverride !== undefined
       ? metaLineOverride

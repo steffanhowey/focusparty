@@ -9,6 +9,7 @@ import type {
 } from "@/lib/types";
 import type { ProfessionalFunction, FluencyLevel } from "@/lib/onboarding/types";
 import { generateAndCacheCurriculum } from "@/lib/learn/curriculumGenerator";
+import { maybeResolveControlLanePath } from "@/lib/missions/services/controlLanePathResolver";
 
 // ─── Shared Helpers ──────────────────────────────────────────
 
@@ -94,6 +95,31 @@ export async function generateAndCachePath(
   }
 ): Promise<LearningPath | null> {
   try {
+    const controlLane = await maybeResolveControlLanePath({
+      query,
+      userFunction: options?.userFunction,
+      userFluency: options?.userFluency,
+    });
+
+    console.info(
+      "[learn/pathGenerator] control lane seam",
+      JSON.stringify({
+        query,
+        flagState: controlLane.diagnostics.flagState,
+        resolvedTopicSlug: controlLane.diagnostics.resolvedTopicSlug,
+        resolvedFamily: controlLane.diagnostics.resolvedFamily,
+        projectionBranchMatched: controlLane.diagnostics.projectionBranchMatched,
+        projectionAction: controlLane.diagnostics.projectionAction,
+        fallbackToLegacy: !controlLane.learningPath,
+        fallbackReason: controlLane.diagnostics.fallbackReason,
+        stableKey: controlLane.diagnostics.stableKey,
+      }),
+    );
+
+    if (controlLane.learningPath) {
+      return controlLane.learningPath;
+    }
+
     return await generateAndCacheCurriculum(query, options);
   } catch (error) {
     console.error("[learn/pathGenerator] generation failed:", error);
